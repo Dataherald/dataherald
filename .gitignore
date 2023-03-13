@@ -1,0 +1,16 @@
+/home/aazo11/CYCPrototype/env
+__pycache__/
+.vscode/
+venv/
+*.zip
+.idea/*
+id_rsa
+dbdata/
+
+# Environments
+.env
+.venv
+env/
+ENV/
+env.bak/
+.DS_Store
