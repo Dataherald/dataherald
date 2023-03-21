@@ -7,7 +7,6 @@ services:
     environment:
       DH_ENV: "${DH_ENV}"
       USE_SSH_TUNNEL: "${USE_SSH_TUNNEL}"
-      SSH_PKEY: "${SSH_PKEY}"
       SSH_HOST: "${SSH_HOST}"
       SSH_USERNAME: "${SSH_USERNAME}"
       SSH_PASSWORD: "${SSH_PASSWORD}"
