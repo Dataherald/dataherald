@@ -17,10 +17,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     for (let i = 0; i < messages.length; i++) {
       const message = messages[i];
-      if (charCount + message.content.length > charLimit) {
+      if (charCount + (message.content as string).length > charLimit) {
         break;
       }
-      charCount += message.content.length;
+      charCount += (message.content as string).length;
       messagesToSend.push(message);
     }
 

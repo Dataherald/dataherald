@@ -5,6 +5,13 @@ import { useRouter } from "next/router";
 import { FC } from "react";
 import { Icon } from "./Icon";
 
+export type MenuItem = {
+  label: string;
+  href: string;
+  icon?: MaterialIcon;
+};
+export type MenuItems = MenuItem[];
+
 export const Sidebar: FC = () => {
   const router = useRouter();
   const menuItems = [
@@ -43,7 +50,7 @@ export const Sidebar: FC = () => {
             <Link
               key={idx}
               href={href}
-              className={`flex items-center p-2  my-1 rounded-lg text-primary ${
+              className={`flex items-center p-2 font-bold my-1 rounded-lg text-primary ${
                 isActive
                   ? "bg-black bg-opacity-20"
                   : "hover:bg-black hover:bg-opacity-20"

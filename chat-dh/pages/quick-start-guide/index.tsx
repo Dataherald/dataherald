@@ -4,7 +4,7 @@ import { FC } from "react";
 
 const QuickStartGuide: FC = () => (
   <MainLayout>
-    <div className="max-w-[800px] mx-auto mt-4 sm:mt-12">
+    <div className="max-w-[900px] mx-auto mt-4 sm:mt-12">
       <Header title="Dataherald AI Quick Start Guide"></Header>
     </div>
   </MainLayout>

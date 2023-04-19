@@ -3,16 +3,14 @@ import { FC } from "react";
 import { ChatInput } from "./ChatInput";
 import { ChatLoader } from "./ChatLoader";
 import { ChatMessage } from "./ChatMessage";
-import { ResetChat } from "./ResetChat";
 
 interface ChatProps {
   messages: Message[];
   loading: boolean;
   onSend: (message: Message) => void;
-  onReset: () => void;
 }
 
-export const Chat: FC<ChatProps> = ({ messages, loading, onSend, onReset }) => {
+export const Chat: FC<ChatProps> = ({ messages, loading, onSend }) => {
   return (
     <div className="flex flex-col w-full">
       <div className="flex flex-col flex-grow">

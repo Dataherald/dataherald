@@ -1,20 +1,16 @@
-import { MaterialIcon } from "material-icons";
+export type Role = "assistant" | "user";
+export interface Message {
+  role: Role;
+  content: string | ChatResponse;
+}
 
-export type MenuItem = {
-  label: string;
-  href: string;
-  icon?: MaterialIcon;
-};
+export interface ChatResponse {
+  id: string;
+  generated_text: string;
+  viz_id: string;
+}
 
-export type MenuItems = MenuItem[];
-
+// Unused
 export enum OpenAIModel {
   DAVINCI_TURBO = "gpt-3.5-turbo",
 }
-
-export interface Message {
-  role: Role;
-  content: string;
-}
-
-export type Role = "assistant" | "user";

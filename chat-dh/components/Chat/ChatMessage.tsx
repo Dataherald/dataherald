@@ -24,9 +24,22 @@ export const ChatMessage: FC<ChatMessageProps> = ({
           className="pl-1"
         />
       ) : (
-        <Icon value="person_outline" className="rounded-full bg-primary bg-opacity-5 text-primary p-2"></Icon>
+        <Icon
+          value="person_outline"
+          className="rounded-full bg-gray-200 p-2"
+        ></Icon>
       )}
-      <p className="self-center">{content}</p>
+      {typeof content === "string" ? (
+        <p className="self-center pr-8">{content}</p>
+      ) : (
+        <div className="flex flex-col gap-5 pr-8">
+          <p className="self-center">{content.generated_text}</p>
+          <iframe
+            className="min-h-[600px] mb-4"
+            src={`https://dev.bariloche.dataherald.com/v4/viz/${content.viz_id}`}
+          ></iframe>
+        </div>
+      )}
     </div>
   );
 };

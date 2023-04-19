@@ -43,31 +43,15 @@ export default function Home() {
       return;
     }
 
-    const { generated_text } = data;
-
     setLoading(false);
 
-    let isFirst = true;
-
-    if (isFirst) {
-      isFirst = false;
-      setMessages((messages) => [
-        ...messages,
-        {
-          role: "assistant",
-          content: generated_text,
-        },
-      ]);
-    } else {
-      setMessages((messages) => {
-        const lastMessage = messages[messages.length - 1];
-        const updatedMessage = {
-          ...lastMessage,
-          content: lastMessage.content + generated_text,
-        };
-        return [...messages.slice(0, -1), updatedMessage];
-      });
-    }
+    setMessages((messages) => [
+      ...messages,
+      {
+        role: "assistant",
+        content: data,
+      },
+    ]);
 
     // const reader = data.getReader();
     // const decoder = new TextDecoder();
@@ -108,15 +92,6 @@ export default function Home() {
     });
   };
 
-  const handleReset = () => {
-    setMessages([
-      {
-        role: "assistant",
-        content: `Hi there! I'm ChatDH, an AI assistant. I can help you with things like answering questions, providing information, and helping with tasks. How can I help you?`,
-      },
-    ]);
-  };
-
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -134,28 +109,18 @@ export default function Home() {
       </Head>
 
       <MainLayout>
-        <div className="flex-1 max-w-[800px] mx-auto px-2 mt-4 sm:mt-12 flex flex-col space-y-8">
+        <div className="flex-1 max-w-[900px] mx-auto px-2 mt-4 sm:mt-12 flex flex-col space-y-8">
           {!messages.length ? (
             <>
               <Header title="Dataherald AI for Real Estate"></Header>
               <div className="flex-grow">
                 <ChatKickoff onExampleClick={handleExample}></ChatKickoff>
               </div>
-              <Chat
-                messages={messages}
-                loading={loading}
-                onSend={handleSend}
-                onReset={handleReset}
-              />
+              <Chat messages={messages} loading={loading} onSend={handleSend} />
             </>
           ) : (
             <div className="flex flex-grow">
-              <Chat
-                messages={messages}
-                loading={loading}
-                onSend={handleSend}
-                onReset={handleReset}
-              />
+              <Chat messages={messages} loading={loading} onSend={handleSend} />
             </div>
           )}
           <div ref={messagesEndRef} />

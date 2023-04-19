@@ -1,5 +1,4 @@
 import { Message } from "@/types";
-import { IconArrowUp } from "@tabler/icons-react";
 import { FC, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Icon } from "../Layout/Icon";
 
@@ -50,7 +49,7 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
         ref={textareaRef}
         className="min-h-[44px] rounded-lg pl-4 pr-12 py-2 w-full focus:outline-none focus:ring-1 focus:ring-neutral-300 border border-black border-opacity-80"
         style={{ resize: "none" }}
-        placeholder="Ask Dataherald a real estate prompt"
+        placeholder="Ask Dataherald a Real Estate prompt"
         value={content}
         rows={3}
         onChange={handleChange}
