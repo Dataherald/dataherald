@@ -9,6 +9,7 @@ specifiers:
   eslint: 8.36.0
   eslint-config-next: 13.2.4
   eventsource-parser: ^0.1.0
+  material-icons: ^1.13.4
   next: 13.3.0
   openai: ^3.2.1
   postcss: ^8.4.21
@@ -25,6 +26,7 @@ dependencies:
   eslint: 8.36.0
   eslint-config-next: 13.2.4_erbnuj7bwa52wmxdwdiejavlui
   eventsource-parser: 0.1.0
+  material-icons: 1.13.4
   next: 13.3.0_biqbaboplfbrettd7655fr4n2y
   openai: 3.2.1
   react: 18.2.0
@@ -1726,6 +1728,10 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       yallist: 4.0.0
+    dev: false
+
+  /material-icons/1.13.4:
+    resolution: {integrity: sha512-sGljRSo7fG6iK6QXM+LG7ZdMFZnRKaqdVCBO3l7nmweOUKQBkc3y3h2jU0HX+49kGET7/xIo8Ujq+4BG+7u7bw==}
     dev: false
 
   /merge2/1.4.1:
