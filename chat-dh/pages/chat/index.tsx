@@ -1,6 +1,6 @@
 import { Chat } from "@/components/Chat/Chat";
+import { Header } from "@/components/Layout/Header";
 import { MainLayout } from "@/components/Layout/Main";
-import { Sidebar } from "@/components/Layout/Sidebar";
 import { Message } from "@/types";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
@@ -21,13 +21,13 @@ export default function Home() {
     setMessages(updatedMessages);
     setLoading(true);
 
-    const response = await fetch("/api/chat", {
+    const response = await fetch("https://dev.api.dataherald.com/v5/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        messages: updatedMessages,
+        message: updatedMessages,
       }),
     });
 
@@ -111,7 +111,8 @@ export default function Home() {
       </Head>
 
       <MainLayout>
-        <div className="max-w-[800px] mx-auto mt-4 sm:mt-12">
+        <div className="max-w-[800px] mx-auto px-2 mt-4 sm:mt-12">
+          <Header title="Dataherald AI for Real Estate"></Header>
           <Chat
             messages={messages}
             loading={loading}

@@ -8,7 +8,7 @@ import { Icon } from "./Icon";
 export const Sidebar: FC = () => {
   const router = useRouter();
   const menuItems = [
-    { label: "Chat", href: "/chat", icon: "sms" },
+    { label: "Chat", href: "/chat", icon: "chat" },
     {
       label: "Quick Start Guide",
       href: "/quick-start-guide",

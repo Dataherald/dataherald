@@ -19,7 +19,7 @@ export const Chat: FC<Props> = ({ messages, loading, onSend, onReset }) => {
         <ResetChat onReset={onReset} />
       </div>
 
-      <div className="flex flex-col rounded-lg px-2 sm:p-4 sm:border border-neutral-300">
+      <div className="flex flex-col rounded-lg sm:p-4 sm:border border-neutral-300">
         {messages.map((message, index) => (
           <div
             key={index}
