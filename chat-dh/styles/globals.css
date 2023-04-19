@@ -3,3 +3,7 @@
 @tailwind utilities;
 @import "material-icons/iconfont/filled.css";
 @import "material-icons/iconfont/outlined.css";
+
+img {
+  height: fit-content;
+}

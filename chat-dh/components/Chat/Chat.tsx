@@ -5,40 +5,32 @@ import { ChatLoader } from "./ChatLoader";
 import { ChatMessage } from "./ChatMessage";
 import { ResetChat } from "./ResetChat";
 
-interface Props {
+interface ChatProps {
   messages: Message[];
   loading: boolean;
   onSend: (message: Message) => void;
   onReset: () => void;
 }
 
-export const Chat: FC<Props> = ({ messages, loading, onSend, onReset }) => {
+export const Chat: FC<ChatProps> = ({ messages, loading, onSend, onReset }) => {
   return (
-    <>
-      <div className="flex flex-row justify-between items-center mb-4 sm:mb-8">
-        <ResetChat onReset={onReset} />
-      </div>
-
-      <div className="flex flex-col rounded-lg sm:p-4 sm:border border-neutral-300">
+    <div className="flex flex-col w-full">
+      <div className="flex flex-col flex-grow">
         {messages.map((message, index) => (
-          <div
-            key={index}
-            className="my-1 sm:my-1.5"
-          >
+          <div key={index} className="my-4">
             <ChatMessage message={message} />
           </div>
         ))}
-
         {loading && (
-          <div className="my-1 sm:my-1.5">
+          <div className="my-4">
             <ChatLoader />
           </div>
         )}
-
-        <div className="mt-4 sm:mt-8 bottom-[56px] left-0 w-full">
-          <ChatInput onSend={onSend} />
-        </div>
       </div>
-    </>
+
+      <div className="mt-4">
+        <ChatInput onSend={onSend} />
+      </div>
+    </div>
   );
 };

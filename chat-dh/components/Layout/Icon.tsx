@@ -1,14 +1,23 @@
 import { MaterialIcon } from "material-icons";
 import { FC } from "react";
 
-export type IconProps = {
+interface IconProps {
   value: MaterialIcon;
-  type?: "material-icons" | "material-icons-outlined";
+  type?: "filled" | "outlined";
   className?: string;
-};
+}
 
 export const Icon: FC<IconProps> = ({
   value,
-  type = "material-icons-outlined",
+  type = "outlined",
   className,
-}) => <span className={[type, className].join(" ")}>{value}</span>;
+}) => (
+  <span
+    className={[
+      type === "filled" ? "material-icons" : "material-icons-outlined",
+      className,
+    ].join(" ")}
+  >
+    {value}
+  </span>
+);

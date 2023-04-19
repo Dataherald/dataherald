@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { FC } from "react";
 
-type HeaderProps = {
+interface HeaderProps {
   title: string;
-};
+}
 
 export const Header: FC<HeaderProps> = ({ title }) => {
   return (
@@ -15,7 +15,7 @@ export const Header: FC<HeaderProps> = ({ title }) => {
         height={64}
         style={{ filter: "drop-shadow(0px 4px 25px rgba(0, 0, 0, 0.25))" }}
       />
-      <h1 className="text-2xl font-bold mt-8 mb-4 text-center">{title}</h1>
+      <h1 className="text-2xl font-bold mt-8 mb-4 text-center text-primary">{title}</h1>
     </div>
   );
 };

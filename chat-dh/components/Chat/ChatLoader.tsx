@@ -1,9 +1,9 @@
 import { IconDots } from "@tabler/icons-react";
 import { FC } from "react";
 
-interface Props {}
+interface ChatLoaderProps {}
 
-export const ChatLoader: FC<Props> = () => {
+export const ChatLoader: FC<ChatLoaderProps> = () => {
   return (
     <div className="flex flex-col flex-start">
       <div

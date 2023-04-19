@@ -1,4 +1,5 @@
 import { Chat } from "@/components/Chat/Chat";
+import { ChatKickoff } from "@/components/Chat/ChatKickoff";
 import { Header } from "@/components/Layout/Header";
 import { MainLayout } from "@/components/Layout/Main";
 import { Message } from "@/types";
@@ -36,44 +37,75 @@ export default function Home() {
       throw new Error(response.statusText);
     }
 
-    const data = response.body;
+    const data = await response.json();
 
     if (!data) {
       return;
     }
 
+    const { generated_text } = data;
+
     setLoading(false);
 
-    const reader = data.getReader();
-    const decoder = new TextDecoder();
-    let done = false;
     let isFirst = true;
 
-    while (!done) {
-      const { value, done: doneReading } = await reader.read();
-      done = doneReading;
-      const chunkValue = decoder.decode(value);
-
-      if (isFirst) {
-        isFirst = false;
-        setMessages((messages) => [
-          ...messages,
-          {
-            role: "assistant",
-            content: chunkValue,
-          },
-        ]);
-      } else {
-        setMessages((messages) => {
-          const lastMessage = messages[messages.length - 1];
-          const updatedMessage = {
-            ...lastMessage,
-            content: lastMessage.content + chunkValue,
-          };
-          return [...messages.slice(0, -1), updatedMessage];
-        });
-      }
+    if (isFirst) {
+      isFirst = false;
+      setMessages((messages) => [
+        ...messages,
+        {
+          role: "assistant",
+          content: generated_text,
+        },
+      ]);
+    } else {
+      setMessages((messages) => {
+        const lastMessage = messages[messages.length - 1];
+        const updatedMessage = {
+          ...lastMessage,
+          content: lastMessage.content + generated_text,
+        };
+        return [...messages.slice(0, -1), updatedMessage];
+      });
     }
+
+    // const reader = data.getReader();
+    // const decoder = new TextDecoder();
+    // let done = false;
+    // let isFirst = true;
+
+    // while (!done) {
+    //   const { value, done: doneReading } = await reader.read();
+    //   done = doneReading;
+    //   const chunkValue = decoder.decode(value);
+
+    //   if (isFirst) {
+    //     isFirst = false;
+    //     setMessages((messages) => [
+    //       ...messages,
+    //       {
+    //         role: "assistant",
+    //         content: chunkValue,
+    //       },
+    //     ]);
+    //   } else {
+    //     setMessages((messages) => {
+    //       const lastMessage = messages[messages.length - 1];
+    //       const updatedMessage = {
+    //         ...lastMessage,
+    //         content: lastMessage.content + chunkValue,
+    //       };
+    //       return [...messages.slice(0, -1), updatedMessage];
+    //     });
+    //   }
+    // }
+  };
+
+  const handleExample = (prompt: string) => {
+    handleSend({
+      role: "user",
+      content: prompt,
+    });
   };
 
   const handleReset = () => {
@@ -89,15 +121,6 @@ export default function Home() {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    setMessages([
-      {
-        role: "assistant",
-        content: `Hi there! I'm ChatDH, an AI assistant. I can help you with things like answering questions, providing information, and helping with tasks. How can I help you?`,
-      },
-    ]);
-  }, []);
-
   return (
     <>
       <Head>
@@ -111,14 +134,30 @@ export default function Home() {
       </Head>
 
       <MainLayout>
-        <div className="max-w-[800px] mx-auto px-2 mt-4 sm:mt-12">
-          <Header title="Dataherald AI for Real Estate"></Header>
-          <Chat
-            messages={messages}
-            loading={loading}
-            onSend={handleSend}
-            onReset={handleReset}
-          />
+        <div className="flex-1 max-w-[800px] mx-auto px-2 mt-4 sm:mt-12 flex flex-col space-y-8">
+          {!messages.length ? (
+            <>
+              <Header title="Dataherald AI for Real Estate"></Header>
+              <div className="flex-grow">
+                <ChatKickoff onExampleClick={handleExample}></ChatKickoff>
+              </div>
+              <Chat
+                messages={messages}
+                loading={loading}
+                onSend={handleSend}
+                onReset={handleReset}
+              />
+            </>
+          ) : (
+            <div className="flex flex-grow">
+              <Chat
+                messages={messages}
+                loading={loading}
+                onSend={handleSend}
+                onReset={handleReset}
+              />
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
       </MainLayout>

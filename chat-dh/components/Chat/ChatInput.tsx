@@ -3,11 +3,11 @@ import { IconArrowUp } from "@tabler/icons-react";
 import { FC, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Icon } from "../Layout/Icon";
 
-interface Props {
+interface ChatInputProps {
   onSend: (message: Message) => void;
 }
 
-export const ChatInput: FC<Props> = ({ onSend }) => {
+export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
   const [content, setContent] = useState<string>();
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -40,7 +40,7 @@ export const ChatInput: FC<Props> = ({ onSend }) => {
   useEffect(() => {
     if (textareaRef && textareaRef.current) {
       textareaRef.current.style.height = "inherit";
-      textareaRef.current.style.height = `${textareaRef.current?.scrollHeight}px`;
+      textareaRef.current.style.minHeight = `${textareaRef.current?.scrollHeight}px`;
     }
   }, [content]);
 
@@ -48,11 +48,11 @@ export const ChatInput: FC<Props> = ({ onSend }) => {
     <div className="relative">
       <textarea
         ref={textareaRef}
-        className="min-h-[44px] rounded-lg pl-4 pr-12 py-2 w-full focus:outline-none focus:ring-1 focus:ring-neutral-300 border-2 border-neutral-200"
+        className="min-h-[44px] rounded-lg pl-4 pr-12 py-2 w-full focus:outline-none focus:ring-1 focus:ring-neutral-300 border border-black border-opacity-80"
         style={{ resize: "none" }}
         placeholder="Ask Dataherald a real estate prompt"
         value={content}
-        rows={1}
+        rows={3}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
       />
@@ -60,8 +60,8 @@ export const ChatInput: FC<Props> = ({ onSend }) => {
       <button onClick={() => handleSend()}>
         <Icon
           value="send"
-          type="material-icons"
-          className="absolute right-2 bottom-3 h-8 w-8 hover:cursor-pointer rounded-full p-1 hover:opacity-80"
+          type="filled"
+          className="text-primary absolute right-2 bottom-3 h-8 w-8 hover:cursor-pointer rounded-full p-1 hover:opacity-80"
         />
       </button>
     </div>

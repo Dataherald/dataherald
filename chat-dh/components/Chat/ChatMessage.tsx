@@ -1,19 +1,32 @@
 import { Message } from "@/types";
 import { FC } from "react";
+import { Icon } from "../Layout/Icon";
+import Image from "next/image";
 
-interface Props {
+interface ChatMessageProps {
   message: Message;
 }
 
-export const ChatMessage: FC<Props> = ({ message }) => {
+export const ChatMessage: FC<ChatMessageProps> = ({
+  message: { role, content },
+}) => {
   return (
-    <div className={`flex flex-col ${message.role === "assistant" ? "items-start" : "items-end"}`}>
-      <div
-        className={`flex items-center ${message.role === "assistant" ? "bg-neutral-200 text-neutral-900" : "bg-blue-500 text-white"} rounded-2xl px-3 py-2 max-w-[67%] whitespace-pre-wrap`}
-        style={{ overflowWrap: "anywhere" }}
-      >
-        {message.content}
-      </div>
+    <div
+      className="flex flex-row items-start gap-3 rounded-xl border border-black p-4"
+      style={{ overflowWrap: "anywhere" }}
+    >
+      {role === "assistant" ? (
+        <Image
+          src="/images/dh-logo-symbol-color.svg"
+          alt="Dataherald company logo narrow"
+          width={40}
+          height={40}
+          className="pl-1"
+        />
+      ) : (
+        <Icon value="person_outline" className="rounded-full bg-primary bg-opacity-5 text-primary p-2"></Icon>
+      )}
+      <p className="self-center">{content}</p>
     </div>
   );
 };
