@@ -2,6 +2,7 @@ import { Chat } from "@/components/Chat/Chat";
 import { ChatKickoff } from "@/components/Chat/ChatKickoff";
 import { Header } from "@/components/Layout/Header";
 import { MainLayout } from "@/components/Layout/Main";
+import { API_URL } from "@/env-variables";
 import { Message } from "@/types";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
@@ -22,7 +23,7 @@ export default function Home() {
     setMessages(updatedMessages);
     setLoading(true);
 
-    const response = await fetch("https://dev.api.dataherald.com/v5/chat", {
+    const response = await fetch(`${API_URL}/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
