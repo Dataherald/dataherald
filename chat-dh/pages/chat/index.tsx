@@ -4,10 +4,11 @@ import { Header } from "@/components/Layout/Header";
 import { MainLayout } from "@/components/Layout/Main";
 import { API_URL } from "@/env-variables";
 import { Message } from "@/types";
+import { withPageAuthRequired } from "@auth0/nextjs-auth0/client";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 
-export default function Home() {
+export default withPageAuthRequired(function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -53,7 +54,6 @@ export default function Home() {
         content: data,
       },
     ]);
-
   };
 
   const handleExample = (prompt: string) => {
@@ -99,4 +99,4 @@ export default function Home() {
       </MainLayout>
     </>
   );
-}
+});

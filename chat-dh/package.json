@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@auth0/nextjs-auth0": "^2.5.0",
     "@tabler/icons-react": "^2.9.0",
     "@types/node": "18.15.0",
     "@types/react": "18.0.28",
