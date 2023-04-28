@@ -26,7 +26,7 @@ export const Sidebar: FC = () => {
   ];
 
   return (
-    <div className="h-full bg-black bg-opacity-5 border-r border-black border-opacity-10 text-secondary-dark flex flex-col justify-between px-1 sm:px-2 md:px-4 pb-4">
+    <div className="h-full bg-black bg-opacity-5 border-r border-black border-opacity-10 text-secondary-dark font-bold flex flex-col justify-between px-1 sm:px-2 md:px-4 pb-4">
       <div className="flex flex-col">
         <div className="flex items-center justify-center h-20">
           <Link href="/">
@@ -55,7 +55,7 @@ export const Sidebar: FC = () => {
               <Link
                 key={idx}
                 href={href}
-                className={`flex items-center p-2 font-bold rounded-lg text-secondary-dark ${
+                className={`flex items-center p-2 rounded-lg text-secondary-dark ${
                   isActive
                     ? "bg-black bg-opacity-20"
                     : "hover:bg-black hover:bg-opacity-20"
@@ -72,7 +72,7 @@ export const Sidebar: FC = () => {
         <div className="flex flex-col gap-2">
           <Link
             href="/api/auth/logout"
-            className="flex items-center gap-3 p-2 font-bold my-1 rounded-lg text-secondary-dark hover:bg-black hover:bg-opacity-20"
+            className="flex items-center gap-3 p-2 my-1 rounded-lg text-secondary-dark hover:bg-black hover:bg-opacity-20"
           >
             <Icon value="logout" />
             <span className="hidden sm:flex">Logout</span>
