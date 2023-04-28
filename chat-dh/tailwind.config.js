@@ -1,6 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 
-const primaryColor = "#1C1C1C";
+const COLORS = {
+  primary: "#3931D8",
+  secondary: "#24205E",
+  ["secondary-dark"]: "#1c1c1c",
+};
+
+const COLOR_CONFIG = {
+  primary: COLORS.primary,
+  secondary: COLORS.secondary,
+  ["secondary-dark"]: COLORS["secondary-dark"],
+};
 
 module.exports = {
   content: [
@@ -9,15 +19,9 @@ module.exports = {
   ],
   theme: {
     extend: {
-      backgroundColor: {
-        primary: primaryColor,
-      },
-      borderColor: {
-        primary: primaryColor,
-      },
-      textColor: {
-        primary: primaryColor,
-      },
+      backgroundColor: COLOR_CONFIG,
+      borderColor: COLOR_CONFIG,
+      textColor: COLOR_CONFIG,
     },
   },
   plugins: [],

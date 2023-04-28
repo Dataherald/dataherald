@@ -60,7 +60,7 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
         <Icon
           value="send"
           type="filled"
-          className="text-primary absolute right-2 bottom-3 h-8 w-8 hover:cursor-pointer rounded-full p-1 hover:opacity-80"
+          className="text-secondary-dark absolute right-2 bottom-3 h-8 w-8 hover:cursor-pointer rounded-full p-1 hover:opacity-80"
         />
       </button>
     </div>

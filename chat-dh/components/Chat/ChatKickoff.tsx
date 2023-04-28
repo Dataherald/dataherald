@@ -70,7 +70,7 @@ export const ChatKickoff: FC<ChatKickoffProps> = ({ onExampleClick }) => {
       {BOXES.map(
         ({ title, body, icon: { value: iconValue, type: iconType } }, idx) => (
           <Box key={idx}>
-            <div className="flex flex-col items-start space-y-4 text-primary">
+            <div className="flex flex-col items-start space-y-4 text-secondary-dark">
               <Icon
                 className="text-5xl self-center"
                 value={iconValue}
