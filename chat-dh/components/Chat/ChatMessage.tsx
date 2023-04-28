@@ -1,4 +1,4 @@
-import { Message } from "@/types";
+import { Message } from "@/types/chat";
 import { FC } from "react";
 import { Icon } from "../Layout/Icon";
 import Image from "next/image";

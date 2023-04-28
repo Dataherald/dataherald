@@ -7,26 +7,66 @@ import { FC } from "react";
 import { Icon } from "./Icon";
 
 export type MenuItem = {
+  hide?: boolean;
+  disable?: boolean;
   label: string;
   href: string;
   icon?: MaterialIcon;
 };
 export type MenuItems = MenuItem[];
+export type SidebarProps = {
+  className?: string;
+};
 
-export const Sidebar: FC = () => {
+export const Sidebar: FC<SidebarProps> = ({ className = "" }) => {
   const { user } = useUser();
   const router = useRouter();
-  const menuItems = [
+  const TOP_MENU_ITEMS: MenuItems = [
     { label: "Chat", href: "/chat", icon: "chat" },
+  ];
+  const BOTTOM_MENU_ITEMS: MenuItems = [
     {
       label: "Quick Start Guide",
       href: "/quick-start-guide",
       icon: "menu_book",
     },
+    {
+      label: "Logout",
+      hide: !user,
+      href: "/api/auth/logout",
+      icon: "logout",
+    },
   ];
 
+  const renderMenuItems = (menuItems: MenuItems): JSX.Element => (
+    <nav className="flex flex-col gap-2">
+      {menuItems.map(({ label, href, icon }, idx) => {
+        const isActive = router.pathname === href;
+        return (
+          <Link
+            key={idx}
+            href={href}
+            className={`flex items-center p-2 rounded-lg ${
+              isActive
+                ? "bg-black bg-opacity-10 text-primary"
+                : "hover:bg-black hover:bg-opacity-10"
+            }`}
+          >
+            <Icon value={icon as MaterialIcon} />
+            <span className="hidden sm:flex ml-2">{label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+
   return (
-    <div className="h-full max-w-xs overflow-hidden bg-black bg-opacity-5 border-r border-black border-opacity-10 text-secondary-dark font-bold flex flex-col justify-between px-1 sm:px-2 md:px-4 pb-4">
+    <div
+      className={[
+        "bg-gray-100 text-secondary-dark font-bold flex flex-col justify-between min-w-fit px-1 sm:px-2 md:px-4 pb-4",
+        className,
+      ].join(" ")}
+    >
       <div className="flex flex-col">
         <div className="flex items-center justify-center h-20">
           <Link href="/">
@@ -48,35 +88,11 @@ export const Sidebar: FC = () => {
             </div>
           </Link>
         </div>
-        <nav className="flex flex-col gap-2">
-          {menuItems.map(({ label, href, icon }, idx) => {
-            const isActive = router.pathname === href;
-            return (
-              <Link
-                key={idx}
-                href={href}
-                className={`flex items-center p-2 rounded-lg ${
-                  isActive
-                    ? "bg-black bg-opacity-20"
-                    : "hover:bg-black hover:bg-opacity-20"
-                }`}
-              >
-                <Icon value={icon as MaterialIcon} />
-                <span className="hidden sm:flex ml-2">{label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        {renderMenuItems(TOP_MENU_ITEMS)}
       </div>
-      {user && (
-        <div className="flex flex-col gap-2">
-          <Link
-            href="/api/auth/logout"
-            className="flex items-center gap-3 p-2 my-1 rounded-lg hover:bg-black hover:bg-opacity-20"
-          >
-            <Icon value="logout" />
-            <span className="hidden sm:flex">Logout</span>
-          </Link>
+      <div className="flex flex-col gap-2">
+        {renderMenuItems(BOTTOM_MENU_ITEMS)}
+        {user && (
           <div className="flex flex-row items-center gap-2">
             {user.picture ? (
               <Image
@@ -89,10 +105,10 @@ export const Sidebar: FC = () => {
             ) : (
               <Icon value="person"></Icon>
             )}
-            <span className="hidden sm:flex">{user.name}</span>
+            <span className="hidden sm:flex font-normal">{user.name}</span>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

@@ -2,8 +2,8 @@ import { Chat } from "@/components/Chat/Chat";
 import { ChatKickoff } from "@/components/Chat/ChatKickoff";
 import { Header } from "@/components/Layout/Header";
 import { MainLayout } from "@/components/Layout/Main";
-import { API_URL } from "@/env-variables";
-import { Message } from "@/types";
+import apiService from "@/services/api";
+import { Message } from "@/types/chat";
 import { withPageAuthRequired } from "@auth0/nextjs-auth0/client";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
@@ -24,24 +24,9 @@ export default withPageAuthRequired(function Home() {
     setMessages(updatedMessages);
     setLoading(true);
 
-    const response = await fetch(`${API_URL}/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: updatedMessages,
-      }),
-    });
+    const chatResponse = await apiService.chat(updatedMessages);
 
-    if (!response.ok) {
-      setLoading(false);
-      throw new Error(response.statusText);
-    }
-
-    const data = await response.json();
-
-    if (!data) {
+    if (!chatResponse) {
       return;
     }
 
@@ -51,7 +36,7 @@ export default withPageAuthRequired(function Home() {
       ...messages,
       {
         role: "assistant",
-        content: data,
+        content: chatResponse,
       },
     ]);
   };
@@ -80,22 +65,20 @@ export default withPageAuthRequired(function Home() {
       </Head>
 
       <MainLayout>
-        <div className="flex-1 max-w-[900px] mx-auto px-2 mt-4 sm:mt-12 flex flex-col space-y-8">
-          {!messages.length ? (
-            <>
-              <Header title="Dataherald AI for Real Estate"></Header>
-              <div className="flex-grow">
-                <ChatKickoff onExampleClick={handleExample}></ChatKickoff>
-              </div>
-              <Chat messages={messages} loading={loading} onSend={handleSend} />
-            </>
-          ) : (
-            <div className="flex flex-grow">
-              <Chat messages={messages} loading={loading} onSend={handleSend} />
+        {!messages.length ? (
+          <div className="flex-1 flex flex-col gap-6">
+            <Header title="Dataherald AI for Real Estate"></Header>
+            <div className="flex-grow">
+              <ChatKickoff onExampleClick={handleExample}></ChatKickoff>
             </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+            <Chat messages={messages} loading={loading} onSend={handleSend} />
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col">
+            <Chat messages={messages} loading={loading} onSend={handleSend} />
+          </div>
+        )}
+        <div ref={messagesEndRef} />
       </MainLayout>
     </>
   );

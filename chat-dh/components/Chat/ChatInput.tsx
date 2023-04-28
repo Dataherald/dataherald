@@ -1,4 +1,4 @@
-import { Message } from "@/types";
+import { Message } from "@/types/chat";
 import { FC, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Icon } from "../Layout/Icon";
 

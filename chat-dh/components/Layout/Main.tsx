@@ -7,8 +7,8 @@ interface MainLayoutProps {
 
 export const MainLayout: FC<MainLayoutProps> = ({ children }) => (
   <div className="flex flex-row h-screen">
-    <Sidebar />
-    <div className="flex flex-1 overflow-auto sm:px-10 pb-4 sm:pb-10">
+    <Sidebar className="h-full overflow-none" />
+    <div className="flex-grow flex flex-col overflow-auto px-4 xl:px-0 py-6 sm:pt-12 max-w-[900px] mx-auto">
       {children}
     </div>
   </div>
