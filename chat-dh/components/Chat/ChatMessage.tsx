@@ -2,6 +2,7 @@ import { Message } from "@/types/chat";
 import { FC } from "react";
 import { Icon } from "../Layout/Icon";
 import Image from "next/image";
+import { UserProfile, useUser } from "@auth0/nextjs-auth0/client";
 
 interface ChatMessageProps {
   message: Message;
@@ -10,6 +11,8 @@ interface ChatMessageProps {
 export const ChatMessage: FC<ChatMessageProps> = ({
   message: { role, content },
 }) => {
+  const { user } = useUser();
+  const { picture: userPicture } = user as UserProfile;
   return (
     <div
       className="flex flex-row items-start gap-3 rounded-xl border border-black p-4"
@@ -22,6 +25,14 @@ export const ChatMessage: FC<ChatMessageProps> = ({
           width={40}
           height={40}
           className="pl-1"
+        />
+      ) : userPicture ? (
+        <Image
+          src={userPicture}
+          alt="User Profile Picture"
+          width={35}
+          height={35}
+          className="rounded-full"
         />
       ) : (
         <Icon

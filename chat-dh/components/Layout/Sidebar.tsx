@@ -8,7 +8,6 @@ import { Icon } from "./Icon";
 
 export type MenuItem = {
   hide?: boolean;
-  disable?: boolean;
   label: string;
   href: string;
   icon?: MaterialIcon;
@@ -28,6 +27,7 @@ export const Sidebar: FC<SidebarProps> = ({ className = "" }) => {
     {
       label: "Quick Start Guide",
       href: "/quick-start-guide",
+      hide: true,
       icon: "menu_book",
     },
     {
@@ -40,7 +40,8 @@ export const Sidebar: FC<SidebarProps> = ({ className = "" }) => {
 
   const renderMenuItems = (menuItems: MenuItems): JSX.Element => (
     <nav className="flex flex-col gap-2">
-      {menuItems.map(({ label, href, icon }, idx) => {
+      {menuItems.map(({ label, href, icon, hide }, idx) => {
+        if (hide) return;
         const isActive = router.pathname === href;
         return (
           <Link
@@ -98,7 +99,7 @@ export const Sidebar: FC<SidebarProps> = ({ className = "" }) => {
               <Image
                 className="rounded-full"
                 src={user.picture}
-                alt="User Picture"
+                alt="User Profile Picture"
                 width={35}
                 height={35}
               />

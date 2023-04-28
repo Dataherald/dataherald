@@ -66,7 +66,7 @@ export default withPageAuthRequired(function Home() {
 
       <MainLayout>
         {!messages.length ? (
-          <div className="flex-1 flex flex-col gap-6">
+          <div className="flex-1 flex flex-col gap-6 py-6 sm:pt-12">
             <Header title="Dataherald AI for Real Estate"></Header>
             <div className="flex-grow">
               <ChatKickoff onExampleClick={handleExample}></ChatKickoff>
@@ -74,7 +74,7 @@ export default withPageAuthRequired(function Home() {
             <Chat messages={messages} loading={loading} onSend={handleSend} />
           </div>
         ) : (
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col mb-4">
             <Chat messages={messages} loading={loading} onSend={handleSend} />
           </div>
         )}
