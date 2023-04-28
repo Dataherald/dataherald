@@ -19,7 +19,7 @@ const getErrorCause = (errorDescription: string): string => {
   console.log(error);
   switch (error) {
     case ERROR_CODES.EMAIL_NOT_VERIFIED:
-      return "Email Not Verified";
+      return "Please verify your email address";
     default:
       return "Authentication Error";
   }
@@ -30,11 +30,17 @@ const AuthErrorPage: FC = () => {
   const [showDetails, setShowDetails] = useState(false);
   const { message = "" } = router.query;
   const errorDescription = message as string;
-  const isEmailNotVerified = errorDescription?.includes("Email Not Verified");
+  const isEmailNotVerified = errorDescription?.includes(
+    ERROR_CODES.EMAIL_NOT_VERIFIED
+  );
   const errorCause = getErrorCause(errorDescription);
 
   const toggleDetails = () => {
     setShowDetails(!showDetails);
+  };
+
+  const continueToLogin = async () => {
+    router.push("/");
   };
 
   const logoutUser = async () => {
@@ -50,25 +56,29 @@ const AuthErrorPage: FC = () => {
         style={{ objectFit: "cover", objectPosition: "center" }}
         quality={100}
       />
-      <div className="absolute bg-white shadow-lg w-full max-w-none h-screen rounded-none sm:rounded-2xl sm:h-fit p-8 sm:max-w-sm">
+      <div className="absolute bg-white shadow-lg w-full max-w-none h-screen rounded-none sm:rounded-2xl sm:h-fit p-8 sm:max-w-md">
         <h1 className="text-2xl font-bold mb-4 text-secondary-dark flex items-center gap-3">
           {isEmailNotVerified && <Icon value="email" />}
           {errorCause}
         </h1>
         <div className="mb-8">
           {isEmailNotVerified ? (
-            <p className="text-gray-800 break-words">
-              Your email address has not been verified. Please check your inbox
-              and follow the instructions in the verification email. If you
-              can&apos;t find the email,{" "}
-              <a
-                className="text-primary font-semibold"
-                href="mailto:support@dataherald.com"
-              >
-                contact us
-              </a>{" "}
-              for assistance.
-            </p>
+            <div className="flex flex-col gap-4">
+              <p className="text-gray-800 break-words">
+                Your email address has not been verified. Please check your
+                inbox and follow the instructions in the verification email.
+              </p>
+              <p className="text-gray-800 break-words">
+                If you can&apos;t find the email,{" "}
+                <a
+                  className="text-primary font-semibold"
+                  href="mailto:support@dataherald.com"
+                >
+                  contact us
+                </a>{" "}
+                for assistance.
+              </p>
+            </div>
           ) : (
             <div className="flex flex-col gap-2">
               <p className="text-gray-800 break-words">
@@ -93,12 +103,31 @@ const AuthErrorPage: FC = () => {
             </div>
           )}
         </div>
-        <button
-          className="bg-secondary text-white font-semibold py-2 px-4 rounded-lg w-full"
-          onClick={logoutUser}
-        >
-          Try again
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          {isEmailNotVerified && (
+            <button
+              className="bg-secondary text-white font-semibold py-2 px-4 rounded-lg w-full"
+              onClick={continueToLogin}
+            >
+              Continue
+            </button>
+          )}
+          {isEmailNotVerified ? (
+            <button
+              className="bg-white text-secondary border border-secondary font-semibold py-2 px-4 rounded-lg w-full"
+              onClick={logoutUser}
+            >
+              Logout
+            </button>
+          ) : (
+            <button
+              className="bg-secondary text-white font-semibold py-2 px-4 rounded-lg w-full"
+              onClick={logoutUser}
+            >
+              Try Again
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
