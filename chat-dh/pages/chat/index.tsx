@@ -6,7 +6,7 @@ import apiService from "@/services/api";
 import { Message, MessageContent } from "@/types/chat";
 import { useUser, withPageAuthRequired } from "@auth0/nextjs-auth0/client";
 import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 export default withPageAuthRequired(function Home() {
   const { user } = useUser();
@@ -53,7 +53,6 @@ export default withPageAuthRequired(function Home() {
             : message
         )
       );
-      setLoading(false);
     } catch (e) {
       setMessages((messages) =>
         messages.map((message) =>
@@ -69,13 +68,14 @@ export default withPageAuthRequired(function Home() {
             : message
         )
       );
+    } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, loading]);
 
   return (
     <>
