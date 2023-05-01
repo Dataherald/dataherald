@@ -4,11 +4,12 @@ import { Header } from "@/components/Layout/Header";
 import { MainLayout } from "@/components/Layout/Main";
 import apiService from "@/services/api";
 import { Message } from "@/types/chat";
-import { withPageAuthRequired } from "@auth0/nextjs-auth0/client";
+import { useUser, withPageAuthRequired } from "@auth0/nextjs-auth0/client";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 
 export default withPageAuthRequired(function Home() {
+  const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -32,7 +33,10 @@ export default withPageAuthRequired(function Home() {
     setLoading(true);
 
     try {
-      const chatResponse = await apiService.chat(updatedMessages);
+      const chatResponse = await apiService.chat(
+        updatedMessages,
+        user?.email || ""
+      );
       setMessages((messages) => [
         ...messages,
         {
