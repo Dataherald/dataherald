@@ -1,7 +1,6 @@
 import { Message } from "@/types/chat";
 import { FC } from "react";
 import { ChatInput } from "./ChatInput";
-import { ChatLoader } from "./ChatLoader";
 import { ChatMessage } from "./ChatMessage";
 
 interface ChatProps {
@@ -19,11 +18,6 @@ export const Chat: FC<ChatProps> = ({ messages, loading, onSend }) => {
             <ChatMessage message={message} />
           </div>
         ))}
-        {loading && (
-          <div className="my-4">
-            <ChatLoader />
-          </div>
-        )}
       </div>
       <div className="mt-4">
         <ChatInput onSend={onSend} />

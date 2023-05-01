@@ -1,4 +1,4 @@
-export type ResponseStatus = "successful" | "failed" | "error";
+export type ResponseStatus = "successful" | "failed" | "error" | "loading";
 
 export interface ChatResponse {
   id: string;

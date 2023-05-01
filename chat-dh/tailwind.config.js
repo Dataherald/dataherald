@@ -22,6 +22,9 @@ module.exports = {
       backgroundColor: COLOR_CONFIG,
       borderColor: COLOR_CONFIG,
       textColor: COLOR_CONFIG,
+      backgroundImage: (theme) => ({
+        "progress-gradient": "linear-gradient(to right, #3931D8, #C6C7F8)",
+      }),
     },
   },
   plugins: [],

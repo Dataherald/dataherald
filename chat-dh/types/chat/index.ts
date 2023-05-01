@@ -4,7 +4,7 @@ export type Role = "assistant" | "user";
 
 export interface MessageContent {
   status: ResponseStatus;
-  generated_text: string;
+  generated_text?: string;
   viz_id?: string | null;
 }
 export interface Message {

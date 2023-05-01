@@ -3,7 +3,7 @@ import { ChatKickoff } from "@/components/Chat/ChatKickoff";
 import { Header } from "@/components/Layout/Header";
 import { MainLayout } from "@/components/Layout/Main";
 import apiService from "@/services/api";
-import { Message } from "@/types/chat";
+import { Message, MessageContent } from "@/types/chat";
 import { useUser, withPageAuthRequired } from "@auth0/nextjs-auth0/client";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
@@ -27,35 +27,45 @@ export default withPageAuthRequired(function Home() {
   };
 
   const handleSend = async (message: Message) => {
-    const updatedMessages = [...messages, message];
-
-    setMessages(updatedMessages);
     setLoading(true);
-
-    try {
-      const chatResponse = await apiService.chat(
-        updatedMessages,
-        user?.email || ""
-      );
-      setMessages((messages) => [
-        ...messages,
-        {
-          role: "assistant",
-          content: chatResponse,
+    setMessages((messages) => [
+      ...messages,
+      message,
+      {
+        role: "assistant",
+        content: {
+          status: "loading",
         },
-      ]);
+      },
+    ]);
+    try {
+      const chatResponse = await apiService.chat(messages, user?.email || "");
+      setMessages((messages) =>
+        messages.map((message) =>
+          (message.content as MessageContent).status === "loading"
+            ? {
+                role: "assistant",
+                content: chatResponse,
+              }
+            : message
+        )
+      );
       setLoading(false);
     } catch (e) {
-      setMessages((messages) => [
-        ...messages,
-        {
-          role: "assistant",
-          content: {
-            status: "error",
-            generated_text: "Something went wrong. Please try again later.",
-          },
-        },
-      ]);
+      setMessages((messages) =>
+        messages.map((message) =>
+          (message.content as MessageContent).status === "loading"
+            ? {
+                role: "assistant",
+                content: {
+                  status: "error",
+                  generated_text:
+                    "Something went wrong. Please try again later.",
+                },
+              }
+            : message
+        )
+      );
       setLoading(false);
     }
   };
@@ -78,7 +88,7 @@ export default withPageAuthRequired(function Home() {
 
       <MainLayout>
         {!messages.length ? (
-          <div className="flex-1 flex flex-col gap-6 py-6 sm:pt-12">
+          <div className="flex-1 flex flex-col gap-6 py-6">
             <Header title="Dataherald AI for Real Estate"></Header>
             <div className="flex-grow">
               <ChatKickoff onExampleClick={handleExample}></ChatKickoff>

@@ -1,8 +1,9 @@
 import { Message } from "@/types/chat";
+import { UserProfile, useUser } from "@auth0/nextjs-auth0/client";
+import Image from "next/image";
 import { FC } from "react";
 import { Icon } from "../Layout/Icon";
-import Image from "next/image";
-import { UserProfile, useUser } from "@auth0/nextjs-auth0/client";
+import { ChatLoader } from "./ChatLoader";
 
 interface ChatMessageProps {
   message: Message;
@@ -68,8 +69,12 @@ export const ChatMessage: FC<ChatMessageProps> = ({
             height={300}
           />
         </div>
+      ) : content.status === "loading" ? (
+        <div className="flex-1 flex items-center">
+          <ChatLoader />
+        </div>
       ) : (
-        regularParagraph(content.generated_text)
+        regularParagraph(content.generated_text as string)
       )}
     </div>
   );
