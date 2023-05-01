@@ -18,34 +18,42 @@ export default withPageAuthRequired(function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleExample = (prompt: string) => {
+    handleSend({
+      role: "user",
+      content: prompt,
+    });
+  };
+
   const handleSend = async (message: Message) => {
     const updatedMessages = [...messages, message];
 
     setMessages(updatedMessages);
     setLoading(true);
 
-    const chatResponse = await apiService.chat(updatedMessages);
-
-    if (!chatResponse) {
-      return;
+    try {
+      const chatResponse = await apiService.chat(updatedMessages);
+      setMessages((messages) => [
+        ...messages,
+        {
+          role: "assistant",
+          content: chatResponse,
+        },
+      ]);
+      setLoading(false);
+    } catch (e) {
+      setMessages((messages) => [
+        ...messages,
+        {
+          role: "assistant",
+          content: {
+            status: "error",
+            generated_text: "Something went wrong. Please try again later.",
+          },
+        },
+      ]);
+      setLoading(false);
     }
-
-    setLoading(false);
-
-    setMessages((messages) => [
-      ...messages,
-      {
-        role: "assistant",
-        content: chatResponse,
-      },
-    ]);
-  };
-
-  const handleExample = (prompt: string) => {
-    handleSend({
-      role: "user",
-      content: prompt,
-    });
   };
 
   useEffect(() => {

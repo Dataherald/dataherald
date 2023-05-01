@@ -13,6 +13,11 @@ export const ChatMessage: FC<ChatMessageProps> = ({
 }) => {
   const { user } = useUser();
   const { picture: userPicture } = user as UserProfile;
+
+  const regularParagraph = (text: string) => (
+    <p className="self-center">{text}</p>
+  );
+
   return (
     <div
       className="flex flex-row items-start gap-3 rounded-xl border border-black p-4"
@@ -41,15 +46,30 @@ export const ChatMessage: FC<ChatMessageProps> = ({
         ></Icon>
       )}
       {typeof content === "string" ? (
-        <p className="self-center pr-8">{content}</p>
-      ) : (
+        regularParagraph(content)
+      ) : content.status === "successful" ? (
+        <div className="flex flex-col gap-5 pr-8 overflow-auto">
+          <p className="self-center">{content.generated_text}</p>
+          {content.viz_id && (
+            <iframe
+              className="min-h-[600px] mb-4 w-full min-w-[300px]"
+              src={`https://dev.bariloche.dataherald.com/v4/viz/${content.viz_id}?hideDemoLink=true`}
+            ></iframe>
+          )}
+        </div>
+      ) : content.status === "failed" ? (
         <div className="flex flex-col gap-5 pr-8">
           <p className="self-center">{content.generated_text}</p>
-          <iframe
-            className="min-h-[600px] mb-4"
-            src={`https://dev.bariloche.dataherald.com/v4/viz/${content.viz_id}`}
-          ></iframe>
+          <Image
+            className="mx-auto"
+            src="/images/error/data_not_found.svg"
+            alt="Chat error image"
+            width={600}
+            height={300}
+          />
         </div>
+      ) : (
+        regularParagraph(content.generated_text)
       )}
     </div>
   );
