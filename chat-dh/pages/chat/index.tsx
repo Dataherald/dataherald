@@ -91,8 +91,8 @@ export default withPageAuthRequired(function Home() {
 
       <MainLayout>
         {!messages.length ? (
-          <div className="flex-1 flex flex-col gap-6 py-6">
-            <Header title="Dataherald AI for Real Estate"></Header>
+          <div className="flex-1 flex flex-col gap-2 py-6">
+            <Header title="Dataherald AI - Technical preview"></Header>
             <div className="flex-grow">
               <ChatKickoff onExampleClick={handleExample}></ChatKickoff>
             </div>

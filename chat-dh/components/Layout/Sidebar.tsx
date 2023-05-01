@@ -54,7 +54,7 @@ export const Sidebar: FC<SidebarProps> = ({ className = "" }) => {
             }`}
           >
             <Icon value={icon as MaterialIcon} />
-            <span className="hidden sm:flex ml-2">{label}</span>
+            <span className="hidden sm:flex ml-3">{label}</span>
           </Link>
         );
       })}

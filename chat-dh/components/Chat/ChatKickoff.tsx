@@ -29,10 +29,28 @@ export const ChatKickoff: FC<ChatKickoffProps> = ({ onExampleClick }) => {
       icon: { value: "bolt" },
       title: "Capabilities",
       body: (
-        <p>
-          Generates a paragraph summary and data visualization based on three
-          inputs: <b>metric</b>, <b>time frame</b>, and <b>location</b>
-        </p>
+        <>
+          <h3>
+            This a first release, with limited functionality. It enables{" "}
+            <b>only</b> the following:
+          </h3>
+          <ul className="list list-decimal">
+            {[
+              <>
+                Generate 1 paragraph summary about real estate market trends.
+                The only data available includes: rents, sales prices, listing
+                prices, price per square foot, # of homes sold, inventory and
+                number of pending sales.{" "}
+                <b>No other data included in this release</b>.
+              </>,
+              <>Generate 1 data viz</>,
+            ].map((listItem, idx) => (
+              <li className="ml-4" key={idx}>
+                {listItem}
+              </li>
+            ))}
+          </ul>
+        </>
       ),
     },
     {
@@ -58,10 +76,21 @@ export const ChatKickoff: FC<ChatKickoffProps> = ({ onExampleClick }) => {
       icon: { value: "warning_amber", type: "round" },
       title: "Limitations",
       body: (
-        <p>
-          Please keep in mind this is beta version of this product and only
-          applies to <b>real estate prompts</b>
-        </p>
+        <>
+          <h3>
+            With this early release, please note the following limitations:
+          </h3>
+          <ul className="list list-disc">
+            {[
+              "Data timeframe: Only January 1 2020 onward is supported",
+              "Geographies: Only United States states, counties, cities, and zip codes. All other geographies, for example neighborhoods, are NOT supported.",
+            ].map((listItem, idx) => (
+              <li className="ml-4" key={idx}>
+                {listItem}
+              </li>
+            ))}
+          </ul>
+        </>
       ),
     },
   ];
