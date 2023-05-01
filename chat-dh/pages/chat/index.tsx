@@ -27,10 +27,10 @@ export default withPageAuthRequired(function Home() {
   };
 
   const handleSend = async (message: Message) => {
+    const updatedMessages: Message[] = [...messages, message];
     setLoading(true);
-    setMessages((messages) => [
-      ...messages,
-      message,
+    setMessages([
+      ...updatedMessages,
       {
         role: "assistant",
         content: {
@@ -39,7 +39,10 @@ export default withPageAuthRequired(function Home() {
       },
     ]);
     try {
-      const chatResponse = await apiService.chat(messages, user?.email || "");
+      const chatResponse = await apiService.chat(
+        updatedMessages,
+        user?.email || ""
+      );
       setMessages((messages) =>
         messages.map((message) =>
           (message.content as MessageContent).status === "loading"
