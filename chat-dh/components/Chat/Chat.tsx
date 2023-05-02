@@ -20,7 +20,7 @@ export const Chat: FC<ChatProps> = ({ messages, loading, onSend }) => {
         ))}
       </div>
       <div className="mt-4">
-        <ChatInput onSend={onSend} />
+        <ChatInput onSend={onSend} disabled={loading} />
       </div>
     </div>
   );
