@@ -78,7 +78,7 @@ const QuickStartGuide: FC = () => {
             </section>
             <section>
               <h2 className="mb-2 font-semibold">
-                Is there any usage based charge or metering
+                Is there any usage based charge or metering?
               </h2>
               <p>No. This technical preview is free to use.</p>
             </section>
