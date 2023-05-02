@@ -11,11 +11,11 @@ const QuickStartGuide: FC = () => {
   const router = useRouter();
   const EXAMPLE_PROMPTS = [
     "Home prices in Los Angeles",
-    "What was the most expensive ZIP in CA in January 2023",
+    "What was the most expensive ZIP in CA in January 2023?",
     "Total homes sold in Los Angeles in 2023 broken down by building type",
     "Rents in Berkeley 2021-2022",
-    "How many homes were sold in Harris County in Jan 2023, broken down by building type",
-    "How does the price per square foot for condos in seattle compare to portland, oregon?",
+    "How many homes were sold in Harris County in Jan 2023, broken down by building type?",
+    "How does the price per square foot for condos in Seattle compare to Portland, Oregon?",
     "What are the most expensive zip codes in Dekalb County, GA?",
   ];
 

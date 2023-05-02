@@ -18,7 +18,7 @@ interface ChatKickoffBox {
 export const ChatKickoff: FC<ChatKickoffProps> = ({ onExampleClick }) => {
   const examplesPrompts = [
     "Home prices in Los Angeles",
-    "What was the most expensive ZIP in CA in January 2023",
+    "What was the most expensive ZIP in CA in January 2023?",
     "Total homes sold in Los Angeles in 2023 broken down by building type",
   ];
   const handleExampleClick = (prompt: string) => {
@@ -37,8 +37,8 @@ export const ChatKickoff: FC<ChatKickoffProps> = ({ onExampleClick }) => {
           <ul className="list list-decimal">
             {[
               <>
-                Generate 1 paragraph summary about real estate market trends.
-                The only data available includes: rents, sales prices, listing
+                Generate only 1 paragraph summary about a real estate topic. The
+                data available includes only: rents, sales prices, listing
                 prices, price per square foot, # of homes sold, inventory and
                 number of pending sales.{" "}
                 <b>No other data included in this release</b>.
