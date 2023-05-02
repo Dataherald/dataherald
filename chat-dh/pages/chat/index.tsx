@@ -2,13 +2,21 @@ import { Chat } from "@/components/Chat/Chat";
 import { ChatKickoff } from "@/components/Chat/ChatKickoff";
 import { Header } from "@/components/Layout/Header";
 import { MainLayout } from "@/components/Layout/Main";
+import { usePrompt } from "@/context/prompt";
 import apiService from "@/services/api";
 import { Message, MessageContent } from "@/types/chat";
 import { useUser, withPageAuthRequired } from "@auth0/nextjs-auth0/client";
 import Head from "next/head";
-import { useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 export default withPageAuthRequired(function Home() {
+  const { prompt, setPrompt } = usePrompt();
   const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -19,68 +27,81 @@ export default withPageAuthRequired(function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleExample = (prompt: string) => {
-    handleSend({
-      role: "user",
-      content: prompt,
-    });
-  };
-
-  const handleSend = async (message: Message) => {
-    const updatedMessages: Message[] = [...messages, message];
-    setLoading(true);
-    setMessages([
-      ...updatedMessages,
-      {
-        role: "assistant",
-        content: {
-          status: "loading",
+  const handleSend = useCallback(
+    async (message: Message) => {
+      const updatedMessages: Message[] = [...messages, message];
+      setLoading(true);
+      setMessages([
+        ...updatedMessages,
+        {
+          role: "assistant",
+          content: {
+            status: "loading",
+          },
         },
-      },
-    ]);
-    try {
-      const chatResponse = await apiService.chat(
-        updatedMessages,
-        user?.email || ""
-      );
-      setMessages((messages) =>
-        messages.map((message) =>
-          (message.content as MessageContent).status === "loading"
-            ? {
-                role: "assistant",
-                content: chatResponse,
-              }
-            : message
-        )
-      );
-    } catch (e) {
-      setMessages((messages) =>
-        messages.map((message) =>
-          (message.content as MessageContent).status === "loading"
-            ? {
-                role: "assistant",
-                content: {
-                  status: "error",
-                  generated_text:
-                    "Something went wrong. Please try again later.",
-                },
-              }
-            : message
-        )
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+      ]);
+      try {
+        const chatResponse = await apiService.chat(
+          updatedMessages,
+          user?.email || ""
+        );
+        setMessages((messages) =>
+          messages.map((message) =>
+            (message.content as MessageContent).status === "loading"
+              ? {
+                  role: "assistant",
+                  content: chatResponse,
+                }
+              : message
+          )
+        );
+      } catch (e) {
+        setMessages((messages) =>
+          messages.map((message) =>
+            (message.content as MessageContent).status === "loading"
+              ? {
+                  role: "assistant",
+                  content: {
+                    status: "error",
+                    generated_text:
+                      "Something went wrong. Please try again later.",
+                  },
+                }
+              : message
+          )
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [messages, user]
+  );
+
+  const handleExample = useCallback(
+    (prompt: string) => {
+      handleSend({
+        role: "user",
+        content: prompt,
+      });
+    },
+    [handleSend]
+  );
 
   useLayoutEffect(() => {
     scrollToBottom();
   }, [messages, loading]);
 
+  useEffect(() => {
+    if (prompt) {
+      handleExample(prompt);
+      setPrompt(null);
+    }
+  }, [prompt, handleExample, setPrompt]);
+
   return (
     <>
       <Head>
-        <title>ChatDH - Dataherald</title>
+        <title>Dataherald AI | Chat</title>
         <meta
           name="description"
           content="A chatbot powered by OpenAPI that can generate text and visualizations with the latest data"

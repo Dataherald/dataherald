@@ -27,7 +27,6 @@ export const Sidebar: FC<SidebarProps> = ({ className = "" }) => {
     {
       label: "Quick Start Guide",
       href: "/quick-start-guide",
-      hide: true,
       icon: "menu_book",
     },
     {

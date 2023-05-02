@@ -1,5 +1,5 @@
 import { Message } from "@/types/chat";
-import { FC, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { FC, KeyboardEvent, useLayoutEffect, useRef, useState } from "react";
 import { Icon } from "../Layout/Icon";
 
 interface ChatInputProps {
@@ -36,7 +36,7 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
     }
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (textareaRef && textareaRef.current) {
       textareaRef.current.style.height = "inherit";
       textareaRef.current.style.minHeight = `${textareaRef.current?.scrollHeight}px`;
@@ -55,7 +55,6 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
         onChange={handleChange}
         onKeyDown={handleKeyDown}
       />
-
       <button onClick={() => handleSend()}>
         <Icon
           value="send"
