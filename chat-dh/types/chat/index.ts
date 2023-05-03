@@ -7,6 +7,7 @@ export interface MessageContent {
   generated_text?: string;
   viz_id?: string | null;
 }
+export type Messages = Message[];
 export interface Message {
   role: Role;
   content: string | MessageContent;

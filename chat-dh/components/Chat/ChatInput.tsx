@@ -1,19 +1,18 @@
-import { Message } from "@/types/chat";
+import { useChat } from "@/context/chat";
 import { FC, KeyboardEvent, useRef, useState } from "react";
 import { Icon } from "../Layout/Icon";
-
-interface ChatInputProps {
-  disabled?: boolean;
-  onSend: (message: Message) => void;
-}
 
 const VALIDATIONS = {
   MAX_CHARACTERS: 1000,
 };
 
-export const ChatInput: FC<ChatInputProps> = ({ disabled = false, onSend }) => {
+interface ChatInputProps {
+  onSend: (content: string) => void;
+}
+
+export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
   const [content, setContent] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+  const { error, setError, loading } = useChat();
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -28,18 +27,18 @@ export const ChatInput: FC<ChatInputProps> = ({ disabled = false, onSend }) => {
     }
   };
 
-  const handleSend = () => {
+  const handleSendUserMessage = () => {
     if (!content) {
       return;
     }
-    onSend({ role: "user", content });
+    onSend(content);
     setContent("");
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (!error) handleSend();
+      if (!error) handleSendUserMessage();
     }
   };
 
@@ -48,11 +47,11 @@ export const ChatInput: FC<ChatInputProps> = ({ disabled = false, onSend }) => {
       <textarea
         ref={textareaRef}
         className={`min-h-[44px] rounded-lg pl-4 pr-12 py-2 w-full focus:outline-none focus:ring-1 focus:ring-neutral-300 border border-black border-opacity-80 ${
-          disabled && "opacity-80"
+          loading && "opacity-80"
         } ${error && "border-yellow-600 text-yellow-600"}`}
         style={{ resize: "none" }}
         placeholder={
-          disabled
+          loading
             ? "Only one message at a time is supported"
             : "Ask Dataherald a Real Estate prompt"
         }
@@ -60,14 +59,14 @@ export const ChatInput: FC<ChatInputProps> = ({ disabled = false, onSend }) => {
         rows={3}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        disabled={disabled}
+        disabled={loading}
       />
-      <button onClick={() => handleSend()} disabled={disabled || !!error}>
+      <button onClick={handleSendUserMessage} disabled={loading || !!error}>
         <Icon
           value="send"
           type="filled"
           className={`text-secondary-dark absolute right-2 h-8 w-8 rounded-full p-1 ${
-            disabled || !!error
+            loading || !!error
               ? "opacity-50"
               : "hover:opacity-80 hover:cursor-pointer"
           } ${error ? "bottom-[4rem]" : "bottom-[2.3rem]"}`}
