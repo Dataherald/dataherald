@@ -44,7 +44,7 @@ export const ChatLoader: FC = () => {
   const { text, image } = messages[index];
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div className="flex flex-col items-center gap-2 w-full">
       <Image src={image} alt="Loading image" width={500} height={200} />
       <p className="my-2 text-xl">{text}</p>
       <div className="bg-gray-200 w-full h-2 relative rounded overflow-hidden">
