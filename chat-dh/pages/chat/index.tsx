@@ -17,7 +17,7 @@ export default withPageAuthRequired(function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <MainLayout>
+      <MainLayout mode="full">
         <ChatProvider>
           <Chat />
         </ChatProvider>

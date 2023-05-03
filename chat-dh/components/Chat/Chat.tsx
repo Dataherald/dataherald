@@ -95,7 +95,7 @@ export const Chat: FC = () => {
   return (
     <>
       {!messages.length ? (
-        <div className="flex-1 flex flex-col gap-2 py-6">
+        <div className="flex-1 flex flex-col gap-2 py-6 px-4 w-full max-w-[1000px] mx-auto">
           <Header title="Dataherald AI - Technical preview"></Header>
           <div className="flex-grow">
             <ChatKickoff onExampleClick={handleExample}></ChatKickoff>
@@ -108,12 +108,10 @@ export const Chat: FC = () => {
         <div className="flex-1 flex flex-col mb-4">
           <div className="flex flex-col flex-grow">
             {messages.map((message, index) => (
-              <div key={index} className="my-4">
-                <ChatMessage message={message} />
-              </div>
+              <ChatMessage key={index} message={message} />
             ))}
           </div>
-          <div className="mt-4">
+          <div className="mt-4 px-4 w-full max-w-[1000px] mx-auto">
             <ChatInput onSend={sendMessage} />
           </div>
         </div>
