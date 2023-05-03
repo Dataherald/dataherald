@@ -5,6 +5,7 @@ import { Message, MessageContent } from "@/types/chat";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { FC, useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { Header } from "../Layout/Header";
+import { Icon } from "../Layout/Icon";
 import { ChatInput } from "./ChatInput";
 import { ChatKickoff } from "./ChatKickoff";
 import { ChatMessage } from "./ChatMessage";
@@ -81,6 +82,10 @@ export const Chat: FC = () => {
     [sendMessage]
   );
 
+  const handleReset = useCallback(() => {
+    setMessages([]);
+  }, [setMessages]);
+
   useLayoutEffect(() => {
     scrollToBottom();
   }, [messages, loading, error]);
@@ -111,8 +116,19 @@ export const Chat: FC = () => {
               <ChatMessage key={index} message={message} />
             ))}
           </div>
-          <div className="mt-4 px-4 w-full max-w-[1000px] mx-auto">
-            <ChatInput onSend={sendMessage} />
+          <div className="flex flex-col gap-4 items-center px-4">
+            <button
+              className="bg-primary-light hover:bg-gray-200 rounded-lg px-4 py-2"
+              onClick={handleReset}
+            >
+              <div className="flex items-center gap-2">
+                <Icon value="message" />
+                <span>New Chat</span>
+              </div>
+            </button>
+            <div className="w-full max-w-[1000px] mx-auto">
+              <ChatInput onSend={sendMessage} />
+            </div>
           </div>
         </div>
       )}

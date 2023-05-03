@@ -2,12 +2,14 @@
 
 const COLORS = {
   primary: "#3931D8",
+  ['primary-light']: "#F7F9FB",
   secondary: "#24205E",
   ["secondary-dark"]: "#1c1c1c",
 };
 
 const COLOR_CONFIG = {
   primary: COLORS.primary,
+  ['primary-light']: COLORS["primary-light"],
   secondary: COLORS.secondary,
   ["secondary-dark"]: COLORS["secondary-dark"],
 };
