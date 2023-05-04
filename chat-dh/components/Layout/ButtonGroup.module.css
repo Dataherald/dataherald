@@ -1,0 +1,17 @@
+.buttonGroup {
+  display: flex;
+}
+
+.buttonGroup button {
+  border-radius: 0;
+}
+
+.buttonGroup > :first-child button {
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+}
+
+.buttonGroup > :last-child button {
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}

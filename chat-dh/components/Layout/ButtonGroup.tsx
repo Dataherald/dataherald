@@ -1,10 +1,5 @@
-import React, {
-  CSSProperties,
-  ReactNode,
-  cloneElement,
-  isValidElement,
-  memo,
-} from "react";
+import React, { CSSProperties, ReactNode } from "react";
+import styles from "./ButtonGroup.module.css";
 
 interface ButtonGroupProps {
   children: ReactNode;
@@ -14,40 +9,14 @@ interface ButtonGroupProps {
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({
   children,
-  className,
-  style,
+  className = "",
+  style = {},
 }) => {
-  const childButtons = React.Children.map(
-    children,
-    (child: React.ReactNode, index: number) => {
-      if (!isValidElement(child)) {
-        return child;
-      }
-
-      const isFirst = index === 0;
-      const isLast = index === React.Children.count(children) - 1;
-
-      let borderRadius = "rounded-none";
-
-      if (isFirst) {
-        borderRadius += " rounded-l-lg";
-      } else if (isLast) {
-        borderRadius += " rounded-r-lg";
-      }
-
-      const updatedClassName = `${child.props.className || ""} ${borderRadius}`;
-      const updatedProps = Object.assign({}, child.props, {
-        className: updatedClassName,
-      });
-      return cloneElement(child, updatedProps);
-    }
-  );
-
   return (
-    <div className={`${className} flex`} style={style}>
-      {childButtons}
+    <div className={`${styles.buttonGroup} ${className}`} style={style}>
+      {children}
     </div>
   );
 };
 
-export default memo(ButtonGroup);
+export default ButtonGroup;
