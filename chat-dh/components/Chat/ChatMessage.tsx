@@ -86,17 +86,15 @@ export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
               regularParagraph(content.generated_text as string)
             )}
           </div>
-          {role === "assistant" &&
-            typeof content !== "string" &&
-            content.status !== "loading" && (
-              <div className="flex flex-row gap-4 self-center">
-                <ChatAssistantMessageActions
-                  message={content}
-                  onThumbsUp={handleThumbsUp}
-                  onThumbsDown={handleThumbsDown}
-                />
-              </div>
-            )}
+          {role === "assistant" && typeof content !== "string" && (
+            <div className="flex flex-row gap-4 self-center">
+              <ChatAssistantMessageActions
+                message={content}
+                onThumbsUp={handleThumbsUp}
+                onThumbsDown={handleThumbsDown}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

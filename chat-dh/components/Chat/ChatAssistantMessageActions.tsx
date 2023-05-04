@@ -14,7 +14,7 @@ interface ChatAssistantMessageActionsProps {
 }
 
 const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
-  message: { generated_text, viz_id },
+  message: { generated_text, viz_id, status },
   onThumbsUp,
   onThumbsDown,
 }) => {
@@ -65,60 +65,64 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
 
   return (
     <>
-      <ButtonGroup>
-        {!thumbsDownClicked && (
-          <Button
-            icon="thumb_up"
-            color="primary-light"
-            className={`hover:bg-gray-200 ${
-              thumbsUpClicked
-                ? "text-green-700 pointer-events-none"
-                : "text-secondary-dark"
-            }`}
-            onClick={handleThumbsUpClick}
-          />
-        )}
-        {!thumbsUpClicked && (
-          <Button
-            icon="thumb_down"
-            color="primary-light"
-            className={`hover:bg-gray-200 ${
-              thumbsDownClicked
-                ? "text-red-600 pointer-events-none"
-                : "text-secondary-dark"
-            }`}
-            onClick={handleThumbsDownClick}
-          />
-        )}
-      </ButtonGroup>
-      <ButtonGroup>
-        <Button
-          color="primary-light"
-          icon={textCopied ? "check" : "content_copy"}
-          className={`hover:bg-gray-200 ${
-            textCopied
-              ? "text-green-700 pointer-events-none"
-              : "text-secondary-dark"
-          }`}
-          onClick={handleCopyText}
-        >
-          Copy Text
-        </Button>
-        {viz_id && (
-          <Button
-            color="primary-light"
-            icon={embedCopied ? "check" : "link"}
-            className={`hover:bg-gray-200 ${
-              embedCopied
-                ? "text-green-700 pointer-events-none"
-                : "text-secondary-dark"
-            }`}
-            onClick={handleCopyEmbed}
-          >
-            Copy Visualization Embed
-          </Button>
-        )}
-      </ButtonGroup>
+      {status === "successful" && (
+        <>
+          <ButtonGroup>
+            {!thumbsDownClicked && (
+              <Button
+                icon="thumb_up"
+                color="primary-light"
+                className={`hover:bg-gray-200 ${
+                  thumbsUpClicked
+                    ? "text-green-700 pointer-events-none"
+                    : "text-secondary-dark"
+                }`}
+                onClick={handleThumbsUpClick}
+              />
+            )}
+            {!thumbsUpClicked && (
+              <Button
+                icon="thumb_down"
+                color="primary-light"
+                className={`hover:bg-gray-200 ${
+                  thumbsDownClicked
+                    ? "text-red-600 pointer-events-none"
+                    : "text-secondary-dark"
+                }`}
+                onClick={handleThumbsDownClick}
+              />
+            )}
+          </ButtonGroup>
+          <ButtonGroup>
+            <Button
+              color="primary-light"
+              icon={textCopied ? "check" : "content_copy"}
+              className={`hover:bg-gray-200 ${
+                textCopied
+                  ? "text-green-700 pointer-events-none"
+                  : "text-secondary-dark"
+              }`}
+              onClick={handleCopyText}
+            >
+              Copy Text
+            </Button>
+            {viz_id && (
+              <Button
+                color="primary-light"
+                icon={embedCopied ? "check" : "link"}
+                className={`hover:bg-gray-200 ${
+                  embedCopied
+                    ? "text-green-700 pointer-events-none"
+                    : "text-secondary-dark"
+                }`}
+                onClick={handleCopyEmbed}
+              >
+                Copy Visualization Embed
+              </Button>
+            )}
+          </ButtonGroup>
+        </>
+      )}
     </>
   );
 };
