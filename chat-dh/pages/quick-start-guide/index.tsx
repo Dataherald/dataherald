@@ -37,7 +37,7 @@ const QuickStartGuide: FC = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <MainLayout>
-        <div className="flex-1 flex flex-col gap-2 py-6">
+        <div className="flex-1 flex flex-col gap-2 py-6 px-4">
           <Header title="Dataherald AI - Quick Start Guide"></Header>
           <div className="flex flex-col gap-4 sm:gap-8">
             <section>

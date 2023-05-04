@@ -120,7 +120,7 @@ export const Chat: FC = () => {
             <Button
               color="primary-light"
               icon="message"
-              className="hover:bg-gray-200 text-black"
+              className="hover:bg-gray-200 text-secondary-dark"
               onClick={handleReset}
             >
               New Chat
