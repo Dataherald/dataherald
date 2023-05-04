@@ -1,3 +1,4 @@
+import Button from "@/components/Layout/Button";
 import { Header } from "@/components/Layout/Header";
 import { MainLayout } from "@/components/Layout/Main";
 import { usePrompt } from "@/context/prompt";
@@ -49,7 +50,9 @@ const QuickStartGuide: FC = () => {
               </p>
             </section>
             <section>
-              <h2 className="mb-2 font-semibold">Here are some prompts to try</h2>
+              <h2 className="mb-2 font-semibold">
+                Here are some prompts to try
+              </h2>
               <ul className="pl-2 list list-disc">
                 {EXAMPLE_PROMPTS.map((prompt, idx) => (
                   <li className="ml-4" key={idx}>
@@ -84,10 +87,10 @@ const QuickStartGuide: FC = () => {
             </section>
             <section className="justify-self-end">
               <div className="flex items-center justify-center gap-5">
-                <button className="bg-primary hover:bg-opacity-90 text-white rounded-lg px-4 py-2">
+                <Button>
                   <Link href="/chat">Go to chat</Link>
-                </button>
-                <button className="bg-secondary hover:bg-opacity-90 text-white rounded-lg px-4 py-2">
+                </Button>
+                <Button color="secondary">
                   <Link
                     href="https://dataherald.com/contact-us"
                     target="_blank"
@@ -95,7 +98,7 @@ const QuickStartGuide: FC = () => {
                   >
                     Contact us
                   </Link>
-                </button>
+                </Button>
               </div>
             </section>
           </div>

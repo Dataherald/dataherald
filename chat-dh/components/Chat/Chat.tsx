@@ -4,8 +4,8 @@ import apiService from "@/services/api";
 import { Message, MessageContent } from "@/types/chat";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { FC, useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import Button from "../Layout/Button";
 import { Header } from "../Layout/Header";
-import { Icon } from "../Layout/Icon";
 import { ChatInput } from "./ChatInput";
 import { ChatKickoff } from "./ChatKickoff";
 import { ChatMessage } from "./ChatMessage";
@@ -117,15 +117,14 @@ export const Chat: FC = () => {
             ))}
           </div>
           <div className="flex flex-col gap-4 items-center px-4">
-            <button
-              className="bg-primary-light hover:bg-gray-200 rounded-lg px-4 py-2"
+            <Button
+              color="primary-light"
+              icon="message"
+              className="hover:bg-gray-200 text-black"
               onClick={handleReset}
             >
-              <div className="flex items-center gap-2">
-                <Icon value="message" />
-                <span>New Chat</span>
-              </div>
-            </button>
+              New Chat
+            </Button>
             <div className="w-full max-w-[1000px] mx-auto">
               <ChatInput onSend={sendMessage} />
             </div>
