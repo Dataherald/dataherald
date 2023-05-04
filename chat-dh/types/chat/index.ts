@@ -5,6 +5,7 @@ export type Role = "assistant" | "user";
 export interface MessageContent {
   status: ResponseStatus;
   generated_text?: string;
+  id?: string; // ChatResponse id
   viz_id?: string | null;
 }
 export type Messages = Message[];

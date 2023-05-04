@@ -6,7 +6,6 @@ import { FC } from "react";
 import { Icon } from "../Layout/Icon";
 import ChatAssistantMessageActions from "./ChatAssistantMessageActions";
 import { ChatLoader } from "./ChatLoader";
-import apiService from "@/services/api";
 
 interface ChatMessageProps {
   message: Message;
@@ -16,10 +15,6 @@ export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
   const { role, content } = message;
   const { user } = useUser();
   const { picture: userPicture } = user as UserProfile;
-
-  const handleThumbsUp = async () => {};
-
-  const handleThumbsDown = async () => {};
 
   const regularParagraph = (text: string) => (
     <p className="self-center">{text}</p>
@@ -88,11 +83,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
           </div>
           {role === "assistant" && typeof content !== "string" && (
             <div className="flex flex-row gap-4 self-center">
-              <ChatAssistantMessageActions
-                message={content}
-                onThumbsUp={handleThumbsUp}
-                onThumbsDown={handleThumbsDown}
-              />
+              <ChatAssistantMessageActions message={content} />
             </div>
           )}
         </div>

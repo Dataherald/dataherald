@@ -1,4 +1,5 @@
 import { EMBED_URL } from "@/env-variables";
+import apiService from "@/services/api";
 import { MessageContent } from "@/types/chat";
 import { FC, useEffect, useRef, useState } from "react";
 import Button from "../Layout/Button";
@@ -9,14 +10,10 @@ const getEmbedCode = (viz_id: string) =>
 
 interface ChatAssistantMessageActionsProps {
   message: MessageContent;
-  onThumbsUp: () => void;
-  onThumbsDown: () => void;
 }
 
 const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
-  message: { generated_text, viz_id, status },
-  onThumbsUp,
-  onThumbsDown,
+  message: { generated_text, viz_id, status, id: chatResponseId },
 }) => {
   const [textCopied, setTextCopied] = useState(false);
   const [embedCopied, setEmbedCopied] = useState(false);
@@ -51,16 +48,26 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
     embedTimeoutRef.current = setTimeout(() => setEmbedCopied(false), 1500);
   };
 
-  const handleThumbsUpClick = () => {
-    setThumbsUpClicked(true);
-    setThumbsDownClicked(false);
-    onThumbsUp();
+  const handleThumbsUpClick = async () => {
+    try {
+      apiService.feedback(chatResponseId as string, true);
+      setThumbsUpClicked(true);
+      setThumbsDownClicked(false);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   };
 
-  const handleThumbsDownClick = () => {
-    setThumbsUpClicked(false);
-    setThumbsDownClicked(true);
-    onThumbsDown();
+  const handleThumbsDownClick = async () => {
+    try {
+      apiService.feedback(chatResponseId as string, false);
+      setThumbsUpClicked(false);
+      setThumbsDownClicked(true);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   };
 
   return (

@@ -24,6 +24,21 @@ const apiService = {
       throw error;
     }
   },
+  async feedback(chatResponseId: string, is_useful: boolean): Promise<void> {
+    const url = `${API_URL}/chat/feedback/${chatResponseId}`;
+    try {
+      await fetchAPI<void>(url, {
+        method: "POST",
+        body: {
+          is_useful,
+        },
+      });
+      return;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
 };
 
 export default apiService;
