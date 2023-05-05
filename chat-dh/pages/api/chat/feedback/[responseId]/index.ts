@@ -6,16 +6,15 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export default withApiAuthRequired(
   async (req: NextApiRequest, res: NextApiResponse) => {
-    const url = `${API_URL}/chat`;
+    const { responseId } = req.query;
+    const url = `${API_URL}/chat/feedback/${responseId}`;
     if (req.method === "POST") {
       try {
-        const { message, user, date_entered } = req.body;
+        const { is_useful } = req.body;
         const chatResponse = await fetchAPI<ChatResponse>(url, {
           method: "POST",
           body: {
-            message,
-            user,
-            date_entered,
+            is_useful,
           },
         });
         res.status(201).json(chatResponse);

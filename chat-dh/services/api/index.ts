@@ -1,4 +1,3 @@
-import { API_URL } from "@/env-variables";
 import { ChatResponse } from "@/types/api";
 import { Message } from "@/types/chat";
 import { fetchAPI } from "@/utils/api";
@@ -8,7 +7,7 @@ const apiService = {
     message: Message[],
     userEmail: string = "unknown"
   ): Promise<ChatResponse> {
-    const url = `${API_URL}/chat`;
+    const url = "api/chat";
     try {
       const response = await fetchAPI<ChatResponse>(url, {
         method: "POST",
@@ -25,7 +24,7 @@ const apiService = {
     }
   },
   async feedback(chatResponseId: string, is_useful: boolean): Promise<void> {
-    const url = `${API_URL}/chat/feedback/${chatResponseId}`;
+    const url = `api/chat/feedback/${chatResponseId}`;
     try {
       await fetchAPI<void>(url, {
         method: "POST",
