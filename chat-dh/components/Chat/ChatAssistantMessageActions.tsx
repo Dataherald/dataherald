@@ -116,7 +116,7 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
             {viz_id && (
               <Button
                 color="primary-light"
-                icon={embedCopied ? "check" : "link"}
+                icon={embedCopied ? "check" : "code"}
                 className={`hover:bg-gray-200 ${
                   embedCopied
                     ? "text-green-700 pointer-events-none"

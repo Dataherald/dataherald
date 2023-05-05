@@ -31,7 +31,7 @@ export const ChatKickoff: FC<ChatKickoffProps> = ({ onExampleClick }) => {
       body: (
         <>
           <h3>
-            This a first release, with limited functionality. It enables{" "}
+            This is a first release, with limited functionality. It enables{" "}
             <b>only</b> the following:
           </h3>
           <ul className="list list-decimal">
