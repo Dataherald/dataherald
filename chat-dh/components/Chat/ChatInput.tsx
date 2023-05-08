@@ -12,7 +12,8 @@ interface ChatInputProps {
 
 export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
   const [content, setContent] = useState<string>("");
-  const { error, setError, loading } = useChat();
+  const { error, setError, loading, messages } = useChat();
+  const emptyMessages = messages.length === 0;
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -53,7 +54,9 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
         placeholder={
           loading
             ? "Only one message at a time is supported"
-            : "Ask Dataherald a Real Estate prompt"
+            : emptyMessages
+            ? "Ask Dataherald a Real Estate prompt"
+            : "We don’t support for chat history context yet, but will soon. Ask Dataherald another Real Estate prompt..."
         }
         value={content}
         rows={3}
