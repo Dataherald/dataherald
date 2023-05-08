@@ -92,7 +92,7 @@ const QuickStartGuide: FC = () => {
                 </Button>
                 <Button color="secondary">
                   <Link
-                    href="https://dataherald.com/contact-us"
+                    href="https://dataherald.com/contact"
                     target="_blank"
                     referrerPolicy="no-referrer"
                   >

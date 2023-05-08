@@ -71,15 +71,15 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
   };
 
   return (
-    <>
+    <div className="flex flex-col sm:flex-row items-center gap-4">
       {status === "successful" && (
         <>
-          <ButtonGroup>
+          <ButtonGroup className="order-last sm:order-first">
             {!thumbsDownClicked && (
               <Button
                 icon="thumb_up"
                 color="primary-light"
-                className={`hover:bg-gray-200 ${
+                className={`h-full hover:bg-gray-200 ${
                   thumbsUpClicked
                     ? "text-green-700 pointer-events-none"
                     : "text-secondary-dark"
@@ -91,7 +91,7 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
               <Button
                 icon="thumb_down"
                 color="primary-light"
-                className={`hover:bg-gray-200 ${
+                className={`h-full hover:bg-gray-200 ${
                   thumbsDownClicked
                     ? "text-red-600 pointer-events-none"
                     : "text-secondary-dark"
@@ -104,7 +104,7 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
             <Button
               color="primary-light"
               icon={textCopied ? "check" : "content_copy"}
-              className={`hover:bg-gray-200 ${
+              className={`h-full hover:bg-gray-200 ${
                 textCopied
                   ? "text-green-700 pointer-events-none"
                   : "text-secondary-dark"
@@ -117,7 +117,7 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
               <Button
                 color="primary-light"
                 icon={embedCopied ? "check" : "code"}
-                className={`hover:bg-gray-200 ${
+                className={`h-full hover:bg-gray-200 ${
                   embedCopied
                     ? "text-green-700 pointer-events-none"
                     : "text-secondary-dark"
@@ -130,7 +130,7 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
           </ButtonGroup>
         </>
       )}
-    </>
+    </div>
   );
 };
 

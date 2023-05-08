@@ -4,6 +4,7 @@
 
 .buttonGroup button {
   border-radius: 0;
+  align-items: stretch;
 }
 
 .buttonGroup > :first-child button {
