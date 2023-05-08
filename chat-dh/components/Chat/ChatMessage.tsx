@@ -1,5 +1,5 @@
 import { EMBED_URL } from "@/env-variables";
-import { Message } from "@/types/chat";
+import { Message, MessageContent } from "@/types/chat";
 import { UserProfile, useUser } from "@auth0/nextjs-auth0/client";
 import Image from "next/image";
 import { FC, useState } from "react";
@@ -16,7 +16,9 @@ export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
   const { role, content } = message;
   const { user } = useUser();
   const { picture: userPicture } = user as UserProfile;
-  const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [iframeLoaded, setIframeLoaded] = useState(
+    !(content as MessageContent).viz_id || false
+  );
 
   return (
     <div className={`${role === "user" && "bg-gray-100"}`}>
