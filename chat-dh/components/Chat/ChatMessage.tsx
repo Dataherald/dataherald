@@ -16,9 +16,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
   const { role, content } = message;
   const { user } = useUser();
   const { picture: userPicture } = user as UserProfile;
-  const [iframeLoaded, setIframeLoaded] = useState(
-    !(content as MessageContent).viz_id || false
-  );
+  const [iframeLoaded, setIframeLoaded] = useState(false);
 
   return (
     <div className={`${role === "user" && "bg-gray-100"}`}>
@@ -54,7 +52,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
               <ChatText text={content} />
             ) : content.status === "successful" ? (
               <div className="flex-1 flex flex-col gap-5 pr-8 overflow-auto">
-                {!iframeLoaded && (
+                {content.viz_id && !iframeLoaded && (
                   <ChatLoader
                     key="iframe-loading"
                     messages={[
@@ -66,7 +64,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
                     ]}
                   />
                 )}
-                {iframeLoaded && (
+                {(!content.viz_id || iframeLoaded) && (
                   <ChatText text={content.generated_text as string} />
                 )}
                 {content.viz_id && (
