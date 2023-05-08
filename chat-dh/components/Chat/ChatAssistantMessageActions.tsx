@@ -37,7 +37,7 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
     await copy(generated_text as string);
     setTextCopied(true);
     if (textTimeoutRef.current) clearTimeout(textTimeoutRef.current);
-    textTimeoutRef.current = setTimeout(() => setTextCopied(false), 1500);
+    textTimeoutRef.current = setTimeout(() => setTextCopied(false), 750);
   };
 
   const handleCopyEmbed = async () => {
@@ -45,7 +45,7 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
     await copy(getEmbedCode(viz_id));
     setEmbedCopied(true);
     if (embedTimeoutRef.current) clearTimeout(embedTimeoutRef.current);
-    embedTimeoutRef.current = setTimeout(() => setEmbedCopied(false), 1500);
+    embedTimeoutRef.current = setTimeout(() => setEmbedCopied(false), 750);
   };
 
   const handleThumbsUpClick = async () => {
