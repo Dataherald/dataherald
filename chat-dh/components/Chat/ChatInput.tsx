@@ -56,7 +56,7 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
             ? "Only one message at a time is supported"
             : emptyMessages
             ? "Ask Dataherald a Real Estate prompt"
-            : "We don’t support for chat history context yet, but will soon. Ask Dataherald another Real Estate prompt..."
+            : "We don’t support for chat history context yet, but we will soon. Ask Dataherald another Real Estate prompt..."
         }
         value={content}
         rows={3}
