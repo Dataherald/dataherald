@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { FC, useEffect, useState } from "react";
 
-const messages = [
+const DEFAULT_MESSAGES = [
   {
     text: "Loading...",
     image: "/images/loading/analyzing_data.svg",
@@ -24,7 +24,19 @@ const messages = [
   },
 ];
 
-export const ChatLoader: FC = () => {
+interface ChatLoaderMessage {
+  text: string;
+  image: string;
+  duration: number;
+}
+
+interface ChatLoaderProps {
+  messages?: ChatLoaderMessage[];
+}
+
+export const ChatLoader: FC<ChatLoaderProps> = ({
+  messages = DEFAULT_MESSAGES,
+}) => {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -39,7 +51,7 @@ export const ChatLoader: FC = () => {
     return () => {
       clearTimeout(timeout);
     };
-  }, [index]);
+  }, [index, messages]);
 
   const { text, image } = messages[index];
 

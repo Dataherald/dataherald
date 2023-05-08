@@ -2,7 +2,7 @@ import { EMBED_URL } from "@/env-variables";
 import { Message } from "@/types/chat";
 import { UserProfile, useUser } from "@auth0/nextjs-auth0/client";
 import Image from "next/image";
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Icon } from "../Layout/Icon";
 import ChatAssistantMessageActions from "./ChatAssistantMessageActions";
 import { ChatLoader } from "./ChatLoader";
@@ -16,6 +16,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
   const { role, content } = message;
   const { user } = useUser();
   const { picture: userPicture } = user as UserProfile;
+  const [iframeLoaded, setIframeLoaded] = useState(false);
 
   return (
     <div className={`${role === "user" && "bg-gray-100"}`}>
@@ -51,11 +52,27 @@ export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
               <ChatText text={content} />
             ) : content.status === "successful" ? (
               <div className="flex-1 flex flex-col gap-5 pr-8 overflow-auto">
-                <ChatText text={content.generated_text as string} />
+                {!iframeLoaded && (
+                  <ChatLoader
+                    key="iframe-loading"
+                    messages={[
+                      {
+                        text: "Finalizing details...",
+                        image: "/images/loading/analyzing_data.svg",
+                        duration: 5000,
+                      },
+                    ]}
+                  />
+                )}
+                {iframeLoaded && (
+                  <ChatText text={content.generated_text as string} />
+                )}
                 {content.viz_id && (
                   <iframe
+                    style={{ display: !iframeLoaded ? "none" : "flex" }}
                     className="min-h-[600px] mb-4 w-full min-w-[300px]"
                     src={`${EMBED_URL}${content.viz_id}?hideDemoLink=true`}
+                    onLoad={() => setIframeLoaded(true)}
                   ></iframe>
                 )}
               </div>
@@ -72,17 +89,19 @@ export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
               </div>
             ) : content.status === "loading" ? (
               <div className="flex-1 flex items-center">
-                <ChatLoader />
+                <ChatLoader key="regular-loading" />
               </div>
             ) : (
               <ChatText text={content.generated_text as string} />
             )}
           </div>
-          {role === "assistant" && typeof content !== "string" && (
-            <div className="self-center">
-              <ChatAssistantMessageActions message={content} />
-            </div>
-          )}
+          {role === "assistant" &&
+            typeof content !== "string" &&
+            iframeLoaded && (
+              <div className="self-center">
+                <ChatAssistantMessageActions message={content} />
+              </div>
+            )}
         </div>
       </div>
     </div>
