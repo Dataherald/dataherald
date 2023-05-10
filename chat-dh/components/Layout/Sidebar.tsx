@@ -22,6 +22,7 @@ export const Sidebar: FC<SidebarProps> = ({ className = "" }) => {
   const router = useRouter();
   const TOP_MENU_ITEMS: MenuItems = [
     { label: "Chat", href: "/chat", icon: "chat" },
+    { label: "Templates", href: "/templates", icon: "space_dashboard"}
   ];
   const BOTTOM_MENU_ITEMS: MenuItems = [
     {

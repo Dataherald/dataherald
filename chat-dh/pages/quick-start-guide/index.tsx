@@ -7,18 +7,19 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC } from "react";
 
+const EXAMPLE_PROMPTS = [
+  "Home prices in Los Angeles",
+  "What was the most expensive ZIP in CA in January 2023?",
+  "Total homes sold in Los Angeles in 2023 broken down by building type",
+  "Rents in Berkeley 2021-2022",
+  "How many homes were sold in Harris County in Jan 2023, broken down by building type?",
+  "How does the price per square foot for condos in Seattle compare to Portland, Oregon?",
+  "What are the most expensive zip codes in Dekalb County, GA?",
+];
+
 const QuickStartGuide: FC = () => {
   const { setPrompt } = usePrompt();
   const router = useRouter();
-  const EXAMPLE_PROMPTS = [
-    "Home prices in Los Angeles",
-    "What was the most expensive ZIP in CA in January 2023?",
-    "Total homes sold in Los Angeles in 2023 broken down by building type",
-    "Rents in Berkeley 2021-2022",
-    "How many homes were sold in Harris County in Jan 2023, broken down by building type?",
-    "How does the price per square foot for condos in Seattle compare to Portland, Oregon?",
-    "What are the most expensive zip codes in Dekalb County, GA?",
-  ];
 
   const handlePromptClick = (prompt: string) => {
     setPrompt(prompt);
@@ -31,7 +32,7 @@ const QuickStartGuide: FC = () => {
         <title>Dataherald AI | Quick Start Guide</title>
         <meta
           name="description"
-          content="A chatbot powered by OpenAPI that can generate text and visualizations with the latest data"
+          content="A quick start guide on how to use Dataherald AI"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
