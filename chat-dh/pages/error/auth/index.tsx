@@ -1,11 +1,11 @@
-import { Icon } from "@/components/Layout/Icon";
-import { AUTH0_CLIENT_ID, AUTH0_DOMAIN, HOSTNAME } from "@/env-variables";
-import Image from "next/image";
-import { useRouter } from "next/router";
-import { FC, useState } from "react";
+import { Icon } from '@/components/Layout/Icon';
+import { AUTH0_CLIENT_ID, AUTH0_DOMAIN, HOSTNAME } from '@/env-variables';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { FC, useState } from 'react';
 
 enum ERROR_CODES {
-  EMAIL_NOT_VERIFIED = "Email Not Verified",
+  EMAIL_NOT_VERIFIED = 'Email Not Verified',
 }
 
 /**
@@ -15,23 +15,22 @@ enum ERROR_CODES {
  * @returns
  */
 const getErrorCause = (errorDescription: string): string => {
-  const error = (errorDescription.match(/---(.*?)\)/) || "")[1];
-  console.log(error);
+  const error = (errorDescription.match(/---(.*?)\)/) || '')[1];
   switch (error) {
     case ERROR_CODES.EMAIL_NOT_VERIFIED:
-      return "Please verify your email address";
+      return 'Please verify your email address';
     default:
-      return "Authentication Error";
+      return 'Authentication Error';
   }
 };
 
 const AuthErrorPage: FC = () => {
   const router = useRouter();
   const [showDetails, setShowDetails] = useState(false);
-  const { message = "" } = router.query;
+  const { message = '' } = router.query;
   const errorDescription = message as string;
   const isEmailNotVerified = errorDescription?.includes(
-    ERROR_CODES.EMAIL_NOT_VERIFIED
+    ERROR_CODES.EMAIL_NOT_VERIFIED,
   );
   const errorCause = getErrorCause(errorDescription);
 
@@ -40,7 +39,7 @@ const AuthErrorPage: FC = () => {
   };
 
   const continueToLogin = async () => {
-    router.push("/");
+    router.push('/');
   };
 
   const logoutUser = async () => {
@@ -53,7 +52,7 @@ const AuthErrorPage: FC = () => {
         src="https://hi-george.s3.amazonaws.com/DataheraldAI/Dark+Background.png"
         alt="Background"
         fill
-        style={{ objectFit: "cover", objectPosition: "center" }}
+        style={{ objectFit: 'cover', objectPosition: 'center' }}
         quality={100}
       />
       <div className="absolute bg-white shadow-lg w-full max-w-none h-screen rounded-none sm:rounded-2xl sm:h-fit p-8 sm:max-w-md">
@@ -69,33 +68,33 @@ const AuthErrorPage: FC = () => {
                 inbox and follow the instructions in the verification email.
               </p>
               <p className="text-gray-800 break-words">
-                If you can&apos;t find the email,{" "}
+                If you can&apos;t find the email,{' '}
                 <a
                   className="text-primary font-semibold"
                   href="mailto:support@dataherald.com"
                 >
                   contact us
-                </a>{" "}
+                </a>{' '}
                 for assistance.
               </p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
               <p className="text-gray-800 break-words">
-                An error occurred. Please try again or{" "}
+                An error occurred. Please try again or{' '}
                 <a
                   className="text-primary font-semibold"
                   href="mailto:support@dataherald.com"
                 >
                   contact us
-                </a>{" "}
+                </a>{' '}
                 if the issue persists.
               </p>
               <p
                 className="text-primary font-semibold cursor-pointer"
                 onClick={toggleDetails}
               >
-                {showDetails ? "Hide details" : "Show details"}
+                {showDetails ? 'Hide details' : 'Show details'}
               </p>
               {showDetails && (
                 <p className="text-gray-400">{errorDescription}</p>

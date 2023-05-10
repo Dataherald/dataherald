@@ -1,0 +1,35 @@
+name: Check AI Code Format
+
+on:
+  push:
+    branches:
+      - main
+      - preview
+  pull_request:
+    branches:
+      - main
+      - preview
+
+jobs:
+  check-format:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "chat-dh"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Check format
+        run: npm run format:check

@@ -1,5 +1,5 @@
-import { Messages } from "@/types/chat";
-import { FC, ReactNode, createContext, useContext, useState } from "react";
+import { Messages } from '@/types/chat';
+import { FC, ReactNode, createContext, useContext, useState } from 'react';
 
 type SetMessagesFunction = (prevMessages: Messages) => Messages;
 interface ChatContextType {
@@ -16,7 +16,7 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 export const useChat = () => {
   const context = useContext(ChatContext);
   if (!context) {
-    throw new Error("useChat must be used within a ChatProvider");
+    throw new Error('useChat must be used within a ChatProvider');
   }
   return context;
 };
@@ -31,9 +31,9 @@ export const ChatProvider: FC<ChatProviverProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
 
   const handleSetMessages = (messages: Messages | SetMessagesFunction) => {
-    if (typeof messages === "function") {
+    if (typeof messages === 'function') {
       setMessages((prevMessages) =>
-        (messages as SetMessagesFunction)(prevMessages)
+        (messages as SetMessagesFunction)(prevMessages),
       );
     } else {
       setMessages(messages);

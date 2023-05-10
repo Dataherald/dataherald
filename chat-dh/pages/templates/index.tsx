@@ -1,9 +1,9 @@
-import { Header } from "@/components/Layout/Header";
-import { IconType, IconValue } from "@/components/Layout/Icon";
-import { MainLayout } from "@/components/Layout/Main";
-import { Tile } from "@/components/Templates/Tile";
-import Head from "next/head";
-import { FC } from "react";
+import { Header } from '@/components/Layout/Header';
+import { IconType, IconValue } from '@/components/Layout/Icon';
+import { MainLayout } from '@/components/Layout/Main';
+import { Tile } from '@/components/Templates/Tile';
+import Head from 'next/head';
+import { FC } from 'react';
 
 interface TemplateTiles {
   icon: IconValue;
@@ -16,37 +16,37 @@ interface TemplateTiles {
 
 const TILES: TemplateTiles[] = [
   {
-    icon: "handshake",
-    title: "Offer Memorandum",
+    icon: 'handshake',
+    title: 'Offer Memorandum',
     description:
-      "Quickly create an offering memorandum with investment data and property photos",
+      'Quickly create an offering memorandum with investment data and property photos',
     disabled: true,
   },
   {
-    icon: "rss_feed",
-    title: "Blog Post",
+    icon: 'rss_feed',
+    title: 'Blog Post',
     description:
-      "Start a blog post using your own data or supplement with Dataherald sources",
+      'Start a blog post using your own data or supplement with Dataherald sources',
     disabled: true,
   },
   {
-    icon: "smartphone",
-    title: "Social Media Post",
-    description: "Create clear, concise data content for social media",
+    icon: 'smartphone',
+    title: 'Social Media Post',
+    description: 'Create clear, concise data content for social media',
     disabled: true,
   },
   {
-    icon: "description",
-    title: "Newsletter",
+    icon: 'description',
+    title: 'Newsletter',
     description:
-      "Link a dataset and let Dataherald summarize key metrics and visualize trends",
+      'Link a dataset and let Dataherald summarize key metrics and visualize trends',
     disabled: true,
   },
   {
-    icon: "email",
-    title: "Marketing Email",
+    icon: 'email',
+    title: 'Marketing Email',
     description:
-      "Marketing emails with data visualizations have a 22% clickrate than those without",
+      'Marketing emails with data visualizations have a 22% clickrate than those without',
     disabled: true,
   },
 ];

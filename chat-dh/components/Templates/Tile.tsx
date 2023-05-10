@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { FC } from "react";
-import { Icon, IconType, IconValue } from "../Layout/Icon";
+import Link from 'next/link';
+import { FC } from 'react';
+import { Icon, IconType, IconValue } from '../Layout/Icon';
 
 interface TileProps {
   icon: IconValue;
@@ -16,15 +16,15 @@ export const Tile: FC<TileProps> = ({
   iconType,
   title,
   description,
-  href = "",
+  href = '',
   disabled = false,
 }) => {
-  if (disabled) href = "";
+  if (disabled) href = '';
   return (
     <Link
       href={href}
       className={`w-54 h-50 bg-white border rounded-2xl border-black border-opacity-40 p-5 ${
-        disabled ? "opacity-30 hover:pointer-events-none" : "hover:shadow-lg"
+        disabled ? 'opacity-30 hover:pointer-events-none' : 'hover:shadow-lg'
       }`}
     >
       <Icon className="text-5xl" value={icon} type={iconType}></Icon>

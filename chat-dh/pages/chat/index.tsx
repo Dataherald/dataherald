@@ -1,8 +1,8 @@
-import { Chat } from "@/components/Chat/Chat";
-import { MainLayout } from "@/components/Layout/Main";
-import { ChatProvider } from "@/context/chat";
-import { withPageAuthRequired } from "@auth0/nextjs-auth0/client";
-import Head from "next/head";
+import { Chat } from '@/components/Chat/Chat';
+import { MainLayout } from '@/components/Layout/Main';
+import { ChatProvider } from '@/context/chat';
+import { withPageAuthRequired } from '@auth0/nextjs-auth0/client';
+import Head from 'next/head';
 
 export default withPageAuthRequired(function Home() {
   return (

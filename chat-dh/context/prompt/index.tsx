@@ -1,4 +1,4 @@
-import { FC, ReactNode, createContext, useContext, useState } from "react";
+import { FC, ReactNode, createContext, useContext, useState } from 'react';
 
 const PromptContext = createContext<{
   prompt: string | null;

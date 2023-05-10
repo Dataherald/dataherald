@@ -1,20 +1,20 @@
-import Button from "@/components/Layout/Button";
-import { Header } from "@/components/Layout/Header";
-import { MainLayout } from "@/components/Layout/Main";
-import { usePrompt } from "@/context/prompt";
-import Head from "next/head";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { FC } from "react";
+import Button from '@/components/Layout/Button';
+import { Header } from '@/components/Layout/Header';
+import { MainLayout } from '@/components/Layout/Main';
+import { usePrompt } from '@/context/prompt';
+import Head from 'next/head';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { FC } from 'react';
 
 const EXAMPLE_PROMPTS = [
-  "Home prices in Los Angeles",
-  "What was the most expensive ZIP in CA in January 2023?",
-  "Total homes sold in Los Angeles in 2023 broken down by building type",
-  "Rents in Berkeley 2021-2022",
-  "How many homes were sold in Harris County in Jan 2023, broken down by building type?",
-  "How does the price per square foot for condos in Seattle compare to Portland, Oregon?",
-  "What are the most expensive zip codes in Dekalb County, GA?",
+  'Home prices in Los Angeles',
+  'What was the most expensive ZIP in CA in January 2023?',
+  'Total homes sold in Los Angeles in 2023 broken down by building type',
+  'Rents in Berkeley 2021-2022',
+  'How many homes were sold in Harris County in Jan 2023, broken down by building type?',
+  'How does the price per square foot for condos in Seattle compare to Portland, Oregon?',
+  'What are the most expensive zip codes in Dekalb County, GA?',
 ];
 
 const QuickStartGuide: FC = () => {
@@ -23,7 +23,7 @@ const QuickStartGuide: FC = () => {
 
   const handlePromptClick = (prompt: string) => {
     setPrompt(prompt);
-    router.push("/chat");
+    router.push('/chat');
   };
 
   return (
@@ -71,8 +71,8 @@ const QuickStartGuide: FC = () => {
               <h2 className="mb-2 font-semibold">Limitations</h2>
               <ul className="pl-2 list list-disc">
                 {[
-                  "Data timeframe: Only January 1 2020 onward is supported",
-                  "Geographies: Only United States states, counties, cities, and zip codes. All other geographies, for example neighborhoods, are NOT supported.",
+                  'Data timeframe: Only January 1 2020 onward is supported',
+                  'Geographies: Only United States states, counties, cities, and zip codes. All other geographies, for example neighborhoods, are NOT supported.',
                 ].map((listItem, idx) => (
                   <li className="ml-4" key={idx}>
                     {listItem}

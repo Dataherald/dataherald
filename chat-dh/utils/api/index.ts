@@ -1,5 +1,5 @@
-import { ApiError } from "next/dist/server/api-utils";
-import { HTTP_METHOD } from "next/dist/server/web/http";
+import { ApiError } from 'next/dist/server/api-utils';
+import { HTTP_METHOD } from 'next/dist/server/web/http';
 
 export interface HTTP_OPTIONS {
   method?: HTTP_METHOD;
@@ -10,12 +10,12 @@ export interface HTTP_OPTIONS {
 export const fetchAPI = async <T>(
   url: string,
   options: HTTP_OPTIONS = {},
-  queryParams?: Record<string, string>
+  queryParams?: Record<string, string>,
 ): Promise<T> => {
   const {
-    method = "GET",
+    method = 'GET',
     body,
-    headers = { "Content-Type": "application/json" },
+    headers = { 'Content-Type': 'application/json' },
   } = options;
 
   // Append query parameters to the URL, if provided
@@ -37,7 +37,7 @@ export const fetchAPI = async <T>(
 
     return response.json() as Promise<T>;
   } catch (error) {
-    console.error("API Service Error:", (error as ApiError).message);
+    console.error('API Service Error:', (error as ApiError).message);
     throw error;
   }
 };

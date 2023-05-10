@@ -1,14 +1,14 @@
-import { useChat } from "@/context/chat";
-import { usePrompt } from "@/context/prompt";
-import apiService from "@/services/api";
-import { Message, MessageContent } from "@/types/chat";
-import { useUser } from "@auth0/nextjs-auth0/client";
-import { FC, useCallback, useEffect, useLayoutEffect, useRef } from "react";
-import Button from "../Layout/Button";
-import { Header } from "../Layout/Header";
-import { ChatInput } from "./ChatInput";
-import { ChatKickoff } from "./ChatKickoff";
-import { ChatMessage } from "./ChatMessage";
+import { useChat } from '@/context/chat';
+import { usePrompt } from '@/context/prompt';
+import apiService from '@/services/api';
+import { Message, MessageContent } from '@/types/chat';
+import { useUser } from '@auth0/nextjs-auth0/client';
+import { FC, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import Button from '../Layout/Button';
+import { Header } from '../Layout/Header';
+import { ChatInput } from './ChatInput';
+import { ChatKickoff } from './ChatKickoff';
+import { ChatMessage } from './ChatMessage';
 
 export const Chat: FC = () => {
   const { messages, setMessages, loading, setLoading, error } = useChat();
@@ -17,13 +17,13 @@ export const Chat: FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const sendMessage = useCallback(
     async (newUserMessage: string) => {
       const newMessage: Message = {
-        role: "user",
+        role: 'user',
         content: newUserMessage,
       };
       const updatedMessages: Message[] = [...messages, newMessage];
@@ -31,55 +31,55 @@ export const Chat: FC = () => {
       setMessages([
         ...updatedMessages,
         {
-          role: "assistant",
+          role: 'assistant',
           content: {
-            status: "loading",
+            status: 'loading',
           },
         },
       ]);
       try {
         const chatResponse = await apiService.chat(
           updatedMessages,
-          user?.email || ""
+          user?.email || '',
         );
 
         setMessages((prevMessages) =>
           prevMessages.map((message) =>
-            (message.content as MessageContent).status === "loading"
+            (message.content as MessageContent).status === 'loading'
               ? {
-                  role: "assistant",
+                  role: 'assistant',
                   content: chatResponse,
                 }
-              : message
-          )
+              : message,
+          ),
         );
       } catch (e) {
         setMessages((prevMessages) =>
           prevMessages.map((message) =>
-            (message.content as MessageContent).status === "loading"
+            (message.content as MessageContent).status === 'loading'
               ? {
-                  role: "assistant",
+                  role: 'assistant',
                   content: {
-                    status: "error",
+                    status: 'error',
                     generated_text:
-                      "Something went wrong. Please try again later.",
+                      'Something went wrong. Please try again later.',
                   },
                 }
-              : message
-          )
+              : message,
+          ),
         );
       } finally {
         setLoading(false);
       }
     },
-    [messages, setMessages, setLoading, user]
+    [messages, setMessages, setLoading, user],
   );
 
   const handleExample = useCallback(
     (prompt: string) => {
       sendMessage(prompt);
     },
-    [sendMessage]
+    [sendMessage],
   );
 
   const handleReset = useCallback(() => {

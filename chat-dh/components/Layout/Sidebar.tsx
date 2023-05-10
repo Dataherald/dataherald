@@ -1,10 +1,10 @@
-import { useUser } from "@auth0/nextjs-auth0/client";
-import { MaterialIcon } from "material-icons";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { FC } from "react";
-import { Icon } from "./Icon";
+import { useUser } from '@auth0/nextjs-auth0/client';
+import { MaterialIcon } from 'material-icons';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { FC } from 'react';
+import { Icon } from './Icon';
 
 export type MenuItem = {
   hide?: boolean;
@@ -17,24 +17,24 @@ export type SidebarProps = {
   className?: string;
 };
 
-export const Sidebar: FC<SidebarProps> = ({ className = "" }) => {
+export const Sidebar: FC<SidebarProps> = ({ className = '' }) => {
   const { user } = useUser();
   const router = useRouter();
   const TOP_MENU_ITEMS: MenuItems = [
-    { label: "Chat", href: "/chat", icon: "chat" },
-    { label: "Templates", href: "/templates", icon: "space_dashboard"}
+    { label: 'Chat', href: '/chat', icon: 'chat' },
+    { label: 'Templates', href: '/templates', icon: 'space_dashboard' },
   ];
   const BOTTOM_MENU_ITEMS: MenuItems = [
     {
-      label: "Quick Start Guide",
-      href: "/quick-start-guide",
-      icon: "menu_book",
+      label: 'Quick Start Guide',
+      href: '/quick-start-guide',
+      icon: 'menu_book',
     },
     {
-      label: "Logout",
+      label: 'Logout',
       hide: !user,
-      href: "/api/auth/logout",
-      icon: "logout",
+      href: '/api/auth/logout',
+      icon: 'logout',
     },
   ];
 
@@ -49,8 +49,8 @@ export const Sidebar: FC<SidebarProps> = ({ className = "" }) => {
             href={href}
             className={`flex items-center p-2 rounded-lg ${
               isActive
-                ? "bg-black bg-opacity-10 text-primary"
-                : "hover:bg-black hover:bg-opacity-10"
+                ? 'bg-black bg-opacity-10 text-primary'
+                : 'hover:bg-black hover:bg-opacity-10'
             }`}
           >
             <Icon value={icon as MaterialIcon} />
@@ -64,9 +64,9 @@ export const Sidebar: FC<SidebarProps> = ({ className = "" }) => {
   return (
     <div
       className={[
-        "bg-gray-100 text-secondary-dark font-bold flex flex-col justify-between min-w-fit px-1 sm:px-2 md:px-4 pb-4",
+        'bg-gray-100 text-secondary-dark font-bold flex flex-col justify-between min-w-fit px-1 sm:px-2 md:px-4 pb-4',
         className,
-      ].join(" ")}
+      ].join(' ')}
     >
       <div className="flex flex-col">
         <div className="flex items-center justify-center h-20">

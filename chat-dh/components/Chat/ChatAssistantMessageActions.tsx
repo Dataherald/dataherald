@@ -1,9 +1,9 @@
-import { EMBED_URL } from "@/env-variables";
-import apiService from "@/services/api";
-import { MessageContent } from "@/types/chat";
-import { FC, useEffect, useRef, useState } from "react";
-import Button from "../Layout/Button";
-import ButtonGroup from "../Layout/ButtonGroup";
+import { EMBED_URL } from '@/env-variables';
+import apiService from '@/services/api';
+import { MessageContent } from '@/types/chat';
+import { FC, useEffect, useRef, useState } from 'react';
+import Button from '../Layout/Button';
+import ButtonGroup from '../Layout/ButtonGroup';
 
 const getEmbedCode = (viz_id: string) =>
   `<iframe style="display:block;" width="100%" height="600px" src="${EMBED_URL}${viz_id}" class="hg-data-interactive" frameborder="0" scrolling="no"></iframe>`;
@@ -72,7 +72,7 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
 
   return (
     <div className="flex flex-col sm:flex-row items-center gap-4">
-      {status === "successful" && (
+      {status === 'successful' && (
         <>
           <ButtonGroup className="order-last sm:order-first">
             {!thumbsDownClicked && (
@@ -81,8 +81,8 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
                 color="primary-light"
                 className={`h-full hover:bg-gray-200 ${
                   thumbsUpClicked
-                    ? "text-green-700 pointer-events-none"
-                    : "text-secondary-dark"
+                    ? 'text-green-700 pointer-events-none'
+                    : 'text-secondary-dark'
                 }`}
                 onClick={handleThumbsUpClick}
               />
@@ -93,8 +93,8 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
                 color="primary-light"
                 className={`h-full hover:bg-gray-200 ${
                   thumbsDownClicked
-                    ? "text-red-600 pointer-events-none"
-                    : "text-secondary-dark"
+                    ? 'text-red-600 pointer-events-none'
+                    : 'text-secondary-dark'
                 }`}
                 onClick={handleThumbsDownClick}
               />
@@ -103,11 +103,11 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
           <ButtonGroup>
             <Button
               color="primary-light"
-              icon={textCopied ? "check" : "content_copy"}
+              icon={textCopied ? 'check' : 'content_copy'}
               className={`h-full hover:bg-gray-200 ${
                 textCopied
-                  ? "text-green-700 pointer-events-none"
-                  : "text-secondary-dark"
+                  ? 'text-green-700 pointer-events-none'
+                  : 'text-secondary-dark'
               }`}
               onClick={handleCopyText}
             >
@@ -116,11 +116,11 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
             {viz_id && (
               <Button
                 color="primary-light"
-                icon={embedCopied ? "check" : "code"}
+                icon={embedCopied ? 'check' : 'code'}
                 className={`h-full hover:bg-gray-200 ${
                   embedCopied
-                    ? "text-green-700 pointer-events-none"
-                    : "text-secondary-dark"
+                    ? 'text-green-700 pointer-events-none'
+                    : 'text-secondary-dark'
                 }`}
                 onClick={handleCopyEmbed}
               >

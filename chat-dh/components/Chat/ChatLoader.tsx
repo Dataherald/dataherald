@@ -1,25 +1,25 @@
-import Image from "next/image";
-import { FC, useEffect, useState } from "react";
+import Image from 'next/image';
+import { FC, useEffect, useState } from 'react';
 
 const DEFAULT_MESSAGES = [
   {
-    text: "Loading...",
-    image: "/images/loading/analyzing_data.svg",
+    text: 'Loading...',
+    image: '/images/loading/analyzing_data.svg',
     duration: 5000,
   },
   {
-    text: "Retrieving data sources...",
-    image: "/images/loading/retrieving_data_sources.svg",
+    text: 'Retrieving data sources...',
+    image: '/images/loading/retrieving_data_sources.svg',
     duration: 8000,
   },
   {
-    text: "Analyzing data...",
-    image: "/images/loading/analyzing_data.svg",
+    text: 'Analyzing data...',
+    image: '/images/loading/analyzing_data.svg',
     duration: 8000,
   },
   {
-    text: "Generating visualization...",
-    image: "/images/loading/generating_visualization.svg",
+    text: 'Generating visualization...',
+    image: '/images/loading/generating_visualization.svg',
     duration: 8000,
   },
 ];

@@ -1,5 +1,5 @@
-import React, { CSSProperties, ReactNode } from "react";
-import styles from "./ButtonGroup.module.css";
+import React, { CSSProperties, ReactNode } from 'react';
+import styles from './ButtonGroup.module.css';
 
 interface ButtonGroupProps {
   children: ReactNode;
@@ -9,7 +9,7 @@ interface ButtonGroupProps {
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({
   children,
-  className = "",
+  className = '',
   style = {},
 }) => {
   return (

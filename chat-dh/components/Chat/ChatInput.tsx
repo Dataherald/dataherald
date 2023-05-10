@@ -1,6 +1,6 @@
-import { useChat } from "@/context/chat";
-import { FC, KeyboardEvent, useRef, useState } from "react";
-import { Icon } from "../Layout/Icon";
+import { useChat } from '@/context/chat';
+import { FC, KeyboardEvent, useRef, useState } from 'react';
+import { Icon } from '../Layout/Icon';
 
 const VALIDATIONS = {
   MAX_CHARACTERS: 1000,
@@ -11,7 +11,7 @@ interface ChatInputProps {
 }
 
 export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
-  const [content, setContent] = useState<string>("");
+  const [content, setContent] = useState<string>('');
   const { error, setError, loading, messages } = useChat();
   const emptyMessages = messages.length === 0;
 
@@ -33,11 +33,11 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
       return;
     }
     onSend(content);
-    setContent("");
+    setContent('');
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (!error) handleSendUserMessage();
     }
@@ -48,15 +48,15 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
       <textarea
         ref={textareaRef}
         className={`min-h-[44px] rounded-lg pl-4 pr-12 py-2 w-full focus:outline-none focus:ring-1 focus:ring-neutral-300 border border-black border-opacity-80 ${
-          loading && "opacity-80"
-        } ${error && "border-yellow-600 text-yellow-600"}`}
-        style={{ resize: "none" }}
+          loading && 'opacity-80'
+        } ${error && 'border-yellow-600 text-yellow-600'}`}
+        style={{ resize: 'none' }}
         placeholder={
           loading
-            ? "Only one message at a time is supported"
+            ? 'Only one message at a time is supported'
             : emptyMessages
-            ? "Ask Dataherald a Real Estate prompt"
-            : "We don’t support for chat history context yet, but we will soon. Ask Dataherald another Real Estate prompt..."
+            ? 'Ask Dataherald a Real Estate prompt'
+            : 'We don’t support for chat history context yet, but we will soon. Ask Dataherald another Real Estate prompt...'
         }
         value={content}
         rows={3}
@@ -70,9 +70,9 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
           type="filled"
           className={`text-secondary-dark absolute right-2 h-8 w-8 rounded-full p-1 ${
             loading || !!error
-              ? "opacity-50"
-              : "hover:opacity-80 hover:cursor-pointer"
-          } ${error ? "bottom-[4rem]" : "bottom-[2.3rem]"}`}
+              ? 'opacity-50'
+              : 'hover:opacity-80 hover:cursor-pointer'
+          } ${error ? 'bottom-[4rem]' : 'bottom-[2.3rem]'}`}
         />
       </button>
       {error && (

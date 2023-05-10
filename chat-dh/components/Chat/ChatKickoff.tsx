@@ -1,6 +1,6 @@
-import { FC } from "react";
-import { Box } from "../Layout/Box";
-import { Icon, IconType, IconValue } from "../Layout/Icon";
+import { FC } from 'react';
+import { Box } from '../Layout/Box';
+import { Icon, IconType, IconValue } from '../Layout/Icon';
 
 interface ChatKickoffProps {
   onExampleClick: (prompt: string) => void;
@@ -17,21 +17,21 @@ interface ChatKickoffBox {
 
 export const ChatKickoff: FC<ChatKickoffProps> = ({ onExampleClick }) => {
   const examplesPrompts = [
-    "Home prices in Los Angeles",
-    "What was the most expensive ZIP in CA in January 2023?",
-    "Total homes sold in Los Angeles in 2023 broken down by building type",
+    'Home prices in Los Angeles',
+    'What was the most expensive ZIP in CA in January 2023?',
+    'Total homes sold in Los Angeles in 2023 broken down by building type',
   ];
   const handleExampleClick = (prompt: string) => {
     return () => onExampleClick(prompt);
   };
   const BOXES: ChatKickoffBox[] = [
     {
-      icon: { value: "bolt" },
-      title: "Capabilities",
+      icon: { value: 'bolt' },
+      title: 'Capabilities',
       body: (
         <>
           <h3>
-            This is a first release, with limited functionality. It enables{" "}
+            This is a first release, with limited functionality. It enables{' '}
             <b>only</b> the following:
           </h3>
           <ul className="list list-decimal">
@@ -40,7 +40,7 @@ export const ChatKickoff: FC<ChatKickoffProps> = ({ onExampleClick }) => {
                 Generate only 1 paragraph summary about a real estate topic. The
                 data available includes only: rents, sales prices, listing
                 prices, price per square foot, # of homes sold, inventory and
-                number of pending sales.{" "}
+                number of pending sales.{' '}
                 <b>No other data included in this release</b>.
               </>,
               <>Generate 1 data viz</>,
@@ -54,8 +54,8 @@ export const ChatKickoff: FC<ChatKickoffProps> = ({ onExampleClick }) => {
       ),
     },
     {
-      icon: { value: "lightbulb" },
-      title: "Examples",
+      icon: { value: 'lightbulb' },
+      title: 'Examples',
       body: (
         <ul className="flex flex-col gap-2 w-full">
           {examplesPrompts.map((prompt, idx) => (
@@ -73,8 +73,8 @@ export const ChatKickoff: FC<ChatKickoffProps> = ({ onExampleClick }) => {
       ),
     },
     {
-      icon: { value: "warning_amber", type: "round" },
-      title: "Limitations",
+      icon: { value: 'warning_amber', type: 'round' },
+      title: 'Limitations',
       body: (
         <>
           <h3>
@@ -82,8 +82,8 @@ export const ChatKickoff: FC<ChatKickoffProps> = ({ onExampleClick }) => {
           </h3>
           <ul className="list list-disc">
             {[
-              "Data timeframe: Only January 1 2020 onward is supported",
-              "Geographies: Only United States states, counties, cities, and zip codes. All other geographies, for example neighborhoods, are NOT supported.",
+              'Data timeframe: Only January 1 2020 onward is supported',
+              'Geographies: Only United States states, counties, cities, and zip codes. All other geographies, for example neighborhoods, are NOT supported.',
             ].map((listItem, idx) => (
               <li className="ml-4" key={idx}>
                 {listItem}
@@ -109,7 +109,7 @@ export const ChatKickoff: FC<ChatKickoffProps> = ({ onExampleClick }) => {
               {body}
             </div>
           </Box>
-        )
+        ),
       )}
     </div>
   );

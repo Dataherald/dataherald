@@ -1,5 +1,5 @@
-import { CSSProperties, FC, ReactNode, memo } from "react";
-import { Icon, IconType, IconValue } from "./Icon";
+import { CSSProperties, FC, ReactNode, memo } from 'react';
+import { Icon, IconType, IconValue } from './Icon';
 
 interface ButtonProps {
   children?: ReactNode;
@@ -8,7 +8,7 @@ interface ButtonProps {
   style?: CSSProperties;
   icon?: IconValue;
   iconType?: IconType;
-  color?: "primary" | "primary-light" | "secondary";
+  color?: 'primary' | 'primary-light' | 'secondary';
 }
 
 const Button: FC<ButtonProps> = ({
@@ -16,14 +16,14 @@ const Button: FC<ButtonProps> = ({
   onClick,
   icon,
   iconType,
-  color = "primary",
-  className = "",
+  color = 'primary',
+  className = '',
   style = {},
 }) => {
   const colorClasses = {
-    primary: "bg-primary",
-    "primary-light": "bg-primary-light",
-    secondary: "bg-secondary",
+    primary: 'bg-primary',
+    'primary-light': 'bg-primary-light',
+    secondary: 'bg-secondary',
   };
 
   const bgColor = colorClasses[color];

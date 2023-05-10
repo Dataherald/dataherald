@@ -1,6 +1,6 @@
-import { ResponseStatus } from "../api";
+import { ResponseStatus } from '../api';
 
-export type Role = "assistant" | "user";
+export type Role = 'assistant' | 'user';
 
 export interface MessageContent {
   status: ResponseStatus;
@@ -16,5 +16,5 @@ export interface Message {
 
 // Unused
 export enum OpenAIModel {
-  DAVINCI_TURBO = "gpt-3.5-turbo",
+  DAVINCI_TURBO = 'gpt-3.5-turbo',
 }

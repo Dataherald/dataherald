@@ -1,19 +1,19 @@
-import { API_URL } from "@/env-variables";
-import { ChatResponse } from "@/types/api";
-import { Message } from "@/types/chat";
-import { fetchAPI } from "@/utils/api";
+import { API_URL } from '@/env-variables';
+import { ChatResponse } from '@/types/api';
+import { Message } from '@/types/chat';
+import { fetchAPI } from '@/utils/api';
 
 const apiService = {
   async chat(
     message: Message[],
-    userEmail: string = "unknown"
+    userEmail: string = 'unknown',
   ): Promise<ChatResponse> {
     // const url = "api/chat";
     const url = `${API_URL}/chat`;
     // HOTFIX -- Use directly our API because Vercel times out at 60s and can't be changed with our plan
     try {
       const response = await fetchAPI<ChatResponse>(url, {
-        method: "POST",
+        method: 'POST',
         body: {
           message,
           user: userEmail,
@@ -32,7 +32,7 @@ const apiService = {
     // HOTFIX -- Use directly our API because Vercel times out at 60s and can't be changed with our plan
     try {
       await fetchAPI<void>(url, {
-        method: "POST",
+        method: 'POST',
         body: {
           is_useful,
         },

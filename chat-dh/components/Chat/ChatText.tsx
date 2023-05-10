@@ -1,5 +1,5 @@
-import { CSSProperties, FC } from "react";
-import sanitizeHtml from "sanitize-html";
+import { CSSProperties, FC } from 'react';
+import sanitizeHtml from 'sanitize-html';
 
 interface ChatTextProps {
   className?: string;
@@ -9,16 +9,16 @@ interface ChatTextProps {
 
 export const ChatText: FC<ChatTextProps> = ({
   text,
-  className = "",
+  className = '',
   style = {},
 }) => {
   const sanitizedText = sanitizeHtml(text, {
-    allowedTags: ["p"],
+    allowedTags: ['p'],
     allowedAttributes: {},
   });
 
   const paragraphs = sanitizedText
-    .split("\n")
+    .split('\n')
     .map((paragraph, index) => <p key={index}>{paragraph}</p>);
 
   return (
