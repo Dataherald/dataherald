@@ -26,10 +26,10 @@ jobs:
           node-version: 16
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        run: npm install -g pnpm@7.32.0
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Check format
         run: npm run format:check
