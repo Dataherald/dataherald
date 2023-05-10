@@ -56,7 +56,7 @@ const QuickStartGuide: FC = () => {
               </h2>
               <ul className="pl-2 list list-disc">
                 {EXAMPLE_PROMPTS.map((prompt, idx) => (
-                  <li className="ml-4" key={idx}>
+                  <li className="ml-4 mb-3 sm:mb-1" key={idx}>
                     <button
                       className="w-full bg-transparent border-none text-start text-blue-600 cursor-pointer hover:text-blue-800 focus:outline-none focus:ring-0 flex items-center justify-between gap-2"
                       onClick={() => handlePromptClick(prompt)}
