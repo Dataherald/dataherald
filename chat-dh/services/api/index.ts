@@ -4,10 +4,7 @@ import { Message } from '@/types/chat';
 import { fetchAPI } from '@/utils/api';
 
 const apiService = {
-  async chat(
-    message: Message[],
-    userEmail: string = 'unknown',
-  ): Promise<ChatResponse> {
+  async chat(message: Message[], userEmail = 'unknown'): Promise<ChatResponse> {
     // const url = "api/chat";
     const url = `${API_URL}/chat`;
     // HOTFIX -- Use directly our API because Vercel times out at 60s and can't be changed with our plan
@@ -35,6 +32,27 @@ const apiService = {
         method: 'POST',
         body: {
           is_useful,
+        },
+      });
+      return;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+  async login(user: {
+    name: string;
+    nickname: string;
+    picture: string;
+    email: string;
+    email_verified: boolean;
+  }): Promise<void> {
+    const url = `${API_URL}/auth/login`;
+    try {
+      await fetchAPI<void>(url, {
+        method: 'POST',
+        body: {
+          user,
         },
       });
       return;

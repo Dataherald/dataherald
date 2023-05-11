@@ -3,7 +3,7 @@ import { HTTP_METHOD } from 'next/dist/server/web/http';
 
 export interface HTTP_OPTIONS {
   method?: HTTP_METHOD;
-  body?: any;
+  body?: unknown;
   headers?: HeadersInit;
 }
 
@@ -30,11 +30,6 @@ export const fetchAPI = async <T>(
       headers,
       body: body ? JSON.stringify(body) : null,
     });
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
     return response.json() as Promise<T>;
   } catch (error) {
     console.error('API Service Error:', (error as ApiError).message);
