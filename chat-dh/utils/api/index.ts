@@ -5,6 +5,7 @@ export interface HTTP_OPTIONS {
   method?: HTTP_METHOD;
   body?: unknown;
   headers?: HeadersInit;
+  signal?: AbortSignal;
 }
 
 export const fetchAPI = async <T>(
@@ -16,6 +17,7 @@ export const fetchAPI = async <T>(
     method = 'GET',
     body,
     headers = { 'Content-Type': 'application/json' },
+    signal,
   } = options;
 
   // Append query parameters to the URL, if provided
@@ -29,6 +31,7 @@ export const fetchAPI = async <T>(
       method,
       headers,
       body: body ? JSON.stringify(body) : null,
+      signal,
     });
     return response.json() as Promise<T>;
   } catch (error) {
@@ -36,3 +39,6 @@ export const fetchAPI = async <T>(
     throw error;
   }
 };
+
+export const isAbortError = (e: any) =>
+  e instanceof DOMException && e.name === 'AbortError';

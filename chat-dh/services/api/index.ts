@@ -4,7 +4,11 @@ import { Message } from '@/types/chat';
 import { fetchAPI } from '@/utils/api';
 
 const apiService = {
-  async chat(message: Message[], userEmail = 'unknown'): Promise<ChatResponse> {
+  async chat(
+    message: Message[],
+    userEmail: string = 'unknown',
+    abortSignal: AbortSignal,
+  ): Promise<ChatResponse> {
     // const url = "api/chat";
     const url = `${API_URL}/chat`;
     // HOTFIX -- Use directly our API because Vercel times out at 60s and can't be changed with our plan
@@ -16,6 +20,7 @@ const apiService = {
           user: userEmail,
           date_entered: new Date(),
         },
+        signal: abortSignal,
       });
       return response;
     } catch (error) {

@@ -9,12 +9,14 @@ import { Header } from '../Layout/Header';
 import { ChatInput } from './ChatInput';
 import { ChatKickoff } from './ChatKickoff';
 import { ChatMessage } from './ChatMessage';
+import { isAbortError } from '@/utils/api';
 
 export const Chat: FC = () => {
   const { messages, setMessages, loading, setLoading, error } = useChat();
   const { user } = useUser();
   const { prompt, setPrompt } = usePrompt();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatAbortControllerRef = useRef<AbortController | null>();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -27,6 +29,8 @@ export const Chat: FC = () => {
         content: newUserMessage,
       };
       const updatedMessages: Message[] = [...messages, newMessage];
+      const abortController = new AbortController();
+      chatAbortControllerRef.current = abortController;
       setLoading(true);
       setMessages([
         ...updatedMessages,
@@ -41,6 +45,7 @@ export const Chat: FC = () => {
         const chatResponse = await apiService.chat(
           updatedMessages,
           user?.email || '',
+          chatAbortControllerRef.current?.signal,
         );
 
         setMessages((prevMessages) =>
@@ -54,6 +59,12 @@ export const Chat: FC = () => {
           ),
         );
       } catch (e) {
+        let messageText: string;
+        if (isAbortError(e)) {
+          messageText = 'User has cancelled the request.';
+        } else {
+          messageText = 'Something went wrong. Please try again later.';
+        }
         setMessages((prevMessages) =>
           prevMessages.map((message) =>
             (message.content as MessageContent).status === 'loading'
@@ -61,8 +72,7 @@ export const Chat: FC = () => {
                   role: 'assistant',
                   content: {
                     status: 'error',
-                    generated_text:
-                      'Something went wrong. Please try again later.',
+                    generated_text: messageText,
                   },
                 }
               : message,
@@ -85,6 +95,10 @@ export const Chat: FC = () => {
   const handleReset = useCallback(() => {
     setMessages([]);
   }, [setMessages]);
+
+  const handleAbort = () => {
+    if (chatAbortControllerRef.current) chatAbortControllerRef.current.abort();
+  };
 
   useLayoutEffect(() => {
     scrollToBottom();
@@ -117,14 +131,26 @@ export const Chat: FC = () => {
             ))}
           </div>
           <div className="flex flex-col gap-4 items-center px-4">
-            <Button
-              color="primary-light"
-              icon="message"
-              className="hover:bg-gray-200 text-secondary-dark"
-              onClick={handleReset}
-            >
-              New Chat
-            </Button>
+            {loading ? (
+              <Button
+                color="primary-light"
+                icon="stop"
+                className="hover:bg-gray-200 text-secondary-dark"
+                onClick={handleAbort}
+              >
+                Stop Generating
+              </Button>
+            ) : (
+              <Button
+                color="primary-light"
+                icon="message"
+                className="hover:bg-gray-200 text-secondary-dark"
+                onClick={handleReset}
+              >
+                New Chat
+              </Button>
+            )}
+
             <div className="w-full max-w-[1000px] mx-auto">
               <ChatInput onSend={sendMessage} />
             </div>
