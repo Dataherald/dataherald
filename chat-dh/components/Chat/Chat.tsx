@@ -127,7 +127,11 @@ export const Chat: FC = () => {
         <div className="flex-1 flex flex-col mb-4">
           <div className="flex flex-col flex-grow">
             {messages.map((message, index) => (
-              <ChatMessage key={index} message={message} />
+              <ChatMessage
+                key={index}
+                message={message}
+                scrollToBottom={scrollToBottom}
+              />
             ))}
           </div>
           <div className="flex flex-col gap-4 items-center px-4">
