@@ -6,15 +6,20 @@ import { fetchAPI } from '@/utils/api';
 const apiService = {
   async chat(
     message: Message[],
-    userEmail: string = 'unknown',
+    userEmail = 'unknown',
     abortSignal: AbortSignal,
   ): Promise<ChatResponse> {
     // const url = "api/chat";
     const url = `${API_URL}/chat`;
     // HOTFIX -- Use directly our API because Vercel times out at 60s and can't be changed with our plan
     try {
+      const accessToken = await fetchAPI<string>('/api/auth/token');
       const response = await fetchAPI<ChatResponse>(url, {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
         body: {
           message,
           user: userEmail,
@@ -28,13 +33,19 @@ const apiService = {
       throw error;
     }
   },
+
   async feedback(chatResponseId: string, is_useful: boolean): Promise<void> {
     // const url = `api/chat/feedback/${chatResponseId}`;
     const url = `${API_URL}/chat/feedback/${chatResponseId}`;
     // HOTFIX -- Use directly our API because Vercel times out at 60s and can't be changed with our plan
     try {
-      await fetchAPI<void>(url, {
+      const accessToken = await fetchAPI<string>('/api/auth/token');
+      await fetchAPI(url, {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
         body: {
           is_useful,
         },
@@ -45,6 +56,7 @@ const apiService = {
       throw error;
     }
   },
+
   async login(user: {
     name: string;
     nickname: string;

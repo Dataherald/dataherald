@@ -1,3 +1,4 @@
+import { AUTH0_API_AUDIENCE } from '@/env-variables';
 import apiService from '@/services/api';
 import {
   HandlerError,
@@ -19,8 +20,16 @@ const afterCallback: AfterCallback = async (req, res, session) => {
 };
 
 export default handleAuth({
+  login: handleLogin({
+    authorizationParams: {
+      audience: AUTH0_API_AUDIENCE,
+    },
+  }),
   signup: handleLogin({
-    authorizationParams: { screen_hint: 'signup' },
+    authorizationParams: {
+      audience: AUTH0_API_AUDIENCE,
+      screen_hint: 'signup',
+    },
   }),
   callback: handleCallback({ afterCallback }),
   onError(_: NextApiRequest, res: NextApiResponse, error: HandlerError) {

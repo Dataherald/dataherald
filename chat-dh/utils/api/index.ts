@@ -8,7 +8,7 @@ export interface HTTP_OPTIONS {
   signal?: AbortSignal;
 }
 
-export const fetchAPI = async <T>(
+export const fetchAPI = async <T = void>(
   url: string,
   options: HTTP_OPTIONS = {},
   queryParams?: Record<string, string>,
