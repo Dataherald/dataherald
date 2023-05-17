@@ -1,6 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@amplitude/analytics-browser': ^1.10.3
   '@auth0/nextjs-auth0': ^2.5.0
   '@tabler/icons-react': ^2.17.0
   '@types/node': 18.15.0
@@ -27,6 +28,7 @@ specifiers:
   typescript: 5.0.4
 
 dependencies:
+  '@amplitude/analytics-browser': 1.10.3
   '@auth0/nextjs-auth0': 2.5.0_next@13.3.0
   '@tabler/icons-react': 2.17.0_react@18.2.0
   '@types/node': 18.15.0
@@ -60,6 +62,62 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
     dev: true
+
+  /@amplitude/analytics-browser/1.10.3:
+    resolution: {integrity: sha512-u9xnHVLMtoWawZssZDC1wYR7GjuXF9DWL09fCdxf5j0Gp9CtRurzt+kUx9KC8IzrBmNSYZ7jG8xhwUWCbIFodg==}
+    dependencies:
+      '@amplitude/analytics-client-common': 0.7.0
+      '@amplitude/analytics-core': 0.13.3
+      '@amplitude/analytics-types': 0.20.0
+      '@amplitude/plugin-page-view-tracking-browser': 0.8.0
+      '@amplitude/plugin-web-attribution-browser': 0.7.0
+      '@amplitude/ua-parser-js': 0.7.33
+      tslib: 2.5.0
+    dev: false
+
+  /@amplitude/analytics-client-common/0.7.0:
+    resolution: {integrity: sha512-fKBR5DSo6qTqFcCFnLopRdWv6Zieox3YnzyXG2Zg1hR9MDeX96GoMEwwT2VB5MPzGxE1wYW6kQPvU2C/xpn5ww==}
+    dependencies:
+      '@amplitude/analytics-connector': 1.4.8
+      '@amplitude/analytics-core': 0.13.3
+      '@amplitude/analytics-types': 0.20.0
+      tslib: 2.5.0
+    dev: false
+
+  /@amplitude/analytics-connector/1.4.8:
+    resolution: {integrity: sha512-dFW7c7Wb6Ng7vbmzwbaXZSpqfBx37ukamJV9ErFYYS8vGZK/Hkbt3M7fZHBI4WFU6CCwakr2ZXPme11uGPYWkQ==}
+    dev: false
+
+  /@amplitude/analytics-core/0.13.3:
+    resolution: {integrity: sha512-lLLmUwi78iqGsCPgd15yH488K+3FPYQ19fCdA3OemoEK9959xCzMZe/KYafQKkgZmI4ZiZLOp3pjamKWc6mcdQ==}
+    dependencies:
+      '@amplitude/analytics-types': 0.20.0
+      tslib: 2.5.0
+    dev: false
+
+  /@amplitude/analytics-types/0.20.0:
+    resolution: {integrity: sha512-OYoUrf7QUl5sL4mqcQJBu+0GuSar7ga5prJv0HDtPT4LGu7Adv8S3AWljGiEJuTS/YaOMzvTe2qyKZbwyiNrMw==}
+    dev: false
+
+  /@amplitude/plugin-page-view-tracking-browser/0.8.0:
+    resolution: {integrity: sha512-Bun7aGo7woxsnupDEY1YugLQyAXDRtFhQsXnJKKCIkyeeRCq4qsuaAz0wI8w1QV+3IhaAf0lBuSqSuBIhPFDLQ==}
+    dependencies:
+      '@amplitude/analytics-client-common': 0.7.0
+      '@amplitude/analytics-types': 0.20.0
+      tslib: 2.5.0
+    dev: false
+
+  /@amplitude/plugin-web-attribution-browser/0.7.0:
+    resolution: {integrity: sha512-PKC6SHIVGXvxhxO4CZQOYidoo+aKApLRFGBbRfDEVdSxEDY1b1wTHtqTJomxodqvw4pLocSDiuwC1s7B0p4zAQ==}
+    dependencies:
+      '@amplitude/analytics-client-common': 0.7.0
+      '@amplitude/analytics-types': 0.20.0
+      tslib: 2.5.0
+    dev: false
+
+  /@amplitude/ua-parser-js/0.7.33:
+    resolution: {integrity: sha512-wKEtVR4vXuPT9cVEIJkYWnlF++Gx3BdLatPBM+SZ1ztVIvnhdGBZR/mn9x/PzyrMcRlZmyi6L56I2J3doVBnjA==}
+    dev: false
 
   /@auth0/nextjs-auth0/2.5.0_next@13.3.0:
     resolution: {integrity: sha512-gPrNMH436ILgTeYwquybjieRt6I0YMnDlmlC7Z3Hw73pWWEv/tQMz7qiz2dyRErrOUQB7cWl2nxz0R7liiWc0g==}

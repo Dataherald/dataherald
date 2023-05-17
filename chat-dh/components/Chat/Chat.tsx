@@ -1,7 +1,9 @@
 import { useChat } from '@/context/chat';
 import { usePrompt } from '@/context/prompt';
+import analyticsService from '@/services/analytics';
 import apiService from '@/services/api';
 import { Message, MessageContent } from '@/types/chat';
+import { isAbortError } from '@/utils/api';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { FC, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import Button from '../Layout/Button';
@@ -9,7 +11,6 @@ import { Header } from '../Layout/Header';
 import { ChatInput } from './ChatInput';
 import { ChatKickoff } from './ChatKickoff';
 import { ChatMessage } from './ChatMessage';
-import { isAbortError } from '@/utils/api';
 
 export const Chat: FC = () => {
   const { messages, setMessages, loading, setLoading, error } = useChat();
@@ -47,7 +48,10 @@ export const Chat: FC = () => {
           user?.email || '',
           chatAbortControllerRef.current?.signal,
         );
-
+        analyticsService.track('new-user-prompt', {
+          prompt: newUserMessage,
+          status: 'success',
+        });
         setMessages((prevMessages) =>
           prevMessages.map((message) =>
             (message.content as MessageContent).status === 'loading'
@@ -62,8 +66,16 @@ export const Chat: FC = () => {
         let messageText: string;
         if (isAbortError(e)) {
           messageText = 'User has cancelled the request.';
+          analyticsService.track('new-user-prompt', {
+            prompt: newUserMessage,
+            status: 'canceled',
+          });
         } else {
           messageText = 'Something went wrong. Please try again later.';
+          analyticsService.track('new-user-prompt', {
+            prompt: newUserMessage,
+            status: 'error',
+          });
         }
         setMessages((prevMessages) =>
           prevMessages.map((message) =>
