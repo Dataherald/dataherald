@@ -1,5 +1,6 @@
 import { AMPLITUDE_API_KEY } from '@/env-variables';
 import * as amplitude from '@amplitude/analytics-browser';
+import { UserProfile } from '@auth0/nextjs-auth0/client';
 
 class AnalyticsService {
   constructor() {
@@ -19,11 +20,12 @@ class AnalyticsService {
     amplitude.track(eventName, eventData);
   }
 
-  setUser(properties: Record<string, amplitude.Types.ValidPropertyType>): void {
-    const identify = new amplitude.Identify();
-    for (const key in properties) {
-      identify.set(key, properties[key]);
+  setUser(user: UserProfile): void {
+    const identifyEvent = new amplitude.Identify();
+    for (const key in user) {
+      identifyEvent.set(key, user[key] as amplitude.Types.ValidPropertyType);
     }
+    amplitude.identify(identifyEvent);
   }
 }
 
