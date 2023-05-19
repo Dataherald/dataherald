@@ -121,10 +121,6 @@ export const Chat: FC = () => {
     if (chatAbortControllerRef.current) chatAbortControllerRef.current.abort();
   };
 
-  useLayoutEffect(() => {
-    scrollToBottom();
-  }, [messages, loading, error, scrollToBottom]);
-
   useEffect(() => {
     if (prompt) {
       handleExample(prompt);
@@ -145,7 +141,7 @@ export const Chat: FC = () => {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col mb-4">
+        <div className="flex-1 flex flex-col">
           <div className="flex flex-col flex-grow">
             {messages.map((message, index) => (
               <ChatMessage
@@ -155,7 +151,7 @@ export const Chat: FC = () => {
               />
             ))}
           </div>
-          <div className="flex flex-col gap-4 items-center px-4">
+          <div className="flex flex-col gap-4 items-center px-4 mb-4">
             {loading ? (
               <Button
                 color="primary-light"
@@ -175,10 +171,9 @@ export const Chat: FC = () => {
                 New Chat
               </Button>
             )}
-
-            <div className="w-full max-w-[1000px] mx-auto">
-              <ChatInput onSend={sendMessage} />
-            </div>
+          </div>
+          <div className="sticky bottom-0 bg-white w-full max-w-[1000px] mx-auto px-4 pb-4">
+            <ChatInput onSend={sendMessage} />
           </div>
         </div>
       )}

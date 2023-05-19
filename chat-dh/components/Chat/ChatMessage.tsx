@@ -23,7 +23,11 @@ export const ChatMessage: FC<ChatMessageProps> = ({
   const [iframeLoaded, setIframeLoaded] = useState(false);
 
   useLayoutEffect(() => {
-    scrollToBottom();
+    const timeout = setTimeout(() => scrollToBottom(), 100);
+
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [content, iframeLoaded, scrollToBottom]);
 
   return (
