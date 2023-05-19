@@ -19,9 +19,9 @@ export const Chat: FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatAbortControllerRef = useRef<AbortController | null>();
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   const sendMessage = useCallback(
     async (newUserMessage: string) => {
@@ -114,7 +114,7 @@ export const Chat: FC = () => {
 
   useLayoutEffect(() => {
     scrollToBottom();
-  }, [messages, loading, error]);
+  }, [messages, loading, error, scrollToBottom]);
 
   useEffect(() => {
     if (prompt) {

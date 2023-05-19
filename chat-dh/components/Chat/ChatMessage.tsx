@@ -2,7 +2,7 @@ import { EMBED_URL } from '@/env-variables';
 import { Message } from '@/types/chat';
 import { UserProfile, useUser } from '@auth0/nextjs-auth0/client';
 import Image from 'next/image';
-import { FC, useState, useLayoutEffect } from 'react';
+import { FC, useLayoutEffect, useState } from 'react';
 import { Icon } from '../Layout/Icon';
 import ChatAssistantMessageActions from './ChatAssistantMessageActions';
 import { ChatLoader } from './ChatLoader';
@@ -10,7 +10,7 @@ import { ChatText } from './ChatText';
 
 interface ChatMessageProps {
   message: Message;
-  scrollToBottom: (a: boolean) => void;
+  scrollToBottom: () => void;
 }
 
 export const ChatMessage: FC<ChatMessageProps> = ({
@@ -23,8 +23,8 @@ export const ChatMessage: FC<ChatMessageProps> = ({
   const [iframeLoaded, setIframeLoaded] = useState(false);
 
   useLayoutEffect(() => {
-    scrollToBottom(true);
-  }, [content, iframeLoaded]);
+    scrollToBottom();
+  }, [content, iframeLoaded, scrollToBottom]);
 
   return (
     <div className={`${role === 'user' && 'bg-gray-100'}`}>
