@@ -13,10 +13,18 @@ class AnalyticsService {
           fileDownloads: true,
         },
       });
+      amplitude.setTransport(amplitude.Types.TransportType.SendBeacon);
     }
   }
 
-  track(eventName: string, eventData: Record<string, unknown>) {
+  buttonClick(
+    type: string,
+    extraProperties: Record<string, unknown> = {},
+  ): void {
+    this.track('button-click', { type, ...extraProperties });
+  }
+
+  track(eventName: string, eventData: Record<string, unknown> = {}) {
     amplitude.track(eventName, eventData);
   }
 

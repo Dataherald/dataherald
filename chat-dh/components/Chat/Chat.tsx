@@ -24,7 +24,7 @@ export const Chat: FC = () => {
   }, []);
 
   const sendMessage = useCallback(
-    async (newUserMessage: string) => {
+    async (newUserMessage: string, isExample = false) => {
       const newMessage: Message = {
         role: 'user',
         content: newUserMessage,
@@ -48,9 +48,13 @@ export const Chat: FC = () => {
           user?.email || '',
           chatAbortControllerRef.current?.signal,
         );
-        analyticsService.track('new-user-prompt', {
+        analyticsService.buttonClick('new-user-prompt', {
           prompt: newUserMessage,
-          status: 'success',
+          status: chatResponse.status,
+          ['response-text']: chatResponse.generated_text,
+          ['response-viz-id']: chatResponse?.viz_id,
+          ['response-id']: chatResponse.id,
+          ['is-example']: isExample,
         });
         setMessages((prevMessages) =>
           prevMessages.map((message) =>
@@ -66,15 +70,17 @@ export const Chat: FC = () => {
         let messageText: string;
         if (isAbortError(e)) {
           messageText = 'User has cancelled the request.';
-          analyticsService.track('new-user-prompt', {
+          analyticsService.buttonClick('new-user-prompt', {
             prompt: newUserMessage,
             status: 'canceled',
+            ['is-example']: isExample,
           });
         } else {
           messageText = 'Something went wrong. Please try again later.';
-          analyticsService.track('new-user-prompt', {
+          analyticsService.buttonClick('new-user-prompt', {
             prompt: newUserMessage,
             status: 'error',
+            ['is-example']: isExample,
           });
         }
         setMessages((prevMessages) =>
@@ -99,14 +105,17 @@ export const Chat: FC = () => {
 
   const handleExample = useCallback(
     (prompt: string) => {
-      sendMessage(prompt);
+      sendMessage(prompt, true);
     },
     [sendMessage],
   );
 
   const handleReset = useCallback(() => {
     setMessages([]);
-  }, [setMessages]);
+    analyticsService.buttonClick('new-chat', {
+      'messages-length': messages.length,
+    });
+  }, [messages, setMessages]);
 
   const handleAbort = () => {
     if (chatAbortControllerRef.current) chatAbortControllerRef.current.abort();

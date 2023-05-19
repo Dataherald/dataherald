@@ -2,6 +2,7 @@ import Button from '@/components/Layout/Button';
 import { Header } from '@/components/Layout/Header';
 import { MainLayout } from '@/components/Layout/Main';
 import { usePrompt } from '@/context/prompt';
+import analyticsService from '@/services/analytics';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -24,6 +25,14 @@ const QuickStartGuide: FC = () => {
   const handlePromptClick = (prompt: string) => {
     setPrompt(prompt);
     router.push('/chat');
+  };
+
+  const goToChatEvent = (): void => {
+    analyticsService.buttonClick('go-to-chat');
+  };
+
+  const goToContactPageEvent = (): void => {
+    analyticsService.buttonClick('go-to-contact-page');
   };
 
   return (
@@ -89,11 +98,14 @@ const QuickStartGuide: FC = () => {
             <section className="justify-self-end">
               <div className="flex items-center justify-center gap-5">
                 <Button>
-                  <Link href="/chat">Go to chat</Link>
+                  <Link href="/chat" onClick={goToChatEvent}>
+                    Go to chat
+                  </Link>
                 </Button>
                 <Button color="secondary">
                   <Link
                     href="https://dataherald.com/contact"
+                    onClick={goToContactPageEvent}
                     target="_blank"
                     referrerPolicy="no-referrer"
                   >

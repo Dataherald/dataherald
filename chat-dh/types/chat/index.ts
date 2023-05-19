@@ -1,12 +1,14 @@
 import { ResponseStatus } from '../api';
 
 export type Role = 'assistant' | 'user';
+export type MessageStatus = ResponseStatus | 'error' | 'loading';
 
 export interface MessageContent {
-  status: ResponseStatus;
+  status: MessageStatus;
+  message?: string;
   generated_text?: string;
-  id?: string; // ChatResponse id
   viz_id?: string | null;
+  id?: string; // ChatResponse id
 }
 export type Messages = Message[];
 export interface Message {

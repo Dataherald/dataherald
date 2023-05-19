@@ -1,4 +1,5 @@
 import { EMBED_URL } from '@/env-variables';
+import analyticsService from '@/services/analytics';
 import apiService from '@/services/api';
 import { MessageContent } from '@/types/chat';
 import { FC, useEffect, useRef, useState } from 'react';
@@ -13,7 +14,7 @@ interface ChatAssistantMessageActionsProps {
 }
 
 const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
-  message: { generated_text, viz_id, status, id: chatResponseId },
+  message: { id, message, generated_text, viz_id, status, id: chatResponseId },
 }) => {
   const [textCopied, setTextCopied] = useState(false);
   const [embedCopied, setEmbedCopied] = useState(false);
@@ -38,6 +39,12 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
     setTextCopied(true);
     if (textTimeoutRef.current) clearTimeout(textTimeoutRef.current);
     textTimeoutRef.current = setTimeout(() => setTextCopied(false), 750);
+    analyticsService.buttonClick('copy-response-text', {
+      prompt: message,
+      ['response-text']: generated_text,
+      ['response-id']: id,
+      response: generated_text,
+    });
   };
 
   const handleCopyEmbed = async () => {
@@ -46,6 +53,11 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
     setEmbedCopied(true);
     if (embedTimeoutRef.current) clearTimeout(embedTimeoutRef.current);
     embedTimeoutRef.current = setTimeout(() => setEmbedCopied(false), 750);
+    analyticsService.buttonClick('copy-response-embed', {
+      prompt: message,
+      ['response-viz-id']: viz_id,
+      ['response-id']: id,
+    });
   };
 
   const handleThumbsUpClick = async () => {
@@ -53,6 +65,13 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
       apiService.feedback(chatResponseId as string, true);
       setThumbsUpClicked(true);
       setThumbsDownClicked(false);
+      analyticsService.buttonClick('user-feedback', {
+        prompt: message,
+        ['good-response']: true,
+        ['response-text']: generated_text,
+        ['viz-id']: viz_id,
+        ['response-id']: id,
+      });
     } catch (e) {
       console.error(e);
       throw e;
@@ -64,6 +83,13 @@ const ChatAssistantMessageActions: FC<ChatAssistantMessageActionsProps> = ({
       apiService.feedback(chatResponseId as string, false);
       setThumbsUpClicked(false);
       setThumbsDownClicked(true);
+      analyticsService.buttonClick('user-feedback', {
+        prompt: message,
+        ['good-response']: false,
+        ['response-text']: generated_text,
+        ['viz-id']: viz_id,
+        ['response-id']: id,
+      });
     } catch (e) {
       console.error(e);
       throw e;
