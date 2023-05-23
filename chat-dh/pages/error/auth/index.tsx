@@ -20,7 +20,7 @@ const getErrorCause = (errorDescription: string): string => {
     case ERROR_CODES.EMAIL_NOT_VERIFIED:
       return 'Please verify your email address';
     default:
-      return 'Authentication Error';
+      return "Oops! We couldn't verify your identity";
   }
 };
 
@@ -81,7 +81,8 @@ const AuthErrorPage: FC = () => {
           ) : (
             <div className="flex flex-col gap-2">
               <p className="text-gray-800 break-words">
-                An error occurred. Please try again or{' '}
+                Something went wrong. Please try to log in again by clicking the
+                button below or{' '}
                 <a
                   className="text-primary font-semibold"
                   href="mailto:support@dataherald.com"
