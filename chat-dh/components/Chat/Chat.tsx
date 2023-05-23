@@ -5,7 +5,7 @@ import apiService from '@/services/api';
 import { Message, MessageContent } from '@/types/chat';
 import { isAbortError } from '@/utils/api';
 import { useUser } from '@auth0/nextjs-auth0/client';
-import { FC, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import Button from '../Layout/Button';
 import { Header } from '../Layout/Header';
 import { ChatInput } from './ChatInput';
@@ -13,15 +13,36 @@ import { ChatKickoff } from './ChatKickoff';
 import { ChatMessage } from './ChatMessage';
 
 export const Chat: FC = () => {
-  const { messages, setMessages, loading, setLoading, error } = useChat();
+  const {
+    messages,
+    setMessages,
+    loading,
+    setLoading,
+    error,
+    iframeLoading,
+    setIframeLoading,
+  } = useChat();
   const { user } = useUser();
   const { prompt, setPrompt } = usePrompt();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatAbortControllerRef = useRef<AbortController | null>();
+  const [messageLoading, setMessageLoading] = useState(false);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => scrollToBottom(), 100);
+    if (!messageLoading && !iframeLoading) {
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [messageLoading, setMessageLoading, iframeLoading, setIframeLoading]);
 
   const sendMessage = useCallback(
     async (newUserMessage: string, isExample = false) => {
@@ -32,7 +53,7 @@ export const Chat: FC = () => {
       const updatedMessages: Message[] = [...messages, newMessage];
       const abortController = new AbortController();
       chatAbortControllerRef.current = abortController;
-      setLoading(true);
+      setMessageLoading(true);
       setMessages([
         ...updatedMessages,
         {
@@ -48,6 +69,7 @@ export const Chat: FC = () => {
           user?.email || '',
           chatAbortControllerRef.current?.signal,
         );
+        if (chatResponse?.viz_id) setIframeLoading(true);
         analyticsService.buttonClick('new-user-prompt', {
           prompt: newUserMessage,
           status: chatResponse.status,
@@ -97,7 +119,7 @@ export const Chat: FC = () => {
           ),
         );
       } finally {
-        setLoading(false);
+        setMessageLoading(false);
       }
     },
     [messages, setMessages, setLoading, user],
@@ -112,6 +134,8 @@ export const Chat: FC = () => {
 
   const handleReset = useCallback(() => {
     setMessages([]);
+    setIframeLoading(false);
+    setMessageLoading(false);
     analyticsService.buttonClick('new-chat', {
       'messages-length': messages.length,
     });
@@ -119,6 +143,8 @@ export const Chat: FC = () => {
 
   const handleAbort = () => {
     if (chatAbortControllerRef.current) chatAbortControllerRef.current.abort();
+    setIframeLoading(false);
+    setMessageLoading(false);
   };
 
   useEffect(() => {
@@ -144,11 +170,7 @@ export const Chat: FC = () => {
         <div className="flex-1 flex flex-col">
           <div className="flex flex-col flex-grow">
             {messages.map((message, index) => (
-              <ChatMessage
-                key={index}
-                message={message}
-                scrollToBottom={scrollToBottom}
-              />
+              <ChatMessage key={index} message={message} />
             ))}
           </div>
           <div className="flex flex-col gap-4 items-center px-4 mb-4">

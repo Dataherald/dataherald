@@ -7,6 +7,8 @@ interface ChatContextType {
   setMessages: (messages: Messages | SetMessagesFunction) => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
+  iframeLoading: boolean;
+  setIframeLoading: (loadiingIframe: boolean) => void;
   error: string | null;
   setError: (error: string | null) => void;
 }
@@ -29,6 +31,7 @@ export const ChatProvider: FC<ChatProviverProps> = ({ children }) => {
   const [messages, setMessages] = useState<Messages>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [iframeLoading, setIframeLoading] = useState<boolean>(false);
 
   const handleSetMessages = (messages: Messages | SetMessagesFunction) => {
     if (typeof messages === 'function') {
@@ -47,6 +50,8 @@ export const ChatProvider: FC<ChatProviverProps> = ({ children }) => {
         setMessages: handleSetMessages,
         loading,
         setLoading,
+        iframeLoading,
+        setIframeLoading,
         error,
         setError,
       }}
