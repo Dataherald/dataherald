@@ -44,7 +44,7 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative max-w-[1000px] mx-auto">
       <textarea
         ref={textareaRef}
         className={`min-h-[44px] rounded-lg pl-4 pr-12 py-2 w-full focus:outline-none focus:ring-1 focus:ring-neutral-300 border border-black border-opacity-20 shadow-[0px_0px_40px_4px_rgba(0,0,0,0.10)] ${
