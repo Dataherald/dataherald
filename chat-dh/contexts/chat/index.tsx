@@ -5,12 +5,11 @@ type SetMessagesFunction = (prevMessages: Messages) => Messages;
 interface ChatContextType {
   messages: Messages;
   setMessages: (messages: Messages | SetMessagesFunction) => void;
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
-  iframeLoading: boolean;
-  setIframeLoading: (loadiingIframe: boolean) => void;
-  error: string | null;
-  setError: (error: string | null) => void;
+  fetchingNewMessage: boolean;
+  setFetchingNewMessage: (loadingNewMessage: boolean) => void;
+  loadingIframe: boolean;
+  setLoadingIframe: (loadingNewMessage: boolean) => void;
+  loadingNewMessage: boolean;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -29,9 +28,8 @@ interface ChatProviverProps {
 
 export const ChatProvider: FC<ChatProviverProps> = ({ children }) => {
   const [messages, setMessages] = useState<Messages>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [iframeLoading, setIframeLoading] = useState<boolean>(false);
+  const [fetchingNewMessage, setFetchingNewMessage] = useState<boolean>(false);
+  const [loadingIframe, setLoadingIframe] = useState<boolean>(false);
 
   const handleSetMessages = (messages: Messages | SetMessagesFunction) => {
     if (typeof messages === 'function') {
@@ -43,17 +41,18 @@ export const ChatProvider: FC<ChatProviverProps> = ({ children }) => {
     }
   };
 
+  const loadingNewMessage = fetchingNewMessage || loadingIframe;
+
   return (
     <ChatContext.Provider
       value={{
         messages,
         setMessages: handleSetMessages,
-        loading,
-        setLoading,
-        iframeLoading,
-        setIframeLoading,
-        error,
-        setError,
+        fetchingNewMessage,
+        setFetchingNewMessage,
+        loadingIframe,
+        setLoadingIframe,
+        loadingNewMessage,
       }}
     >
       {children}

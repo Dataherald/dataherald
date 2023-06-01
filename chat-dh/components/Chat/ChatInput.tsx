@@ -1,4 +1,4 @@
-import { useChat } from '@/context/chat';
+import { useChat } from '@/contexts/chat';
 import { FC, KeyboardEvent, useRef, useState } from 'react';
 import { Icon } from '../Layout/Icon';
 
@@ -12,7 +12,8 @@ interface ChatInputProps {
 
 export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
   const [content, setContent] = useState<string>('');
-  const { error, setError, loading, messages } = useChat();
+  const [inputError, setInputError] = useState<string | null>(null);
+  const { loadingNewMessage, messages } = useChat();
   const emptyMessages = messages.length === 0;
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -22,9 +23,11 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
     setContent(value);
 
     if (value.length > VALIDATIONS.MAX_CHARACTERS) {
-      setError(`Message limit is ${VALIDATIONS.MAX_CHARACTERS} characters`);
+      setInputError(
+        `Message limit is ${VALIDATIONS.MAX_CHARACTERS} characters`,
+      );
     } else {
-      setError(null);
+      setInputError(null);
     }
   };
 
@@ -39,7 +42,7 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!error) handleSendUserMessage();
+      if (!inputError) handleSendUserMessage();
     }
   };
 
@@ -48,11 +51,11 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
       <textarea
         ref={textareaRef}
         className={`min-h-[44px] rounded-lg pl-4 pr-12 py-2 w-full focus:outline-none focus:ring-1 focus:ring-neutral-300 border border-black border-opacity-20 shadow-[0px_0px_40px_4px_rgba(0,0,0,0.10)] ${
-          loading && 'opacity-80'
-        } ${error && 'border-yellow-600 text-yellow-600'}`}
+          loadingNewMessage && 'opacity-80'
+        } ${inputError && 'border-yellow-600 text-yellow-600'}`}
         style={{ resize: 'none' }}
         placeholder={
-          loading
+          loadingNewMessage
             ? 'Only one message at a time is supported'
             : emptyMessages
             ? 'Ask Dataherald a Real Estate prompt'
@@ -62,21 +65,24 @@ export const ChatInput: FC<ChatInputProps> = ({ onSend }) => {
         rows={3}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        disabled={loading}
+        disabled={loadingNewMessage}
       />
-      <button onClick={handleSendUserMessage} disabled={loading || !!error}>
+      <button
+        onClick={handleSendUserMessage}
+        disabled={loadingNewMessage || !!inputError}
+      >
         <Icon
           value="send"
           type="filled"
           className={`text-secondary-dark absolute right-2 h-8 w-8 rounded-full p-1 ${
-            loading || !!error
+            loadingNewMessage || !!inputError
               ? 'opacity-50'
               : 'hover:opacity-80 hover:cursor-pointer'
-          } ${error ? 'bottom-[4rem]' : 'bottom-[2.3rem]'}`}
+          } ${inputError ? 'bottom-[4rem]' : 'bottom-[2.3rem]'}`}
         />
       </button>
-      {error && (
-        <div className="text-yellow-600 mt-2 pl-4 text-sm">{error}</div>
+      {inputError && (
+        <div className="text-yellow-600 mt-2 pl-4 text-sm">{inputError}</div>
       )}
     </div>
   );

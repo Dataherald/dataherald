@@ -1,5 +1,5 @@
 import WithAnalytics from '@/components/hoc/WithAnalytics';
-import { PromptProvider } from '@/context/prompt';
+import { PromptProvider } from '@/contexts/prompt';
 import '@/styles/globals.css';
 import { UserProvider } from '@auth0/nextjs-auth0/client';
 import type { AppProps } from 'next/app';

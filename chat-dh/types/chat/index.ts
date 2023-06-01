@@ -1,7 +1,7 @@
 import { ResponseStatus } from '../api';
 
 export type Role = 'assistant' | 'user';
-export type MessageStatus = ResponseStatus | 'error' | 'loading';
+export type MessageStatus = ResponseStatus | 'error' | 'loading' | 'canceled';
 
 export interface MessageContent {
   status: MessageStatus;

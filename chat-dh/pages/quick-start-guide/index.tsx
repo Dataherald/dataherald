@@ -1,7 +1,7 @@
 import Button from '@/components/Layout/Button';
 import { Header } from '@/components/Layout/Header';
 import { MainLayout } from '@/components/Layout/Main';
-import { usePrompt } from '@/context/prompt';
+import { usePrompt } from '@/contexts/prompt';
 import analyticsService from '@/services/analytics';
 import Head from 'next/head';
 import Link from 'next/link';
