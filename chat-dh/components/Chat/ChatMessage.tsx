@@ -1,8 +1,9 @@
+import { useChat } from '@/contexts/chat';
 import { EMBED_URL } from '@/env-variables';
 import { Message } from '@/types/chat';
 import { UserProfile, useUser } from '@auth0/nextjs-auth0/client';
 import Image from 'next/image';
-import { FC, useLayoutEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Icon } from '../Layout/Icon';
 import ChatAssistantMessageActions from './ChatAssistantMessageActions';
 import { ChatLoader } from './ChatLoader';
@@ -10,25 +11,33 @@ import { ChatText } from './ChatText';
 
 interface ChatMessageProps {
   message: Message;
-  scrollToBottom: () => void;
 }
 
-export const ChatMessage: FC<ChatMessageProps> = ({
-  message,
-  scrollToBottom,
-}) => {
+export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
   const { role, content } = message;
   const { user } = useUser();
   const { picture: userPicture } = user as UserProfile;
-  const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [currentIframeLoading, setCurrentIframeLoading] = useState(false);
+  const { loadingIframe, setLoadingIframe } = useChat();
 
-  useLayoutEffect(() => {
-    const timeout = setTimeout(() => scrollToBottom(), 100);
+  useEffect(() => {
+    setLoadingIframe(currentIframeLoading);
+  }, [currentIframeLoading, setLoadingIframe]);
 
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [content, iframeLoaded, scrollToBottom]);
+  // some external flow needs to cancel the iframe loading.
+  useEffect(() => {
+    if (loadingIframe === false) setCurrentIframeLoading(loadingIframe);
+  }, [loadingIframe, setCurrentIframeLoading]);
+
+  useEffect(() => {
+    if (!(typeof content === 'string')) {
+      if (content.status === 'successful' && content.viz_id) {
+        setCurrentIframeLoading(true);
+      }
+    }
+  }, [content]);
+
+  const handleIframeLoaded = () => setCurrentIframeLoading(false);
 
   return (
     <div className={`${role === 'user' && 'bg-gray-100'}`}>
@@ -64,7 +73,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
               <ChatText text={content} />
             ) : content.status === 'successful' ? (
               <div className="flex-1 flex flex-col gap-5 pr-8 overflow-auto">
-                {content.viz_id && !iframeLoaded && (
+                {content.viz_id && currentIframeLoading && (
                   <ChatLoader
                     key="iframe-loading"
                     messages={[
@@ -76,15 +85,15 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                     ]}
                   />
                 )}
-                {(!content.viz_id || iframeLoaded) && (
+                {(!content.viz_id || !currentIframeLoading) && (
                   <ChatText text={content.generated_text as string} />
                 )}
                 {content.viz_id && (
                   <iframe
-                    style={{ display: !iframeLoaded ? 'none' : 'flex' }}
+                    style={{ display: currentIframeLoading ? 'none' : 'flex' }}
                     className="min-h-[600px] mb-4 w-full min-w-[300px]"
                     src={`${EMBED_URL}${content.viz_id}?hideDemoLink=true`}
-                    onLoad={() => setIframeLoaded(true)}
+                    onLoad={handleIframeLoaded}
                   ></iframe>
                 )}
               </div>
@@ -109,7 +118,8 @@ export const ChatMessage: FC<ChatMessageProps> = ({
           </div>
           {role === 'assistant' &&
             typeof content !== 'string' &&
-            iframeLoaded && (
+            content.status !== 'loading' &&
+            !currentIframeLoading && (
               <div className="self-center">
                 <ChatAssistantMessageActions message={content} />
               </div>

@@ -1,11 +1,18 @@
-import { useChat } from '@/context/chat';
-import { usePrompt } from '@/context/prompt';
+import { useChat } from '@/contexts/chat';
+import { usePrompt } from '@/contexts/prompt';
 import analyticsService from '@/services/analytics';
 import apiService from '@/services/api';
 import { Message, MessageContent } from '@/types/chat';
 import { isAbortError } from '@/utils/api';
 import { useUser } from '@auth0/nextjs-auth0/client';
-import { FC, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import {
+  FC,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import Button from '../Layout/Button';
 import { Header } from '../Layout/Header';
 import { ChatInput } from './ChatInput';
@@ -13,7 +20,16 @@ import { ChatKickoff } from './ChatKickoff';
 import { ChatMessage } from './ChatMessage';
 
 export const Chat: FC = () => {
-  const { messages, setMessages, loading, setLoading, error } = useChat();
+  const {
+    messages,
+    setMessages,
+    loadingNewMessage,
+    setFetchingNewMessage,
+    loadingIframe,
+    setLoadingIframe,
+  } = useChat();
+  const [newAssistantResponse, setNewAssistantResponse] =
+    useState<Message | null>(null);
   const { user } = useUser();
   const { prompt, setPrompt } = usePrompt();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -32,7 +48,7 @@ export const Chat: FC = () => {
       const updatedMessages: Message[] = [...messages, newMessage];
       const abortController = new AbortController();
       chatAbortControllerRef.current = abortController;
-      setLoading(true);
+      setFetchingNewMessage(true);
       setMessages([
         ...updatedMessages,
         {
@@ -56,52 +72,48 @@ export const Chat: FC = () => {
           ['response-id']: chatResponse.id,
           ['is-example']: isExample,
         });
-        setMessages((prevMessages) =>
-          prevMessages.map((message) =>
-            (message.content as MessageContent).status === 'loading'
-              ? {
-                  role: 'assistant',
-                  content: chatResponse,
-                }
-              : message,
-          ),
-        );
+        setNewAssistantResponse({
+          role: 'assistant',
+          content: chatResponse,
+        });
       } catch (e) {
-        let messageText: string;
         if (isAbortError(e)) {
-          messageText = 'User has cancelled the request.';
           analyticsService.buttonClick('new-user-prompt', {
             prompt: newUserMessage,
             status: 'canceled',
             ['is-example']: isExample,
           });
+          newCancelRequestMessage();
         } else {
-          messageText = 'Something went wrong. Please try again later.';
           analyticsService.buttonClick('new-user-prompt', {
             prompt: newUserMessage,
             status: 'error',
             ['is-example']: isExample,
           });
+          setNewAssistantResponse({
+            role: 'assistant',
+            content: {
+              status: 'error',
+              generated_text: 'Something went wrong. Please try again later.',
+            },
+          });
         }
-        setMessages((prevMessages) =>
-          prevMessages.map((message) =>
-            (message.content as MessageContent).status === 'loading'
-              ? {
-                  role: 'assistant',
-                  content: {
-                    status: 'error',
-                    generated_text: messageText,
-                  },
-                }
-              : message,
-          ),
-        );
       } finally {
-        setLoading(false);
+        setFetchingNewMessage(false);
       }
     },
-    [messages, setMessages, setLoading, user],
+    [messages, setMessages, setFetchingNewMessage, user],
   );
+
+  const newCancelRequestMessage = () => {
+    setNewAssistantResponse({
+      role: 'assistant',
+      content: {
+        status: 'canceled',
+        generated_text: 'User has cancelled the request.',
+      },
+    });
+  };
 
   const handleExample = useCallback(
     (prompt: string) => {
@@ -118,8 +130,40 @@ export const Chat: FC = () => {
   }, [messages, setMessages]);
 
   const handleAbort = () => {
-    if (chatAbortControllerRef.current) chatAbortControllerRef.current.abort();
+    if (loadingIframe) {
+      // data already fetched
+      newCancelRequestMessage();
+      setLoadingIframe(false);
+    } else {
+      if (chatAbortControllerRef.current) {
+        chatAbortControllerRef.current.abort();
+      }
+    }
   };
+
+  useEffect(() => {
+    if (newAssistantResponse) {
+      setMessages((prevMessages) => {
+        const lastMessage = prevMessages[prevMessages.length - 1];
+        const lastMessageIsUserMessage =
+          typeof lastMessage.content === 'string';
+        const lastMessageIsLoadingMessage =
+          (lastMessage.content as MessageContent).status === 'loading';
+        const userCanceled =
+          (newAssistantResponse.content as MessageContent).status ===
+          'canceled';
+
+        if (!lastMessageIsUserMessage) {
+          if (userCanceled || lastMessageIsLoadingMessage) {
+            // user can cancel when the new message was already added into the messages list and we need to remove it
+            prevMessages.pop();
+          }
+        }
+        return [...prevMessages, newAssistantResponse];
+      });
+      setNewAssistantResponse(null);
+    }
+  }, [newAssistantResponse, setNewAssistantResponse, setMessages]);
 
   useEffect(() => {
     if (prompt) {
@@ -127,6 +171,13 @@ export const Chat: FC = () => {
       setPrompt(null);
     }
   }, [prompt, setPrompt, handleExample]);
+
+  useLayoutEffect(() => {
+    const timeout = setTimeout(() => scrollToBottom(), 100);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [messages, loadingNewMessage, scrollToBottom]);
 
   return (
     <>
@@ -144,15 +195,11 @@ export const Chat: FC = () => {
         <div className="flex-1 flex flex-col">
           <div className="flex flex-col flex-grow">
             {messages.map((message, index) => (
-              <ChatMessage
-                key={index}
-                message={message}
-                scrollToBottom={scrollToBottom}
-              />
+              <ChatMessage key={index} message={message} />
             ))}
           </div>
           <div className="flex flex-col gap-4 items-center px-4 mb-4">
-            {loading ? (
+            {loadingNewMessage ? (
               <Button
                 color="primary-light"
                 icon="stop"
