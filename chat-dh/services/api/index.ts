@@ -3,6 +3,7 @@ import { ChatResponse } from '@/types/api';
 import { Message } from '@/types/chat';
 import { fetchAPI } from '@/utils/api';
 
+// deprecated, chatStream is the new chat endpoint
 const apiService = {
   async chat(
     message: Message[],
@@ -25,6 +26,35 @@ const apiService = {
           user: userEmail,
           date_entered: new Date(),
         },
+        signal: abortSignal,
+      });
+      return response;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+
+  async chatStream(
+    message: Message[],
+    userEmail = 'unknown',
+    abortSignal: AbortSignal,
+  ): Promise<Response> {
+    const url = `${API_URL}/chat_stream`;
+
+    try {
+      const accessToken = await fetchAPI<string>('/api/auth/token');
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: message,
+          user: userEmail,
+          date_entered: new Date(),
+        }),
         signal: abortSignal,
       });
       return response;
