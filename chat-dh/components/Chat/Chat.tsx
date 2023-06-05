@@ -219,7 +219,7 @@ export const Chat: FC = () => {
               </Button>
             )}
           </div>
-          <div className="sticky bottom-0 bg-white w-full max-w-[1000px] mx-auto px-4 pb-4">
+          <div className="sticky bottom-0 bg-white w-full px-0 mx-auto pb-4">
             <ChatInput onSend={sendMessage} />
           </div>
         </div>
