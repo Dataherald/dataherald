@@ -215,7 +215,7 @@ export const Chat: FC = () => {
           <div className="flex-grow">
             <ChatKickoff onExampleClick={handleExample}></ChatKickoff>
           </div>
-          <div className="mt-4">
+          <div className="sticky bottom-4 mt-4">
             <ChatInput onSend={sendMessage} />
           </div>
         </div>
@@ -252,7 +252,7 @@ export const Chat: FC = () => {
               </Button>
             )}
           </div>
-          <div className="sticky bottom-0 bg-white w-full max-w-[1000px] px-0 mx-auto mb-4">
+          <div className="sticky bottom-4 w-full max-w-[1000px] px-4 mx-auto mb-4">
             <ChatInput onSend={sendMessage} />
           </div>
         </div>
