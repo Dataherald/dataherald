@@ -8,8 +8,8 @@ Dataherald is a text-to-sql engine built for enteprise-level question answering 
 
 ... and many more!
 
-Documentation: 
-Discord: 
+Documentation
+Discord
 
 ## Overview
 
