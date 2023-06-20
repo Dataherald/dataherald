@@ -14,11 +14,11 @@ Discord
 
 ## Overview
 
-###Background
+### Background
 
 LLMs are a phenomenal piece of technology, and the latest models have gotten very good at writing SQL. However we could not get existing frameworks to work with our structured data at a level which we could incorporate into our application. That is why we built and released this engine. 
 
-###Goals
+### Goals
 
 Dataherald is built to:
 
