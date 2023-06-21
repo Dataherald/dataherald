@@ -1,11 +1,19 @@
 import os
 
+from flask import Blueprint, jsonify
 from flask import Flask
+
+
 from dataherald.smart_cache.in_memory import InMemoryCache
 from dataherald.eval.simple_evaluator import SimpleEvaluator
 from dataherald.sql_database.base import SQLDatabase
+from dataherald.executor import single_question
 
 def create_app(test_config=None):
+    swagger_destination_path = '/static/swagger.yaml'
+
+    # Create the bluepints
+    blueprint = Blueprint('objects', __name__)
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
@@ -34,16 +42,7 @@ def create_app(test_config=None):
 
     @app.route('/question', methods = ['POST'])
     def question(user_question):
-        cache = InMemoryCache()
-        evaluator = SimpleEvaluator()
-        database = SQLDatabaseBase().from_uri("sqlite://")
-        if cache.lookup(user_question) != None:
-            return cache(user_question)
-        else:
-            generated_sql = database.run_sql(user_question)
-            if evaluator.evaluate(user_question, generated_sql) == True:
-                cache.add(user_question, generated_sql)
-                return generated_sql
+        return single_question(user_question)
 
         
 
