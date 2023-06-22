@@ -1,4 +1,4 @@
-import { Messages } from '@/types/chat';
+import { Messages, MessageLoadingStage } from '@/types/chat';
 import { FC, ReactNode, createContext, useContext, useState } from 'react';
 
 type SetMessagesFunction = (prevMessages: Messages) => Messages;
@@ -10,6 +10,8 @@ interface ChatContextType {
   loadingIframe: boolean;
   setLoadingIframe: (loadingNewMessage: boolean) => void;
   loadingNewMessage: boolean;
+  currentLoadingStage: MessageLoadingStage;
+  setCurrentLoadingStage: (currentLoadingStage: MessageLoadingStage) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -30,6 +32,8 @@ export const ChatProvider: FC<ChatProviverProps> = ({ children }) => {
   const [messages, setMessages] = useState<Messages>([]);
   const [fetchingNewMessage, setFetchingNewMessage] = useState<boolean>(false);
   const [loadingIframe, setLoadingIframe] = useState<boolean>(false);
+  const [currentLoadingStage, setCurrentLoadingStage] =
+    useState<MessageLoadingStage>('none');
 
   const handleSetMessages = (messages: Messages | SetMessagesFunction) => {
     if (typeof messages === 'function') {
@@ -53,6 +57,8 @@ export const ChatProvider: FC<ChatProviverProps> = ({ children }) => {
         loadingIframe,
         setLoadingIframe,
         loadingNewMessage,
+        currentLoadingStage,
+        setCurrentLoadingStage,
       }}
     >
       {children}

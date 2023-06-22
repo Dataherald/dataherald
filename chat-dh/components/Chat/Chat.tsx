@@ -2,7 +2,7 @@ import { useChat } from '@/contexts/chat';
 import { usePrompt } from '@/contexts/prompt';
 import analyticsService from '@/services/analytics';
 import apiService from '@/services/api';
-import { Message, MessageContent } from '@/types/chat';
+import { Message, MessageContent, MessageLoadingStage } from '@/types/chat';
 import { isAbortError } from '@/utils/api';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import {
@@ -20,6 +20,8 @@ import { ChatKickoff } from './ChatKickoff';
 import { ChatMessage } from './ChatMessage';
 import { ChatNewMessage } from './ChatNewMessage';
 
+const RESPONSE_LIST_LENGTH_WITH_VIZ = 3;
+
 export const Chat: FC = () => {
   const {
     messages,
@@ -28,6 +30,7 @@ export const Chat: FC = () => {
     setFetchingNewMessage,
     loadingIframe,
     setLoadingIframe,
+    setCurrentLoadingStage,
   } = useChat();
   const [newAssistantResponse, setNewAssistantResponse] =
     useState<Message | null>(null);
@@ -51,6 +54,12 @@ export const Chat: FC = () => {
       const updatedMessages: Message[] = [...messages, newMessage];
       const abortController = new AbortController();
       chatAbortControllerRef.current = abortController;
+      let rawResponse = '';
+      let streamText = '';
+      let viz_id = '';
+      // state variable doesn't work in loops
+      let messageLoadingStage: MessageLoadingStage = 'viz_id';
+      setCurrentLoadingStage('viz_id');
       setFetchingNewMessage(true);
       setMessages(
         currentMessageContent
@@ -73,8 +82,6 @@ export const Chat: FC = () => {
           chatAbortControllerRef.current?.signal,
         );
         const reader = chatResponse.body?.getReader();
-        let streamText = '';
-        let isMessageFinished = false;
 
         if (typeof reader === 'undefined') {
           throw new Error('Variable "reader" is undefined.');
@@ -84,23 +91,31 @@ export const Chat: FC = () => {
           const { done, value } = await reader.read();
           if (done) break;
           const text = new TextDecoder().decode(value);
+          rawResponse += text;
           if (text.includes('###')) {
-            isMessageFinished = true;
+            if (messageLoadingStage === 'viz_id') {
+              messageLoadingStage = 'generated_text';
+              setCurrentLoadingStage('generated_text');
+              const vizNtext = text.split('###');
+              viz_id = vizNtext[0];
+              streamText = vizNtext[1];
+            } else if (messageLoadingStage === 'generated_text') {
+              messageLoadingStage = 'json_object';
+              setCurrentLoadingStage('json_object');
+              streamText = '';
+            }
+          } else {
+            streamText += text;
           }
-          streamText += text;
-          if (!isMessageFinished)
+          if (messageLoadingStage === 'generated_text')
             setCurrentMessageContent({
-              status: 'loading',
+              status: 'successful',
               generated_text: streamText,
+              viz_id: viz_id,
             });
         }
-
-        const rawResponse = streamText.split('###');
-        // cached only return the later JSON
-        const chatResponseJson =
-          rawResponse.length == 2
-            ? JSON.parse(rawResponse[1])
-            : JSON.parse(rawResponse[0]);
+        // raw response stream structure: viz_id ### generated_text ### responseJson
+        const chatResponseJson = extractJSONFromRawResponse(rawResponse);
 
         setCurrentMessageContent({
           status: chatResponseJson['status'],
@@ -124,7 +139,6 @@ export const Chat: FC = () => {
             status: 'canceled',
             ['is-example']: isExample,
           });
-          newCancelRequestMessage();
         } else {
           analyticsService.buttonClick('new-user-prompt', {
             prompt: newUserMessage,
@@ -147,12 +161,21 @@ export const Chat: FC = () => {
     [messages, setMessages, setFetchingNewMessage, user],
   );
 
+  const extractJSONFromRawResponse = (rawResponse: string) => {
+    const rawResponseList = rawResponse.split('###');
+    return rawResponseList.length === RESPONSE_LIST_LENGTH_WITH_VIZ
+      ? JSON.parse(rawResponseList[rawResponseList.length - 1])
+      : JSON.parse(rawResponseList[0]);
+  };
+
   const newCancelRequestMessage = () => {
     setNewAssistantResponse({
       role: 'assistant',
       content: {
         status: 'canceled',
-        generated_text: 'User has cancelled the request.',
+        generated_text:
+          currentMessageContent?.generated_text ||
+          'User has cancelled the request.',
       },
     });
   };
@@ -166,6 +189,7 @@ export const Chat: FC = () => {
 
   const handleReset = useCallback(() => {
     setMessages([]);
+    setCurrentMessageContent(null);
     analyticsService.buttonClick('new-chat', {
       'messages-length': messages.length,
     });
@@ -174,13 +198,14 @@ export const Chat: FC = () => {
   const handleAbort = () => {
     if (loadingIframe) {
       // data already fetched
-      newCancelRequestMessage();
       setLoadingIframe(false);
-    } else {
-      if (chatAbortControllerRef.current) {
-        chatAbortControllerRef.current.abort();
-      }
     }
+    if (chatAbortControllerRef.current) {
+      chatAbortControllerRef.current.abort();
+    }
+    // I have no clue why but I have to set fetchingNewMessage to false or else it returns two cancelled message
+    setFetchingNewMessage(false);
+    newCancelRequestMessage();
     setCurrentMessageContent(null);
   };
 
@@ -205,7 +230,13 @@ export const Chat: FC = () => {
     return () => {
       clearTimeout(timeout);
     };
-  }, [messages, loadingNewMessage, scrollToBottom]);
+  }, [
+    messages,
+    loadingNewMessage,
+    currentMessageContent,
+    loadingIframe,
+    scrollToBottom,
+  ]);
 
   return (
     <>
@@ -221,12 +252,12 @@ export const Chat: FC = () => {
         </div>
       ) : (
         <div className="flex-1 flex flex-col">
-          <div className="flex flex-col flex-grow">
+          <div className="flex flex-col">
             {messages.map((message, index) => (
               <ChatMessage key={index} message={message} />
             ))}
           </div>
-          <div>
+          <div className="flex-row flex-grow">
             {currentMessageContent && (
               <ChatNewMessage content={currentMessageContent} />
             )}

@@ -1,10 +1,8 @@
 import { useChat } from '@/contexts/chat';
 import { EMBED_URL } from '@/env-variables';
-import { Message, MessageContent } from '@/types/chat';
-import { UserProfile, useUser } from '@auth0/nextjs-auth0/client';
+import { MessageContent } from '@/types/chat';
 import Image from 'next/image';
-import { FC, useEffect, useCallback, useLayoutEffect, useState } from 'react';
-import { Icon } from '../Layout/Icon';
+import { FC, useEffect, useState } from 'react';
 import ChatAssistantMessageActions from './ChatAssistantMessageActions';
 import { ChatLoader } from './ChatLoader';
 import { ChatText } from './ChatText';
@@ -14,16 +12,17 @@ interface ChatNewMessageProps {
 }
 
 export const ChatNewMessage: FC<ChatNewMessageProps> = ({ content }) => {
-  const { setLoadingIframe } = useChat();
-  const [currentIframeLoading, setCurrentIframeLoading] = useState(false);
+  const { setLoadingIframe, fetchingNewMessage, currentLoadingStage } =
+    useChat();
+  const [currentIframeLoading, setCurrentIframeLoading] = useState(true);
 
   useEffect(() => {
     setLoadingIframe(currentIframeLoading);
   }, [currentIframeLoading, setLoadingIframe]);
 
   useEffect(() => {
-    if (content.status === 'successful' && content.viz_id) {
-      setCurrentIframeLoading(true);
+    if (content.status === 'failed') {
+      setCurrentIframeLoading(false);
     }
   }, [content]);
 
@@ -32,7 +31,7 @@ export const ChatNewMessage: FC<ChatNewMessageProps> = ({ content }) => {
     <div className=" max-w-[1000px] mx-auto">
       <div className="flex flex-col gap-3 p-8">
         <div
-          className="flex flex-row items-center gap-3"
+          className="flex flex-row flex-start gap-3"
           style={{ overflowWrap: 'anywhere' }}
         >
           <Image
@@ -43,47 +42,62 @@ export const ChatNewMessage: FC<ChatNewMessageProps> = ({ content }) => {
             className="pl-1 self-start"
           />
           <div
-            className="flex flex-col items-center gap-3"
+            className="flex flex-col flex-grow gap-3"
             style={{ overflowWrap: 'anywhere' }}
           >
             {content.generated_text && (
               <ChatText text={content.generated_text} />
             )}
+
+            <div className="flex flex-grow items-center">
+              {content.status === 'failed' ? (
+                <Image
+                  className="mx-auto"
+                  src="/images/error/data_not_found.svg"
+                  alt="Chat error image"
+                  width={600}
+                  height={300}
+                />
+              ) : (
+                <div className="flex flex-grow item-center">
+                  {content.viz_id && (
+                    <iframe
+                      style={{
+                        display:
+                          currentIframeLoading || fetchingNewMessage
+                            ? 'none'
+                            : 'flex',
+                      }}
+                      className="min-h-[600px] mb-4 w-full min-w-[300px]"
+                      src={`${EMBED_URL}${content.viz_id}?hideDemoLink=true`}
+                      onLoad={handleIframeLoaded}
+                    ></iframe>
+                  )}
+
+                  {currentLoadingStage === 'viz_id' ? (
+                    <ChatLoader key="regular-loading" />
+                  ) : currentIframeLoading &&
+                    currentLoadingStage === 'json_object' ? (
+                    <ChatLoader
+                      key="iframe-loading"
+                      messages={[
+                        {
+                          text: 'Generating visualization...',
+                          image: '/images/loading/generating_visualization.svg',
+                          duration: 2000,
+                        },
+                      ]}
+                    />
+                  ) : (
+                    <></>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex-1 flex items-center">
-          {currentIframeLoading && (
-            <ChatLoader
-              key="iframe-loading"
-              messages={[
-                {
-                  text: 'Generating visualization...',
-                  image: '/images/loading/generating_visualization.svg',
-                  duration: 2000,
-                },
-              ]}
-            />
-          )}
-          {content.status === 'successful' && content.viz_id ? (
-            <iframe
-              style={{ display: currentIframeLoading ? 'none' : 'flex' }}
-              className="min-h-[600px] mb-4 w-full min-w-[300px]"
-              src={`${EMBED_URL}${content.viz_id}?hideDemoLink=true`}
-              onLoad={handleIframeLoaded}
-            ></iframe>
-          ) : content.status === 'failed' ? (
-            <Image
-              className="mx-auto"
-              src="/images/error/data_not_found.svg"
-              alt="Chat error image"
-              width={600}
-              height={300}
-            />
-          ) : (
-            <ChatLoader key="regular-loading" />
-          )}
-        </div>
-        {!currentIframeLoading && (
+
+        {!fetchingNewMessage && (
           <div className="self-center">
             <ChatAssistantMessageActions message={content} />
           </div>
