@@ -38,3 +38,32 @@ You can also self-host the engine locally.
 ## Run Dataherald locally
 
 To run Dataherald locally ...
+
+## Contributing to Dataherald
+
+Hello! We appreciate your interest in contributing to Dataherald. As a thriving company in the ever-evolving realm of data management, we warmly welcome any contributions you may have to offer. Whether you're inclined to develop new features, enhance our infrastructure, improve documentation, or squash pesky bugs, we are highly receptive to your ideas and expertise. Join us in our mission to revolutionize data handling, and together we can make a significant impact in this field. Thank you for considering becoming part of the Dataherald community!
+
+It's essential that we maintain great documentation and testing. If you:
+
+* Fix a bug
+Add a relevant unit or integration test when possible. These live in tests/unit_tests # todo create a tests folder and configure to add unit tests
+
+
+### Guidelines
+
+To install requirements:
+`pip3 install -r requirements.txt`
+
+
+Code Formatting
+To run formatting for this project:
+`make format` # todo create a makefile and implement a formatting package
+
+Linting
+`make lint` # todo implement a lint command in the makefile
+
+Coverage
+`make coverage` # todo implement a coverage package
+
+Testing
+`make tests` # todo implement tests command in makefile
