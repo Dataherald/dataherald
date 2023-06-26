@@ -45,6 +45,6 @@ class FastAPI(API):
         """Takes in an English question and answers it based on content from the registered databases"""
         return "I can't do that yet"
     
-    def add_context(self, question) -> str:
+    def add_context(self, question: str) -> str:
         """Takes in an English question and answers it based on content from the registered databases"""
         return "I can't do that yet"
