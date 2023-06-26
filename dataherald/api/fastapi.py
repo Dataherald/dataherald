@@ -23,7 +23,7 @@ class FastAPI(API):
         return int(time.time_ns())
     
     
-    def answer_question(self, question) -> str:
+    def answer_question(self, question: str) -> str:
         """Takes in an English question and answers it based on content from the registered databases"""
         cache = self.system.instance(SmartCache)
         sql_generation = self.system.instance(SQLGenerator)
