@@ -41,7 +41,7 @@ class FastAPI(API):
 
         return generated_answer
     
-    def connect_database(self, question) -> str:
+    def connect_database(self, question: str) -> str:
         """Takes in an English question and answers it based on content from the registered databases"""
         return "I can't do that yet"
     
