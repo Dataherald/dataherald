@@ -1,9 +1,9 @@
-from dataherald.smart_cache.base import SmartCacheBase
+from dataherald.smart_cache import SmartCache
 from dataherald.config import System
 from typing import Any
 from overrides import override
 
-class InMemoryCache(SmartCacheBase):
+class InMemoryCache(SmartCache):
     cache:dict = {} 
     """Test implementation. Just keep everything in memory."""
     def __init__(self, sytstem: System):

@@ -4,7 +4,7 @@ from typing import Any, Optional, Dict
 from dataherald.config import Component
 
 
-class SmartCacheBase(Component, ABC):
+class SmartCache(Component, ABC):
 
     @abstractmethod 
     def add(self, key, value) -> Dict[str, Any]:

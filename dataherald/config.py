@@ -9,7 +9,10 @@ from overrides import EnforceOverrides
 
 _abstract_type_keys: Dict[str, str] = {
     "dataherald.engine": "dataherald_engine_impl",
-    "dataherald.api.API": "dataherald_api_impl"
+    "dataherald.api.API": "dataherald_api_impl",
+    "dataherald.smart_cache.SmartCache": "dataherald_cache_impl",
+    "dataherald.sql_generator.SQLGenerator": "dataherald_sql_generator_impl",
+    "dataherald.eval.Evaluator": "dataherald_eval_impl"
 }
 
 class Settings(BaseSettings):
@@ -17,9 +20,9 @@ class Settings(BaseSettings):
     load_dotenv()
     
     dataherald_api_impl: str = os.environ.get("DH_API_SERVER", "dataherald.api.fastapi.FastAPI")
-    dataherald_cache: str = os.environ.get("DH_CACHE" , "dataherald.smart_cahce.in_memory.InMemoryCache")
-    dataherald_sql_generator: str = os.environ.get("DH_SQL_GENERATOR", "dataherald.sql_generator.langchain_sql.LangChainSQLGenerator")
-    dataherald_eval:str = os.environ.get("DH_EVALUATOR", "dataherald.eval.simple_evaluator.SimpleEvaluator")
+    dataherald_cache_impl: str = os.environ.get("DH_CACHE" , "dataherald.smart_cache.in_memory.InMemoryCache")
+    dataherald_sql_generator_impl: str = os.environ.get("DH_SQL_GENERATOR", "dataherald.sql_generator.langchain_sql.LangChainSQLGenerator")
+    dataherald_eval_impl:str = os.environ.get("DH_EVALUATOR", "dataherald.eval.simple_evaluator.SimpleEvaluator")
 
 
     dh_server_host: Optional[str] = os.environ.get("DH_SERVER_HOST")

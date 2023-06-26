@@ -1,7 +1,7 @@
 """A wrapper for the SQL generation functions in langchain"""
 
 from typing import Optional
-from dataherald.sql_generation.base import SQLGenerator
+from dataherald.sql_generator import SQLGenerator
 from langchain.chains import SQLDatabaseSequentialChain as LangchainSQLChain
 from langchain import LLMChain, OpenAI
 from overrides import override

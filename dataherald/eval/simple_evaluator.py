@@ -1,8 +1,8 @@
-from dataherald.eval.base import EvaluatorBase
+from dataherald.eval import Evaluator
 from overrides import override
 
 
-class SimpleEvaluator(EvaluatorBase):
+class SimpleEvaluator(Evaluator):
 
     @override
     def evaluate(self, question: str, sql: str = None, tables_used = None) -> bool:

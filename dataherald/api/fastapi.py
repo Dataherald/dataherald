@@ -3,10 +3,10 @@ from dataherald.config import System
 import requests
 import time
 from overrides import override
-from dataherald.smart_cache.in_memory import InMemoryCache
-from dataherald.eval.simple_evaluator import SimpleEvaluator
-from dataherald.sql_generation.langchain_sql import LangChainSQLGenerator 
-from dataherald.eval.simple_evaluator import SimpleEvaluator
+from dataherald.smart_cache import SmartCache
+from dataherald.eval import Evaluator
+from dataherald.sql_generator import SQLGenerator 
+from dataherald.eval.simple_evaluator import Evaluator
 
 class FastAPI(API):
     def __init__(self, system: System):
@@ -25,9 +25,9 @@ class FastAPI(API):
     
     def answer_question(self, question) -> str:
         """Takes in an English question and answers it based on content from the registered databases"""
-        cache = self.system.instance(InMemoryCache)
-        sql_generation = self.system.instance(LangChainSQLGenerator)
-        evaluator = self.system.instance(SimpleEvaluator)
+        cache = self.system.instance(SmartCache)
+        sql_generation = self.system.instance(SQLGenerator)
+        evaluator = self.system.instance(Evaluator)
 
         generated_answer = cache.lookup(question)
 
