@@ -4,9 +4,18 @@ from typing import Optional
 from dataherald.sql_generation.base import SQLGenerator
 from langchain.chains import SQLDatabaseSequentialChain as LangchainSQLChain
 from langchain import LLMChain, OpenAI
-from langchain.base_language import BaseLanguageModel
+from overrides import override
 
-class LangChainSQLGenerator(SQLGenerator, LangchainSQLChain):
-    llm: Optional[BaseLanguageModel] = None
+
+class LangChainSQLGenerator(SQLGenerator):
+    @override
+    def generate_response(self, user_question: str) -> str:
+        print('Generating SQL response to question: ', user_question)
+        return "That worked!"
+    
+
+
+
+    
 
    

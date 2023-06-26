@@ -1,10 +1,10 @@
 from dataherald.eval.base import EvaluatorBase
-
+from overrides import override
 
 
 class SimpleEvaluator(EvaluatorBase):
-    def __init__(self):
-        pass
 
-    def evaluate(self, question, sql, tables_used = None):
+    @override
+    def evaluate(self, question: str, sql: str = None, tables_used = None) -> bool:
+        print('Evaluating question: ', question)
         return True

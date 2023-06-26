@@ -1,9 +1,10 @@
 """Base class that all cache classes inherit from."""
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Dict
+from dataherald.config import Component
 
 
-class SmartCacheBase(ABC):
+class SmartCacheBase(Component, ABC):
 
     @abstractmethod 
     def add(self, key, value) -> Dict[str, Any]:
