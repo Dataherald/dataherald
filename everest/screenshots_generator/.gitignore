@@ -1,0 +1,8 @@
+# Logs
+app.log
+
+# Screenshot files
+*.png
+
+# CSV files
+*.csv
