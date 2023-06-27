@@ -37,4 +37,6 @@ You can also self-host the engine locally.
 
 ## Run Dataherald locally
 
-To run Dataherald locally ...
+To run Dataherald locally simply run 
+
+uvicorn dataherald.app:app
