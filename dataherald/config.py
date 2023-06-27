@@ -6,6 +6,8 @@ from abc import ABC
 import inspect
 import importlib
 from overrides import EnforceOverrides
+import logging
+
 
 _abstract_type_keys: Dict[str, str] = {
     "dataherald.engine": "dataherald_engine_impl",

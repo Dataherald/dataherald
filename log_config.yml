@@ -17,7 +17,7 @@ loggers:
   root:
     level: WARN
     handlers: [console, file]
-  chromadb:
-    level: DEBUG
+  dataherald:
+    level: INFO
   uvicorn:
     level: INFO

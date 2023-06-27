@@ -10,6 +10,9 @@ from dataherald.eval.simple_evaluator import Evaluator
 from dataherald.types import NLQuery, NLQueryResponse
 import uuid
 from fastapi.encoders import jsonable_encoder
+import logging
+
+logger = logging.getLogger(__name__)
 
 class FastAPI(API):
     def __init__(self, system: System):
@@ -39,12 +42,8 @@ class FastAPI(API):
             generated_answer = sql_generation.generate_response(user_question)
             if evaluator.evaluate(generated_answer):
                 cache.add(question, generated_answer)
-            
-        else:
-            print('cache hit')    
-
+    
         response = jsonable_encoder(generated_answer)
-        print(response)
         return response
     
     def connect_database(self, question: str) -> str:

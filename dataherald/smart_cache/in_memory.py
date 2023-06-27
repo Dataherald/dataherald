@@ -15,7 +15,7 @@ class InMemoryCache(SmartCache):
     
     @override
     def add(self, key: str, value:NLQueryResponse) -> dict[str, Any]:
-        logger.info('Adding to cache: ', key, value)
+        logger.info(f'Adding to cache: {value.dict()}')
         self.cache[key] = value
         return {key: value}
     
