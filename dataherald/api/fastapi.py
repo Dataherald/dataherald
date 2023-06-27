@@ -7,6 +7,9 @@ from dataherald.smart_cache import SmartCache
 from dataherald.eval import Evaluator
 from dataherald.sql_generator import SQLGenerator 
 from dataherald.eval.simple_evaluator import Evaluator
+from dataherald.types import NLQuery, NLQueryResponse
+import uuid
+from fastapi.encoders import jsonable_encoder
 
 class FastAPI(API):
     def __init__(self, system: System):
@@ -23,23 +26,26 @@ class FastAPI(API):
         return int(time.time_ns())
     
     
-    def answer_question(self, question: str) -> str:
+    def answer_question(self, question: str) -> NLQueryResponse:
         """Takes in an English question and answers it based on content from the registered databases"""
         cache = self.system.instance(SmartCache)
         sql_generation = self.system.instance(SQLGenerator)
         evaluator = self.system.instance(Evaluator)
 
-        generated_answer = cache.lookup(question)
+        user_question = NLQuery(question=question, id=uuid.uuid4())
 
+        generated_answer = cache.lookup(user_question.question)
         if generated_answer is None:
-            generated_answer = sql_generation.generate_response(question)
+            generated_answer = sql_generation.generate_response(user_question)
             if evaluator.evaluate(generated_answer):
                 cache.add(question, generated_answer)
             
         else:
             print('cache hit')    
 
-        return generated_answer
+        response = jsonable_encoder(generated_answer)
+        print(response)
+        return response
     
     def connect_database(self, question: str) -> str:
         """Takes in an English question and answers it based on content from the registered databases"""

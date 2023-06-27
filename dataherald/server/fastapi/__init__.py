@@ -9,6 +9,7 @@ from fastapi import HTTPException, status
 from uuid import UUID
 import dataherald
 from dataherald.config import Settings
+from dataherald.types import NLQueryResponse
 
 
 import logging
@@ -58,7 +59,7 @@ class FastAPI(dataherald.server.Server):
     def app(self) -> fastapi.FastAPI:
         return self._app
     
-    def answer_question(self, question: str) -> str:
+    def answer_question(self, question: str) -> NLQueryResponse:
         return self._api.answer_question(question)
     
     def root(self) -> Dict[str, int]:
