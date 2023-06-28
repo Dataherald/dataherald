@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from dataherald.config import Component
-from dataherald.config import System
+
+from dataherald.config import Component, System
 
 
 class DB(Component, ABC):

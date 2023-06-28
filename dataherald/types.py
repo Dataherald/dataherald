@@ -1,8 +1,6 @@
-from typing import Any, Dict, List, Optional,Union
-from pydantic import BaseModel, Field
-from bson.objectid import ObjectId
+from typing import Any
 
-from uuid import UUID
+from pydantic import BaseModel
 
 
 class NLQuery(BaseModel):
@@ -11,15 +9,10 @@ class NLQuery(BaseModel):
 
 
 class NLQueryResponse(BaseModel):
-    id: Any 
+    id: Any
     nl_question_id: Any
-    table_response: List[Dict[str, Any]]
+    table_response: list[dict[str, Any]]
     nl_response: str
-    tables_used: List[str]
+    tables_used: list[str]
     sql: str
-    exec_time: Optional[float] = None
-
-
-
-
-
+    exec_time: float | None = None

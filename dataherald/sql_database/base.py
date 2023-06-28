@@ -1,8 +1,8 @@
 """SQL wrapper around SQLDatabase in langchain."""
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any
 
 from langchain.sql_database import SQLDatabase as LangchainSQLDatabase
-from sqlalchemy import MetaData, create_engine, insert, text
+from sqlalchemy import MetaData, create_engine, text
 from sqlalchemy.engine import Engine
 
 
@@ -31,14 +31,13 @@ class SQLDatabase(LangchainSQLDatabase):
 
     @classmethod
     def from_uri(
-        cls, database_uri: str, engine_args: Optional[dict] = None, **kwargs: Any
+        cls, database_uri: str, engine_args: dict | None = None, **kwargs: Any
     ) -> "SQLDatabase":
         """Construct a SQLAlchemy engine from URI."""
         _engine_args = engine_args or {}
         return cls(create_engine(database_uri, **_engine_args), **kwargs)
-    
 
-    def run_sql(self, command: str) -> Tuple[str, Dict]:
+    def run_sql(self, command: str) -> tuple[str, dict]:
         """Execute a SQL statement and return a string representing the results.
 
         If the statement returns rows, a string of the results is returned.
