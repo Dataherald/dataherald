@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.9"
 services:
   app:
     build:
@@ -6,6 +6,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "80:80"
+    command: uvicorn dataherald.app:app --host 0.0.0.0 --port 80 --reload
+    volumes:
+      - ./dataherald:/app/dataherald
     depends_on:
       - mongodb
     networks:
@@ -20,9 +23,9 @@ services:
       - ./dbdata/mongo_data/data:/data/db/
       - ./dbdata/mongo_data/db_config:/data/configdb/
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=admin
-      - MONGO_INITDB_DATABASE=dataherald
+      MONGO_INITDB_ROOT_USERNAME: "${DB_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MONGO_INITDB_DATABASE: "${DB_NAME}"
     networks:
       - backendnetwork
 networks:
