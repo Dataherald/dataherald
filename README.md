@@ -87,3 +87,19 @@ black path/to/code.py
 ```
 
 > Recommendation: Look up for Ruff and Black IDE extensions to easily format and lint the code automatically while you're developing.
+
+
+## Running with Docker
+
+## Prerequisites
+* If you use a MAC computer you should have installed docker for MAC, check [here](https://docs.docker.com/desktop/install/mac-install/)
+
+## Steps to setup and run docker app 
+1. Create `.env` file, you can use the `.env.example` variables and fill them up
+```
+cp dataherald/.env.example dataherald/.env
+```
+2. Build docker images, create containers and raise them (Check that Docker service is running). It should raise the app and mongo container
+```
+docker-compose up
+```
