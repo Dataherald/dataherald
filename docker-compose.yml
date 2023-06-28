@@ -1,0 +1,30 @@
+version: "3.3"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - mongodb
+    networks:
+      - backendnetwork
+  mongodb:
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./dbdata/mongo_data/data:/data/db/
+      - ./dbdata/mongo_data/db_config:/data/configdb/
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+      - MONGO_INITDB_DATABASE=dataherald
+    networks:
+      - backendnetwork
+networks:
+  backendnetwork:
+    driver: bridge
