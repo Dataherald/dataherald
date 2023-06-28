@@ -10,26 +10,33 @@ import logging
 
 
 _abstract_type_keys: Dict[str, str] = {
-    "dataherald.engine": "dataherald_engine_impl",
-    "dataherald.api.API": "dataherald_api_impl",
-    "dataherald.smart_cache.SmartCache": "dataherald_cache_impl",
-    "dataherald.sql_generator.SQLGenerator": "dataherald_sql_generator_impl",
-    "dataherald.eval.Evaluator": "dataherald_eval_impl"
+    "dataherald.api.API": "api_impl",
+    "dataherald.smart_cache.SmartCache": "cache_impl",
+    "dataherald.sql_generator.SQLGenerator": "sql_generator_impl",
+    "dataherald.eval.Evaluator": "eval_impl",
+    "dataherald.db.DB": "db_impl"
 }
 
 class Settings(BaseSettings):
 
     load_dotenv()
     
-    dataherald_api_impl: str = os.environ.get("DH_API_SERVER", "dataherald.api.fastapi.FastAPI")
-    dataherald_cache_impl: str = os.environ.get("DH_CACHE" , "dataherald.smart_cache.in_memory.InMemoryCache")
-    dataherald_sql_generator_impl: str = os.environ.get("DH_SQL_GENERATOR", "dataherald.sql_generator.langchain_sql.LangChainSQLGenerator")
-    dataherald_eval_impl:str = os.environ.get("DH_EVALUATOR", "dataherald.eval.simple_evaluator.SimpleEvaluator")
+    api_impl: str = os.environ.get("API_SERVER", "dataherald.api.fastapi.FastAPI")
+    cache_impl: str = os.environ.get("CACHE" , "dataherald.smart_cache.in_memory.InMemoryCache")
+    sql_generator_impl: str = os.environ.get("SQL_GENERATOR", "dataherald.sql_generator.langchain_sql.LangChainSQLGenerator")
+    eval_impl:str = os.environ.get("EVALUATOR", "dataherald.eval.simple_evaluator.SimpleEvaluator")
+    db_impl: str = os.environ.get("DB", "dataherald.db.mongo.MongoDB")
+
+    server_host: Optional[str] = os.environ.get("SERVER_HOST")
+    server_http_port: Optional[str] = os.environ.get("SERVER_HTTP_PORT")
+    server_ssl_enabled: Optional[bool] = os.environ.get("SERVER_SSL_ENABLED")
 
 
-    dh_server_host: Optional[str] = os.environ.get("DH_SERVER_HOST")
-    dh_server_http_port: Optional[str] = os.environ.get("DH_SERVER_HTTP_PORT")
-    dh_server_ssl_enabled: Optional[bool] = os.environ.get("DH_SERVER_SSL_ENABLED")
+    db_host: Optional[str] = os.environ.get("DB_HOST")
+    db_port: Optional[str] = os.environ.get("DB_PORT")
+    db_name: Optional[str] = os.environ.get("DB_NAME")
+    db_username: Optional[str] = os.environ.get("DB_USERNAME")
+    db_password: Optional[str] = os.environ.get("DB_PASSWORD")
 
     def require(self, key: str) -> Any:
         val = self[key]
