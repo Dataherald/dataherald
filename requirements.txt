@@ -14,6 +14,7 @@ greenlet==2.0.2
 h11==0.14.0
 httptools==0.5.0
 idna==3.4
+llama-index==0.6.35
 langchain==0.0.207
 langchainplus-sdk==0.0.16
 load-dotenv==0.1.0
@@ -38,9 +39,9 @@ SQLAlchemy==2.0.16
 starlette==0.27.0
 tenacity==8.2.2
 tqdm==4.65.0
-typing-inspect==0.9.0
-typing_extensions==4.6.3
-urllib3==2.0.3
+typing-inspect==0.8.0
+typing_extensions==4.5.0
+urllib3==1.26.16 
 uvicorn==0.22.0
 uvloop==0.17.0
 watchfiles==0.19.0

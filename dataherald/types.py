@@ -11,8 +11,7 @@ class NLQuery(BaseModel):
 class NLQueryResponse(BaseModel):
     id: Any
     nl_question_id: Any
-    table_response: list[dict[str, Any]]
     nl_response: str
-    tables_used: list[str]
-    sql: str
+    intermediate_steps: list[str]
+    sql_query: str
     exec_time: float | None = None
