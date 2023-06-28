@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+
 from dataherald.config import Component
+
 
 class API(Component, ABC):
     @abstractmethod

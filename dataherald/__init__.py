@@ -1,17 +1,11 @@
-import dataherald.config
-from dataherald.config import Settings, System
-import logging
 from dataherald.api import API
-from dataherald.smart_cache.in_memory import InMemoryCache
+from dataherald.config import Settings, System
 
 __settings = Settings()
 __version__ = "0.0.1"
 
 
-
-
-
-def Client(settings: Settings = __settings) -> API:
+def client(settings: Settings = __settings) -> API:
     """Return a running dataherald.API instance"""
 
     system = System(settings)
