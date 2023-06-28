@@ -16,7 +16,7 @@ Discord
 
 ### Background
 
-LLMs are a phenomenal piece of technology, and the latest models have gotten very good at writing SQL. However we could not get existing frameworks to work with our structured data at a level which we could incorporate into our application. That is why we built and released this engine. 
+LLMs are a phenomenal piece of technology, and the latest models have gotten very good at writing SQL. However we could not get existing frameworks to work with our structured data at a level which we could incorporate into our application. That is why we built and released this engine.
 
 ### Goals
 
@@ -27,16 +27,63 @@ Dataherald is built to:
 - Get better with usage
 - Be fast
 
-
 ## Get Started
 
 The simplest way to set up Dataherald is to use to create a managed deployment with a hosted API. We are rolling this service to select customers. Sign up for the waitlist <link>.
 
-You can also self-host the engine locally. 
-
+You can also self-host the engine locally.
 
 ## Run Dataherald locally
 
-To run Dataherald locally simply run 
+To run Dataherald locally simply run
 
 uvicorn dataherald.app:app
+
+## Develop
+
+Things to know when developing for dataherald package.
+
+### Lint & Formatting
+
+Maintaining code quality and adhering to coding standards are essential for a well-structured and maintainable codebase. Ruff Python Linter and Black code formatter are powerful tools that can help you achieve these goals.
+
+#### Ruff Python Linter
+
+[Ruff Python Linter](https://beta.ruff.rs/docs/) analyzes Python code for errors, enforces coding standards, and provides suggestions for improvement.
+
+The [rules](https://beta.ruff.rs/docs/rules/) are set in the [pyproject.toml](./pyproject.toml) file.
+
+Lint all files in the current directory:
+
+```shell
+ruff check .
+```
+
+Lint and fix whenever possible:
+```shell
+ruff check --fix .
+```
+
+Lint specific files:
+
+```shell
+ruff check path/to/code.py
+```
+
+#### Black Code Formatter
+
+[Black](https://black.readthedocs.io/en/stable/#) is a Python code formatter that ensures consistent code style and improves readability.
+
+Format all files in the current directory:
+
+```shell
+black .
+```
+
+Format a specific file:
+
+```shell
+black path/to/code.py
+```
+
+> Recommendation: Look up for Ruff and Black IDE extensions to easily format and lint the code automatically while you're developing.
