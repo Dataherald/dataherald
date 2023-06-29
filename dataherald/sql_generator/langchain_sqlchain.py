@@ -26,7 +26,7 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         logger.info("Generating SQL response to question: " + user_question.dict())
 
         # needs uri
-        db = self.database.from_uri(self.database.uri)
+        db = self.database.get_sql_engine()
 
         # should top_k be an argument?
         db_chain = SQLDatabaseChain.from_llm(

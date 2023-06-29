@@ -19,6 +19,8 @@ class SQLDatabase(LangchainSQLDatabase):
 
     """
 
+    _uri = ""
+
     @property
     def engine(self) -> Engine:
         """Return SQL Alchemy engine."""
@@ -29,6 +31,11 @@ class SQLDatabase(LangchainSQLDatabase):
         """Return SQL Alchemy metadata."""
         return self._metadata
 
+    @property
+    def database_uri(self) -> str:
+        """Return database uri"""
+        return self._uri
+
     @classmethod
     def from_uri(
         cls, database_uri: str, engine_args: dict | None = None, **kwargs: Any
@@ -36,6 +43,10 @@ class SQLDatabase(LangchainSQLDatabase):
         """Construct a SQLAlchemy engine from URI."""
         _engine_args = engine_args or {}
         return cls(create_engine(database_uri, **_engine_args), **kwargs)
+
+    @classmethod
+    def get_sql_engine(cls) -> "SQLDatabase":
+        return cls.from_uri(cls._uri)
 
     def run_sql(self, command: str) -> tuple[str, dict]:
         """Execute a SQL statement and return a string representing the results.

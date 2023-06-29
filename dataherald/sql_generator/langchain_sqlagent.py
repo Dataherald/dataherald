@@ -22,7 +22,7 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
     def generate_response(self, user_question: NLQuery) -> NLQueryResponse:
         logger.info("Generating SQL response to question: " + user_question.dict())
 
-        db = self.database.from_uri(self.database.uri)
+        db = self.database.get_sql_engine()
 
         tools = SQLDatabaseToolkit(db=db, llm=self.llm).get_tools()
 

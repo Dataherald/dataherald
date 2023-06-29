@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel
@@ -15,3 +16,10 @@ class NLQueryResponse(BaseModel):
     intermediate_steps: list[str]
     sql_query: str
     exec_time: float | None = None
+
+
+class SupportedDatabase(Enum):
+    POSTGRES = "POSTGRES"
+    DATABRICKS = "DATABRICKS"
+    SNOWFLAKE = "SNOWFLAKE"
+    SQLSERVER = "SQLSERVER"

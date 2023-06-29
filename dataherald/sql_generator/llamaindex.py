@@ -2,7 +2,7 @@
 
 import logging
 
-from llama_index import LLMPredictor, ServiceContext, SQLDatabase, VectorStoreIndex
+from llama_index import LLMPredictor, ServiceContext, VectorStoreIndex
 from llama_index.indices.struct_store import SQLTableRetrieverQueryEngine
 from llama_index.objects import ObjectIndex, SQLTableNodeMapping, SQLTableSchema
 from overrides import override
@@ -19,12 +19,12 @@ class LlamaIndexSQLGenerator(SQLGenerator):
     def generate_response(self, user_question: NLQuery) -> NLQueryResponse:
         logger.info("Generating SQL response to question: " + user_question.dict())
 
-        db_engine = self.database.engine()
+        db_engine = self.database.engine
         # load all table definitions
         metadata_obj = MetaData()
         metadata_obj.reflect(db_engine)
 
-        sql_database = SQLDatabase(db_engine)
+        sql_database = self.database.get_sql_engine()
 
         table_schema_objs = []
         table_node_mapping = SQLTableNodeMapping(sql_database)
