@@ -1,4 +1,5 @@
 """Base class that all sql generation classes inherit from."""
+import re
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -15,8 +16,10 @@ class SQLGenerator(Component, ABC):
     metadata: Any
     llm: BaseLanguageModel | None = None
 
-    def __init__(self):
-        ChatOpenAI(temperature=0, openai_api_key="", model_name="gpt-3.5-turbo")
+    def __init__(self, sytstem: System):  # noqa: ARG002
+        self.llm = ChatOpenAI(
+            temperature=0, openai_api_key="", model_name="gpt-3.5-turbo"
+        )
         pass
 
     @abstractmethod
