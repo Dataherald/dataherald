@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    command: uvicorn dataherald.app:app --host 0.0.0.0 --port 80 --reload
+    volumes:
+      - ./dataherald:/app/dataherald
+    depends_on:
+      - mongodb
+    networks:
+      - backendnetwork
+  mongodb:
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./dbdata/mongo_data/data:/data/db/
+      - ./dbdata/mongo_data/db_config:/data/configdb/
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${DB_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MONGO_INITDB_DATABASE: "${DB_NAME}"
+    networks:
+      - backendnetwork
+networks:
+  backendnetwork:
+    driver: bridge
