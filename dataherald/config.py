@@ -2,13 +2,13 @@ import importlib
 import inspect
 import os
 from abc import ABC
-from typing import Any, TypeVar, cast
+from typing import Any, Dict, Type, TypeVar, cast
 
 from dotenv import load_dotenv
 from overrides import EnforceOverrides
 from pydantic import BaseSettings
 
-_abstract_type_keys: dict[str, str] = {
+_abstract_type_keys: Dict[str, str] = {
     "dataherald.api.API": "api_impl",
     "dataherald.smart_cache.SmartCache": "cache_impl",
     "dataherald.sql_generator.SQLGenerator": "sql_generator_impl",
@@ -35,20 +35,6 @@ class Settings(BaseSettings):
     server_host: str | None = os.environ.get("SERVER_HOST")
     server_http_port: str | None = os.environ.get("SERVER_HTTP_PORT")
     server_ssl_enabled: bool | None = os.environ.get("SERVER_SSL_ENABLED")
-
-    dataherald_api_impl: str = os.environ.get(
-        "DH_API_SERVER", "dataherald.api.fastapi.FastAPI"
-    )
-    dataherald_cache_impl: str = os.environ.get(
-        "DH_CACHE", "dataherald.smart_cache.in_memory.InMemoryCache"
-    )
-    dataherald_sql_generator_impl: str = os.environ.get(
-        "DH_SQL_GENERATOR",
-        "dataherald.sql_generator.langchain_sql.LangChainSQLGenerator",
-    )
-    dataherald_eval_impl: str = os.environ.get(
-        "DH_EVALUATOR", "dataherald.eval.simple_evaluator.SimpleEvaluator"
-    )
 
     db_host: str | None = os.environ.get("DB_HOST")
     db_port: str | None = os.environ.get("DB_PORT")
@@ -87,24 +73,24 @@ class Component(ABC, EnforceOverrides):
 
 class System(Component):
     settings: Settings
-    _instances: dict[type[Component], Component]
+    _instances: Dict[Type[Component], Component]
 
     def __init__(self, settings: Settings):
         self.settings = settings
         self._instances = {}
         super().__init__(self)
 
-    def instance(self, _type: type[T]) -> T:
+    def instance(self, type: Type[T]) -> T:
         """Return an instance of the component type specified. If the system is running,
         the component will be started as well."""
 
-        if inspect.isabstract(_type):
-            type_fqn = get_fqn(_type)
+        if inspect.isabstract(type):
+            type_fqn = get_fqn(type)
             if type_fqn not in _abstract_type_keys:
-                raise ValueError(f"Cannot instantiate abstract type: {_type}")
+                raise ValueError(f"Cannot instantiate abstract type: {type}")
             key = _abstract_type_keys[type_fqn]
             fqn = self.settings.require(key)
-            _type = get_class(fqn)
+            type = get_class(fqn, type)
 
         if type not in self._instances:
             impl = type(self)
@@ -119,14 +105,14 @@ class System(Component):
 C = TypeVar("C")
 
 
-def get_class(fqn: str) -> type[C]:
+def get_class(fqn: str, type: Type[C]) -> Type[C]:  # noqa: ARG001
     """Given a fully qualifed class name, import the module and return the class"""
     module_name, class_name = fqn.rsplit(".", 1)
     module = importlib.import_module(module_name)
     cls = getattr(module, class_name)
-    return cast(type[C], cls)
+    return cast(Type[C], cls)
 
 
-def get_fqn(cls: type[object]) -> str:
+def get_fqn(cls: Type[object]) -> str:
     """Given a class, return its fully qualified name"""
     return f"{cls.__module__}.{cls.__name__}"

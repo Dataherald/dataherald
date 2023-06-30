@@ -23,17 +23,14 @@ The question:
 class LangChainSQLChainSQLGenerator(SQLGenerator):
     @override
     def generate_response(self, user_question: NLQuery) -> NLQueryResponse:
-        logger.info("Generating SQL response to question: " + user_question.dict())
-
-        # needs uri
-        db = self.database.from_uri(self.database.uri)
+        logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
 
         # should top_k be an argument?
         db_chain = SQLDatabaseChain.from_llm(
-            self.llm, db, top_k=3, return_intermediate_steps=True
+            self.llm, self.database, top_k=3, return_intermediate_steps=True
         )
 
-        result = db_chain(PROMPT.format(user_question=user_question))
+        result = db_chain(PROMPT.format(user_question=user_question.question))
 
         intermediate_steps = []
         for step in result["intermediate_steps"]:

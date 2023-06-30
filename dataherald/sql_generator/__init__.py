@@ -18,8 +18,10 @@ class SQLGenerator(Component, ABC):
 
     def __init__(self, sytstem: System):  # noqa: ARG002
         self.llm = ChatOpenAI(
-            temperature=0, openai_api_key="", model_name="gpt-3.5-turbo"
+            temperature=0, openai_api_key="", model_name="gpt-3.5-turbo-16k"
         )
+        # use from_uri_ssh instead if needed
+        self.database = SQLDatabase.get_sql_engine()
         pass
 
     @abstractmethod

@@ -1,6 +1,6 @@
 """Base class that all cache classes inherit from."""
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Union
 
 from dataherald.config import Component
 from dataherald.types import NLQueryResponse

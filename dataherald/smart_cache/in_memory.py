@@ -3,6 +3,7 @@ from typing import Any
 
 from overrides import override
 
+from dataherald.config import Settings
 from dataherald.smart_cache import SmartCache
 from dataherald.types import NLQueryResponse
 
@@ -13,7 +14,8 @@ class InMemoryCache(SmartCache):
     cache: dict = {}
     """Test implementation. Just keep everything in memory."""
 
-    def __init__(self):
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
         self.cache = {}
 
     @override
