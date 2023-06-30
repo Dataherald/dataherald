@@ -160,6 +160,6 @@ cython_debug/
 .idea/
 # local data volume
 dbdata/
-
+postgres_data/
 
 .vscode/
