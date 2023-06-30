@@ -25,5 +25,7 @@ jobs:
         env:
           SERVER_HOST: '127.0.0.1'
           SERVER_HTTP_PORT: '80'
+          SQL_GENERATOR: 'dataherald.sql_generator.test_generator.TestGenerator'
+          OPENAI_API_KEY: 'foo'
         run: |
           pytest

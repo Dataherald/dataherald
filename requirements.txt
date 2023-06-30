@@ -51,3 +51,4 @@ websockets==11.0.3
 yarl==1.9.2
 httpx==0.24.1
 pytest== 7.4.0
+ipdb==0.13.13

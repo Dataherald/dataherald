@@ -25,7 +25,8 @@ class Settings(BaseSettings):
         "CACHE", "dataherald.smart_cache.in_memory.InMemoryCache"
     )
     sql_generator_impl: str = os.environ.get(
-        "SQL_GENERATOR", "dataherald.sql_generator.langchain_sql.LangChainSQLGenerator"
+        "SQL_GENERATOR",
+        "dataherald.sql_generator.langchain_sqlchain.LangChainSQLChainSQLGenerator",
     )
     eval_impl: str = os.environ.get(
         "EVALUATOR", "dataherald.eval.simple_evaluator.SimpleEvaluator"
