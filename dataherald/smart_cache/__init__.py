@@ -1,6 +1,6 @@
 """Base class that all cache classes inherit from."""
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Union
 
 from dataherald.config import Component
 from dataherald.types import NLQueryResponse
@@ -12,5 +12,5 @@ class SmartCache(Component, ABC):
         """Adds a key-value pair to the cache."""
 
     @abstractmethod
-    def lookup(self, key: str) -> Any | None:
+    def lookup(self, key: str) -> Union[Any, None]:
         """Looks up a key in the cache."""

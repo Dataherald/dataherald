@@ -15,5 +15,6 @@ class MongoDB(DB):
         system.settings.require("db_password")
         system.settings.require("db_name")
         self.data_store = MongoClient(
-            f"mongodb://{system.settings.db_username}:{system.settings.db_password}@{system.settings.db_host}:{system.settings.db_port}"
+            #f"mongodb://{system.settings.db_username}:{system.settings.db_password}@{system.settings.db_host}:{system.settings.db_port}"
+            f"mongodb://{system.settings.db_host}:{system.settings.db_port}"
         )[system.settings.db_name]

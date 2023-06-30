@@ -1,5 +1,6 @@
 import logging
 from typing import Any
+from dataherald.config import Settings
 
 from overrides import override
 
@@ -13,7 +14,8 @@ class InMemoryCache(SmartCache):
     cache: dict = {}
     """Test implementation. Just keep everything in memory."""
 
-    def __init__(self):
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
         self.cache = {}
 
     @override

@@ -23,7 +23,7 @@ The question:
 class LangChainSQLChainSQLGenerator(SQLGenerator):
     @override
     def generate_response(self, user_question: NLQuery) -> NLQueryResponse:
-        logger.info("Generating SQL response to question: " + user_question.dict())
+        logger.info(f"Generating SQL response to question: {user_question.dict()}" )
 
         # needs uri
         db = self.database.get_sql_engine()
