@@ -12,5 +12,5 @@ class SmartCache(Component, ABC):
         """Adds a key-value pair to the cache."""
 
     @abstractmethod
-    def lookup(self, key: str) -> Union[Any, None]:
+    def lookup(self, key: str) -> Any | None:
         """Looks up a key in the cache."""

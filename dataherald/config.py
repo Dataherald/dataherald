@@ -1,52 +1,56 @@
-import os
-from dotenv import load_dotenv
-from pydantic import BaseSettings
-from typing import Optional, cast, Type, TypeVar, Dict, Any
-from abc import ABC
-import inspect
 import importlib
-from overrides import EnforceOverrides
-import logging
+import inspect
+import os
+from abc import ABC
+from typing import Any, Dict, Type, TypeVar, cast
 
+from dotenv import load_dotenv
+from overrides import EnforceOverrides
+from pydantic import BaseSettings
 
 _abstract_type_keys: Dict[str, str] = {
     "dataherald.api.API": "api_impl",
     "dataherald.smart_cache.SmartCache": "cache_impl",
     "dataherald.sql_generator.SQLGenerator": "sql_generator_impl",
     "dataherald.eval.Evaluator": "eval_impl",
-    "dataherald.db.DB": "db_impl"
+    "dataherald.db.DB": "db_impl",
 }
 
-class Settings(BaseSettings):
 
+class Settings(BaseSettings):
     load_dotenv()
-    
+
     api_impl: str = os.environ.get("API_SERVER", "dataherald.api.fastapi.FastAPI")
-    cache_impl: str = os.environ.get("CACHE" , "dataherald.smart_cache.in_memory.InMemoryCache")
-    sql_generator_impl: str = os.environ.get("SQL_GENERATOR", "dataherald.sql_generator.langchain_sql.LangChainSQLGenerator")
-    eval_impl:str = os.environ.get("EVALUATOR", "dataherald.eval.simple_evaluator.SimpleEvaluator")
+    cache_impl: str = os.environ.get(
+        "CACHE", "dataherald.smart_cache.in_memory.InMemoryCache"
+    )
+    sql_generator_impl: str = os.environ.get(
+        "SQL_GENERATOR", "dataherald.sql_generator.langchain_sql.LangChainSQLGenerator"
+    )
+    eval_impl: str = os.environ.get(
+        "EVALUATOR", "dataherald.eval.simple_evaluator.SimpleEvaluator"
+    )
     db_impl: str = os.environ.get("DB", "dataherald.db.mongo.MongoDB")
 
-    server_host: Optional[str] = os.environ.get("SERVER_HOST")
-    server_http_port: Optional[str] = os.environ.get("SERVER_HTTP_PORT")
-    server_ssl_enabled: Optional[bool] = os.environ.get("SERVER_SSL_ENABLED")
+    server_host: str | None = os.environ.get("SERVER_HOST")
+    server_http_port: str | None = os.environ.get("SERVER_HTTP_PORT")
+    server_ssl_enabled: bool | None = os.environ.get("SERVER_SSL_ENABLED")
 
-
-    db_host: Optional[str] = os.environ.get("DB_HOST")
-    db_port: Optional[str] = os.environ.get("DB_PORT")
-    db_name: Optional[str] = os.environ.get("DB_NAME")
-    db_username: Optional[str] = os.environ.get("DB_USERNAME")
-    db_password: Optional[str] = os.environ.get("DB_PASSWORD")
+    db_host: str | None = os.environ.get("DB_HOST")
+    db_port: str | None = os.environ.get("DB_PORT")
+    db_name: str | None = os.environ.get("DB_NAME")
+    db_username: str | None = os.environ.get("DB_USERNAME")
+    db_password: str | None = os.environ.get("DB_PASSWORD")
 
     def require(self, key: str) -> Any:
         val = self[key]
         if val is None:
             raise ValueError(f"Missing required config value '{key}'")
         return val
-    
+
     def __getitem__(self, key: str) -> Any:
-        val = getattr(self, key)
-        return val
+        return getattr(self, key)
+
 
 T = TypeVar("T", bound="Component")
 
@@ -54,7 +58,7 @@ T = TypeVar("T", bound="Component")
 class Component(ABC, EnforceOverrides):
     _running: bool
 
-    def __init__(self, system: "System"):
+    def __init__(self, system: "System"):  # noqa: ARG002
         self._running = False
 
     def stop(self) -> None:
@@ -65,7 +69,6 @@ class Component(ABC, EnforceOverrides):
     def start(self) -> None:
         """Idempotently start this component's execution"""
         self._running = True
-
 
 
 class System(Component):
@@ -97,11 +100,12 @@ class System(Component):
 
         inst = self._instances[type]
         return cast(T, inst)
-    
+
 
 C = TypeVar("C")
 
-def get_class(fqn: str, type: Type[C]) -> Type[C]:
+
+def get_class(fqn: str, type: Type[C]) -> Type[C]:  # noqa: ARG001
     """Given a fully qualifed class name, import the module and return the class"""
     module_name, class_name = fqn.rsplit(".", 1)
     module = importlib.import_module(module_name)

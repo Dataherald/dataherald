@@ -1,9 +1,9 @@
 import logging
 from typing import Any
-from dataherald.config import Settings
 
 from overrides import override
 
+from dataherald.config import Settings
 from dataherald.smart_cache import SmartCache
 from dataherald.types import NLQueryResponse
 
