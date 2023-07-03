@@ -8,7 +8,7 @@ from fastapi.routing import APIRoute
 
 import dataherald
 from dataherald.config import Settings
-from dataherald.eval.types import Evaluation
+from dataherald.eval import Evaluation
 from dataherald.types import NLQueryResponse
 
 

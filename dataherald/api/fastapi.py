@@ -8,7 +8,7 @@ from overrides import override
 from dataherald.api import API
 from dataherald.config import System
 from dataherald.db import DB
-from dataherald.eval.types import Evaluation, Evaluator
+from dataherald.eval import Evaluation, Evaluator
 from dataherald.smart_cache import SmartCache
 from dataherald.sql_generator import SQLGenerator
 from dataherald.types import NLQuery, NLQueryResponse
