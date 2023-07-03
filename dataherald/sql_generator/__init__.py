@@ -16,7 +16,7 @@ class SQLGenerator(Component, ABC):
     metadata: Any
     llm: BaseLanguageModel | None = None
 
-    def __init__(self, sytstem: System):  # noqa: ARG002
+    def __init__(self, system: System):  # noqa: ARG002
         self.llm = ChatOpenAI(
             temperature=0, openai_api_key="", model_name="gpt-3.5-turbo-16k"
         )

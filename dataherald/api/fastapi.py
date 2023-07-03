@@ -39,17 +39,14 @@ class FastAPI(API):
         db = self.system.instance(DB)
 
         user_question = NLQuery(question=question)
-        user_question.id = db.data_store.NLQuestion.insert_one(
-            user_question.dict()
-        ).inserted_id
+        user_question.id = db.insert_one("nl_question", user_question.dict())
 
         generated_answer = cache.lookup(user_question.question)
         if generated_answer is None:
             generated_answer = sql_generation.generate_response(user_question)
             if evaluator.is_acceptable_response(generated_answer):
                 cache.add(question, generated_answer)
-
-        db.data_store.NLQueryResponse.insert_one(generated_answer.dict())
+        db.insert_one("nl_query_response", generated_answer.dict())
         return json.loads(json_util.dumps(generated_answer))
 
     @override
