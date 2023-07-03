@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from dataherald.config import Component
-from dataherald.eval.types import Evaluation
+from dataherald.eval import Evaluation
 from dataherald.types import NLQueryResponse
 
 
