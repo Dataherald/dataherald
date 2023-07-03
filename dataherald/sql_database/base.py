@@ -50,7 +50,7 @@ class SQLDatabase(LangchainSQLDatabase):
 
     @classmethod
     def get_sql_engine(cls) -> "SQLDatabase":
-        if cls._ssh.use_ssh:
+        if cls._ssh.enabled:
             return cls.from_uri_ssh()
         return cls.from_uri(cls._uri)
 
@@ -59,9 +59,9 @@ class SQLDatabase(LangchainSQLDatabase):
         ssh = cls._ssh
         database = "v2_real_estate"
         server = SSHTunnelForwarder(
-            (ssh.ssh_host, 22),
-            ssh_username=ssh.ssh_username,
-            ssh_password=ssh.ssh_password,
+            (ssh.host, 22),
+            username=ssh.username,
+            password=ssh.password,
             remote_bind_address=(ssh.remote_host, 5432),
         )
         server.start()
