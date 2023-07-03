@@ -26,6 +26,8 @@ jobs:
           SERVER_HOST: '127.0.0.1'
           SERVER_HTTP_PORT: '80'
           SQL_GENERATOR: 'dataherald.sql_generator.test_generator.TestGenerator'
+          EVALUATOR: 'dataherald.eval.simple_evaluator.SimpleEvaluator'
+          DB: 'dataherald.db.in_memory.InMemory'
           OPENAI_API_KEY: 'foo'
         run: |
           pytest

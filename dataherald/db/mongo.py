@@ -1,3 +1,4 @@
+from overrides import override
 from pymongo import MongoClient
 
 from dataherald.config import System
@@ -14,6 +15,10 @@ class MongoDB(DB):
         system.settings.require("db_username")
         system.settings.require("db_password")
         system.settings.require("db_name")
-        self.data_store = MongoClient(
-            f"mongodb://{system.settings.db_host}:{system.settings.db_port}"
+        self._data_store = MongoClient(
+            f"mongodb://{system.settings.db_username}:{system.settings.db_password}@{system.settings.db_host}:{system.settings.db_port}"
         )[system.settings.db_name]
+
+    @override
+    def insert_one(self, collection: str, obj: dict) -> int:
+        return self._data_store[collection].insert_one(obj).inserted_id
