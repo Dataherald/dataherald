@@ -99,7 +99,11 @@ black path/to/code.py
 ```
 cp dataherald/.env.example dataherald/.env
 ```
-2. Build docker images, create containers and raise them (Check that Docker service is running). It should raise the app and mongo container
+2. As we use a SSH tunnel to connect with postgresdb and mongodb, you should copy your id_rsa file in your project root directory. This is ignore in .gitignore so it shouldn’t be commited if you use this file name
+```
+cp ~/.ssh/id_rsa dataherald/.
+```
+3. Build docker images, create containers and raise them (Check that Docker service is running). It should raise the app and mongo container
 ```
 docker-compose up
 ```

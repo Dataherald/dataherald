@@ -62,6 +62,8 @@ class SQLDatabase(LangchainSQLDatabase):
             (ssh.host, 22),
             ssh_username=ssh.username,
             ssh_password=ssh.password,
+            ssh_pkey=ssh.private_ssh_key_path,
+            ssh_private_key_password=ssh.private_ssh_key_password,
             remote_bind_address=(ssh.remote_host, 5432),
         )
         server.start()
