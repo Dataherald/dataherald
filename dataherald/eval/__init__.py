@@ -1,12 +1,3 @@
-from abc import ABC, abstractmethod
+from pydantic import confloat
 
-from dataherald.config import Component, System
-
-
-class Evaluator(Component, ABC):
-    def __init__(self, system: System):
-        pass
-
-    @abstractmethod
-    def evaluate(self, question: str, sql: str, tables_used) -> bool:
-        """Evaluates a question and SQL pair."""
+ACCEPTANCE_THRESHOLD: confloat(ge=0, le=1) = 0.8

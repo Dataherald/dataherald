@@ -1,18 +1,28 @@
 from abc import ABC, abstractmethod
 
 from dataherald.config import Component
+from dataherald.eval.types import Evaluation
+from dataherald.types import NLQueryResponse
 
 
 class API(Component, ABC):
     @abstractmethod
     def heartbeat(self) -> int:
-        """Returns the current server time in nanoseconds to check if the server is alive
+        """Returns the current server time in nanoseconds to check if the server is alive"""
+        pass
 
-        Args:
-            None
+    @abstractmethod
+    def answer_question(self, question: str) -> NLQueryResponse:
+        pass
 
-        Returns:
-            int: The current server time in nanoseconds
+    @abstractmethod
+    def evaluate_question(self, question: str, golden_sql: str) -> Evaluation:
+        pass
 
-        """
+    @abstractmethod
+    def connect_database(self, question: str) -> str:
+        pass
+
+    @abstractmethod
+    def add_context(self, question: str) -> str:
         pass
