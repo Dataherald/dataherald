@@ -60,8 +60,8 @@ class SQLDatabase(LangchainSQLDatabase):
         database = "v2_real_estate"
         server = SSHTunnelForwarder(
             (ssh.host, 22),
-            username=ssh.username,
-            password=ssh.password,
+            ssh_username=ssh.username,
+            ssh_password=ssh.password,
             remote_bind_address=(ssh.remote_host, 5432),
         )
         server.start()
