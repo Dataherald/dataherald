@@ -6,6 +6,8 @@ from sqlalchemy import MetaData, create_engine, text
 from sqlalchemy.engine import Engine
 from sshtunnel import SSHTunnelForwarder
 
+from dataherald.config import SSHSettings
+
 
 class SQLDatabase(LangchainSQLDatabase):
     """SQL Database.
@@ -20,9 +22,8 @@ class SQLDatabase(LangchainSQLDatabase):
 
     """
 
-    _uri = (
-        "postgresql+psycopg2://postgres:15i8byLoANMv5AOw@{host}:{port}/v2_real_estate"
-    )
+    _uri: str | None = None
+    _ssh: SSHSettings = SSHSettings()
 
     @property
     def engine(self) -> Engine:
@@ -49,20 +50,26 @@ class SQLDatabase(LangchainSQLDatabase):
 
     @classmethod
     def get_sql_engine(cls) -> "SQLDatabase":
+        if cls._ssh.use_ssh:
+            return cls.from_uri_ssh()
         return cls.from_uri(cls._uri)
 
     @classmethod
-    def from_uri_ssh(cls, host, port, username, password, remote_host, remote_port):
+    def from_uri_ssh(cls):
+        ssh = cls._ssh
+        database = "v2_real_estate"
         server = SSHTunnelForwarder(
-            (host, port),
-            ssh_username=username,
-            ssh_password=password,
-            remote_bind_address=(remote_host, remote_port),
+            (ssh.ssh_host, 22),
+            ssh_username=ssh.ssh_username,
+            ssh_password=ssh.ssh_password,
+            remote_bind_address=(ssh.remote_host, 5432),
         )
         server.start()
         local_port = str(server.local_bind_port)
         local_host = str(server.local_bind_host)
-        return cls.from_uri(cls._uri.format(host=local_host, port=local_port))
+        return cls.from_uri(
+            f"postgresql+psycopg2://{ssh.remote_db_name}:{ssh.remote_db_password}@{local_host}:{local_port}/{database}"
+        )
 
     def run_sql(self, command: str) -> tuple[str, dict]:
         """Execute a SQL statement and return a string representing the results.
