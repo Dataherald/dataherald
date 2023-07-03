@@ -8,6 +8,7 @@ from fastapi.routing import APIRoute
 
 import dataherald
 from dataherald.config import Settings
+from dataherald.eval.types import Evaluation
 from dataherald.types import NLQueryResponse
 
 
@@ -34,6 +35,10 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/question", self.answer_question, methods=["POST"]
         )
 
+        self.router.add_api_route(
+            "/api/v1/question/evaluate", self.evaluate_question, methods=["POST"]
+        )
+
         self.router.add_api_route("/api/v1/heartbeat", self.heartbeat, methods=["GET"])
 
         self.router.add_api_route(
@@ -50,6 +55,9 @@ class FastAPI(dataherald.server.Server):
 
     def answer_question(self, question: str) -> NLQueryResponse:
         return self._api.answer_question(question)
+
+    def evaluate_question(self, question: str, golden_sql: str) -> Evaluation:
+        return self._api.evaluate(question, golden_sql)
 
     def root(self) -> dict[str, int]:
         return {"nanosecond heartbeat": self._api.heartbeat()}

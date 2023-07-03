@@ -8,7 +8,7 @@ from overrides import override
 from dataherald.api import API
 from dataherald.config import System
 from dataherald.db import DB
-from dataherald.eval import Evaluator
+from dataherald.eval.types import Evaluation, Evaluator
 from dataherald.smart_cache import SmartCache
 from dataherald.sql_generator import SQLGenerator
 from dataherald.types import NLQuery, NLQueryResponse
@@ -30,6 +30,7 @@ class FastAPI(API):
         """Returns the current server time in nanoseconds to check if the server is alive"""
         return int(time.time_ns())
 
+    @override
     def answer_question(self, question: str) -> NLQueryResponse:
         """Takes in an English question and answers it based on content from the registered databases"""
         cache = self.system.instance(SmartCache)
@@ -45,16 +46,23 @@ class FastAPI(API):
         generated_answer = cache.lookup(user_question.question)
         if generated_answer is None:
             generated_answer = sql_generation.generate_response(user_question)
-            if evaluator.evaluate(generated_answer):
+            if evaluator.is_acceptable_response(generated_answer):
                 cache.add(question, generated_answer)
 
         db.data_store.NLQueryResponse.insert_one(generated_answer.dict())
         return json.loads(json_util.dumps(generated_answer))
 
-    def connect_database(self, question: str) -> str:
-        """Takes in an English question and answers it based on content from the registered databases"""
+    @override
+    def evaluate_question(self, question: str, golden_sql: str) -> Evaluation:
+        """Evaluates an English question within the registered Evaluator"""
         pass
 
+    @override
+    def connect_database(self, question: str) -> str:
+        """TODO"""
+        pass
+
+    @override
     def add_context(self, question: str) -> str:
-        """Takes in an English question and answers it based on content from the registered databases"""
+        """TODO"""
         pass
