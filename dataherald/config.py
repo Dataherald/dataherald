@@ -106,10 +106,10 @@ class System(Component):
 class SSHSettings(BaseSettings):
     load_dotenv()
 
-    use_ssh: bool = os.environ.get("USE_SSH", False)
-    ssh_host: str | None = os.environ.get("SSH_HOST")
-    ssh_username: str | None = os.environ.get("SSH_USERNAME")
-    ssh_password: str | None = os.environ.get("SSH_PASSWORD")
+    enabled: bool = os.environ.get("SSH_ENABLED", False)
+    host: str | None = os.environ.get("SSH_HOST")
+    username: str | None = os.environ.get("SSH_USERNAME")
+    password: str | None = os.environ.get("SSH_PASSWORD")
 
     remote_host: str | None = os.environ.get("SSH_REMOTE_HOST")
     remote_db_name: str | None = os.environ.get("SSH_REMOTE_DB_NAME")
