@@ -10,14 +10,15 @@ class MongoDB(DB):
 
     def __init__(self, system: System):
         super().__init__(system)
-        system.settings.require("db_host")
-        system.settings.require("db_port")
-        system.settings.require("db_username")
-        system.settings.require("db_password")
-        system.settings.require("db_name")
-        self._data_store = MongoClient(
-            f"mongodb://{system.settings.db_username}:{system.settings.db_password}@{system.settings.db_host}:{system.settings.db_port}"
-        )[system.settings.db_name]
+        db_host = system.settings.require("db_host")
+        db_port = system.settings.require("db_port")
+        db_username = system.settings.require("db_username")
+        db_password = system.settings.require("db_password")
+        db_name = system.settings.require("db_name")
+        connection_url: str = (
+            f"mongodb://{db_username}:{db_password}@{db_host}:{db_port}"
+        )
+        self._data_store = MongoClient(connection_url)[db_name]
 
     @override
     def insert_one(self, collection: str, obj: dict) -> int:

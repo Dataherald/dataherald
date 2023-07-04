@@ -21,7 +21,6 @@ class SQLGenerator(Component, ABC):
             temperature=0, openai_api_key="", model_name="gpt-3.5-turbo-16k"
         )
         self.database = SQLDatabase.get_sql_engine()
-        pass
 
     @abstractmethod
     def generate_response(self, user_question: NLQuery) -> NLQueryResponse:
