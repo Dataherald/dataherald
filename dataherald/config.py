@@ -114,6 +114,8 @@ class SSHSettings(BaseSettings):
     remote_host: str | None = os.environ.get("SSH_REMOTE_HOST")
     remote_db_name: str | None = os.environ.get("SSH_REMOTE_DB_NAME")
     remote_db_password: str | None = os.environ.get("SSH_REMOTE_DB_PASSWORD")
+    private_ssh_key_path: str | None = os.environ.get("SSH_PRIVATE_KEY_PATH")
+    private_ssh_key_password: str | None = os.environ.get("SSH_PRIVATE_KEY_PASSWORD")
 
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
