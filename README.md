@@ -107,3 +107,4 @@ cp ~/.ssh/id_rsa dataherald/.
 ```
 docker-compose up
 ```
+> Run it from `/dataherald` folder for the container to pick up the needed env variables
