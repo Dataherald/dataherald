@@ -97,11 +97,11 @@ black path/to/code.py
 ## Steps to setup and run docker app 
 1. Create `.env` file, you can use the `.env.example` variables and fill them up
 ```
-cp dataherald/.env.example dataherald/.env
+cp .env.example .env
 ```
 2. As we use a SSH tunnel to connect with postgresdb and mongodb, you should copy your id_rsa file in your project root directory. This is ignore in .gitignore so it shouldn’t be commited if you use this file name
 ```
-cp ~/.ssh/id_rsa dataherald/.
+cp ~/.ssh/id_rsa .
 ```
 3. Build docker images, create containers and raise them (Check that Docker service is running). It should raise the app and mongo container
 ```
