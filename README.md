@@ -95,16 +95,45 @@ black path/to/code.py
 * If you use a MAC computer you should have installed docker for MAC, check [here](https://docs.docker.com/desktop/install/mac-install/)
 
 ## Steps to setup and run docker app 
-1. Create `.env` file, you can use the `.env.example` variables and fill them up
+1. Create `.env` file, you can use the `.env.example` file as a guide
 ```
 cp .env.example .env
 ```
-2. As we use a SSH tunnel to connect with postgresdb and mongodb, you should copy your id_rsa file in your project root directory. This is ignore in .gitignore so it shouldn’t be commited if you use this file name
+2. As we use a SSH tunnel to connect with PostgreSQL and mongodb, you should copy your id_rsa file in your project root directory. This is ignored in .gitignore so it shouldn’t be commited if you use this file name
 ```
 cp ~/.ssh/id_rsa .
 ```
-3. Build docker images, create containers and raise them (Check that Docker service is running). It should raise the app and mongo container
+3. Check that Docker is running or run docker
+
+4. Build docker images, create containers and raise them. It should raise the app and mongo container
 ```
 docker-compose up
 ```
-> Run it from `/dataherald` folder for the container to pick up the needed env variables
+5. Check that the containers are running, you should see 2 containers
+```
+docker ps
+```
+It should look like this:
+```
+CONTAINER ID   IMAGE            COMMAND                  CREATED         STATUS         PORTS                      NAMES
+72aa8df0d589   dataherald-app   "uvicorn dataherald.…"   7 seconds ago   Up 6 seconds   0.0.0.0:80->80/tcp         dataherald-app-1
+6595d145b0d7   mongo:latest     "docker-entrypoint.s…"   19 hours ago    Up 6 seconds   0.0.0.0:27017->27017/tcp   dataherald-mongodb-1
+```
+6. In your browser visit [http://localhost/docs](http://localhost/docs)
+
+## Testing with Docker
+Once your containers are running just execute the next command
+```
+docker-compose exec app pytest
+```
+
+## Connect to Docker MongoDB container
+Once your mongo container is running you can use any tool (Such as NoSQLBooster) to connect it.
+The default values are:
+```
+HOST: localhost # inside the docker containers use the host "mongodb" and outside use "localhost"
+PORT: 27017
+DB_NAME: dataherald
+DB_USERNAME = admin
+DB_PASSWORD = admin
+```
