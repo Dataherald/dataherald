@@ -1,16 +1,16 @@
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class NLQuery(BaseModel):
-    id: Any
+    id: str | None = Field(alias="_id")
     question: str
 
 
 class NLQueryResponse(BaseModel):
-    id: Any
+    id: str | None = Field(alias="_id")
     nl_question_id: Any
     nl_response: str
     intermediate_steps: list[str]
