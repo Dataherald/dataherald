@@ -18,6 +18,10 @@ class NLQueryResponse(BaseModel):
     exec_time: float | None = None
 
 
+class ContextType(Enum):
+    GOLDEN_SQL = "GOLDEN_SQL"
+    BUSINESS_CONTEXT = "BUSINESS_CONTEXT"
+
 class SupportedDatabase(Enum):
     POSTGRES = "POSTGRES"
     DATABRICKS = "DATABRICKS"

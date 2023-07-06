@@ -9,7 +9,7 @@ from fastapi.routing import APIRoute
 import dataherald
 from dataherald.config import Settings
 from dataherald.eval import Evaluation
-from dataherald.types import NLQueryResponse
+from dataherald.types import NLQueryResponse, ContextType
 
 
 def use_route_names_as_operation_ids(app: _FastAPI) -> None:
@@ -69,6 +69,6 @@ class FastAPI(dataherald.server.Server):
         """Takes in an English question and answers it based on content from the registered databases"""
         return self._api.connect_database(database)
 
-    def add_context(self, context_document_handler: Any) -> str:
+    def add_context(self, type: ContextType, context_document_handler: Any) -> bool:
         """Takes in an English question and answers it based on content from the registered databases"""
-        return self._api.connect_database(context_document_handler)
+        return self._api.add_context(type, context_document_handler)

@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 
 from dataherald.config import Component
 from dataherald.eval import Evaluation
-from dataherald.types import NLQueryResponse
+from dataherald.types import ContextType, NLQueryResponse
+from typing import Any
 
 
 class API(Component, ABC):
@@ -24,5 +25,5 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def add_context(self, question: str) -> str:
+    def add_context(self, type: ContextType, context_document_handler: Any) -> bool:
         pass

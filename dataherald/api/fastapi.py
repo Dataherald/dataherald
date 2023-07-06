@@ -1,17 +1,19 @@
 import json
 import logging
 import time
+from typing import Any
 
 from bson import json_util
 from overrides import override
 
 from dataherald.api import API
 from dataherald.config import System
+from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.eval import Evaluation, Evaluator
 from dataherald.smart_cache import SmartCache
 from dataherald.sql_generator import SQLGenerator
-from dataherald.types import NLQuery, NLQueryResponse
+from dataherald.types import ContextType, NLQuery, NLQueryResponse
 
 logger = logging.getLogger(__name__)
 
@@ -37,13 +39,16 @@ class FastAPI(API):
         sql_generation = self.system.instance(SQLGenerator)
         evaluator = self.system.instance(Evaluator)
         db = self.system.instance(DB)
+        context_store = self.system.instance(ContextStore)
 
         user_question = NLQuery(question=question)
         user_question.id = db.insert_one("nl_question", user_question.dict())
 
+        context = context_store.retrieve_context_for_question(user_question)
+
         generated_answer = cache.lookup(user_question.question)
         if generated_answer is None:
-            generated_answer = sql_generation.generate_response(user_question)
+            generated_answer = sql_generation.generate_response(user_question, context)
             if evaluator.is_acceptable_response(generated_answer):
                 cache.add(question, generated_answer)
         db.insert_one("nl_query_response", generated_answer.dict())
@@ -60,6 +65,6 @@ class FastAPI(API):
         pass
 
     @override
-    def add_context(self, question: str) -> str:
-        """TODO"""
-        pass
+    def add_context(self, type: ContextType, context_document_handler: Any) -> bool:
+        context_store = self.system.instance(ContextStore)
+        return context_store.add_context(type, context_document_handler)

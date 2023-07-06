@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class LlamaIndexSQLGenerator(SQLGenerator):
     @override
-    def generate_response(self, user_question: NLQuery) -> NLQueryResponse:
+    def generate_response(self, user_question: NLQuery, context: str = None) -> NLQueryResponse:
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
 
         db_engine = self.database.engine

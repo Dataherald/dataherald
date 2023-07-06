@@ -18,11 +18,11 @@ class SQLGenerator(Component, ABC):
 
     def __init__(self, system: System):  # noqa: ARG002
         self.llm = ChatOpenAI(
-            temperature=0, openai_api_key="", model_name="gpt-3.5-turbo-16k"
+            temperature=0, openai_api_key="", model_name="gpt-4-32k"
         )
         self.database = SQLDatabase.get_sql_engine()
 
     @abstractmethod
-    def generate_response(self, user_question: NLQuery) -> NLQueryResponse:
+    def generate_response(self, user_question: NLQuery, context: str = None) -> NLQueryResponse:
         """Generates a response to a user question."""
         pass
