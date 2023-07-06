@@ -17,6 +17,12 @@ _abstract_type_keys: Dict[str, str] = {
 }
 
 
+class DatabaseSettings(BaseSettings):
+    load_dotenv()
+
+    uri: str | None = os.environ.get("DATABASE_URI")
+
+
 class Settings(BaseSettings):
     load_dotenv()
 
@@ -116,6 +122,7 @@ class SSHSettings(BaseSettings):
     remote_db_password: str | None = os.environ.get("SSH_REMOTE_DB_PASSWORD")
     private_key_path: str | None = os.environ.get("SSH_PRIVATE_KEY_PATH")
     private_key_password: str | None = os.environ.get("SSH_PRIVATE_KEY_PASSWORD")
+    db_driver: str | None = os.environ.get("SSH_DB_DRIVER")
 
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
