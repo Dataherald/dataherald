@@ -44,7 +44,7 @@ class FastAPI(API):
         user_question = NLQuery(question=question)
         user_question.id = db.insert_one("nl_question", user_question.dict())
 
-        context = context_store.retrieve_context_for_question(user_question)
+        context = context_store.retrieve_context_for_question(question)
 
         generated_answer = cache.lookup(user_question.question)
         if generated_answer is None:
@@ -67,4 +67,8 @@ class FastAPI(API):
     @override
     def add_context(self, type: ContextType, context_document_handler: Any) -> bool:
         context_store = self.system.instance(ContextStore)
-        return context_store.add_context(type, context_document_handler)
+        if type == ContextType.GOLDEN_SQL:
+            context_document_handler = json.loads(context_document_handler)
+            return context_store.add_golden_sql(context_document_handler['nl_question'], context_document_handler['golden_sql'])
+        else:
+            return True
