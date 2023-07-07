@@ -8,7 +8,6 @@ services:
       - "80:80"
     stdin_open: true
     tty: true
-    command: uvicorn dataherald.app:app --host 0.0.0.0 --port 80 --reload
     volumes:
       - ./dataherald:/app/dataherald
     depends_on:
