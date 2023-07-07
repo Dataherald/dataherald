@@ -35,7 +35,7 @@ The question:
 class LangChainSQLChainSQLGenerator(SQLGenerator):
     @override
     def generate_response(self, user_question: NLQuery, context: str = None) -> NLQueryResponse:
-        logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
+        logger.info(f"Generating SQL response to question: {str(user_question.dict())} with passed context {context}")
         if context is not None:
             prompt = PROMPT_WITH_CONTEXT.format(user_question=user_question.question, context=context)
         else:

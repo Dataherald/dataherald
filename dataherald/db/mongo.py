@@ -20,6 +20,10 @@ class MongoDB(DB):
         )
         self._data_store = MongoClient(connection_url)[db_name]
 
+    @override 
+    def find_one(self, collection: str, query: dict) -> dict:
+        return self._data_store[collection].find_one(query)
+
     @override
     def insert_one(self, collection: str, obj: dict) -> int:
         return self._data_store[collection].insert_one(obj).inserted_id

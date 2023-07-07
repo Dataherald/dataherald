@@ -1,7 +1,7 @@
 import json
 import logging
 import time
-from typing import Any
+from typing import Any, List
 
 from bson import json_util
 from overrides import override
@@ -13,7 +13,7 @@ from dataherald.db import DB
 from dataherald.eval import Evaluation, Evaluator
 from dataherald.smart_cache import SmartCache
 from dataherald.sql_generator import SQLGenerator
-from dataherald.types import ContextType, NLQuery, NLQueryResponse
+from dataherald.types import DataDefinitionType, NLQuery, NLQueryResponse
 
 logger = logging.getLogger(__name__)
 
@@ -64,11 +64,14 @@ class FastAPI(API):
         """TODO"""
         pass
 
-    @override
-    def add_context(self, type: ContextType, context_document_handler: Any) -> bool:
+
+    def add_data_definition(self, type: DataDefinitionType, uri: str) -> bool:
+        """Take in a URI to a document containing data definitions"""
         context_store = self.system.instance(ContextStore)
-        if type == ContextType.GOLDEN_SQL:
-            context_document_handler = json.loads(context_document_handler)
-            return context_store.add_golden_sql(context_document_handler['nl_question'], context_document_handler['golden_sql'])
-        else:
-            return True
+        return context_store.add_data_definition(type, uri)
+
+    @override
+    def add_golden_records(self, golden_records: List) -> bool:
+        """Takes in a list of NL <> SQL pairs and stores them to be used in prompts to the LLM"""
+        context_store = self.system.instance(ContextStore)
+        return context_store.add_golden_records(golden_records)

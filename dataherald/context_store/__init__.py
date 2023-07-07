@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, List
 
 from dataherald.config import Component, System
 
@@ -13,11 +13,11 @@ class ContextStore(Component, ABC):
 
 
     @abstractmethod
-    def retrieve_context_for_question(self, nl_question: str) -> str:
+    def retrieve_context_for_question(self, nl_question: str) -> str | None:
         pass
 
     @abstractmethod
-    def add_golden_sql(self, nl_question: str, golden_sql: str) -> bool:
+    def add_golden_records(self, golden_records:List) -> bool:
         pass
 
     @abstractmethod

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 import fastapi
 from fastapi import FastAPI as _FastAPI
@@ -9,7 +9,7 @@ from fastapi.routing import APIRoute
 import dataherald
 from dataherald.config import Settings
 from dataherald.eval import Evaluation
-from dataherald.types import NLQueryResponse, ContextType
+from dataherald.types import DataDefinitionType, NLQueryResponse
 
 
 def use_route_names_as_operation_ids(app: _FastAPI) -> None:
@@ -45,7 +45,9 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/database", self.connect_database, methods=["POST"]
         )
 
-        self.router.add_api_route("/api/v1/context", self.add_context, methods=["POST"])
+        self.router.add_api_route("/api/v1/golden-record", self.add_golden_records, methods=["POST"])
+
+        self.router.add_api_route("/api/v1/data-definition", self.add_data_definition, methods=["POST"])
 
         self._app.include_router(self.router)
         use_route_names_as_operation_ids(self._app)
@@ -69,6 +71,10 @@ class FastAPI(dataherald.server.Server):
         """Takes in an English question and answers it based on content from the registered databases"""
         return self._api.connect_database(database)
 
-    def add_context(self, type: ContextType, context_document_handler: Any) -> bool:
+    def add_golden_records(self, golden_records: List) -> bool:
         """Takes in an English question and answers it based on content from the registered databases"""
-        return self._api.add_context(type, context_document_handler)
+        return self._api.add_golden_records(golden_records)
+
+    def add_data_definition(self, uri: str, type:DataDefinitionType) -> bool:  
+        """Takes in an English question and answers it based on content from the registered databases"""
+        return self._api.add_data_definition(type, uri)
