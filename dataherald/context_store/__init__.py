@@ -2,14 +2,23 @@ from abc import ABC, abstractmethod
 from typing import Any, List
 
 from dataherald.config import Component, System
+from dataherald.db import DB
+from dataherald.vector_store import VectorStore
 
 
 class ContextStore(Component, ABC):
+    DocStore: DB
+    VectorStore: VectorStore
+    golden_record_collection = "golden_records"
+    doc_store_collection = "table_meta_data"
 
 
     @abstractmethod
     def __init__(self, system: System):
         self.system = system
+        self.db = self.system.instance(DB)
+        self.vector_store = self.system.instance(VectorStore)
+      
 
 
     @abstractmethod
