@@ -29,8 +29,8 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         metadata_obj.reflect(db_engine)
         table_schema_objs = []
         table_node_mapping = SQLTableNodeMapping(self.database)
-        question_with_context = f"{user_question.question} An example of a similar question and the query that was generated to answer it is the following {context}" \
-                                if context is not None else user_question.question
+        question_with_context = f"{user_question.question} An example of a similar question and the query that was generated to answer it \
+                                 is the following {context}" if context is not None else user_question.question
         for table_name in metadata_obj.tables.keys():
             table_schema_objs.append(SQLTableSchema(table_name=table_name))
 
