@@ -164,3 +164,4 @@ postgres_data/
 .vscode/
 
 id_rsa
+id_ed25519
