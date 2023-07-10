@@ -18,7 +18,6 @@ class ContextStore(Component, ABC):
         self.system = system
         self.db = self.system.instance(DB)
         self.vector_store = self.system.instance(VectorStore)
-      
 
 
     @abstractmethod

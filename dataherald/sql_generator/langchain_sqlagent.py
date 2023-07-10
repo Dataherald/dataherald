@@ -31,8 +31,8 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
             return_intermediate_steps=True,
         )
 
-        question_with_context = f"{user_question.question} An example of a similar question and the query that was generated to answer it is the following {context}" \
-                                if context is not None else user_question.question  # noqa: E501
+        question_with_context = f"{user_question.question} An example of a similar question and the query that was generated \
+                                to answer it is the following {context}" if context is not None else user_question.question
         result = agent_executor(question_with_context)
 
         intermediate_steps = []
