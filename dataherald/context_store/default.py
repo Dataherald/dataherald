@@ -1,5 +1,5 @@
 import logging
-from typing import Any, List
+from typing import List
 
 from bson.objectid import ObjectId
 from overrides import override
@@ -12,7 +12,7 @@ from dataherald.types import NLQuery, NLQueryResponse
 logger = logging.getLogger(__name__)
 
 class DefaultContextStore(ContextStore):
-    
+
 
     def __init__(self, system: System):
         super().__init__(system)
@@ -36,8 +36,8 @@ class DefaultContextStore(ContextStore):
         print(samples)
         if len(samples) == 0:
             return None
-        else:
-            return f"Question: {closest_questions['documents'][0][0]} \n SQL: {samples[0]['sql_query']} \n"
+
+        return f"Question: {closest_questions['documents'][0][0]} \n SQL: {samples[0]['sql_query']} \n"
 
     @override
     def add_golden_records(self, golden_records: List) -> bool:

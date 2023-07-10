@@ -1,7 +1,7 @@
 import json
 import logging
 import time
-from typing import Any, List
+from typing import List
 
 from bson import json_util
 from overrides import override

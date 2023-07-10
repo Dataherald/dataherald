@@ -75,6 +75,6 @@ class FastAPI(dataherald.server.Server):
         """Takes in an English question and answers it based on content from the registered databases"""
         return self._api.add_golden_records(golden_records)
 
-    def add_data_definition(self, uri: str, type:DataDefinitionType) -> bool:  
+    def add_data_definition(self, uri: str, type:DataDefinitionType) -> bool:
         """Takes in an English question and answers it based on content from the registered databases"""
         return self._api.add_data_definition(type, uri)
