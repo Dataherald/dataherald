@@ -127,6 +127,13 @@ Once your containers are running just execute the next command
 docker-compose exec app pytest
 ```
 
+
+## See Docker App container logs
+Once app container is running just execute the next command
+```
+docker-compose exec app cat dataherald.log
+```
+
 ## Connect to Docker MongoDB container
 Once your mongo container is running you can use any tool (Such as NoSQLBooster) to connect it.
 The default values are:

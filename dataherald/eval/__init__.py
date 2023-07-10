@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from pydantic import BaseModel, confloat
+from pydantic import BaseModel, Field, confloat
 
 from dataherald.config import Component, System
 
@@ -8,7 +8,7 @@ ACCEPTANCE_THRESHOLD: confloat(ge=0, le=1) = 0.8
 
 
 class Evaluation(BaseModel):
-    id: str
+    id: str | None = Field(alias="_id")
     question_id: str
     score: confloat(ge=0, le=1) = 0.8
 
@@ -24,7 +24,7 @@ class Evaluator(Component, ABC):
         return evaluation.score >= ACCEPTANCE_THRESHOLD
 
     @abstractmethod
-    def get_golden_sql(self, question: str) -> bool:
+    def get_golden_sql(self, question: str) -> str:
         """Obtains the golden SQL for the given question"""
 
     @abstractmethod
