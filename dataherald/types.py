@@ -1,4 +1,4 @@
-#from datetime import datetime
+#from datetime import datetime add this later
 from enum import Enum
 from typing import Any
 
@@ -18,7 +18,7 @@ class NLQueryResponse(BaseModel):
     sql_query: str
     exec_time: float | None = None
     golden_record: bool = False
-    #date_entered: datetime = datetime.now()
+    #date_entered: datetime = datetime.now() add this later
 
 
 class DataDefinitionType(Enum):

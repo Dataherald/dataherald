@@ -24,7 +24,7 @@ class DefaultContextStore(ContextStore):
         closest_questions = self.vector_store.query(
             query_texts = [nl_question],
             collection = self.golden_record_collection,
-            num_results = 3
+            num_results = 1
         )
 
         samples = []

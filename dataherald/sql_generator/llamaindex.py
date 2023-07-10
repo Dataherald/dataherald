@@ -29,6 +29,8 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         metadata_obj.reflect(db_engine)
         table_schema_objs = []
         table_node_mapping = SQLTableNodeMapping(self.database)
+        question_with_context = f"{user_question.question} An example of a similar question and the query that was generated to answer it is the following {context}" \
+                                if context is not None else user_question.question
         for table_name in metadata_obj.tables.keys():
             table_schema_objs.append(SQLTableSchema(table_name=table_name))
 
@@ -40,6 +42,7 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             table_node_mapping,
             VectorStoreIndex,
         )
+        print(question_with_context)
 
         # We construct a SQLTableRetrieverQueryEngine.
         # Note that we pass in the ObjectRetriever so that we can dynamically retrieve the table during query-time.
@@ -50,7 +53,7 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             service_context=service_context,
         )
 
-        result = query_engine.query(user_question.question)
+        result = query_engine.query(question_with_context)
         return NLQueryResponse(
             nl_question_id=user_question.id,
             nl_response=result.response,
