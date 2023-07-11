@@ -6,7 +6,7 @@ from sqlalchemy import MetaData, create_engine, text
 from sqlalchemy.engine import Engine
 from sshtunnel import SSHTunnelForwarder
 
-from dataherald.config import SSHSettings
+from dataherald.config import DatabaseSettings, SSHSettings
 
 
 class SQLDatabase(LangchainSQLDatabase):
@@ -22,7 +22,7 @@ class SQLDatabase(LangchainSQLDatabase):
 
     """
 
-    _uri: str | None = None
+    _db: DatabaseSettings = DatabaseSettings()
     _ssh: SSHSettings = SSHSettings()
 
     @property
@@ -38,7 +38,7 @@ class SQLDatabase(LangchainSQLDatabase):
     @property
     def database_uri(self) -> str:
         """Return database uri"""
-        return self._uri
+        return self._db.uri
 
     @classmethod
     def from_uri(
@@ -52,7 +52,7 @@ class SQLDatabase(LangchainSQLDatabase):
     def get_sql_engine(cls) -> "SQLDatabase":
         if cls._ssh.enabled:
             return cls.from_uri_ssh()
-        return cls.from_uri(cls._uri)
+        return cls.from_uri(cls._db.uri)
 
     @classmethod
     def from_uri_ssh(cls):
@@ -69,8 +69,9 @@ class SQLDatabase(LangchainSQLDatabase):
         server.start()
         local_port = str(server.local_bind_port)
         local_host = str(server.local_bind_host)
+
         return cls.from_uri(
-            f"postgresql+psycopg2://{ssh.remote_db_name}:{ssh.remote_db_password}@{local_host}:{local_port}/{database}"
+            f"{ssh.db_driver}://{ssh.remote_db_name}:{ssh.remote_db_password}@{local_host}:{local_port}/{database}"
         )
 
     def run_sql(self, command: str) -> tuple[str, dict]:
