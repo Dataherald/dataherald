@@ -47,15 +47,9 @@ class Settings(BaseSettings):
     vector_store_impl: str = os.environ.get(
         "VECTOR_STORE", "dataherald.vector_store.chroma.Chroma"
     )
-    server_host: str | None = os.environ.get("SERVER_HOST")
-    server_http_port: str | None = os.environ.get("SERVER_HTTP_PORT")
-    server_ssl_enabled: bool | None = os.environ.get("SERVER_SSL_ENABLED")
 
-    db_host: str | None = os.environ.get("DB_HOST")
-    db_port: str | None = os.environ.get("DB_PORT")
-    db_name: str | None = os.environ.get("DB_NAME")
-    db_username: str | None = os.environ.get("DB_USERNAME")
-    db_password: str | None = os.environ.get("DB_PASSWORD")
+    db_name: str | None = os.environ.get("MONGODB_DB_NAME")
+    db_uri: str | None = os.environ.get("MONGODB_URI")
 
     def require(self, key: str) -> Any:
         val = self[key]
