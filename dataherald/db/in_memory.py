@@ -19,3 +19,7 @@ class InMemory(DB):
             self.memory[collection] = [obj]
 
         return len(self.memory[collection]) - 1
+
+    @override
+    def find_one(self, collection: str, query: dict) -> dict:
+        return self.memory[collection][query]
