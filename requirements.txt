@@ -1,6 +1,6 @@
 fastapi==0.98.0
 httpx==0.24.1
-llama-index==0.6.35
+llama-index==0.5.4
 langchain==0.0.207
 load-dotenv==0.1.0
 mypy-extensions==1.0.0
@@ -13,8 +13,12 @@ pydantic==1.10.9
 pymongo==4.4.0
 python-dotenv==1.0.0
 requests==2.31.0
-SQLAlchemy==2.0.16
+SQLAlchemy==1.4.49
 sshtunnel==0.4.0
 uvicorn==0.22.0
 pytest== 7.4.0
 ipdb==0.13.13
+snowflake-connector-python==3.0.4
+snowflake-sqlalchemy==1.4.7
+sqlalchemy-databricks==0.2.0
+sqlalchemy-bigquery==1.6.1

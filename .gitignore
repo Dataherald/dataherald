@@ -162,6 +162,6 @@ cython_debug/
 dbdata/
 postgres_data/
 .vscode/
-
+private_credentials/*
 id_rsa
 id_ed25519
