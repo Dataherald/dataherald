@@ -17,7 +17,7 @@ python-dateutil==2.8.2
 python-dotenv==1.0.0
 requests==2.31.0
 sql-metadata==2.8.0
-SQLAlchemy==2.0.16
+SQLAlchemy==1.4.49
 sqlparse==0.4.4
 sshtunnel==0.4.0
 uvicorn==0.22.0
