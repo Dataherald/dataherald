@@ -1,3 +1,4 @@
+dnspython==2.3.0
 fastapi==0.98.0
 httpx==0.24.1
 llama-index==0.5.4

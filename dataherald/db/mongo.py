@@ -10,15 +10,9 @@ class MongoDB(DB):
 
     def __init__(self, system: System):
         super().__init__(system)
-        db_host = system.settings.require("db_host")
-        db_port = system.settings.require("db_port")
-        db_username = system.settings.require("db_username")
-        db_password = system.settings.require("db_password")
+        db_uri = system.settings.require("db_uri")
         db_name = system.settings.require("db_name")
-        connection_url: str = (
-            f"mongodb://{db_username}:{db_password}@{db_host}:{db_port}"
-        )
-        self._data_store = MongoClient(connection_url)[db_name]
+        self._data_store = MongoClient(db_uri)[db_name]
 
     @override
     def find_one(self, collection: str, query: dict) -> dict:

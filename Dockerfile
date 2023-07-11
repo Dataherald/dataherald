@@ -12,4 +12,5 @@ COPY . /app
 
 EXPOSE 80
 
-CMD ["uvicorn", "dataherald.app:app", "--host", "0.0.0.0", "--port", "80", "--log-config", "log_config.yml", "--log-level", "debug", "--reload"]
+# "--log-config", "log_config.yml", "--log-level", "debug", "--reload"
+CMD ["uvicorn", "dataherald.app:app", "--host", "0.0.0.0", "--port", "80"]
