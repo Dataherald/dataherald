@@ -20,10 +20,6 @@ class FastAPI(API):
     def __init__(self, system: System):
         super().__init__(system)
         self.system = system
-        url_prefix = "https" if system.settings.server_ssl_enabled else "http"
-        system.settings.require("server_host")
-        system.settings.require("server_http_port")
-        self._api_url = f"{url_prefix}://{system.settings.server_host}:{system.settings.server_http_port}/api/v1"
 
     @override
     def heartbeat(self) -> int:

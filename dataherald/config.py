@@ -39,10 +39,6 @@ class Settings(BaseSettings):
     )
     db_impl: str = os.environ.get("DB", "dataherald.db.mongo.MongoDB")
 
-    server_host: str | None = os.environ.get("SERVER_HOST")
-    server_http_port: str | None = os.environ.get("SERVER_HTTP_PORT")
-    server_ssl_enabled: bool | None = os.environ.get("SERVER_SSL_ENABLED")
-
     db_host: str | None = os.environ.get("DB_HOST")
     db_port: str | None = os.environ.get("DB_PORT")
     db_name: str | None = os.environ.get("DB_NAME")
