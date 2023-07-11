@@ -34,10 +34,16 @@ The question:
 
 class LangChainSQLChainSQLGenerator(SQLGenerator):
     @override
-    def generate_response(self, user_question: NLQuery, context: str = None) -> NLQueryResponse:
-        logger.info(f"Generating SQL response to question: {str(user_question.dict())} with passed context {context}")
+    def generate_response(
+        self, user_question: NLQuery, context: str = None
+    ) -> NLQueryResponse:
+        logger.info(
+            f"Generating SQL response to question: {str(user_question.dict())} with passed context {context}"
+        )
         if context is not None:
-            prompt = PROMPT_WITH_CONTEXT.format(user_question=user_question.question, context=context)
+            prompt = PROMPT_WITH_CONTEXT.format(
+                user_question=user_question.question, context=context
+            )
         else:
             prompt = PROMPT_WITHOUT_CONTEXT.format(user_question=user_question.question)
         # should top_k be an argument?

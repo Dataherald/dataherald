@@ -12,20 +12,18 @@ class ContextStore(Component, ABC):
     golden_record_collection = "golden_records"
     doc_store_collection = "table_meta_data"
 
-
     @abstractmethod
     def __init__(self, system: System):
         self.system = system
         self.db = self.system.instance(DB)
         self.vector_store = self.system.instance(VectorStore)
 
-
     @abstractmethod
     def retrieve_context_for_question(self, nl_question: str) -> str | None:
         pass
 
     @abstractmethod
-    def add_golden_records(self, golden_records:List) -> bool:
+    def add_golden_records(self, golden_records: List) -> bool:
         pass
 
     @abstractmethod

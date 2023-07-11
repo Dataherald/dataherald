@@ -46,7 +46,6 @@ class FastAPI(API):
             "nl_question", user_question.dict(exclude={"id"})
         )
 
-
         context = context_store.retrieve_context_for_question(question)
         start_generated_answer = time.time()
 
@@ -68,7 +67,6 @@ class FastAPI(API):
     def connect_database(self, question: str) -> str:
         """TODO"""
         pass
-
 
     def add_data_definition(self, type: DataDefinitionType, uri: str) -> bool:
         """Take in a URI to a document containing data definitions"""

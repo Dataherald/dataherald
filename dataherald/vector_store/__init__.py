@@ -16,7 +16,7 @@ class VectorStore(Component, ABC):
         pass
 
     @abstractmethod
-    def create_collection(self, collection:str):
+    def create_collection(self, collection: str):
         pass
 
     @abstractmethod

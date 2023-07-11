@@ -20,7 +20,9 @@ logger = logging.getLogger(__name__)
 
 class LlamaIndexSQLGenerator(SQLGenerator):
     @override
-    def generate_response(self, user_question: NLQuery, context: str = None) -> NLQueryResponse:
+    def generate_response(
+        self, user_question: NLQuery, context: str = None
+    ) -> NLQueryResponse:
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
 
         db_engine = self.database.engine
@@ -29,8 +31,12 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         metadata_obj.reflect(db_engine)
         table_schema_objs = []
         table_node_mapping = SQLTableNodeMapping(self.database)
-        question_with_context = f"{user_question.question} An example of a similar question and the query that was generated to answer it \
-                                 is the following {context}" if context is not None else user_question.question
+        question_with_context = (
+            f"{user_question.question} An example of a similar question and the query that was generated to answer it \
+                                 is the following {context}"
+            if context is not None
+            else user_question.question
+        )
         for table_name in metadata_obj.tables.keys():
             table_schema_objs.append(SQLTableSchema(table_name=table_name))
 

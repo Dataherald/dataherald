@@ -45,9 +45,13 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/database", self.connect_database, methods=["POST"]
         )
 
-        self.router.add_api_route("/api/v1/golden-record", self.add_golden_records, methods=["POST"])
+        self.router.add_api_route(
+            "/api/v1/golden-record", self.add_golden_records, methods=["POST"]
+        )
 
-        self.router.add_api_route("/api/v1/data-definition", self.add_data_definition, methods=["POST"])
+        self.router.add_api_route(
+            "/api/v1/data-definition", self.add_data_definition, methods=["POST"]
+        )
 
         self._app.include_router(self.router)
         use_route_names_as_operation_ids(self._app)
@@ -75,6 +79,6 @@ class FastAPI(dataherald.server.Server):
         """Takes in an English question and answers it based on content from the registered databases"""
         return self._api.add_golden_records(golden_records)
 
-    def add_data_definition(self, uri: str, type:DataDefinitionType) -> bool:
+    def add_data_definition(self, uri: str, type: DataDefinitionType) -> bool:
         """Takes in an English question and answers it based on content from the registered databases"""
         return self._api.add_data_definition(type, uri)

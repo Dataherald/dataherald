@@ -15,7 +15,7 @@ _abstract_type_keys: Dict[str, str] = {
     "dataherald.eval.Evaluator": "eval_impl",
     "dataherald.db.DB": "db_impl",
     "dataherald.context_store.ContextStore": "context_store_impl",
-    "dataherald.vector_store.VectorStore": "vector_store_impl"
+    "dataherald.vector_store.VectorStore": "vector_store_impl",
 }
 
 
@@ -35,8 +35,12 @@ class Settings(BaseSettings):
     )
     db_impl: str = os.environ.get("DB", "dataherald.db.mongo.MongoDB")
 
-    context_store_impl: str = os.environ.get("CONTEXT_STORE", "dataherald.context_store.default.DefaultContextStore")
-    vector_store_impl: str = os.environ.get("VECTOR_STORE", "dataherald.vector_store.chroma.Chroma")
+    context_store_impl: str = os.environ.get(
+        "CONTEXT_STORE", "dataherald.context_store.default.DefaultContextStore"
+    )
+    vector_store_impl: str = os.environ.get(
+        "VECTOR_STORE", "dataherald.vector_store.chroma.Chroma"
+    )
     server_host: str | None = os.environ.get("SERVER_HOST")
     server_http_port: str | None = os.environ.get("SERVER_HTTP_PORT")
     server_ssl_enabled: bool | None = os.environ.get("SERVER_SSL_ENABLED")

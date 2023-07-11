@@ -17,12 +17,12 @@ class SQLGenerator(Component, ABC):
     llm: BaseLanguageModel | None = None
 
     def __init__(self, system: System):  # noqa: ARG002
-        self.llm = ChatOpenAI(
-            temperature=0, openai_api_key="", model_name="gpt-4-32k"
-        )
+        self.llm = ChatOpenAI(temperature=0, openai_api_key="", model_name="gpt-4-32k")
         self.database = SQLDatabase.get_sql_engine()
 
     @abstractmethod
-    def generate_response(self, user_question: NLQuery, context: str = None) -> NLQueryResponse:
+    def generate_response(
+        self, user_question: NLQuery, context: str = None
+    ) -> NLQueryResponse:
         """Generates a response to a user question."""
         pass
