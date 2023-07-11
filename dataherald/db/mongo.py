@@ -16,7 +16,7 @@ class MongoDB(DB):
         db_password = system.settings.require("db_password")
         db_name = system.settings.require("db_name")
         connection_url: str = (
-            f"mongodb://{db_username}:{db_password}@{db_host}:{db_port}"
+            f"mongodb+srv://{db_username}:{db_password}@{db_host}:{db_port}"
         )
         self._data_store = MongoClient(connection_url)[db_name]
 
