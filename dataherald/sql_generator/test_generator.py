@@ -11,7 +11,7 @@ class TestGenerator(SQLGenerator):
 
     @override
     def generate_response(
-        self, user_question: NLQuery  # noqa: ARG002
+        self, user_question: NLQuery, context: str = None  # noqa: ARG002
     ) -> NLQueryResponse:
         return NLQueryResponse(
             nl_question_id=None,
