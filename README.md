@@ -127,6 +127,7 @@ Once your containers are running just execute the next command
 docker-compose exec app pytest
 ```
 
+
 ## See Docker App container logs
 Once app container is running just execute the next command
 ```

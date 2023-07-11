@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class LangChainSQLAgentSQLGenerator(SQLGenerator):
     @override
-    def generate_response(self, user_question: NLQuery) -> NLQueryResponse:
+    def generate_response(self, user_question: NLQuery, context: str = None) -> NLQueryResponse:  # type: ignore
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
 
         tools = SQLDatabaseToolkit(db=self.database, llm=self.llm).get_tools()
@@ -31,7 +31,13 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
             return_intermediate_steps=True,
         )
 
-        result = agent_executor(user_question.question)
+        question_with_context = (
+            f"{user_question.question} An example of a similar question and the query that was generated \
+                                to answer it is the following {context}"
+            if context is not None
+            else user_question.question
+        )
+        result = agent_executor(question_with_context)
 
         intermediate_steps = []
         sql_query_list = []

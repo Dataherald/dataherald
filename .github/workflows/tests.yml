@@ -29,5 +29,6 @@ jobs:
           EVALUATOR: 'dataherald.eval.simple_evaluator.SimpleEvaluator'
           DB: 'dataherald.db.in_memory.InMemory'
           OPENAI_API_KEY: 'foo'
+          VECTOR_STORE: 'dataherald.vector_store.test_vector_store.TestVectorStore'
         run: |
           pytest

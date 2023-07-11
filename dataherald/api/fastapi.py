@@ -1,17 +1,19 @@
 import json
 import logging
 import time
+from typing import List
 
 from bson import json_util
 from overrides import override
 
 from dataherald.api import API
 from dataherald.config import System
+from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.eval import Evaluation, Evaluator
 from dataherald.smart_cache import SmartCache
 from dataherald.sql_generator import SQLGenerator
-from dataherald.types import NLQuery, NLQueryResponse
+from dataherald.types import DataDefinitionType, NLQuery, NLQueryResponse
 
 logger = logging.getLogger(__name__)
 
@@ -37,16 +39,19 @@ class FastAPI(API):
         sql_generation = self.system.instance(SQLGenerator)
         evaluator = self.system.instance(Evaluator)
         db = self.system.instance(DB)
+        context_store = self.system.instance(ContextStore)
 
         user_question = NLQuery(question=question)
         user_question.id = db.insert_one(
             "nl_question", user_question.dict(exclude={"id"})
         )
 
+        context = context_store.retrieve_context_for_question(question)
         start_generated_answer = time.time()
+
         generated_answer = cache.lookup(user_question.question)
         if generated_answer is None:
-            generated_answer = sql_generation.generate_response(user_question)
+            generated_answer = sql_generation.generate_response(user_question, context)
             if evaluator.is_acceptable_response(generated_answer):
                 cache.add(question, generated_answer)
         generated_answer.exec_time = time.time() - start_generated_answer
@@ -63,7 +68,13 @@ class FastAPI(API):
         """TODO"""
         pass
 
+    def add_data_definition(self, type: DataDefinitionType, uri: str) -> bool:
+        """Take in a URI to a document containing data definitions"""
+        context_store = self.system.instance(ContextStore)
+        return context_store.add_data_definition(type, uri)
+
     @override
-    def add_context(self, question: str) -> str:
-        """TODO"""
-        pass
+    def add_golden_records(self, golden_records: List) -> bool:
+        """Takes in a list of NL <> SQL pairs and stores them to be used in prompts to the LLM"""
+        context_store = self.system.instance(ContextStore)
+        return context_store.add_golden_records(golden_records)

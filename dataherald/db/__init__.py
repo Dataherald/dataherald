@@ -11,3 +11,7 @@ class DB(Component, ABC):
     @abstractmethod
     def insert_one(self, collection: str, obj: dict) -> int:
         pass
+
+    @abstractmethod
+    def find_one(self, collection: str, query: dict) -> dict:
+        pass

@@ -1,3 +1,4 @@
+# from datetime import datetime add this later
 from enum import Enum
 from typing import Any
 
@@ -12,10 +13,17 @@ class NLQuery(BaseModel):
 class NLQueryResponse(BaseModel):
     id: str | None = Field(alias="_id")
     nl_question_id: Any
-    nl_response: str
-    intermediate_steps: list[str]
+    nl_response: str | None = None
+    intermediate_steps: list[str] | None = None
     sql_query: str
     exec_time: float | None = None
+    golden_record: bool = False
+    # date_entered: datetime = datetime.now() add this later
+
+
+class DataDefinitionType(Enum):
+    GOLDEN_SQL = "GOLDEN_SQL"
+    BUSINESS_CONTEXT = "BUSINESS_CONTEXT"
 
 
 class SupportedDatabase(Enum):
