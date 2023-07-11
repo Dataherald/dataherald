@@ -165,3 +165,4 @@ postgres_data/
 private_credentials/*
 id_rsa
 id_ed25519
+dataherald/key.pem
