@@ -48,7 +48,6 @@ class DefaultContextStore(ContextStore):
                 f"Question: {sample['nl_question']} \nSQL: {sample['sql_query']} \n"
             )
 
-        print(samples_prompt_string)
         return samples_prompt_string
 
     @override
