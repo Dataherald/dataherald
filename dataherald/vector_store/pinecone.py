@@ -33,7 +33,7 @@ class PineCone(VectorStore):
         return query_response.to_dict()["results"][0]["matches"]
 
     @override
-    def add_record(self, documents: str, collection: str, metadata: Any, ids):
+    def add_record(self, documents: str, collection: str, metadata: Any, ids: List):
         if collection not in pinecone.list_indexes():
             self.create_collection(collection)
 

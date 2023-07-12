@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 
 import chromadb
 from chromadb.config import Settings
@@ -22,11 +22,14 @@ class Chroma(VectorStore):
 
     @override
     def query(self, query_texts: List[str], collection: str, num_results: int) -> list:
-        target_collection = self.chroma_client.get_collection(collection)
+        try:
+            target_collection = self.chroma_client.get_collection(collection)
+        except ValueError:
+            return []
         return target_collection.query(query_texts=query_texts, n_results=num_results)
 
     @override
-    def add_record(self, documents: str, collection: str, metadata: List, ids: List):
+    def add_record(self, documents: str, collection: str, metadata: Any, ids: List):
         target_collection = self.chroma_client.get_or_create_collection(collection)
         target_collection.add(documents=documents, metadatas=metadata, ids=ids)
 
