@@ -18,7 +18,7 @@ env:
 
 
 jobs:
-  build-and-push-image:
+  build-push-deploy-image:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     steps:
@@ -45,30 +45,14 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-          
-
-  deploy-image-to-ecs:
-    name: Deploy Docker Image to ECS Cluster
-    runs-on: ubuntu-latest
-    needs: build-and-push-image
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
+      # cannot separate this to another job since image is treated as secret and will skip
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ needs.build-and-push-image.outputs.image }}
+          image: ${{ steps.build-image.outputs.image }}
           environment-variables: "DH_ENV=stage"
 
       - name: Deploy Amazon ECS task definition
