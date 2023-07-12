@@ -26,7 +26,11 @@ class Chroma(VectorStore):
             target_collection = self.chroma_client.get_collection(collection)
         except ValueError:
             return []
-        return target_collection.query(query_texts=query_texts, n_results=num_results)
+
+        query_results = target_collection.query(
+            query_texts=query_texts, n_results=num_results
+        )
+        return self.convert_to_pinecone_object_model(query_results)
 
     @override
     def add_record(self, documents: str, collection: str, metadata: Any, ids: List):
@@ -40,3 +44,17 @@ class Chroma(VectorStore):
     @override
     def create_collection(self, collection: str):
         return super().create_collection(collection)
+
+    def convert_to_pinecone_object_model(self, chroma_results: dict) -> List:
+        number_of_records = len(chroma_results["ids"][0])
+        i = 0
+        results = []
+        while i < number_of_records:
+            results.append(
+                {
+                    "id": chroma_results["ids"][0][i],
+                    "score": chroma_results["distances"][0][i],
+                }
+            )
+            i = i + 1
+        return results
