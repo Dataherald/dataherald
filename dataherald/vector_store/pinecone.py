@@ -11,14 +11,14 @@ from dataherald.vector_store import VectorStore
 EMBEDDING_MODEL = "text-embedding-ada-002"
 
 
-class PineCone(VectorStore):
+class Pinecone(VectorStore):
     def __init__(self, system: System):
         super().__init__(system)
-        API_KEY = os.environ.get("PINECONE_API_KEY")
-        if API_KEY is None:
+        api_key = os.environ.get("PINECONE_API_KEY")
+        if api_key is None:
             raise ValueError("PINECONE_API_KEY environment variable not set")
 
-        pinecone.init(api_key=API_KEY, environment="us-west4-gcp")
+        pinecone.init(api_key=api_key, environment="us-west4-gcp")
 
     @override
     def query(self, query_texts: List[str], collection: str, num_results: int) -> list:
