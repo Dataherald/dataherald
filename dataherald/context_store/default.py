@@ -32,7 +32,7 @@ class DefaultContextStore(ContextStore):
                 "nl_query_response", {"nl_question_id": ObjectId(question["id"])}
             )
             associated_nl_question = self.db.find_by_id("nl_question", question["id"])
-            if golden_query is not None:
+            if golden_query is not None and associated_nl_question is not None:
                 samples.append(
                     {
                         "nl_question": associated_nl_question["question"],
