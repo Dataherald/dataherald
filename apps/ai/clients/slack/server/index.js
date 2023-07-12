@@ -67,6 +67,18 @@ app.message(async ({ message, say }) => {
         })
     } catch (e) {
         log('Something went wrong: ', e)
+        await say({
+            blocks: [
+                {
+                    type: 'section',
+                    text: {
+                        type: 'mrkdwn',
+                        text: ':exclamation: Sorry, something went wrong when I was processing your request. Please try again later.',
+                    },
+                },
+            ],
+            text: 'An error occurred',
+        })
     }
 })
 
