@@ -107,8 +107,9 @@ cp ~/.ssh/id_rsa .
 
 4. Build docker images, create containers and raise them. It should raise the app and mongo container
 ```
-docker-compose up
+docker-compose up --build
 ```
+> You can skip the `--build` if you don't have to rebuild the image due to updates to the dependencies
 5. Check that the containers are running, you should see 2 containers
 ```
 docker ps
@@ -144,3 +145,9 @@ DB_NAME: dataherald
 DB_USERNAME = admin
 DB_PASSWORD = admin
 ```
+
+## Troubleshooting
+
+### DB errors
+
+Try completely deleting `/dbdata` before rebuilding the databases to ensure there is no corrupted data.

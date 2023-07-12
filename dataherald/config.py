@@ -50,6 +50,7 @@ class Settings(BaseSettings):
 
     db_name: str | None = os.environ.get("MONGODB_DB_NAME")
     db_uri: str | None = os.environ.get("MONGODB_URI")
+    openai_api_key: str | None = os.environ.get("OPENAI_API_KEY")
 
     def require(self, key: str) -> Any:
         val = self[key]
