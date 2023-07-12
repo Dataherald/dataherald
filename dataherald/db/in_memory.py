@@ -21,5 +21,12 @@ class InMemory(DB):
         return len(self.memory[collection]) - 1
 
     @override
-    def find_one(self, collection: str, query: dict) -> dict:
-        return self.memory[collection][query]
+    def find_one(self, collection: str, query: dict) -> dict:  # noqa: ARG002
+        collection = self.memory[collection]
+        return collection[0]
+
+    def find_by_id(self, collection: str, id: str) -> dict:
+        for item in collection:
+            if item["_id"] == id:
+                return item
+        return None

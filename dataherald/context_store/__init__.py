@@ -9,7 +9,7 @@ from dataherald.vector_store import VectorStore
 class ContextStore(Component, ABC):
     DocStore: DB
     VectorStore: VectorStore
-    golden_record_collection = "golden_records"
+    golden_record_collection = "golden-records"
     doc_store_collection = "table_meta_data"
 
     @abstractmethod

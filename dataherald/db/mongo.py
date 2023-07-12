@@ -1,3 +1,4 @@
+from bson.objectid import ObjectId
 from overrides import override
 from pymongo import MongoClient
 
@@ -21,3 +22,7 @@ class MongoDB(DB):
     @override
     def insert_one(self, collection: str, obj: dict) -> int:
         return self._data_store[collection].insert_one(obj).inserted_id
+
+    def find_by_id(self, collection: str, id: str) -> dict:
+        print(id)
+        return self._data_store[collection].find_one({"_id": ObjectId(id)})

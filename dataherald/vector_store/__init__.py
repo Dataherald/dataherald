@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import Any, List, Optional
 
 from dataherald.config import Component, System
 
@@ -20,7 +20,9 @@ class VectorStore(Component, ABC):
         pass
 
     @abstractmethod
-    def add_record(self, documents: str, collection: str, metadata: List, ids: List):
+    def add_record(
+        self, documents: str, collection: str, metadata: Any, ids: Optional[List] = None
+    ):
         pass
 
     @abstractmethod

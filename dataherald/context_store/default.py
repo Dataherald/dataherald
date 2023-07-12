@@ -23,22 +23,33 @@ class DefaultContextStore(ContextStore):
         closest_questions = self.vector_store.query(
             query_texts=[nl_question],
             collection=self.golden_record_collection,
-            num_results=1,
+            num_results=3,
         )
 
         samples = []
-        print(closest_questions)
-        for id in closest_questions["ids"]:
+        for question in closest_questions:
             golden_query = self.db.find_one(
-                "nl_query_response", {"nl_question_id": ObjectId(id[0])}
+                "nl_query_response", {"nl_question_id": ObjectId(question["id"])}
             )
+            associated_nl_question = self.db.find_by_id("nl_question", question["id"])
             if golden_query is not None:
-                samples.append(golden_query)
-        print(samples)
+                samples.append(
+                    {
+                        "nl_question": associated_nl_question["question"],
+                        "sql_query": golden_query["sql_query"],
+                    }
+                )
         if len(samples) == 0:
             return None
 
-        return f"Question: {closest_questions['documents'][0][0]} \n SQL: {samples[0]['sql_query']} \n"
+        samples_prompt_string = "The following are some similar previous questions and their correct SQL queries from these databases: \n"
+        for sample in samples:
+            samples_prompt_string += (
+                f"Question: {sample['nl_question']} \nSQL: {sample['sql_query']} \n"
+            )
+
+        print(samples_prompt_string)
+        return samples_prompt_string
 
     @override
     def add_golden_records(self, golden_records: List) -> bool:
