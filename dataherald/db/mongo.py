@@ -24,5 +24,4 @@ class MongoDB(DB):
         return self._data_store[collection].insert_one(obj).inserted_id
 
     def find_by_id(self, collection: str, id: str) -> dict:
-        print(id)
         return self._data_store[collection].find_one({"_id": ObjectId(id)})
