@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: "chat-dh"
+        working-directory: "/apps/ai/clients/chat"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
