@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 
 from overrides import override
 
@@ -14,11 +14,11 @@ class TestVectorStore(VectorStore):
     def query(
         self, query_texts: List[str], collection: str, num_results: int  # noqa: ARG002
     ) -> list:
-        return {"ids": []}
+        return [{"id": "64ade8ed3445882cedc06ab6", "score": 0.1}]
 
     @override
     def add_record(
-        self, documents: str, collection: str, metadata: List, ids: List  # noqa: ARG002
+        self, documents: str, collection: str, metadata: Any, ids: List  # noqa: ARG002
     ):
         pass
 

@@ -26,3 +26,4 @@ sqlalchemy-databricks==0.2.0
 sqlalchemy-bigquery==1.6.1
 chromadb==0.3.26
 pytest-dotenv==0.5.2
+pinecone-client==2.2.2

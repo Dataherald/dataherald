@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 
 import chromadb
 from chromadb.config import Settings
@@ -22,11 +22,18 @@ class Chroma(VectorStore):
 
     @override
     def query(self, query_texts: List[str], collection: str, num_results: int) -> list:
-        target_collection = self.chroma_client.get_collection(collection)
-        return target_collection.query(query_texts=query_texts, n_results=num_results)
+        try:
+            target_collection = self.chroma_client.get_collection(collection)
+        except ValueError:
+            return []
+
+        query_results = target_collection.query(
+            query_texts=query_texts, n_results=num_results
+        )
+        return self.convert_to_pinecone_object_model(query_results)
 
     @override
-    def add_record(self, documents: str, collection: str, metadata: List, ids: List):
+    def add_record(self, documents: str, collection: str, metadata: Any, ids: List):
         target_collection = self.chroma_client.get_or_create_collection(collection)
         target_collection.add(documents=documents, metadatas=metadata, ids=ids)
 
@@ -37,3 +44,14 @@ class Chroma(VectorStore):
     @override
     def create_collection(self, collection: str):
         return super().create_collection(collection)
+
+    def convert_to_pinecone_object_model(self, chroma_results: dict) -> List:
+        results = []
+        for i in range(len(chroma_results["ids"][0])):
+            results.append(
+                {
+                    "id": chroma_results["ids"][0][i],
+                    "score": chroma_results["distances"][0][i],
+                }
+            )
+        return results
