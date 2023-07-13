@@ -1,6 +1,6 @@
-[submodule "bariloche/app-server"]
-	path = bariloche/app-server
+[submodule "apps/bariloche/app-server"]
+	path = apps/bariloche/app-server
 	url = https://github.com/Dataherald/AppServer.git
-[submodule "bariloche/programmatic-seo"]
-	path = bariloche/programmatic-seo
+[submodule "apps/bariloche/programmatic-seo"]
+	path = apps/bariloche/programmatic-seo
 	url = https://github.com/Dataherald/programmatic-seo.git
