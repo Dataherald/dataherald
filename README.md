@@ -105,6 +105,13 @@ cp ~/.ssh/id_rsa .
 ```
 3. Check that Docker is running or run docker
 
+4. Create a Docker network for communication between services. 
+>We need to set it up externally to enable external clients running on docker to communicate with this app. 
+Run the following command:
+```
+docker network create backendnetwork
+```
+
 4. Build docker images, create containers and raise them. It should raise the app and mongo container
 ```
 docker-compose up --build
