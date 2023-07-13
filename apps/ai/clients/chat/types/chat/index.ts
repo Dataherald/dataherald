@@ -2,6 +2,11 @@ import { ResponseStatus } from '../api';
 
 export type Role = 'assistant' | 'user';
 export type MessageStatus = ResponseStatus | 'error' | 'loading' | 'canceled';
+export type MessageLoadingStage =
+  | 'viz_id'
+  | 'generated_text'
+  | 'json_object'
+  | 'none';
 
 export interface MessageContent {
   status: MessageStatus;

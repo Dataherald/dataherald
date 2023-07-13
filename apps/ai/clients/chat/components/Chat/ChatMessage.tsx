@@ -73,18 +73,6 @@ export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
               <ChatText text={content} />
             ) : content.status === 'successful' ? (
               <div className="flex-1 flex flex-col gap-5 pr-8 overflow-auto">
-                {content.viz_id && currentIframeLoading && (
-                  <ChatLoader
-                    key="iframe-loading"
-                    messages={[
-                      {
-                        text: 'Finalizing details...',
-                        image: '/images/loading/analyzing_data.svg',
-                        duration: 2000,
-                      },
-                    ]}
-                  />
-                )}
                 {(!content.viz_id || !currentIframeLoading) && (
                   <ChatText text={content.generated_text as string} />
                 )}
@@ -108,17 +96,12 @@ export const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
                   height={300}
                 />
               </div>
-            ) : content.status === 'loading' ? (
-              <div className="flex-1 flex items-center">
-                <ChatLoader key="regular-loading" />
-              </div>
             ) : (
               <ChatText text={content.generated_text as string} />
             )}
           </div>
           {role === 'assistant' &&
             typeof content !== 'string' &&
-            content.status !== 'loading' &&
             !currentIframeLoading && (
               <div className="self-center">
                 <ChatAssistantMessageActions message={content} />

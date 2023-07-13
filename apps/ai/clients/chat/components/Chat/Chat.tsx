@@ -2,7 +2,7 @@ import { useChat } from '@/contexts/chat';
 import { usePrompt } from '@/contexts/prompt';
 import analyticsService from '@/services/analytics';
 import apiService from '@/services/api';
-import { Message, MessageContent } from '@/types/chat';
+import { Message, MessageContent, MessageLoadingStage } from '@/types/chat';
 import { isAbortError } from '@/utils/api';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import {
@@ -18,6 +18,9 @@ import { Header } from '../Layout/Header';
 import { ChatInput } from './ChatInput';
 import { ChatKickoff } from './ChatKickoff';
 import { ChatMessage } from './ChatMessage';
+import { ChatNewMessage } from './ChatNewMessage';
+
+const RESPONSE_LIST_LENGTH_WITH_VIZ = 3;
 
 export const Chat: FC = () => {
   const {
@@ -27,6 +30,7 @@ export const Chat: FC = () => {
     setFetchingNewMessage,
     loadingIframe,
     setLoadingIframe,
+    setCurrentLoadingStage,
   } = useChat();
   const [newAssistantResponse, setNewAssistantResponse] =
     useState<Message | null>(null);
@@ -34,6 +38,8 @@ export const Chat: FC = () => {
   const { prompt, setPrompt } = usePrompt();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatAbortControllerRef = useRef<AbortController | null>();
+  const [currentMessageContent, setCurrentMessageContent] =
+    useState<MessageContent | null>(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -48,33 +54,83 @@ export const Chat: FC = () => {
       const updatedMessages: Message[] = [...messages, newMessage];
       const abortController = new AbortController();
       chatAbortControllerRef.current = abortController;
+      let rawResponse = '';
+      let streamText = '';
+      let viz_id = '';
+      // state variable doesn't work in loops
+      let messageLoadingStage: MessageLoadingStage = 'viz_id';
+      setCurrentLoadingStage('viz_id');
       setFetchingNewMessage(true);
-      setMessages([
-        ...updatedMessages,
-        {
-          role: 'assistant',
-          content: {
-            status: 'loading',
-          },
-        },
-      ]);
+      setMessages(
+        currentMessageContent
+          ? [
+              ...messages,
+              {
+                role: 'assistant',
+                content: currentMessageContent,
+              },
+              newMessage,
+            ]
+          : updatedMessages,
+      );
+      setCurrentMessageContent({ status: 'loading' });
+
       try {
-        const chatResponse = await apiService.chat(
+        const chatResponse = await apiService.chatStream(
           updatedMessages,
           user?.email || '',
           chatAbortControllerRef.current?.signal,
         );
+        const reader = chatResponse.body?.getReader();
+
+        if (typeof reader === 'undefined') {
+          throw new Error('Variable "reader" is undefined.');
+        }
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const text = new TextDecoder().decode(value);
+          rawResponse += text;
+          if (text.includes('###')) {
+            if (messageLoadingStage === 'viz_id') {
+              messageLoadingStage = 'generated_text';
+              setCurrentLoadingStage('generated_text');
+              const vizNtext = text.split('###');
+              viz_id = vizNtext[0];
+              streamText = vizNtext[1];
+            } else if (messageLoadingStage === 'generated_text') {
+              messageLoadingStage = 'json_object';
+              setCurrentLoadingStage('json_object');
+              streamText = '';
+            }
+          } else {
+            streamText += text;
+          }
+          if (messageLoadingStage === 'generated_text')
+            setCurrentMessageContent({
+              status: 'successful',
+              generated_text: streamText,
+              viz_id: viz_id,
+            });
+        }
+        // raw response stream structure: viz_id ### generated_text ### responseJson
+        const chatResponseJson = extractJSONFromRawResponse(rawResponse);
+
+        setCurrentMessageContent({
+          status: chatResponseJson['status'],
+          message: chatResponseJson['message'],
+          generated_text: chatResponseJson['generated_text'],
+          viz_id: chatResponseJson['viz_id'],
+          id: chatResponseJson['log_id'],
+        });
         analyticsService.buttonClick('new-user-prompt', {
           prompt: newUserMessage,
-          status: chatResponse.status,
-          ['response-text']: chatResponse.generated_text,
-          ['response-viz-id']: chatResponse?.viz_id,
-          ['response-id']: chatResponse.id,
+          status: chatResponseJson['status'],
+          ['response-text']: chatResponseJson['generated_text'],
+          ['response-viz-id']: chatResponseJson['viz_id'],
+          ['response-id']: chatResponseJson['log_id'],
           ['is-example']: isExample,
-        });
-        setNewAssistantResponse({
-          role: 'assistant',
-          content: chatResponse,
         });
       } catch (e) {
         if (isAbortError(e)) {
@@ -83,7 +139,6 @@ export const Chat: FC = () => {
             status: 'canceled',
             ['is-example']: isExample,
           });
-          newCancelRequestMessage();
         } else {
           analyticsService.buttonClick('new-user-prompt', {
             prompt: newUserMessage,
@@ -98,6 +153,7 @@ export const Chat: FC = () => {
             },
           });
         }
+        setCurrentMessageContent(null);
       } finally {
         setFetchingNewMessage(false);
       }
@@ -105,12 +161,21 @@ export const Chat: FC = () => {
     [messages, setMessages, setFetchingNewMessage, user],
   );
 
+  const extractJSONFromRawResponse = (rawResponse: string) => {
+    const rawResponseList = rawResponse.split('###');
+    return rawResponseList.length === RESPONSE_LIST_LENGTH_WITH_VIZ
+      ? JSON.parse(rawResponseList[rawResponseList.length - 1])
+      : JSON.parse(rawResponseList[0]);
+  };
+
   const newCancelRequestMessage = () => {
     setNewAssistantResponse({
       role: 'assistant',
       content: {
         status: 'canceled',
-        generated_text: 'User has cancelled the request.',
+        generated_text:
+          currentMessageContent?.generated_text ||
+          'User has cancelled the request.',
       },
     });
   };
@@ -124,6 +189,7 @@ export const Chat: FC = () => {
 
   const handleReset = useCallback(() => {
     setMessages([]);
+    setCurrentMessageContent(null);
     analyticsService.buttonClick('new-chat', {
       'messages-length': messages.length,
     });
@@ -132,37 +198,24 @@ export const Chat: FC = () => {
   const handleAbort = () => {
     if (loadingIframe) {
       // data already fetched
-      newCancelRequestMessage();
       setLoadingIframe(false);
-    } else {
-      if (chatAbortControllerRef.current) {
-        chatAbortControllerRef.current.abort();
-      }
     }
+    if (chatAbortControllerRef.current) {
+      chatAbortControllerRef.current.abort();
+    }
+    // I have no clue why but I have to set fetchingNewMessage to false or else it returns two cancelled message
+    setFetchingNewMessage(false);
+    newCancelRequestMessage();
+    setCurrentMessageContent(null);
   };
 
   useEffect(() => {
     if (newAssistantResponse) {
       setMessages((prevMessages) => {
-        const lastMessage = prevMessages[prevMessages.length - 1];
-        const lastMessageIsUserMessage =
-          typeof lastMessage.content === 'string';
-        const lastMessageIsLoadingMessage =
-          (lastMessage.content as MessageContent).status === 'loading';
-        const userCanceled =
-          (newAssistantResponse.content as MessageContent).status ===
-          'canceled';
-
-        if (!lastMessageIsUserMessage) {
-          if (userCanceled || lastMessageIsLoadingMessage) {
-            // user can cancel when the new message was already added into the messages list and we need to remove it
-            prevMessages.pop();
-          }
-        }
         return [...prevMessages, newAssistantResponse];
       });
-      setNewAssistantResponse(null);
     }
+    setNewAssistantResponse(null);
   }, [newAssistantResponse, setNewAssistantResponse, setMessages]);
 
   useEffect(() => {
@@ -177,7 +230,13 @@ export const Chat: FC = () => {
     return () => {
       clearTimeout(timeout);
     };
-  }, [messages, loadingNewMessage, scrollToBottom]);
+  }, [
+    messages,
+    loadingNewMessage,
+    currentMessageContent,
+    loadingIframe,
+    scrollToBottom,
+  ]);
 
   return (
     <>
@@ -187,16 +246,21 @@ export const Chat: FC = () => {
           <div className="flex-grow">
             <ChatKickoff onExampleClick={handleExample}></ChatKickoff>
           </div>
-          <div className="mt-4">
+          <div className="sticky bottom-4 mt-4">
             <ChatInput onSend={sendMessage} />
           </div>
         </div>
       ) : (
         <div className="flex-1 flex flex-col">
-          <div className="flex flex-col flex-grow">
+          <div className="flex flex-col">
             {messages.map((message, index) => (
               <ChatMessage key={index} message={message} />
             ))}
+          </div>
+          <div className="flex-row flex-grow">
+            {currentMessageContent && (
+              <ChatNewMessage content={currentMessageContent} />
+            )}
           </div>
           <div className="flex flex-col gap-4 items-center px-4 mb-4">
             {loadingNewMessage ? (
@@ -219,7 +283,7 @@ export const Chat: FC = () => {
               </Button>
             )}
           </div>
-          <div className="sticky bottom-0 bg-white w-full px-0 mx-auto pb-4">
+          <div className="sticky bottom-4 w-full max-w-[1000px] px-4 mx-auto mb-4">
             <ChatInput onSend={sendMessage} />
           </div>
         </div>

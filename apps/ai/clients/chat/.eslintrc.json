@@ -9,7 +9,8 @@
   "plugins": ["react", "prettier", "@typescript-eslint"],
   "rules": {
     "prettier/prettier": "error",
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "no-constant-condition": ["error", { "checkLoops": false }]
   },
   "settings": {
     "react": {
