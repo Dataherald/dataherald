@@ -2,17 +2,31 @@
 
 This is a Slack bot that listens for messages on companies workspaces and interact with our Dataherald AI API
 
-## Getting Started
+## Building and Running with Docker
+We use Docker to create a reproducible environment for the Slackbot.
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+1. Install dependencies
+```
+pnpm install
+```
+> It's not necessary to run docker, but it's good for the IDE to have the packages code available
 
-### Prerequisites
+2. Create your local `.env` file and copy the variables from `.env.example` and fill them up
 
--   Node.js
--   pnpm
+3. Build the Docker container
+```
+docker-compose build
+```
 
-### Installing
+4. Run the Docker container:
+```
+docker-compose up
+```
 
-1. Install dependencies: `pnpm install`
-2. Copy `.env.example` variables to `.env` and fill them up
-3. Start the server: `pnpm dev`
+
+## Setting Up Ngrok
+You can use Ngrok to expose your local server to the internet so that Slack can interact with our bot when *`socket mode` is off*
+
+[Getting started guidelines](https://ngrok.com/docs/getting-started/)
+
+> You should expose the docker container port you setup

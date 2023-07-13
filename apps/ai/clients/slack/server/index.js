@@ -9,7 +9,7 @@ const app = new App({
     appToken: process.env.SLACK_APP_TOKEN,
 })
 
-const API_URL = process.env.DH_AI_API_URL
+const API_URL = process.env.API_URL
 
 // Listens to incoming messages in direct messages with the bot
 app.message(async ({ message, say }) => {

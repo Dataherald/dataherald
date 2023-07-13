@@ -1,0 +1,16 @@
+version: '3'
+services:
+  slackbot:
+    build: .
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - backendnetwork
+networks:
+  backendnetwork:
+    external: true
+
