@@ -46,15 +46,12 @@ class Chroma(VectorStore):
         return super().create_collection(collection)
 
     def convert_to_pinecone_object_model(self, chroma_results: dict) -> List:
-        number_of_records = len(chroma_results["ids"][0])
-        i = 0
         results = []
-        while i < number_of_records:
+        for i in range(len(chroma_results["ids"][0])):
             results.append(
                 {
                     "id": chroma_results["ids"][0][i],
                     "score": chroma_results["distances"][0][i],
                 }
             )
-            i = i + 1
         return results

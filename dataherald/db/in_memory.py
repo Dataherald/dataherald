@@ -22,11 +22,9 @@ class InMemory(DB):
 
     @override
     def find_one(self, collection: str, query: dict) -> dict:  # noqa: ARG002
-        try:
-            collection = self.memory[collection]
-        except KeyError:
-            return {}
-        return collection[0]
+        if collection in self.memory:
+            return self.memory[collection][0]
+        return {}
 
     def find_by_id(self, collection: str, id: str) -> dict:
         try:
