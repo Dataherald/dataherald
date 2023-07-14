@@ -19,12 +19,6 @@ _abstract_type_keys: Dict[str, str] = {
 }
 
 
-class DatabaseSettings(BaseSettings):
-    load_dotenv()
-
-    uri: str | None = os.environ.get("DATABASE_URI")
-
-
 class Settings(BaseSettings):
     load_dotenv()
 
@@ -115,7 +109,6 @@ class System(Component):
 class SSHSettings(BaseSettings):
     load_dotenv()
 
-    enabled: bool = os.environ.get("SSH_ENABLED", False)
     host: str | None = os.environ.get("SSH_HOST")
     username: str | None = os.environ.get("SSH_USERNAME")
     password: str | None = os.environ.get("SSH_PASSWORD")

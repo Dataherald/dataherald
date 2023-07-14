@@ -13,5 +13,5 @@ def test_heartbeat():
 
 
 def test_answer_question():
-    response = client.post("/api/v1/question?question=Who am I?")
+    response = client.post("/api/v1/question?question=Who am I?&db_alias=foo")
     assert response.status_code == HTTP_200_CODE

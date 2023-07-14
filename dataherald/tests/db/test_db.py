@@ -4,12 +4,15 @@ from dataherald.config import System
 from dataherald.db import DB
 
 
-class InMemory(DB):
+class TestDB(DB):
     memory: dict = {}
 
     def __init__(self, system: System):
         super().__init__(system)
         self.memory = {}
+        self.memory["database_connection"] = [
+            {"alias": "foo", "use_ssh": False, "uri": "bar", "ssh_settings": None}
+        ]
 
     @override
     def insert_one(self, collection: str, obj: dict) -> int:

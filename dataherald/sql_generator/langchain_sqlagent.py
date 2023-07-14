@@ -18,7 +18,12 @@ logger = logging.getLogger(__name__)
 
 class LangChainSQLAgentSQLGenerator(SQLGenerator):
     @override
-    def generate_response(self, user_question: NLQuery, database_conection: DatabaseConnection, context: str = None) -> NLQueryResponse:  # type: ignore
+    def generate_response(
+        self,
+        user_question: NLQuery,
+        database_conection: DatabaseConnection,
+        context: str = None,
+    ) -> NLQueryResponse:  # type: ignore
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
         self.database = SQLDatabase.get_sql_engine(database_conection)
         tools = SQLDatabaseToolkit(db=self.database, llm=self.llm).get_tools()

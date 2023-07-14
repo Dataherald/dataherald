@@ -7,7 +7,6 @@ from pydantic import BaseModel, BaseSettings
 class SSHSettings(BaseSettings):
     load_dotenv()
 
-    enabled: bool
     host: str | None
     username: str | None
     password: str | None

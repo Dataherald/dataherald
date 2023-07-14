@@ -6,7 +6,7 @@ from sqlalchemy import MetaData, create_engine, text
 from sqlalchemy.engine import Engine
 from sshtunnel import SSHTunnelForwarder
 
-from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
+from dataherald.sql_database.models.types import DatabaseConnection
 
 
 class SQLDatabase(LangchainSQLDatabase):
@@ -22,9 +22,6 @@ class SQLDatabase(LangchainSQLDatabase):
 
     """
 
-    _db: DatabaseConnection
-    _ssh: SSHSettings
-
     @property
     def engine(self) -> Engine:
         """Return SQL Alchemy engine."""
@@ -34,11 +31,6 @@ class SQLDatabase(LangchainSQLDatabase):
     def metadata_obj(self) -> MetaData:
         """Return SQL Alchemy metadata."""
         return self._metadata
-
-    @property
-    def database_uri(self) -> str:
-        """Return database uri"""
-        return self._db.uri
 
     @classmethod
     def from_uri(
@@ -50,7 +42,7 @@ class SQLDatabase(LangchainSQLDatabase):
 
     @classmethod
     def get_sql_engine(cls, database_info: DatabaseConnection) -> "SQLDatabase":
-        if database_info.ssh_settings.enabled:
+        if database_info.use_ssh:
             return cls.from_uri_ssh(database_info)
         return cls.from_uri(database_info.uri)
 
