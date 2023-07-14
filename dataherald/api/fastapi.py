@@ -43,12 +43,17 @@ class FastAPI(API):
             "nl_question", user_question.dict(exclude={"id"})
         )
 
+        database_conection = DatabaseConnection(
+            **storage.find_one("database_connection", {"alias": db_alias})
+        )
         context = context_store.retrieve_context_for_question(user_question)
         start_generated_answer = time.time()
 
         generated_answer = cache.lookup(user_question.question)
         if generated_answer is None:
-            generated_answer = sql_generation.generate_response(user_question, context)
+            generated_answer = sql_generation.generate_response(
+                user_question, database_conection, context
+            )
             if evaluator.is_acceptable_response(user_question, generated_answer):
                 cache.add(question, generated_answer)
         generated_answer.exec_time = time.time() - start_generated_answer

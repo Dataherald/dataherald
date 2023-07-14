@@ -22,8 +22,8 @@ class SQLDatabase(LangchainSQLDatabase):
 
     """
 
-    _db: DatabaseConnection = DatabaseConnection()
-    _ssh: SSHSettings = SSHSettings()
+    _db: DatabaseConnection
+    _ssh: SSHSettings
 
     @property
     def engine(self) -> Engine:
@@ -49,14 +49,14 @@ class SQLDatabase(LangchainSQLDatabase):
         return cls(create_engine(database_uri, **_engine_args), **kwargs)
 
     @classmethod
-    def get_sql_engine(cls) -> "SQLDatabase":
-        if cls._ssh.enabled:
-            return cls.from_uri_ssh()
-        return cls.from_uri(cls._db.uri)
+    def get_sql_engine(cls, database_info: DatabaseConnection) -> "SQLDatabase":
+        if database_info.ssh_settings.enabled:
+            return cls.from_uri_ssh(database_info)
+        return cls.from_uri(database_info.uri)
 
     @classmethod
-    def from_uri_ssh(cls):
-        ssh = cls._ssh
+    def from_uri_ssh(cls, database_info: DatabaseConnection):
+        ssh = database_info.ssh_settings
         database = "v2_real_estate"
         server = SSHTunnelForwarder(
             (ssh.host, 22),

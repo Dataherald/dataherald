@@ -5,6 +5,8 @@ import logging
 from langchain import SQLDatabaseChain
 from overrides import override
 
+from dataherald.sql_database.base import SQLDatabase
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
 from dataherald.types import NLQuery, NLQueryResponse
 
@@ -35,11 +37,16 @@ The question:
 class LangChainSQLChainSQLGenerator(SQLGenerator):
     @override
     def generate_response(
-        self, user_question: NLQuery, context: str = None
+        self,
+        user_question: NLQuery,
+        database_conection: DatabaseConnection,
+        context: str = None,
     ) -> NLQueryResponse:
         logger.info(
             f"Generating SQL response to question: {str(user_question.dict())} with passed context {context}"
         )
+        self.database = SQLDatabase.get_sql_engine(database_conection)
+
         if context is not None:
             prompt = PROMPT_WITH_CONTEXT.format(
                 user_question=user_question.question, context=context

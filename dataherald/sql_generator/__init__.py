@@ -6,9 +6,9 @@ from typing import Any
 from langchain.base_language import BaseLanguageModel
 from langchain.chat_models import ChatOpenAI
 
-from dataherald.config import Component, System
 
-# from dataherald.sql_database.base import SQLDatabase
+from dataherald.config import Component, System
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import NLQuery, NLQueryResponse
 
 
@@ -27,7 +27,10 @@ class SQLGenerator(Component, ABC):
 
     @abstractmethod
     def generate_response(
-        self, user_question: NLQuery, context: str = None
+        self,
+        user_question: NLQuery,
+        database_conection: DatabaseConnection,
+        context: str = None,
     ) -> NLQueryResponse:
         """Generates a response to a user question."""
         pass
