@@ -17,7 +17,7 @@ class SSHSettings(BaseSettings):
     remote_db_name: str | None
     remote_db_password: str | None
     private_key_path: str | None
-    private_key_password: str | None
+    private_key_password: str | None = None
     db_driver: str | None
 
     def __getitem__(self, key: str) -> Any:

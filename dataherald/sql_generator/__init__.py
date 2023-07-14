@@ -7,12 +7,13 @@ from langchain.base_language import BaseLanguageModel
 from langchain.chat_models import ChatOpenAI
 
 from dataherald.config import Component, System
-from dataherald.sql_database.base import SQLDatabase
+
+# from dataherald.sql_database.base import SQLDatabase
 from dataherald.types import NLQuery, NLQueryResponse
 
 
 class SQLGenerator(Component, ABC):
-    database: SQLDatabase
+    # database: SQLDatabase
     metadata: Any
     llm: BaseLanguageModel | None = None
 
@@ -23,7 +24,6 @@ class SQLGenerator(Component, ABC):
             openai_api_key=openai_api_key,
             model_name="gpt-4-32k",
         )
-        self.database = SQLDatabase.get_sql_engine()
 
     @abstractmethod
     def generate_response(

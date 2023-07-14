@@ -14,7 +14,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def answer_question(self, question: str) -> NLQueryResponse:
+    def answer_question(self, question: str, db_alias: str) -> NLQueryResponse:
         pass
 
     @abstractmethod
