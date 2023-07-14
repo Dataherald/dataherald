@@ -6,7 +6,7 @@ from sqlalchemy import MetaData, create_engine, text
 from sqlalchemy.engine import Engine
 from sshtunnel import SSHTunnelForwarder
 
-from dataherald.config import DatabaseSettings, SSHSettings
+from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 
 
 class SQLDatabase(LangchainSQLDatabase):
@@ -22,7 +22,7 @@ class SQLDatabase(LangchainSQLDatabase):
 
     """
 
-    _db: DatabaseSettings = DatabaseSettings()
+    _db: DatabaseConnection = DatabaseConnection()
     _ssh: SSHSettings = SSHSettings()
 
     @property

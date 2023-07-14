@@ -24,7 +24,7 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         self, user_question: NLQuery, context: str = None
     ) -> NLQueryResponse:
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
-
+        self.database = SQLDatabase.get_sql_engine()
         db_engine = self.database.engine
         # load all table definitions
         metadata_obj = MetaData()
