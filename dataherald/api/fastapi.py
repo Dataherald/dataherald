@@ -77,7 +77,9 @@ class FastAPI(API):
         db_connection = DatabaseConnection(
             uri=connection_uri, alias=alias, use_ssh=use_ssh, ssh_settings=ssh_settings
         )
-        storage.insert_one("database_connection", db_connection.dict())
+        storage.update_or_create(
+            "database_connection", {"alias": alias}, db_connection.dict()
+        )
         return True
 
     def add_data_definition(self, type: DataDefinitionType, uri: str) -> bool:

@@ -39,3 +39,7 @@ class TestDB(DB):
             if item.get("_id") == id:
                 return item
         return None
+
+    @override
+    def update_or_create(self, collection: str, query: dict, obj: dict) -> int:
+        return self.insert_one(collection, obj)

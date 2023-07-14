@@ -23,5 +23,12 @@ class MongoDB(DB):
     def insert_one(self, collection: str, obj: dict) -> int:
         return self._data_store[collection].insert_one(obj).inserted_id
 
+    @override
+    def update_or_create(self, collection: str, query: dict, obj: dict) -> int:
+        row = self.find_one(collection, query)
+        if row:
+            return self._data_store[collection].update_one(query, {"$set": obj})
+        return self.insert_one(collection, obj)
+
     def find_by_id(self, collection: str, id: str) -> dict:
         return self._data_store[collection].find_one({"_id": ObjectId(id)})
