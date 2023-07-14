@@ -8,6 +8,16 @@ const app = new App({
     signingSecret: process.env.SLACK_SIGNING_SECRET,
     socketMode: true,
     appToken: process.env.SLACK_APP_TOKEN,
+    customRoutes: [
+        {
+            path: '/health-check',
+            method: ['GET'],
+            handler: (req, res) => {
+                res.writeHead(200)
+                res.end(`Things are going just fine at ${req.headers.host}!`)
+            },
+        },
+    ],
 })
 
 // Listens to incoming messages in direct messages with the bot
