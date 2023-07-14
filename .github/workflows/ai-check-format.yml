@@ -2,10 +2,14 @@ name: Check AI Code Format
 
 on:
   push:
+    paths:
+      - apps/ai/clients/chat/**
     branches:
       - main
       - preview
   pull_request:
+    paths:
+      - apps/ai/clients/chat/**
     branches:
       - main
       - preview
@@ -15,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: "/apps/ai/clients/chat"
+        working-directory: .apps/ai/clients/chat
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
