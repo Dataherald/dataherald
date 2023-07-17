@@ -13,4 +13,6 @@ class FernetEncrypt:
         return self.fernet_key.encrypt(input.encode()).decode("utf-8")
 
     def decrypt(self, input: str) -> str:
+        if input == "":
+            return ""
         return self.fernet_key.decrypt(input).decode("utf-8")

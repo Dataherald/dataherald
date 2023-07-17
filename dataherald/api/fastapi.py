@@ -27,6 +27,25 @@ class FastAPI(API):
         self.system = system
         self.fernet_crypt = FernetEncrypt(self.system)
 
+        # todo create a database connection
+        storage = self.system.instance(DB)
+        ssh_settings = SSHSettings()
+        ssh_settings.remote_db_password = self.fernet_crypt.encrypt(
+            ssh_settings.remote_db_password
+        )
+        ssh_settings.password = self.fernet_crypt.encrypt(ssh_settings.password)
+        ssh_settings.private_key_password = self.fernet_crypt.encrypt(
+            ssh_settings.private_key_password
+        )
+        db_connection_setting = DatabaseConnection(
+            alias="postgres", ssh_settings=ssh_settings
+        )
+        db_connection_setting.uri = self.fernet_crypt.encrypt(db_connection_setting.uri)
+
+        storage.update_or_create(
+            "database_connection", {"alias": "postgres"}, db_connection_setting.dict()
+        )
+
     @override
     def heartbeat(self) -> int:
         """Returns the current server time in nanoseconds to check if the server is alive"""
