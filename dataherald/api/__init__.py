@@ -25,8 +25,8 @@ class API(Component, ABC):
     def connect_database(
         self,
         alias: str,
-        connection_uri: str,
         use_ssh: bool,
+        connection_uri: str | None = None,
         ssh_settings: SSHSettings | None = None,
     ) -> bool:
         pass

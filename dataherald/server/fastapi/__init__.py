@@ -75,12 +75,17 @@ class FastAPI(dataherald.server.Server):
     def connect_database(
         self,
         alias: str,
-        connection_uri: str,
         use_ssh: bool,
+        connection_uri: str | None = None,
         ssh_settings: SSHSettings | None = None,
     ) -> bool:
         """Connects a database to the Dataherald service"""
-        return self._api.connect_database(alias, connection_uri, use_ssh, ssh_settings)
+        return self._api.connect_database(
+            alias=alias,
+            connection_uri=connection_uri,
+            use_ssh=use_ssh,
+            ssh_settings=ssh_settings,
+        )
 
     def add_golden_records(self, golden_records: List) -> bool:
         """Takes in an English question and answers it based on content from the registered databases"""

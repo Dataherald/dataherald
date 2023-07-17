@@ -8,6 +8,8 @@ class FernetEncrypt:
         self.fernet_key = Fernet(system.settings.require("encrypt_key"))
 
     def encrypt(self, input: str) -> str:
+        if not input:
+            return ""
         return self.fernet_key.encrypt(input.encode()).decode("utf-8")
 
     def decrypt(self, input: str) -> str:
