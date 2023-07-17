@@ -4,6 +4,7 @@ import time
 from typing import List
 
 from bson import json_util
+from fastapi import HTTPException
 from overrides import override
 
 from dataherald.api import API
@@ -15,6 +16,7 @@ from dataherald.smart_cache import SmartCache
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.sql_generator import SQLGenerator
 from dataherald.types import DataDefinitionType, NLQuery, NLQueryResponse
+from dataherald.utils.encrypt import FernetEncrypt
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +25,7 @@ class FastAPI(API):
     def __init__(self, system: System):
         super().__init__(system)
         self.system = system
+        self.fernet_crypt = FernetEncrypt(self.system)
 
     @override
     def heartbeat(self) -> int:
@@ -42,10 +45,23 @@ class FastAPI(API):
         user_question.id = storage.insert_one(
             "nl_question", user_question.dict(exclude={"id"})
         )
-
-        database_conection = DatabaseConnection(
-            **storage.find_one("database_connection", {"alias": db_alias})
+        db_connection = storage.find_one("database_connection", {"alias": db_alias})
+        if not db_connection:
+            raise HTTPException(status_code=404, detail="Database connection not found")
+        db_connection["uri"] = self.fernet_crypt.decrypt(db_connection["uri"])
+        db_connection["ssh_settings"]["remote_db_password"] = self.fernet_crypt.decrypt(
+            db_connection["ssh_settings"]["remote_db_password"]
         )
+        db_connection["ssh_settings"]["password"] = self.fernet_crypt.decrypt(
+            db_connection["ssh_settings"]["password"]
+        )
+        db_connection["ssh_settings"][
+            "private_key_password"
+        ] = self.fernet_crypt.decrypt(
+            db_connection["ssh_settings"]["private_key_password"]
+        )
+        database_conection = DatabaseConnection(**db_connection)
+
         context = context_store.retrieve_context_for_question(user_question)
         start_generated_answer = time.time()
 
@@ -74,6 +90,16 @@ class FastAPI(API):
         ssh_settings: SSHSettings | None = None,
     ) -> bool:
         storage = self.system.instance(DB)
+        # Encrypt variables
+        connection_uri = self.fernet_crypt.encrypt(connection_uri)
+        ssh_settings.remote_db_password = self.fernet_crypt.encrypt(
+            ssh_settings.remote_db_password
+        )
+        ssh_settings.password = self.fernet_crypt.encrypt(ssh_settings.password)
+        ssh_settings.private_key_password = self.fernet_crypt.encrypt(
+            ssh_settings.private_key_password
+        )
+
         db_connection = DatabaseConnection(
             uri=connection_uri, alias=alias, use_ssh=use_ssh, ssh_settings=ssh_settings
         )
