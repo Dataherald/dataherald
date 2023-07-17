@@ -11,7 +11,12 @@ class TestDB(DB):
         super().__init__(system)
         self.memory = {}
         self.memory["database_connection"] = [
-            {"alias": "foo", "use_ssh": False, "uri": "bar", "ssh_settings": None}
+            {
+                "alias": "foo",
+                "use_ssh": False,
+                "uri": "gAAAAABktaZytsfv2wCQDVh-QnXbqBcuTTlvjoy5PR5JyxItL_8lM1oaHX_Vu-w2GsFW1b1x-tfFyCR3QSx08hhseST-zCkAHQ==",
+                "ssh_settings": None,
+            }
         ]
 
     @override

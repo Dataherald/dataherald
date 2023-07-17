@@ -49,17 +49,20 @@ class FastAPI(API):
         if not db_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
         db_connection["uri"] = self.fernet_crypt.decrypt(db_connection["uri"])
-        db_connection["ssh_settings"]["remote_db_password"] = self.fernet_crypt.decrypt(
-            db_connection["ssh_settings"]["remote_db_password"]
-        )
-        db_connection["ssh_settings"]["password"] = self.fernet_crypt.decrypt(
-            db_connection["ssh_settings"]["password"]
-        )
-        db_connection["ssh_settings"][
-            "private_key_password"
-        ] = self.fernet_crypt.decrypt(
-            db_connection["ssh_settings"]["private_key_password"]
-        )
+        if db_connection["ssh_settings"]:
+            db_connection["ssh_settings"][
+                "remote_db_password"
+            ] = self.fernet_crypt.decrypt(
+                db_connection["ssh_settings"]["remote_db_password"]
+            )
+            db_connection["ssh_settings"]["password"] = self.fernet_crypt.decrypt(
+                db_connection["ssh_settings"]["password"]
+            )
+            db_connection["ssh_settings"][
+                "private_key_password"
+            ] = self.fernet_crypt.decrypt(
+                db_connection["ssh_settings"]["private_key_password"]
+            )
         database_conection = DatabaseConnection(**db_connection)
 
         context = context_store.retrieve_context_for_question(user_question)
