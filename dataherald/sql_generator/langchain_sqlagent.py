@@ -21,11 +21,11 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
     def generate_response(
         self,
         user_question: NLQuery,
-        database_conection: DatabaseConnection,
+        database_connection: DatabaseConnection,
         context: str = None,
     ) -> NLQueryResponse:  # type: ignore
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
-        self.database = SQLDatabase.get_sql_engine(database_conection)
+        self.database = SQLDatabase.get_sql_engine(database_connection)
         tools = SQLDatabaseToolkit(db=self.database, llm=self.llm).get_tools()
 
         # builds a sql agent using initialize_agent instead of create_sql_agent to get intermediate steps in output

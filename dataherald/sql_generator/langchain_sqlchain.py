@@ -39,13 +39,13 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
     def generate_response(
         self,
         user_question: NLQuery,
-        database_conection: DatabaseConnection,
+        database_connection: DatabaseConnection,
         context: str = None,
     ) -> NLQueryResponse:
         logger.info(
             f"Generating SQL response to question: {str(user_question.dict())} with passed context {context}"
         )
-        self.database = SQLDatabase.get_sql_engine(database_conection)
+        self.database = SQLDatabase.get_sql_engine(database_connection)
 
         if context is not None:
             prompt = PROMPT_WITH_CONTEXT.format(

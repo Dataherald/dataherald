@@ -61,7 +61,7 @@ class FastAPI(API):
         )
         if not db_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
-        database_conection = DatabaseConnection(**db_connection)
+        database_connection = DatabaseConnection(**db_connection)
 
         context = context_store.retrieve_context_for_question(user_question)
         start_generated_answer = time.time()
@@ -69,9 +69,11 @@ class FastAPI(API):
         generated_answer = cache.lookup(user_question.question)
         if generated_answer is None:
             generated_answer = sql_generation.generate_response(
-                user_question, database_conection, context
+                user_question, database_connection, context
             )
-            if evaluator.is_acceptable_response(user_question, generated_answer):
+            if evaluator.is_acceptable_response(
+                user_question, generated_answer, database_connection
+            ):
                 cache.add(question, generated_answer)
         generated_answer.exec_time = time.time() - start_generated_answer
         self.storage.insert_one(

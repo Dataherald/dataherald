@@ -28,7 +28,7 @@ class SQLGenerator(Component, ABC):
     def generate_response(
         self,
         user_question: NLQuery,
-        database_conection: DatabaseConnection,
+        database_connection: DatabaseConnection,
         context: str = None,
     ) -> NLQueryResponse:
         """Generates a response to a user question."""

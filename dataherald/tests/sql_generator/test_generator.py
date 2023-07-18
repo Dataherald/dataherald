@@ -14,7 +14,7 @@ class TestGenerator(SQLGenerator):
     def generate_response(
         self,
         user_question: NLQuery,
-        database_conection: DatabaseConnection,
+        database_connection: DatabaseConnection,
         context: str = None,  # noqa: ARG002
     ) -> NLQueryResponse:
         return NLQueryResponse(

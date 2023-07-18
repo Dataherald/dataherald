@@ -27,6 +27,7 @@ from sqlalchemy import MetaData, Table, select
 from dataherald.config import System
 from dataherald.eval import Evaluation, Evaluator
 from dataherald.sql_database.base import SQLDatabase
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import NLQuery, NLQueryResponse
 
 logger = logging.getLogger(__name__)
@@ -200,6 +201,7 @@ class EvaluationAgent(Evaluator):
     def create_evaluation_agent(
         self,
         toolkit: SQLEvaluationToolkit,
+        database_connection: DatabaseConnection,
         prefix: str = AGENT_PREFIX,
         suffix: str = AGENT_SUFFIX,
         callback_manager: BaseCallbackManager | None = None,
@@ -212,9 +214,9 @@ class EvaluationAgent(Evaluator):
         agent_executor_kwargs: Dict[str, Any] | None = None,
         **kwargs: Dict[str, Any],
     ) -> AgentExecutor:
+        database = SQLDatabase.get_sql_engine(database_connection)
         tools = toolkit.get_tools()
-        tool_names = ", ".join([tool.name for tool in tools])
-        prefix = prefix.format(dialect=self.database.dialect)
+        prefix = prefix.format(dialect=database.dialect)
         prompt = ZeroShotAgent.create_prompt(
             tools,
             prefix=prefix,
@@ -242,18 +244,25 @@ class EvaluationAgent(Evaluator):
 
     @override
     def evaluate(
-        self, question: NLQuery, generated_answer: NLQueryResponse
+        self,
+        question: NLQuery,
+        generated_answer: NLQueryResponse,
+        database_connection: DatabaseConnection,
     ) -> Evaluation:
         start_time = time.time()
         logger.info(
             f"Generating score for the question/sql pair: {str(question.question)}/ {str(generated_answer.sql_query)}"
         )
+        database = SQLDatabase.get_sql_engine(database_connection)
         user_question = question.question
         sql = generated_answer.sql_query
-        self.database._sample_rows_in_table_info = self.sample_rows
-        toolkit = SQLEvaluationToolkit(db=self.database)
+        database._sample_rows_in_table_info = self.sample_rows
+        toolkit = SQLEvaluationToolkit(db=database)
         agent_executor = self.create_evaluation_agent(
-            toolkit=toolkit, verbose=True, input_variables=["question", "SQL"]
+            toolkit=toolkit,
+            database_connection=database_connection,
+            verbose=True,
+            input_variables=["question", "SQL"],
         )
         answer = agent_executor({"question": user_question, "SQL": sql})["output"]
         score = self.answer_parser(answer=answer) / 100

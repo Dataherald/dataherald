@@ -14,6 +14,8 @@ from sql_metadata import Parser
 
 from dataherald.config import System
 from dataherald.eval import Evaluation, Evaluator
+from dataherald.sql_database.base import SQLDatabase
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import NLQuery, NLQueryResponse
 
 logger = logging.getLogger(__name__)
@@ -82,8 +84,12 @@ class SimpleEvaluator(Evaluator):
 
     @override
     def evaluate(
-        self, question: NLQuery, generated_answer: NLQueryResponse
+        self,
+        question: NLQuery,
+        generated_answer: NLQueryResponse,
+        database_connection: DatabaseConnection,
     ) -> Evaluation:
+        database = SQLDatabase.get_sql_engine(database_connection)
         logger.info(
             f"(Simple evaluator) Generating score for the question/sql pair: {str(question.question)}/ {str(generated_answer.sql_query)}"
         )
@@ -97,10 +103,10 @@ class SimpleEvaluator(Evaluator):
         )
         user_question = question.question
         sql = generated_answer.sql_query
-        dialect = self.database.dialect
+        dialect = database.dialect
         tables = Parser(sql).tables
-        self.database._sample_rows_in_table_info = 0
-        schema = self.database.get_table_info_no_throw(tables)
+        database._sample_rows_in_table_info = 0
+        schema = database.get_table_info_no_throw(tables)
         chain = LLMChain(llm=self.llm, prompt=chat_prompt)
         answer = chain.run(
             {
