@@ -17,11 +17,11 @@ class DefaultContextStore(ContextStore):
         super().__init__(system)
 
     @override
-    def retrieve_context_for_question(self, nl_question: str) -> str | None:
-        logger.info(f"getting context for {nl_question}")
+    def retrieve_context_for_question(self, nl_question: NLQuery) -> str | None:
+        logger.info(f"getting context for {nl_question.question}")
 
         closest_questions = self.vector_store.query(
-            query_texts=[nl_question],
+            query_texts=[nl_question.question],
             collection=self.golden_record_collection,
             num_results=3,
         )
@@ -62,7 +62,7 @@ class DefaultContextStore(ContextStore):
                 documents=question,
                 collection=self.golden_record_collection,
                 metadata=[
-                    {"tables_used": tables[0]}
+                    {"tables_used": tables[0], "db_alias": record["db"]}
                 ],  # this should be updated for multiple tables
                 ids=[str(user_question.id)],
             )

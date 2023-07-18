@@ -1,6 +1,7 @@
 from overrides import override
 
 from dataherald.config import System
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
 from dataherald.types import NLQuery, NLQueryResponse
 
@@ -11,7 +12,10 @@ class TestGenerator(SQLGenerator):
 
     @override
     def generate_response(
-        self, user_question: NLQuery, context: str = None  # noqa: ARG002
+        self,
+        user_question: NLQuery,
+        database_connection: DatabaseConnection,
+        context: str = None,  # noqa: ARG002
     ) -> NLQueryResponse:
         return NLQueryResponse(
             nl_question_id=None,

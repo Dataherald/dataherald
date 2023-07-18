@@ -19,12 +19,6 @@ _abstract_type_keys: Dict[str, str] = {
 }
 
 
-class DatabaseSettings(BaseSettings):
-    load_dotenv()
-
-    uri: str | None = os.environ.get("DATABASE_URI")
-
-
 class Settings(BaseSettings):
     load_dotenv()
 
@@ -51,6 +45,7 @@ class Settings(BaseSettings):
     db_name: str | None = os.environ.get("MONGODB_DB_NAME")
     db_uri: str | None = os.environ.get("MONGODB_URI")
     openai_api_key: str | None = os.environ.get("OPENAI_API_KEY")
+    encrypt_key: str = os.environ.get("ENCRYPT_KEY")
 
     def require(self, key: str) -> Any:
         val = self[key]
@@ -112,10 +107,10 @@ class System(Component):
         return cast(T, inst)
 
 
-class SSHSettings(BaseSettings):
+# Only used for the fist db connection
+class SSHConfigSettings(BaseSettings):
     load_dotenv()
 
-    enabled: bool = os.environ.get("SSH_ENABLED", False)
     host: str | None = os.environ.get("SSH_HOST")
     username: str | None = os.environ.get("SSH_USERNAME")
     password: str | None = os.environ.get("SSH_PASSWORD")
@@ -126,6 +121,17 @@ class SSHSettings(BaseSettings):
     private_key_path: str | None = os.environ.get("SSH_PRIVATE_KEY_PATH")
     private_key_password: str | None = os.environ.get("SSH_PRIVATE_KEY_PASSWORD")
     db_driver: str | None = os.environ.get("SSH_DB_DRIVER")
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
+
+
+# Only used for the fist db connection
+class DBConnectionConfigSettings(BaseSettings):
+    load_dotenv()
+    use_ssh: bool = os.environ.get("SSH_ENABLED")
+    uri: str | None = os.environ.get("DATABASE_URI")
+    ssh_settings: SSHConfigSettings | None = SSHConfigSettings()
 
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)

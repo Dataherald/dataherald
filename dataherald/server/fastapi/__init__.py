@@ -9,6 +9,7 @@ from fastapi.routing import APIRoute
 import dataherald
 from dataherald.config import Settings
 from dataherald.eval import Evaluation
+from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import DataDefinitionType, NLQueryResponse
 
 
@@ -59,8 +60,8 @@ class FastAPI(dataherald.server.Server):
     def app(self) -> fastapi.FastAPI:
         return self._app
 
-    def answer_question(self, question: str) -> NLQueryResponse:
-        return self._api.answer_question(question)
+    def answer_question(self, question: str, db_alias: str) -> NLQueryResponse:
+        return self._api.answer_question(question, db_alias)
 
     def evaluate_question(self, question: str, golden_sql: str) -> Evaluation:
         return self._api.evaluate(question, golden_sql)
@@ -71,9 +72,20 @@ class FastAPI(dataherald.server.Server):
     def heartbeat(self) -> dict[str, int]:
         return self.root()
 
-    def connect_database(self, database: Any) -> str:
-        """Takes in an English question and answers it based on content from the registered databases"""
-        return self._api.connect_database(database)
+    def connect_database(
+        self,
+        alias: str,
+        use_ssh: bool,
+        connection_uri: str | None = None,
+        ssh_settings: SSHSettings | None = None,
+    ) -> bool:
+        """Connects a database to the Dataherald service"""
+        return self._api.connect_database(
+            alias=alias,
+            connection_uri=connection_uri,
+            use_ssh=use_ssh,
+            ssh_settings=ssh_settings,
+        )
 
     def add_golden_records(self, golden_records: List) -> bool:
         """Takes in an English question and answers it based on content from the registered databases"""

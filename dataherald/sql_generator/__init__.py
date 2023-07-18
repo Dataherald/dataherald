@@ -8,11 +8,11 @@ from langchain.chat_models import ChatOpenAI
 
 from dataherald.config import Component, System
 from dataherald.sql_database.base import SQLDatabase
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import NLQuery, NLQueryResponse
 
 
 class SQLGenerator(Component, ABC):
-    database: SQLDatabase
     metadata: Any
     llm: BaseLanguageModel | None = None
 
@@ -23,11 +23,13 @@ class SQLGenerator(Component, ABC):
             openai_api_key=openai_api_key,
             model_name="gpt-4-32k",
         )
-        self.database = SQLDatabase.get_sql_engine()
 
     @abstractmethod
     def generate_response(
-        self, user_question: NLQuery, context: str = None
+        self,
+        user_question: NLQuery,
+        database_connection: DatabaseConnection,
+        context: str = None,
     ) -> NLQueryResponse:
         """Generates a response to a user question."""
         pass

@@ -3,6 +3,7 @@ from typing import Any, List
 
 from dataherald.config import Component, System
 from dataherald.db import DB
+from dataherald.types import NLQuery
 from dataherald.vector_store import VectorStore
 
 
@@ -19,7 +20,7 @@ class ContextStore(Component, ABC):
         self.vector_store = self.system.instance(VectorStore)
 
     @abstractmethod
-    def retrieve_context_for_question(self, nl_question: str) -> str | None:
+    def retrieve_context_for_question(self, nl_question: NLQuery) -> str | None:
         pass
 
     @abstractmethod

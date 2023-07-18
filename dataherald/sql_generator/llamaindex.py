@@ -12,6 +12,8 @@ from llama_index.objects import ObjectIndex, SQLTableNodeMapping, SQLTableSchema
 from overrides import override
 from sqlalchemy import MetaData
 
+from dataherald.sql_database.base import SQLDatabase
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
 from dataherald.types import NLQuery, NLQueryResponse
 
@@ -21,10 +23,13 @@ logger = logging.getLogger(__name__)
 class LlamaIndexSQLGenerator(SQLGenerator):
     @override
     def generate_response(
-        self, user_question: NLQuery, context: str = None
+        self,
+        user_question: NLQuery,
+        database_connection: DatabaseConnection,
+        context: str = None,
     ) -> NLQueryResponse:
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
-
+        self.database = SQLDatabase.get_sql_engine(database_connection)
         db_engine = self.database.engine
         # load all table definitions
         metadata_obj = MetaData()

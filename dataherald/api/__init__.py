@@ -3,6 +3,7 @@ from typing import Any, List
 
 from dataherald.config import Component
 from dataherald.eval import Evaluation
+from dataherald.sql_database.models.types import SSHSettings
 from dataherald.types import DataDefinitionType, NLQueryResponse
 
 
@@ -13,7 +14,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def answer_question(self, question: str) -> NLQueryResponse:
+    def answer_question(self, question: str, db_alias: str) -> NLQueryResponse:
         pass
 
     @abstractmethod
@@ -21,7 +22,13 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def connect_database(self, question: str) -> str:
+    def connect_database(
+        self,
+        alias: str,
+        use_ssh: bool,
+        connection_uri: str | None = None,
+        ssh_settings: SSHSettings | None = None,
+    ) -> bool:
         pass
 
     @abstractmethod
