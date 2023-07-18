@@ -153,6 +153,54 @@ DB_USERNAME = admin
 DB_PASSWORD = admin
 ```
 
+## DB Connections
+DB credentials are stored in `database_connection` collection in MongoDB and we can use the endpoint `/api/v1/database`
+to set the credentials. Beside when the application starts it stores a default db connection which takes the fields from
+the .env file.
+
+So to generate the default db connection when the app starts is important to set this env vars.
+Using ssh
+```
+SSH_ENABLED = True
+SSH_HOST = 'dev-box.dataherald.com'
+SSH_USERNAME='<your-user>'
+SSH_PASSWORD='<your-pass>'
+SSH_REMOTE_HOST = 'higeorge-production.cocfmuuqq1ym.us-east-1.rds.amazonaws.com'
+SSH_PRIVATE_KEY_PATH = '/app/id_rsa'
+SSH_PRIVATE_KEY_PASSWORD = '<your-pass>'
+SSH_REMOTE_DB_NAME = 'postgres'
+SSH_REMOTE_DB_PASSWORD = '<your-pass>'
+SSH_DB_DRIVER = 'postgresql+psycopg2'
+DATABASE_URI = ''
+```
+
+Without ssh
+```
+SSH_ENABLED = False
+DATABASE_URI = '<db-connection-uri>'
+```
+
+## Data encryption
+
+To encrypt and decrypt DB sensible data is required an encrypt key. Set in .env file this field `ENCRYPT_KEY`
+
+### Generate a new key
+```
+# Install the package cryptography in the terminal
+pip3 install cryptography
+
+# Run python in terminal
+python3
+
+# Import Fernet
+from cryptography.fernet import Fernet
+
+# Generate the key
+Fernet.generate_key()
+```
+
+
+
 ## Troubleshooting
 
 ### DB errors
