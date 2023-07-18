@@ -7,6 +7,7 @@ from sqlalchemy.engine import Engine
 from sshtunnel import SSHTunnelForwarder
 
 from dataherald.sql_database.models.types import DatabaseConnection
+from dataherald.utils.encrypt import FernetEncrypt
 
 
 class SQLDatabase(LangchainSQLDatabase):
@@ -42,20 +43,22 @@ class SQLDatabase(LangchainSQLDatabase):
 
     @classmethod
     def get_sql_engine(cls, database_info: DatabaseConnection) -> "SQLDatabase":
+        fernet_encrypt = FernetEncrypt()
         if database_info.use_ssh:
             return cls.from_uri_ssh(database_info)
-        return cls.from_uri(database_info.uri)
+        return cls.from_uri(fernet_encrypt.decrypt(database_info.uri))
 
     @classmethod
     def from_uri_ssh(cls, database_info: DatabaseConnection):
+        fernet_encrypt = FernetEncrypt()
         ssh = database_info.ssh_settings
         database = "v2_real_estate"
         server = SSHTunnelForwarder(
             (ssh.host, 22),
             ssh_username=ssh.username,
-            ssh_password=ssh.password,
+            ssh_password=fernet_encrypt.decrypt(ssh.password),
             ssh_pkey=ssh.private_key_path,
-            ssh_private_key_password=ssh.private_key_password,
+            ssh_private_key_password=fernet_encrypt.decrypt(ssh.private_key_password),
             remote_bind_address=(ssh.remote_host, 5432),
         )
         server.start()
@@ -63,7 +66,7 @@ class SQLDatabase(LangchainSQLDatabase):
         local_host = str(server.local_bind_host)
 
         return cls.from_uri(
-            f"{ssh.db_driver}://{ssh.remote_db_name}:{ssh.remote_db_password}@{local_host}:{local_port}/{database}"
+            f"{ssh.db_driver}://{ssh.remote_db_name}:{fernet_encrypt.decrypt(ssh.remote_db_password)}@{local_host}:{local_port}/{database}"
         )
 
     def run_sql(self, command: str) -> tuple[str, dict]:

@@ -1,11 +1,12 @@
 from cryptography.fernet import Fernet
 
-from dataherald.config import System
+from dataherald.config import Settings
 
 
 class FernetEncrypt:
-    def __init__(self, system: System):
-        self.fernet_key = Fernet(system.settings.require("encrypt_key"))
+    def __init__(self):
+        settings = Settings()
+        self.fernet_key = Fernet(settings.require("encrypt_key"))
 
     def encrypt(self, input: str) -> str:
         if not input:
