@@ -1,2 +1,6 @@
+from dataherald.config import System
+
+
 class TestEvaluator:
-    pass
+    def __init__(self, system: System):
+        pass
