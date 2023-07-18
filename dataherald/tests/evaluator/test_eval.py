@@ -18,5 +18,7 @@ class TestEvaluator(Evaluator):
         pass
 
     @override
-    def evaluate(self, question: NLQuery, generated_answer: NLQueryResponse) -> Evaluation:
+    def evaluate(
+        self, question: NLQuery, generated_answer: NLQueryResponse
+    ) -> Evaluation:
         pass
