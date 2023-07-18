@@ -61,6 +61,7 @@ Question: {question}
 SQL: {SQL}
 """
 
+
 class EntityFinder(BaseSQLDatabaseTool, BaseTool):
     """Tool finding all syntactically similar entites from a database"""
 
@@ -96,10 +97,7 @@ class EntityFinder(BaseSQLDatabaseTool, BaseTool):
             table = Table(table_name, metadata, autoload=True)
             column = table.c[column_name]
 
-            query = (
-                select(column.distinct())
-                .select_from(table)
-            )
+            query = select(column.distinct()).select_from(table)
 
             # Execute the query and fetch all rows
             with engine.connect() as conn:
@@ -110,9 +108,11 @@ class EntityFinder(BaseSQLDatabaseTool, BaseTool):
             similar_items = []
             for row in rows:
                 pair_similarity = self.similarity(entity, str(row[0]))
-                if  pair_similarity > self.similarity_threshold:
-                    similar_items.append({'row': str(row[0]), 'score': pair_similarity})
-            similar_items = sorted(similar_items, key= lambda x: x['score'],reverse=True)[:self.number_similar_items]
+                if pair_similarity > self.similarity_threshold:
+                    similar_items.append({"row": str(row[0]), "score": pair_similarity})
+            similar_items = sorted(
+                similar_items, key=lambda x: x["score"], reverse=True
+            )[: self.number_similar_items]
             for item in similar_items:
                 response += f"Column {column_name}, contains -> {item['row']}.\n"
 
@@ -122,7 +122,6 @@ class EntityFinder(BaseSQLDatabaseTool, BaseTool):
             return response
         except Exception as e:
             return str(e)
-
 
     async def _arun(
         self,
@@ -134,10 +133,12 @@ class EntityFinder(BaseSQLDatabaseTool, BaseTool):
 
 class SQLEvaluationToolkit(BaseToolkit):
     """Toolkit for interacting with SQL databases for the evaluation of the SQL Query"""
+
     db: SQLDatabase = Field(exclude=True)
 
     class Config:
         """Configuration for this pydantic object."""
+
         arbitrary_types_allowed = True
 
     def get_tools(self) -> List[BaseTool]:
@@ -161,14 +162,10 @@ class SQLEvaluationToolkit(BaseToolkit):
             db=self.db, description=query_sql_database_tool_description
         )
         entity_finder = EntityFinder(db=self.db)
-        return [
-            query_sql_database_tool,
-            info_sql_database_tool,
-            entity_finder
-        ]
+        return [query_sql_database_tool, info_sql_database_tool, entity_finder]
+
 
 class EvaluationAgent(Evaluator):
-
     llm_model_name: str = "gpt-4"
     sample_rows: int = 10
 
@@ -183,11 +180,11 @@ class EvaluationAgent(Evaluator):
         )
 
     def answer_parser(self, answer: str) -> int:
-        '''
+        """
         Extract the number after the Score:
         If not found extract the last number between 0 and 100
         If not found return 0
-        '''
+        """
         pattern = r".*Score:\s*(\d+)"
         match = re.search(pattern, answer)
         output = 0
@@ -233,38 +230,35 @@ class EvaluationAgent(Evaluator):
         tool_names = [tool.name for tool in tools]
         agent = ZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names, **kwargs)
         return AgentExecutor.from_agent_and_tools(
-        agent=agent,
-        tools=tools,
-        callback_manager=callback_manager,
-        verbose=verbose,
-        max_iterations=max_iterations,
-        max_execution_time=max_execution_time,
-        early_stopping_method=early_stopping_method,
-        **(agent_executor_kwargs or {}),
-    )
+            agent=agent,
+            tools=tools,
+            callback_manager=callback_manager,
+            verbose=verbose,
+            max_iterations=max_iterations,
+            max_execution_time=max_execution_time,
+            early_stopping_method=early_stopping_method,
+            **(agent_executor_kwargs or {}),
+        )
 
     @override
-    def evaluate(self, question: NLQuery, generated_answer: NLQueryResponse) -> Evaluation:
+    def evaluate(
+        self, question: NLQuery, generated_answer: NLQueryResponse
+    ) -> Evaluation:
         start_time = time.time()
         logger.info(
             f"Generating score for the question/sql pair: {str(question.question)}/ {str(generated_answer.sql_query)}"
-            )
+        )
         user_question = question.question
         sql = generated_answer.sql_query
         self.database._sample_rows_in_table_info = self.sample_rows
         toolkit = SQLEvaluationToolkit(db=self.database)
         agent_executor = self.create_evaluation_agent(
-            toolkit= toolkit,
-            verbose=True,
-            input_variables=['question','SQL']
+            toolkit=toolkit, verbose=True, input_variables=["question", "SQL"]
         )
-        answer = agent_executor({
-            "question": user_question,
-            "SQL": sql
-        })['output']
-        score =  self.answer_parser(answer= answer)/100
+        answer = agent_executor({"question": user_question, "SQL": sql})["output"]
+        score = self.answer_parser(answer=answer) / 100
         end_time = time.time()
-        logger.info(
-            f"Evaluation time elapsed: {str(end_time - start_time)}"
-            )
-        return Evaluation(question_id=question.id, answer_id=generated_answer.id, score=score)
+        logger.info(f"Evaluation time elapsed: {str(end_time - start_time)}")
+        return Evaluation(
+            question_id=question.id, answer_id=generated_answer.id, score=score
+        )

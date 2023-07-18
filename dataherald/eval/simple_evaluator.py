@@ -50,7 +50,6 @@ give me a one or two lines explanation and the score after 'Score: '.
 
 
 class SimpleEvaluator(Evaluator):
-
     llm_model_name: str = "gpt-4"
 
     def __init__(self, system: System):
@@ -64,11 +63,11 @@ class SimpleEvaluator(Evaluator):
         )
 
     def answer_parser(self, answer: str) -> int:
-        '''
+        """
         Extract the number after the Score:
         If not found extract the last number between 0 and 100
         If not found return 0
-        '''
+        """
         pattern = r".*Score:\s*(\d+)"
         match = re.search(pattern, answer)
         output = 0
@@ -82,15 +81,19 @@ class SimpleEvaluator(Evaluator):
         return output
 
     @override
-    def evaluate(self, question: NLQuery, generated_answer: NLQueryResponse) -> Evaluation:
+    def evaluate(
+        self, question: NLQuery, generated_answer: NLQueryResponse
+    ) -> Evaluation:
         logger.info(
             f"(Simple evaluator) Generating score for the question/sql pair: {str(question.question)}/ {str(generated_answer.sql_query)}"
-            )
+        )
         start_time = time.time()
-        system_message_prompt = SystemMessagePromptTemplate.from_template(SYSTEM_TEMPLATE)
+        system_message_prompt = SystemMessagePromptTemplate.from_template(
+            SYSTEM_TEMPLATE
+        )
         human_message_prompt = HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE)
         chat_prompt = ChatPromptTemplate.from_messages(
-        [system_message_prompt, human_message_prompt]
+            [system_message_prompt, human_message_prompt]
         )
         user_question = question.question
         sql = generated_answer.sql_query
@@ -99,21 +102,19 @@ class SimpleEvaluator(Evaluator):
         self.database._sample_rows_in_table_info = 0
         schema = self.database.get_table_info_no_throw(tables)
         chain = LLMChain(llm=self.llm, prompt=chat_prompt)
-        answer = chain.run({
-                'dialect': dialect,
-                'question': user_question,
-                'SQL': sql,
-                'schema': schema
-                })
-        logger.info(
-            f"(Simple evaluator) answer of the evaluator: {answer}"
-            )
-        score =  self.answer_parser(answer= answer)/100
-        logger.info(
-            f"(Simple evaluator) score of the evaluator: {str(score)}"
-            )
+        answer = chain.run(
+            {
+                "dialect": dialect,
+                "question": user_question,
+                "SQL": sql,
+                "schema": schema,
+            }
+        )
+        logger.info(f"(Simple evaluator) answer of the evaluator: {answer}")
+        score = self.answer_parser(answer=answer) / 100
+        logger.info(f"(Simple evaluator) score of the evaluator: {str(score)}")
         end_time = time.time()
-        logger.info(
-            f"Evaluation time elapsed: {str(end_time - start_time)}"
-            )
-        return Evaluation(question_id=question.id, answer_id=generated_answer.id, score=score)
+        logger.info(f"Evaluation time elapsed: {str(end_time - start_time)}")
+        return Evaluation(
+            question_id=question.id, answer_id=generated_answer.id, score=score
+        )

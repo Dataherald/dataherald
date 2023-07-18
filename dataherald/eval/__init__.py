@@ -23,11 +23,15 @@ class Evaluator(Component, ABC):
         self.system = system
         self.database = SQLDatabase.get_sql_engine()
 
-    def is_acceptable_response(self, question: NLQuery, generated_answer: NLQueryResponse) -> bool:
+    def is_acceptable_response(
+        self, question: NLQuery, generated_answer: NLQueryResponse
+    ) -> bool:
         """Determines if a generated response from the engine is acceptable considering the ACCEPTANCE_THRESHOLD"""
-        evaluation = self.evaluate(question=question,generated_answer=generated_answer)
+        evaluation = self.evaluate(question=question, generated_answer=generated_answer)
         return evaluation.score >= ACCEPTANCE_THRESHOLD
 
     @abstractmethod
-    def evaluate(self, question: NLQuery, generated_answer: NLQueryResponse) -> Evaluation:
+    def evaluate(
+        self, question: NLQuery, generated_answer: NLQueryResponse
+    ) -> Evaluation:
         """Evaluates a question with an SQL pair."""
