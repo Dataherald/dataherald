@@ -9,6 +9,7 @@ class TestEvaluator(Evaluator):
     def __init__(self, system: System):
         pass
 
+    @overrides
     def is_acceptable_response(
         self, question: NLQuery, generated_answer: NLQueryResponse
     ) -> bool:
