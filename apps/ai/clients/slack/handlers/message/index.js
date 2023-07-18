@@ -3,7 +3,8 @@ const { log } = require('console')
 
 const API_URL = process.env.API_URL
 
-async function handleMessage(message, user, say) {
+async function handleMessage(context, say) {
+    const { text: message, user, ts: thread_ts } = context
     log('Slack message received', message)
     await say({
         blocks: [
@@ -16,6 +17,7 @@ async function handleMessage(message, user, say) {
             },
         ],
         text: 'Fallback text for notifications',
+        thread_ts,
     })
 
     try {
@@ -55,6 +57,7 @@ async function handleMessage(message, user, say) {
                 },
             ],
             text: 'Fallback text for notifications',
+            thread_ts,
         })
     } catch (e) {
         log('Something went wrong: ', e)
@@ -69,6 +72,7 @@ async function handleMessage(message, user, say) {
                 },
             ],
             text: 'An error occurred',
+            thread_ts,
         })
     }
 }
