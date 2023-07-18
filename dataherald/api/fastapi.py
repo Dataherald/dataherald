@@ -48,7 +48,7 @@ class FastAPI(API):
         generated_answer = cache.lookup(user_question.question)
         if generated_answer is None:
             generated_answer = sql_generation.generate_response(user_question, context)
-            if evaluator.is_acceptable_response(generated_answer):
+            if evaluator.is_acceptable_response(user_question, generated_answer):
                 cache.add(question, generated_answer)
         generated_answer.exec_time = time.time() - start_generated_answer
         db.insert_one("nl_query_response", generated_answer.dict(exclude={"id"}))
