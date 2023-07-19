@@ -31,7 +31,7 @@ class FastAPI(API):
 
     def create_first_db_connection(self):
         db_connection_setting = DatabaseConnection(
-            alias="postgres", **DBConnectionConfigSettings().dict()
+            alias="v2_real_estate", **DBConnectionConfigSettings().dict()
         )
         self.storage.update_or_create(
             "database_connection",

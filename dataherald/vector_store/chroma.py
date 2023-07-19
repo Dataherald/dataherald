@@ -21,14 +21,18 @@ class Chroma(VectorStore):
         )
 
     @override
-    def query(self, query_texts: List[str], collection: str, num_results: int) -> list:
+    def query(
+        self, query_texts: List[str], db_alias: str, collection: str, num_results: int
+    ) -> list:
         try:
             target_collection = self.chroma_client.get_collection(collection)
         except ValueError:
             return []
 
         query_results = target_collection.query(
-            query_texts=query_texts, n_results=num_results
+            query_texts=query_texts,
+            n_results=num_results,
+            where={"db_alias": db_alias},
         )
         return self.convert_to_pinecone_object_model(query_results)
 

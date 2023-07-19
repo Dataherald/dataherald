@@ -12,7 +12,9 @@ class VectorStore(Component, ABC):
         self.system = system
 
     @abstractmethod
-    def query(self, query_texts: List[str], collection: str, num_results: int) -> list:
+    def query(
+        self, query_texts: List[str], db_alias: str, collection: str, num_results: int
+    ) -> list:
         pass
 
     @abstractmethod

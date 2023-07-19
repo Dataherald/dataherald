@@ -22,6 +22,7 @@ class DefaultContextStore(ContextStore):
 
         closest_questions = self.vector_store.query(
             query_texts=[nl_question.question],
+            db_alias=nl_question.db_alias,
             collection=self.golden_record_collection,
             num_results=3,
         )
@@ -56,7 +57,7 @@ class DefaultContextStore(ContextStore):
         for record in golden_records:
             tables = Parser(record["sql"]).tables
             question = record["nl_question"]
-            user_question = NLQuery(question=question)
+            user_question = NLQuery(question=question, db_alias=record["db"])
             user_question.id = self.db.insert_one("nl_question", user_question.dict())
             self.vector_store.add_record(
                 documents=question,
