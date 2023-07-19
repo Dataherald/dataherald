@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 class NLQuery(BaseModel):
     id: str | None = Field(alias="_id")
     question: str
+    db_alias: str
 
 
 class NLQueryResponse(BaseModel):

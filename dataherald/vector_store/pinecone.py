@@ -21,15 +21,21 @@ class Pinecone(VectorStore):
         pinecone.init(api_key=api_key, environment="us-west4-gcp")
 
     @override
-    def query(self, query_texts: List[str], collection: str, num_results: int) -> list:
+    def query(
+        self, query_texts: List[str], db_alias: str, collection: str, num_results: int
+    ) -> list:
         index = pinecone.Index(collection)
         xq = openai.Embedding.create(input=query_texts[0], engine=EMBEDDING_MODEL)[
             "data"
         ][0]["embedding"]
         query_response = index.query(
-            queries=[xq], top_k=num_results, include_metadata=True
+            queries=[xq],
+            filter={
+                "db_alias": {"$eq": db_alias},
+            },
+            top_k=num_results,
+            include_metadata=True,
         )
-
         return query_response.to_dict()["results"][0]["matches"]
 
     @override
@@ -40,8 +46,8 @@ class Pinecone(VectorStore):
         index = pinecone.Index(collection)
         res = openai.Embedding.create(input=[documents], engine=EMBEDDING_MODEL)
         embeds = [record["embedding"] for record in res["data"]]
-        record = [(ids[0], embeds)]
-        index.upsert(vectors=record, metadata=metadata[0])
+        record = [(ids[0], embeds, metadata[0])]
+        index.upsert(vectors=record)
 
     @override
     def delete_collection(self, collection: str):

@@ -12,7 +12,11 @@ class TestVectorStore(VectorStore):
 
     @override
     def query(
-        self, query_texts: List[str], collection: str, num_results: int  # noqa: ARG002
+        self,
+        query_texts: List[str],
+        db_alias: str,
+        collection: str,
+        num_results: int,  # noqa: ARG002
     ) -> list:
         return [{"id": "64ade8ed3445882cedc06ab6", "score": 0.1}]
 
