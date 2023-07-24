@@ -19,3 +19,7 @@ class DB(Component, ABC):
     @abstractmethod
     def find_one(self, collection: str, query: dict) -> dict:
         pass
+
+    @abstractmethod
+    def find(self, collection: str, query: dict) -> list:
+        pass

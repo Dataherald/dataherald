@@ -7,6 +7,7 @@ from bson import json_util
 from fastapi import HTTPException
 from overrides import override
 
+from dataherald.sql_database.base import SQLDatabase
 from dataherald.api import API
 from dataherald.config import DBConnectionConfigSettings, System
 from dataherald.context_store import ContextStore
@@ -16,6 +17,8 @@ from dataherald.smart_cache import SmartCache
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.sql_generator import SQLGenerator
 from dataherald.types import DataDefinitionType, NLQuery, NLQueryResponse
+from dataherald.db_scanner import Scanner
+from dataherald.db_scanner.repository.base import DBScannerRepository
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +46,23 @@ class FastAPI(API):
     def heartbeat(self) -> int:
         """Returns the current server time in nanoseconds to check if the server is alive"""
         return int(time.time_ns())
+
+    @override
+    def scan_db(self, db_alias: str) -> bool:
+        """Takes a db_alias and scan all the tables columns"""
+        db_connection = self.storage.find_one(
+            "database_connection", {"alias": db_alias}
+        )
+        if not db_connection:
+            raise HTTPException(status_code=404, detail="Database connection not found")
+        database_connection = DatabaseConnection(**db_connection)
+
+        scanner = self.system.instance(Scanner)
+        database = SQLDatabase.get_sql_engine(database_connection)
+        # create engine
+
+        scanner.scan(database, db_alias, DBScannerRepository(self.storage))
+        return True
 
     @override
     def answer_question(self, question: str, db_alias: str) -> NLQueryResponse:

@@ -37,6 +37,10 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/scanner", self.scan_db, methods=["GET"]
+        )
+
+        self.router.add_api_route(
             "/api/v1/question/evaluate", self.evaluate_question, methods=["POST"]
         )
 
@@ -59,6 +63,9 @@ class FastAPI(dataherald.server.Server):
 
     def app(self) -> fastapi.FastAPI:
         return self._app
+
+    def scan_db(self, db_alias: str) -> bool:
+        return self._api.scan_db(db_alias)
 
     def answer_question(self, question: str, db_alias: str) -> NLQueryResponse:
         return self._api.answer_question(question, db_alias)
