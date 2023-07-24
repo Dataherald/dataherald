@@ -1,6 +1,7 @@
 """A wrapper for the SQL generation functions in langchain"""
 
 import logging
+from typing import List
 
 from langchain.agents import initialize_agent
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
@@ -22,7 +23,7 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
         self,
         user_question: NLQuery,
         database_connection: DatabaseConnection,
-        context: str = None,
+        context: List[dict] = None,
     ) -> NLQueryResponse:  # type: ignore
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
         self.database = SQLDatabase.get_sql_engine(database_connection)
@@ -37,10 +38,17 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
             handle_parsing_errors=True,
             return_intermediate_steps=True,
         )
+        if context is not None:
+            samples_prompt_string = "The following are some similar previous questions and their correct SQL queries from these databases: \
+            \n"
+            for sample in context:
+                samples_prompt_string += (
+                    f"Question: {sample['nl_question']} \nSQL: {sample['sql_query']} \n"
+                )
 
         question_with_context = (
             f"{user_question.question} An example of a similar question and the query that was generated \
-                                to answer it is the following {context}"
+                                to answer it is the following {samples_prompt_string}"
             if context is not None
             else user_question.question
         )

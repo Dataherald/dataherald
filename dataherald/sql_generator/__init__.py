@@ -1,7 +1,7 @@
 """Base class that all sql generation classes inherit from."""
 import re
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, List
 
 from langchain.base_language import BaseLanguageModel
 from langchain.chat_models import ChatOpenAI
@@ -17,6 +17,7 @@ class SQLGenerator(Component, ABC):
     llm: BaseLanguageModel | None = None
 
     def __init__(self, system: System):  # noqa: ARG002
+        self.system = system
         openai_api_key = system.settings.require("openai_api_key")
         self.llm = ChatOpenAI(
             temperature=0,
@@ -29,7 +30,7 @@ class SQLGenerator(Component, ABC):
         self,
         user_question: NLQuery,
         database_connection: DatabaseConnection,
-        context: str = None,
+        context: List[dict] = None,
     ) -> NLQueryResponse:
         """Generates a response to a user question."""
         pass

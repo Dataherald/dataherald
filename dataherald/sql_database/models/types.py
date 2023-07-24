@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, BaseSettings, validator
@@ -84,7 +84,7 @@ class TableSchemaDetail(BaseModel):
     examples: list = []
 
 
-def get_mock_table_schema_detail() -> TableSchemaDetail:
+def get_mock_table_schema_detail() -> List[TableSchemaDetail]:
     period_start = ColumnDetail(
         name="period_start",
         is_primary_key=False,
@@ -225,7 +225,7 @@ def get_mock_table_schema_detail() -> TableSchemaDetail:
         description="Number of listing houses",
         low_cardinality=False,
     )
-    return TableSchemaDetail(
+    return [TableSchemaDetail(
         db_alias="v2_real_estate",
         table_name="redfin_new_listings",
         description="List the number of houses sold in a period of time",
@@ -293,4 +293,4 @@ def get_mock_table_schema_detail() -> TableSchemaDetail:
                 "hg_date_updated": "2023-05-02 09:44:43.946",
             }
         ],
-    )
+    )]

@@ -1,6 +1,7 @@
 """A wrapper for the SQL generation functions in langchain"""
 
 import logging
+from typing import List
 
 from llama_index import (
     LLMPredictor,
@@ -26,7 +27,7 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         self,
         user_question: NLQuery,
         database_connection: DatabaseConnection,
-        context: str = None,
+        context: List[dict] = None,
     ) -> NLQueryResponse:
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
         self.database = SQLDatabase.get_sql_engine(database_connection)
@@ -36,9 +37,16 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         metadata_obj.reflect(db_engine)
         table_schema_objs = []
         table_node_mapping = SQLTableNodeMapping(self.database)
+        if context is not None:
+            samples_prompt_string = "The following are some similar previous questions and their correct SQL queries from these databases: \
+            \n"
+            for sample in context:
+                samples_prompt_string += (
+                    f"Question: {sample['nl_question']} \nSQL: {sample['sql_query']} \n"
+                )
         question_with_context = (
             f"{user_question.question} An example of a similar question and the query that was generated to answer it \
-                                 is the following {context}"
+                                 is the following {samples_prompt_string}"
             if context is not None
             else user_question.question
         )
