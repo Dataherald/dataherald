@@ -17,14 +17,16 @@ class DefaultContextStore(ContextStore):
         super().__init__(system)
 
     @override
-    def retrieve_context_for_question(self, nl_question: NLQuery) -> str | None:
+    def retrieve_context_for_question(
+        self, nl_question: NLQuery, number_of_samples: int = 3
+    ) -> List[dict] | None:
         logger.info(f"getting context for {nl_question.question}")
 
         closest_questions = self.vector_store.query(
             query_texts=[nl_question.question],
             db_alias=nl_question.db_alias,
             collection=self.golden_record_collection,
-            num_results=3,
+            num_results=number_of_samples,
         )
 
         samples = []
@@ -38,18 +40,13 @@ class DefaultContextStore(ContextStore):
                     {
                         "nl_question": associated_nl_question["question"],
                         "sql_query": golden_query["sql_query"],
+                        "score": question["score"],
                     }
                 )
         if len(samples) == 0:
             return None
 
-        samples_prompt_string = "The following are some similar previous questions and their correct SQL queries from these databases: \n"
-        for sample in samples:
-            samples_prompt_string += (
-                f"Question: {sample['nl_question']} \nSQL: {sample['sql_query']} \n"
-            )
-
-        return samples_prompt_string
+        return samples
 
     @override
     def add_golden_records(self, golden_records: List) -> bool:

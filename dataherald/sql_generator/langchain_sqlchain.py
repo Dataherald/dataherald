@@ -1,6 +1,7 @@
 """A wrapper for the SQL generation functions in langchain"""
 
 import logging
+from typing import List
 
 from langchain import SQLDatabaseChain
 from overrides import override
@@ -40,16 +41,22 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         self,
         user_question: NLQuery,
         database_connection: DatabaseConnection,
-        context: str = None,
+        context: List[dict] = None,
     ) -> NLQueryResponse:
         logger.info(
             f"Generating SQL response to question: {str(user_question.dict())} with passed context {context}"
         )
         self.database = SQLDatabase.get_sql_engine(database_connection)
-
+        if context is not None:
+            samples_prompt_string = "The following are some similar previous questions and their correct SQL queries from these databases: \
+            \n"
+            for sample in context:
+                samples_prompt_string += (
+                    f"Question: {sample['nl_question']} \nSQL: {sample['sql_query']} \n"
+                )
         if context is not None:
             prompt = PROMPT_WITH_CONTEXT.format(
-                user_question=user_question.question, context=context
+                user_question=user_question.question, context=samples_prompt_string
             )
         else:
             prompt = PROMPT_WITHOUT_CONTEXT.format(user_question=user_question.question)

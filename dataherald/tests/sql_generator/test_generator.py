@@ -1,3 +1,5 @@
+from typing import List
+
 from overrides import override
 
 from dataherald.config import System
@@ -15,7 +17,7 @@ class TestGenerator(SQLGenerator):
         self,
         user_question: NLQuery,
         database_connection: DatabaseConnection,
-        context: str = None,  # noqa: ARG002
+        context: List[dict] = None,  # noqa: ARG002
     ) -> NLQueryResponse:
         return NLQueryResponse(
             nl_question_id=None,
