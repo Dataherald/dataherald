@@ -17,7 +17,9 @@ class DefaultContextStore(ContextStore):
         super().__init__(system)
 
     @override
-    def retrieve_context_for_question(self, nl_question: NLQuery, number_of_samples: int = 3) -> List[dict] | None:
+    def retrieve_context_for_question(
+        self, nl_question: NLQuery, number_of_samples: int = 3
+    ) -> List[dict] | None:
         logger.info(f"getting context for {nl_question.question}")
 
         closest_questions = self.vector_store.query(
@@ -38,7 +40,7 @@ class DefaultContextStore(ContextStore):
                     {
                         "nl_question": associated_nl_question["question"],
                         "sql_query": golden_query["sql_query"],
-                        "score": question["score"]
+                        "score": question["score"],
                     }
                 )
         if len(samples) == 0:

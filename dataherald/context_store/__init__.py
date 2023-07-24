@@ -20,7 +20,9 @@ class ContextStore(Component, ABC):
         self.vector_store = self.system.instance(VectorStore)
 
     @abstractmethod
-    def retrieve_context_for_question(self, nl_question: NLQuery, number_of_samples: int = 3) -> List[dict] | None:
+    def retrieve_context_for_question(
+        self, nl_question: NLQuery, number_of_samples: int = 3
+    ) -> List[dict] | None:
         pass
 
     @abstractmethod

@@ -225,11 +225,12 @@ def get_mock_table_schema_detail() -> List[TableSchemaDetail]:
         description="Number of listing houses",
         low_cardinality=False,
     )
-    return [TableSchemaDetail(
-        db_alias="v2_real_estate",
-        table_name="redfin_new_listings",
-        description="List the number of houses sold in a period of time",
-        table_schema="""
+    return [
+        TableSchemaDetail(
+            db_alias="v2_real_estate",
+            table_name="redfin_new_listings",
+            description="List the number of houses sold in a period of time",
+            table_schema="""
         CREATE TABLE public.redfin_new_listings (
             period_start date NOT NULL,
             period_end date NOT NULL,
@@ -256,41 +257,42 @@ def get_mock_table_schema_detail() -> List[TableSchemaDetail]:
             location_name,dh_state_fips,dh_county_fips,dh_place_fips,dh_zip_code,is_seasonally_adjusted)
         );
         """,
-        columns=[
-            period_start,
-            period_end,
-            period_type,
-            geo_type,
-            property_type,
-            location_name,
-            dh_state_name,
-            dh_county_name,
-            dh_city_name,
-            metric_value,
-        ],
-        examples=[
-            {
-                "period_start": "2016-02-01",
-                "period_end": "2016-02-29",
-                "period_type": "monthly",
-                "geo_type": "city",
-                "property_type": "Single-family",
-                "location_name": "Loves Park",
-                "dh_state_fips": "17",
-                "dh_state_name": "Illinois",
-                "dh_state_abbr": "IL",
-                "dh_county_fips": "007",
-                "dh_county_name": "Boone",
-                "dh_county_fullname": "Boone County",
-                "dh_place_fips": "45031",
-                "dh_place_name": "Loves Park",
-                "dh_place_fullname": "Loves Park city",
-                "dh_city_name": "Loves Park",
-                "dh_city_fullname": "Loves Park city",
-                "dh_zip_code": "-",
-                "is_seasonally_adjusted": "false",
-                "metric_value": "7.0",
-                "hg_date_updated": "2023-05-02 09:44:43.946",
-            }
-        ],
-    )]
+            columns=[
+                period_start,
+                period_end,
+                period_type,
+                geo_type,
+                property_type,
+                location_name,
+                dh_state_name,
+                dh_county_name,
+                dh_city_name,
+                metric_value,
+            ],
+            examples=[
+                {
+                    "period_start": "2016-02-01",
+                    "period_end": "2016-02-29",
+                    "period_type": "monthly",
+                    "geo_type": "city",
+                    "property_type": "Single-family",
+                    "location_name": "Loves Park",
+                    "dh_state_fips": "17",
+                    "dh_state_name": "Illinois",
+                    "dh_state_abbr": "IL",
+                    "dh_county_fips": "007",
+                    "dh_county_name": "Boone",
+                    "dh_county_fullname": "Boone County",
+                    "dh_place_fips": "45031",
+                    "dh_place_name": "Loves Park",
+                    "dh_place_fullname": "Loves Park city",
+                    "dh_city_name": "Loves Park",
+                    "dh_city_fullname": "Loves Park city",
+                    "dh_zip_code": "-",
+                    "is_seasonally_adjusted": "false",
+                    "metric_value": "7.0",
+                    "hg_date_updated": "2023-05-02 09:44:43.946",
+                }
+            ],
+        )
+    ]
