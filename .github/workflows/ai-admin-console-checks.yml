@@ -1,0 +1,63 @@
+name: AI Admin Console - Quality checks
+on:
+  push:
+    paths:
+      - .github/workflows/ai-admin-console-build.yml # this file
+      - apps/ai/clients/admin-console/**
+    branches:
+      - main
+  pull_request:
+    paths:
+      - .github/workflows/ai-admin-console-build.yml
+      - apps/ai/clients/admin-console/**
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ai/clients/admin-console
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint code
+        run: pnpm lint
+
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ai/clients/admin-console
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run tests
+        run: pnpm test
