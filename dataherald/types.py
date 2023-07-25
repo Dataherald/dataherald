@@ -18,6 +18,8 @@ class NLQueryResponse(BaseModel):
     intermediate_steps: list[str] | None = None
     sql_query: str
     exec_time: float | None = None
+    total_tokens: int | None = None
+    total_cost: float | None = None
     golden_record: bool = False
     # date_entered: datetime = datetime.now() add this later
 
