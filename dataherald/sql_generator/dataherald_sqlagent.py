@@ -341,7 +341,9 @@ class SQLDatabaseToolkit(BaseToolkit):
         tools.append(info_relevant_tool)
         if self.few_shot_examples is not None:
             get_fewshot_examples_tool = GetFewShotExamples(
-                db=self.db, context=self.context, few_shot_examples=self.few_shot_examples
+                db=self.db,
+                context=self.context,
+                few_shot_examples=self.few_shot_examples,
             )
             tools.append(get_fewshot_examples_tool)
         return tools
@@ -455,7 +457,7 @@ class DataheraldSQLAgent(SQLGenerator):
             nl_question_id=user_question.id,
             nl_response=result["output"],
             intermediate_steps=intermediate_steps,
-            exec_time= exec_time,
+            exec_time=exec_time,
             total_tokens=cb.total_tokens,
             total_cost=cb.total_cost,
             sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",

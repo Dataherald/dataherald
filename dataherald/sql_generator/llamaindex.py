@@ -37,7 +37,7 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
         token_counter = TokenCountingHandler(
             tokenizer=tiktoken.encoding_for_model(self.llm.model_name).encode,
-            verbose=False  # set to true to see usage printed to the console
+            verbose=False,  # set to true to see usage printed to the console
         )
         callback_manager = CallbackManager([token_counter])
         self.database = SQLDatabase.get_sql_engine(database_connection)
@@ -64,7 +64,9 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             table_schema_objs.append(SQLTableSchema(table_name=table_name))
 
         llm_predictor = LLMPredictor(llm=self.llm)
-        service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor,callback_manager=callback_manager)
+        service_context = ServiceContext.from_defaults(
+            llm_predictor=llm_predictor, callback_manager=callback_manager
+        )
 
         obj_index = ObjectIndex.from_objects(
             table_schema_objs,
@@ -82,8 +84,13 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             service_context=service_context,
         )
         result = query_engine.query(question_with_context)
-        total_cost = token_counter.total_llm_token_count*MODEL_COST_PER_1K_TOKENS[self.llm.model_name]
-        logger.info(f"total cost: {str(total_cost)} {str(token_counter.total_llm_token_count)}")
+        total_cost = (
+            token_counter.total_llm_token_count
+            * MODEL_COST_PER_1K_TOKENS[self.llm.model_name]
+        )
+        logger.info(
+            f"total cost: {str(total_cost)} {str(token_counter.total_llm_token_count)}"
+        )
         exec_time = time.time() - start_time
         return NLQueryResponse(
             nl_question_id=user_question.id,
