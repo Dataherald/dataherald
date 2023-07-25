@@ -9,5 +9,5 @@ from dataherald.config import Component
 
 class Scanner(Component, ABC):
     @abstractmethod
-    def scan(self, db_engine: SQLDatabase, db_alias: str, repository: DBScannerRepository) -> None:
+    def scan(self, db_engine: SQLDatabase, db_alias: str, table_name: str | None, repository: DBScannerRepository) -> None:
         """"Scan a db"""

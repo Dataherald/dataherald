@@ -10,6 +10,10 @@ from dataherald.db_scanner.repository.base import DBScannerRepository
 
 
 class SqlAlchemyScanner(Scanner):
+    def data_bricks_cardinality(self, table, column_name):
+        cardinality = db_engine.engine.execute(f'SELECT approx_count_distinct(issue_date) FROM air_quality_new')
+        pass
+
     def scan_single_table(self, table: str, db_engine: SQLDatabase, db_alias: str, repository: DBScannerRepository) -> TableSchemaDetail:
         # todo refactor this line
         inspector = inspect(db_engine.engine)
@@ -76,10 +80,13 @@ class SqlAlchemyScanner(Scanner):
         return object
 
     @override
-    def scan(self, db_engine: SQLDatabase, db_alias: str, repository: DBScannerRepository) -> None:
+    def scan(self, db_engine: SQLDatabase, db_alias: str, table_name: str | None, repository: DBScannerRepository) -> None:
         inspector = inspect(db_engine.engine)
-        tables = [inspector.get_table_names()[0]]
-
+        tables = inspector.get_table_names()
+        if table_name:
+            tables = [table for table in tables if table == table_name]
+        if len(tables) == 0:
+            raise ValueError("No table found")
         result = []
         for table in tables:
             obj = self.scan_single_table(table, db_engine, db_alias, repository)

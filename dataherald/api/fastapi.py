@@ -48,7 +48,7 @@ class FastAPI(API):
         return int(time.time_ns())
 
     @override
-    def scan_db(self, db_alias: str) -> bool:
+    def scan_db(self, db_alias: str, table_name: str | None = None) -> bool:
         """Takes a db_alias and scan all the tables columns"""
         db_connection = self.storage.find_one(
             "database_connection", {"alias": db_alias}
@@ -59,9 +59,10 @@ class FastAPI(API):
 
         scanner = self.system.instance(Scanner)
         database = SQLDatabase.get_sql_engine(database_connection)
-        # create engine
-
-        scanner.scan(database, db_alias, DBScannerRepository(self.storage))
+        try:
+            scanner.scan(database, db_alias, table_name, DBScannerRepository(self.storage))
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))  # noqa: B904
         return True
 
     @override
