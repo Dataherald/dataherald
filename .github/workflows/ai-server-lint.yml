@@ -1,0 +1,17 @@
+name: ai-server-lint
+on:
+  push:
+    paths:
+      - apps/ai/server/**
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run: 
+        working-directory: ./apps/ai/server
+    steps:
+      - uses: actions/checkout@v3
+      - uses: chartboost/ruff-action@v1
+      - uses: rickstaa/action-black@v1
+        with:
+          black_args: ". --check"
