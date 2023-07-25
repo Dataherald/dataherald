@@ -34,3 +34,7 @@ class API(Component, ABC):
     @abstractmethod
     def add_golden_records(self, golden_records: List) -> bool:
         pass
+
+    @abstractmethod
+    def execute_query(self, query: str, db_alias: str) -> tuple[str, dict]:
+        pass

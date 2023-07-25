@@ -13,6 +13,7 @@ from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.eval import Evaluation, Evaluator
 from dataherald.smart_cache import SmartCache
+from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.sql_generator import SQLGenerator
 from dataherald.types import DataDefinitionType, NLQuery, NLQueryResponse
@@ -118,3 +119,16 @@ class FastAPI(API):
         """Takes in a list of NL <> SQL pairs and stores them to be used in prompts to the LLM"""
         context_store = self.system.instance(ContextStore)
         return context_store.add_golden_records(golden_records)
+
+    @override
+    def execute_query(self, query: str, db_alias: str) -> tuple[str, dict]:
+        """Executes a SQL query against the database and returns the results"""
+        db_connection = self.storage.find_one(
+            "database_connection", {"alias": db_alias}
+        )
+        if not db_connection:
+            raise HTTPException(status_code=404, detail="Database connection not found")
+        database_connection = DatabaseConnection(**db_connection)
+        database = SQLDatabase.get_sql_engine(database_connection)
+        print(type(database.run_sql(query)))
+        return database.run_sql(query)

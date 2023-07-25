@@ -54,6 +54,8 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/data-definition", self.add_data_definition, methods=["POST"]
         )
 
+        self.router.add_api_route("/api/v1/query", self.execute_query, methods=["POST"])
+
         self._app.include_router(self.router)
         use_route_names_as_operation_ids(self._app)
 
@@ -94,3 +96,7 @@ class FastAPI(dataherald.server.Server):
     def add_data_definition(self, uri: str, type: DataDefinitionType) -> bool:
         """Takes in an English question and answers it based on content from the registered databases"""
         return self._api.add_data_definition(type, uri)
+
+    def execute_query(self, query: str, db_alias: str) -> tuple[str, dict]:
+        """Executes a query on the given db_alias"""
+        return self._api.execute_query(query, db_alias)
