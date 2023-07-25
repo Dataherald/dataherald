@@ -21,5 +21,9 @@ class DB(Component, ABC):
         pass
 
     @abstractmethod
+    def find_by_id(self, collection: str, id: str) -> dict:
+        pass
+
+    @abstractmethod
     def find(self, collection: str, query: dict) -> list:
         pass

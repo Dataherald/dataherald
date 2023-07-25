@@ -36,9 +36,7 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/question", self.answer_question, methods=["POST"]
         )
 
-        self.router.add_api_route(
-            "/api/v1/scanner", self.scan_db, methods=["GET"]
-        )
+        self.router.add_api_route("/api/v1/scanner", self.scan_db, methods=["POST"])
 
         self.router.add_api_route(
             "/api/v1/question/evaluate", self.evaluate_question, methods=["POST"]
