@@ -1,6 +1,6 @@
 """A wrapper for the SQL generation functions in langchain"""
 
-import logging
+import loggingt
 import time
 from typing import List
 
