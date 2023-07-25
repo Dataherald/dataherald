@@ -1,9 +1,11 @@
 """A wrapper for the SQL generation functions in langchain"""
 
 import logging
+import time
 from typing import List
 
 from langchain import SQLDatabaseChain
+from langchain.callbacks import get_openai_callback
 from overrides import override
 
 from dataherald.sql_database.base import SQLDatabase
@@ -43,6 +45,7 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         database_connection: DatabaseConnection,
         context: List[dict] = None,
     ) -> NLQueryResponse:
+        start_time = time.time()
         logger.info(
             f"Generating SQL response to question: {str(user_question.dict())} with passed context {context}"
         )
@@ -64,16 +67,22 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         db_chain = SQLDatabaseChain.from_llm(
             self.llm, self.database, top_k=3, return_intermediate_steps=True
         )
-
-        result = db_chain(prompt)
+        with get_openai_callback() as cb:
+            result = db_chain(prompt)
 
         intermediate_steps = []
         for step in result["intermediate_steps"]:
             intermediate_steps.append(str(step))
-
+        exec_time = time.time() - start_time
+        logger.info(
+            f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
+        )
         return NLQueryResponse(
             nl_question_id=user_question.id,
             nl_response=result["result"],
             intermediate_steps=intermediate_steps,
+            exec_time=exec_time,
+            total_cost=cb.total_cost,
+            total_tokens=cb.total_tokens,
             sql_query=result["intermediate_steps"][1],
         )

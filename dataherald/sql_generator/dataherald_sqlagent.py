@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Any, Dict, List
 
 import numpy as np
@@ -7,6 +8,7 @@ import pandas as pd
 from langchain.agents.agent import AgentExecutor
 from langchain.agents.agent_toolkits.base import BaseToolkit
 from langchain.agents.mrkl.base import ZeroShotAgent
+from langchain.callbacks import get_openai_callback
 from langchain.callbacks.base import BaseCallbackManager
 from langchain.callbacks.manager import (
     AsyncCallbackManagerForToolRun,
@@ -52,6 +54,7 @@ tip3) If the SQL query resulted in errors, rewrite the SQL query and try again.
 tip4) If you are still unsure about which columns and tables to use, ask for more examples.
 #
 If the question does not seem related to the database, just return "I don't know" as the answer.
+The SQL query MUST have in-line comments to explain what each clause does.
 """
 
 FORMAT_INSTRUCTIONS = """Use the following format:
@@ -77,7 +80,7 @@ class BaseSQLDatabaseTool(BaseModel):
     """Base tool for interacting with the SQL database and the context information."""
 
     db: SQLDatabase = Field(exclude=True)
-    context: List[dict] = Field(exclude=True)
+    context: List[dict] | None = Field(exclude=True, default=None)
 
     class Config(BaseTool.Config):
         """Configuration for this pydantic object."""
@@ -270,7 +273,7 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
     Output: List of similar questions with their SQL queries.
     Use this tool to fetch previously asked Question/SQL pairs as examples for improving SQL query generation.
     For complex questions, request more examples to gain a better understanding of tables and columns.
-    Use this tool before generating SQL queries.
+    Always use this tool before using the sql_db_query tool!
     """
     few_shot_examples: List[dict]
 
@@ -305,8 +308,8 @@ class SQLDatabaseToolkit(BaseToolkit):
     """Dataherald toolkit"""
 
     db: SQLDatabase = Field(exclude=True)
-    context: List[dict] = Field(exclude=True)
-    few_shot_examples: List[dict] = Field(exclude=True)
+    context: List[dict] | None = Field(exclude=True, default=None)
+    few_shot_examples: List[dict] | None = Field(exclude=True, default=None)
     db_scan: List[TableSchemaDetail] = Field(exclude=True)
 
     @property
@@ -321,26 +324,27 @@ class SQLDatabaseToolkit(BaseToolkit):
 
     def get_tools(self) -> List[BaseTool]:
         """Get the tools in the toolkit."""
+        tools = []
         query_sql_db_tool = QuerySQLDataBaseTool(db=self.db, context=self.context)
+        tools.append(query_sql_db_tool)
         tables_sql_db_tool = TablesSQLDatabaseTool(
             db=self.db, context=self.context, db_scan=self.db_scan
         )
+        tools.append(tables_sql_db_tool)
         schema_sql_db_tool = SchemaSQLDatabaseTool(
             db=self.db, context=self.context, db_scan=self.db_scan
         )
+        tools.append(schema_sql_db_tool)
         info_relevant_tool = InfoRelevantColumns(
             db=self.db, context=self.context, db_scan=self.db_scan
         )
-        get_fewshot_examples_tool = GetFewShotExamples(
-            db=self.db, context=self.context, few_shot_examples=self.few_shot_examples
-        )
-        return [
-            query_sql_db_tool,
-            tables_sql_db_tool,
-            schema_sql_db_tool,
-            info_relevant_tool,
-            get_fewshot_examples_tool,
-        ]
+        tools.append(info_relevant_tool)
+        if self.few_shot_examples is not None:
+            get_fewshot_examples_tool = GetFewShotExamples(
+                db=self.db, context=self.context, few_shot_examples=self.few_shot_examples
+            )
+            tools.append(get_fewshot_examples_tool)
+        return tools
 
 
 class DataheraldSQLAgent(SQLGenerator):
@@ -411,6 +415,7 @@ class DataheraldSQLAgent(SQLGenerator):
         database_connection: DatabaseConnection,
         context: List[dict] = None,
     ) -> NLQueryResponse:
+        start_time = time.time()
         context_store = self.system.instance(ContextStore)
         db_scan = get_mock_table_schema_detail()
         few_shot_examples = context_store.retrieve_context_for_question(
@@ -432,7 +437,8 @@ class DataheraldSQLAgent(SQLGenerator):
         )
         agent_executor.return_intermediate_steps = True
         agent_executor.handle_parsing_errors = (True,)
-        result = agent_executor({"input": user_question.question})
+        with get_openai_callback() as cb:
+            result = agent_executor({"input": user_question.question})
         intermediate_steps = []
         sql_query_list = []
         for step in result["intermediate_steps"]:
@@ -441,10 +447,16 @@ class DataheraldSQLAgent(SQLGenerator):
                 sql_query_list.append(action.tool_input)
 
             intermediate_steps.append(str(step))
-
+        exec_time = time.time() - start_time
+        logger.info(
+            f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
+        )
         return NLQueryResponse(
             nl_question_id=user_question.id,
             nl_response=result["output"],
             intermediate_steps=intermediate_steps,
+            exec_time= exec_time,
+            total_tokens=cb.total_tokens,
+            total_cost=cb.total_cost,
             sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",
         )

@@ -1,13 +1,17 @@
 """A wrapper for the SQL generation functions in langchain"""
 
 import logging
+import time
 from typing import List
 
+import tiktoken
+from langchain.callbacks.openai_info import MODEL_COST_PER_1K_TOKENS
 from llama_index import (
     LLMPredictor,
     ServiceContext,
     VectorStoreIndex,
 )
+from llama_index.callbacks import CallbackManager, TokenCountingHandler
 from llama_index.indices.struct_store import SQLTableRetrieverQueryEngine
 from llama_index.objects import ObjectIndex, SQLTableNodeMapping, SQLTableSchema
 from overrides import override
@@ -29,7 +33,13 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         database_connection: DatabaseConnection,
         context: List[dict] = None,
     ) -> NLQueryResponse:
+        start_time = time.time()
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
+        token_counter = TokenCountingHandler(
+            tokenizer=tiktoken.encoding_for_model(self.llm.model_name).encode,
+            verbose=False  # set to true to see usage printed to the console
+        )
+        callback_manager = CallbackManager([token_counter])
         self.database = SQLDatabase.get_sql_engine(database_connection)
         db_engine = self.database.engine
         # load all table definitions
@@ -54,7 +64,7 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             table_schema_objs.append(SQLTableSchema(table_name=table_name))
 
         llm_predictor = LLMPredictor(llm=self.llm)
-        service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor)
+        service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor,callback_manager=callback_manager)
 
         obj_index = ObjectIndex.from_objects(
             table_schema_objs,
@@ -71,11 +81,16 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             obj_index.as_retriever(similarity_top_k=1),
             service_context=service_context,
         )
-
         result = query_engine.query(question_with_context)
+        total_cost = token_counter.total_llm_token_count*MODEL_COST_PER_1K_TOKENS[self.llm.model_name]
+        logger.info(f"total cost: {str(total_cost)} {str(token_counter.total_llm_token_count)}")
+        exec_time = time.time() - start_time
         return NLQueryResponse(
             nl_question_id=user_question.id,
             nl_response=result.response,
+            exec_time=exec_time,
+            total_tokens=token_counter.total_llm_token_count,
+            total_cost=total_cost,
             intermediate_steps=[str(result.metadata)],
             sql_query=result.metadata["sql_query"],
         )
