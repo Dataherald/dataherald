@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, List
 
+from dataherald.api.types import Query
 from dataherald.config import Component
 from dataherald.eval import Evaluation
 from dataherald.sql_database.models.types import SSHSettings
@@ -36,5 +37,5 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def execute_query(self, query: str, db_alias: str) -> tuple[str, dict]:
+    def execute_query(self, query: Query) -> tuple[str, dict]:
         pass

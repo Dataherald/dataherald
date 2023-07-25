@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from overrides import override
 
 from dataherald.api import API
+from dataherald.api.types import Query
 from dataherald.config import DBConnectionConfigSettings, System
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
@@ -121,14 +122,14 @@ class FastAPI(API):
         return context_store.add_golden_records(golden_records)
 
     @override
-    def execute_query(self, query: str, db_alias: str) -> tuple[str, dict]:
+    def execute_query(self, query: Query) -> tuple[str, dict]:
         """Executes a SQL query against the database and returns the results"""
         db_connection = self.storage.find_one(
-            "database_connection", {"alias": db_alias}
+            "database_connection", {"alias": query.db_alias}
         )
         if not db_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
         database_connection = DatabaseConnection(**db_connection)
         database = SQLDatabase.get_sql_engine(database_connection)
-        print(type(database.run_sql(query)))
-        return database.run_sql(query)
+        print(type(database.run_sql(query.sql_statement)))
+        return database.run_sql(query.sql_statement)

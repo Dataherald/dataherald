@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 
 import dataherald
+from dataherald.api.types import Query
 from dataherald.config import Settings
 from dataherald.eval import Evaluation
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
@@ -97,6 +98,6 @@ class FastAPI(dataherald.server.Server):
         """Takes in an English question and answers it based on content from the registered databases"""
         return self._api.add_data_definition(type, uri)
 
-    def execute_query(self, query: str, db_alias: str) -> tuple[str, dict]:
+    def execute_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_alias"""
-        return self._api.execute_query(query, db_alias)
+        return self._api.execute_query(query)
