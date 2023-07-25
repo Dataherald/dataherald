@@ -14,6 +14,10 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
+    def scan_db(self, db_alias: str, table_name: str | None = None) -> bool:
+        pass
+
+    @abstractmethod
     def answer_question(self, question: str, db_alias: str) -> NLQueryResponse:
         pass
 

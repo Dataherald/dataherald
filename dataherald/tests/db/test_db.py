@@ -34,6 +34,7 @@ class TestDB(DB):
             return self.memory[collection][0]
         return {}
 
+    @override
     def find_by_id(self, collection: str, id: str) -> dict:
         try:
             collection = self.memory[collection]
@@ -44,6 +45,10 @@ class TestDB(DB):
             if item.get("_id") == id:
                 return item
         return None
+
+    @override
+    def find(self, collection: str, query: dict) -> list:
+        return []
 
     @override
     def update_or_create(self, collection: str, query: dict, obj: dict) -> int:

@@ -11,6 +11,7 @@ from pydantic import BaseSettings
 _abstract_type_keys: Dict[str, str] = {
     "dataherald.api.API": "api_impl",
     "dataherald.smart_cache.SmartCache": "cache_impl",
+    "dataherald.db_scanner.Scanner": "db_scanner_impl",
     "dataherald.sql_generator.SQLGenerator": "sql_generator_impl",
     "dataherald.eval.Evaluator": "eval_impl",
     "dataherald.db.DB": "db_impl",
@@ -23,6 +24,11 @@ class Settings(BaseSettings):
     load_dotenv()
 
     api_impl: str = os.environ.get("API_SERVER", "dataherald.api.fastapi.FastAPI")
+
+    db_scanner_impl: str = os.environ.get(
+        "DB_SCANNER", "dataherald.db_scanner.sqlalchemy.SqlAlchemyScanner"
+    )
+
     cache_impl: str = os.environ.get(
         "CACHE", "dataherald.smart_cache.in_memory.InMemoryCache"
     )
