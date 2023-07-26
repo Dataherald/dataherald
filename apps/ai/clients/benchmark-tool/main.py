@@ -1,4 +1,5 @@
 import requests
+import logging
 import json
 import sqlparse
 from typing import List, Tuple, Set
@@ -75,7 +76,6 @@ def postprocess(query: str) -> str:
 def result_eq(result1: List[Tuple], result2: List[Tuple], order_matters: bool) -> bool:
     if len(result1) == 0 and len(result2) == 0:
         return True
-
     # if length is not the same, then they are definitely different bag of rows
     if len(result1) != len(result2):
         return False
@@ -97,9 +97,12 @@ def result_eq(result1: List[Tuple], result2: List[Tuple], order_matters: bool) -
     # and false if we cannot
     tab1_sets_by_columns = [{row[i] for row in result1} for i in range(num_cols)]
 
-    # on a high level, we enumerate all possible column permutations that might make result_1 == result_2
-    # we decrease the size of the column permutation space by the function get_constraint_permutation
-    # if one of the permutation make result_1, result_2 equivalent, then they are equivalent
+    # on a high level, we enumerate all possible column permutations
+    # that might make result_1 == result_2
+    # we decrease the size of the column permutation space by
+    # the function get_constraint_permutation
+    # if one of the permutation make result_1, result_2 equivalent,
+    # then they are equivalent
     for perm in get_constraint_permutation(tab1_sets_by_columns, result2):
         if len(perm) != len(set(perm)):
             continue
@@ -118,7 +121,12 @@ def result_eq(result1: List[Tuple], result2: List[Tuple], order_matters: bool) -
                 return True
     return False
 
-def run(db: str, sql: str) -> List[Tuple]:
+def list_of_dicts_to_list_of_tuples(list_of_dicts: List[dict]) -> List[Tuple]:
+    # Extract values from each dictionary and create a tuple for each dictionary
+    list_of_tuples = [tuple(d.values()) for d in list_of_dicts]
+    return list_of_tuples
+
+def run(db: str, sql: str) -> List[dict]:
     """Run the SQL query against the database."""
     payload = {
         "db_alias" : db,
@@ -128,6 +136,7 @@ def run(db: str, sql: str) -> List[Tuple]:
         response = requests.post(URI + "query", json=payload)
         response.raise_for_status()  # Raise an exception for non-2xx status codes
         result = response.json()[1]["result"]
+        result = list_of_dicts_to_list_of_tuples(result)
         return result
     except requests.exceptions.RequestException as e:
         print("Error: An exception occurred during the request:", e)
@@ -146,7 +155,11 @@ def run(db: str, sql: str) -> List[Tuple]:
         # Handle any other unexpected exception
         return [] 
 
-def validate_response_object(test_dict: dict, response_dict: dict, keep_distinct: bool = False) -> dict:
+def validate_response_object(
+        test_dict: dict,
+        response_dict: dict,
+        keep_distinct: bool = False) -> dict:
+    print("Validating response object...")
     db = test_dict["db"]
     gold_sql = test_dict["sql"]
     sql_generated = response_dict["sql_query"]
@@ -170,28 +183,36 @@ def validate_response_object(test_dict: dict, response_dict: dict, keep_distinct
         "total_cost": response_dict["total_cost"],
         "sql_generated": sql_generated,
         "exec_time": response_dict["exec_time"],
-        "status": label #fix
+        "status": label
     }    
     return benchmark_result
 
-def run_benchmark(tests: List[dict], output_file_name: str = "benchmark_results.jsonl"):
+def run_benchmark(tests: List[dict], output_file_name: str = "benchmark_results.jsonl") -> int:  # noqa: E501
     """Run the benchmark tool."""
+    final_execution_acc = 0
     with open(output_file_name, 'w') as out:
         for test in tests:
             payload = {
                 "db_alias" : test["db"],
                 "question" : test["nl_question"],
             }
-            response = requests.post(URI + "question?" + urllib.parse.urlencode(payload))#, json=json.dumps(payload))
-            jout = json.dumps(validate_response_object(test, response.json())) + '\n'
+            end_point = URI + "question?" + urllib.parse.urlencode(payload)
+            response = requests.post(end_point)#, json=json.dumps(payload))
+            response_dict = response.json()
+            validation_result = validate_response_object(test, response_dict) 
+            final_execution_acc += 1 if validation_result["status"] == "CORRECT" else 0
+            jout = json.dumps(validation_result) + '\n'
             out.write(jout)
-            break
+    return final_execution_acc
 
-def upload_to_cloud(file_name: str, object_name, bucket: str = 'dataherald-benchmark-results'):
+def upload_to_cloud(
+        file_name: str,
+        object_name,
+        bucket: str = 'dataherald-benchmark-results'):
     """Upload the results to the cloud."""
     s3_client = boto3.client('s3')
     try:
-        response = s3_client.upload_file(file_name, bucket, object_name)
+        response = s3_client.upload_file(file_name, bucket, object_name)  # noqa: F841
     except ClientError as e:
         logging.error(e)
         return False
@@ -202,16 +223,43 @@ if __name__ == "__main__":
     resposne = requests.get(URI + "heartbeat")
     print("Running benchmark tests...")
     print(resposne.json())
-    parser = argparse.ArgumentParser(description="The Dataherald Benchmark tool to test performance of text-to-SQL generation.",
+    parser = argparse.ArgumentParser(description="The Dataherald Benchmark tool to test performance of text-to-SQL generation.",  # noqa: E501
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-f", "--file", type=str, default="apps/ai/clients/benchmark-tool/test_suites/v2_real_estate.jsonl", help="The file containing the benchmark tests.")
-    parser.add_argument("-u", "--upload", type=bool, default=False, help="Upload the results to the S3 bucket.")
-    parser.add_argument("-o", "--output", type=str, default="apps/ai/clients/benchmark-tool/test_results/", help="The directory to save the benchmark results file")
-    parser.add_argument("-p", "--percent", type=float, default=0.1, help="The percentage of the test set to use as context.")
-    parser.add_argument("-s", "--size", type=float, default=1, help="What percent of the test suite to use in the test")
+    parser.add_argument(
+        "-f",
+        "--file",
+        type=str,
+        default="apps/ai/clients/benchmark-tool/test_suites/v2_real_estate.jsonl",
+        help="The file containing the benchmark tests.")
+    parser.add_argument(
+        "-u",
+        "--upload",
+        action='store_true',
+        help="Upload the results to the S3 bucket.")
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        default="apps/ai/clients/benchmark-tool/test_results/",
+        help="The directory to save the benchmark results file")
+    parser.add_argument(
+        "-p",
+        "--percent",
+        type=float,
+        default=0.1,
+        help="The percentage of the test set to use as context.")
+    parser.add_argument(
+        "-s",
+        "--size",
+        type=float,
+        default=1,
+        help="What percent of the test suite to use in the test")
     args = parser.parse_args()
+    print(args)
     config = vars(args)
     test_set_size = config["size"]
+    context_benchmark_split = config["percent"]
+    print(config)
     with open(config["file"], "r") as f:
         json_list = list(f)
         tests = []
@@ -219,13 +267,15 @@ if __name__ == "__main__":
             tests.append(json.loads(test))
         random.shuffle(tests)
         tests = tests[:int(len(tests) * test_set_size)]
-        context_set =  tests[:int(len(tests) * test_set_size)]
-        benchmark_set = tests[int(len(tests) * test_set_size):]
-    
-    output_file_name = f'{os.path.basename(config["file"])}-{datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.jsonl'
+        print(f"Number of samples used for context: {int(len(tests) * context_benchmark_split)}") # noqa: E501
+        print(f"Number of samples used for benchmark: {int(len(tests) * (1 - context_benchmark_split))}") # noqa: E501
+        context_set =  tests[:int(len(tests) * context_benchmark_split)]
+        benchmark_set = tests[int(len(tests) * context_benchmark_split):]
+    output_file_name = f'{os.path.basename(config["file"])}-{datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.jsonl'  # noqa: E501
     output_file = f'{config["output"]}{output_file_name}'
     add_context(context_set)
-    run_benchmark(benchmark_set, output_file)
+    exec_acc = run_benchmark(benchmark_set, output_file)
+    print("Execution accuracy: ", exec_acc / len(benchmark_set))
     if config["upload"]:
         print(f"Uploading results of {len(benchmark_set)} to S3 bucket...")
         upload_to_cloud(output_file, output_file_name, S3_BUCKET)
