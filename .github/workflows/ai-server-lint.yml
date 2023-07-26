@@ -12,6 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: chartboost/ruff-action@v1
+        with:
+          src: ./apps/ai/server
       - uses: rickstaa/action-black@v1
         with:
           black_args: ". --check"

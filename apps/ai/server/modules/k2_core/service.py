@@ -3,7 +3,7 @@ from typing import List
 
 import httpx
 
-from config import DEFAULT_K2_TIMEOUT, K2_CORE_URL
+from config import DB_ALIAS, DEFAULT_K2_TIMEOUT, K2_CORE_URL
 from modules.k2_core.model import DataDefinitionType, SSHSettings
 
 logger = logging.getLogger(__name__)
@@ -13,10 +13,11 @@ logger = logging.getLogger(__name__)
 class K2Service:
     url = K2_CORE_URL
     timeout = DEFAULT_K2_TIMEOUT
+    db_alias = DB_ALIAS
 
-    def answer_question(self, question: str, db_alias: str):
+    def answer_question(self, question: str):
         path = "/question"
-        data = {"question": question, "db_alias": db_alias}
+        data = {"question": question, "db_alias": self.db_alias}
 
         return self._k2_post_request(path, data)
 

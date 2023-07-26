@@ -14,8 +14,8 @@ router = APIRouter(
 
 
 @router.post("/question")
-async def answer_question(question: str, db_alias: str):
-    return K2Service().answer_question(question, db_alias)
+async def answer_question(question: str):
+    return K2Service().answer_question(question)
 
 
 @router.post("/question/evaluate")
