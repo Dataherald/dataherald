@@ -18,10 +18,10 @@ const BreadcrumbHeader = () => {
               <span
                 className={cn(
                   idx === pathSegments.length - 1
-                    ? 'text-secondary'
+                    ? 'text-black'
                     : 'text-gray-400',
                   'capitalize',
-                  'font-medium',
+                  'font-bold',
                 )}
               >
                 {segment}

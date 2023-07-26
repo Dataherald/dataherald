@@ -58,7 +58,9 @@ const SidebarNav = ({
               'bg-gray-100',
               'hover:bg-gray-300',
               'border-none',
-              pathname === item.href ? 'bg-black/10 hover:bg-black/10' : '',
+              pathname === item.href
+                ? 'bg-black/10 hover:bg-black/10 font-bold'
+                : '',
               'justify-start',
               'gap-2',
               'py-2',

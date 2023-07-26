@@ -1,15 +1,13 @@
-import { ReactNode } from 'react'
+import { cn } from '@/lib/utils'
 import { Separator } from '../ui/separator'
 import BreadcrumbHeader from './breadcrum-header'
 import SidebarNav from './sidebar-nav'
 
-type LayoutProps = {
-  children: ReactNode
-}
+export type LayoutProps = React.ButtonHTMLAttributes<HTMLDivElement>
 
-const Layout = ({ children }: LayoutProps) => {
+const Layout = ({ className, children, ...props }: LayoutProps) => {
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className={cn('flex h-screen overflow-hidden', className)} {...props}>
       <SidebarNav />
       <div className="flex-1">
         <BreadcrumbHeader />
