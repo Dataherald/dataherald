@@ -11,7 +11,7 @@ from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.sql_database.base import SQLDatabase
 
 MIN_CATEGORY_VALUE = 1
-MAX_CATEGORY_VALUE = 1
+MAX_CATEGORY_VALUE = 60
 
 
 class SqlAlchemyScanner(Scanner):

@@ -14,7 +14,7 @@ class TestDB(DB):
             {
                 "alias": "foo",
                 "use_ssh": False,
-                "uri": "gAAAAABktaZytsfv2wCQDVh-QnXbqBcuTTlvjoy5PR5JyxItL_8lM1oaHX_Vu-w2GsFW1b1x-tfFyCR3QSx08hhseST-zCkAHQ==",
+                "uri": "gAAAAABkwD9Y9EpBxF1hRxhovjvedX1TeDNu-WaGqDebk_CJnpGjRlpXzDOl_puehMSbz9KDQ6OqPepl8XQpD0EchiV7he4j5tEXYE33eak87iORA7s8ko0=",  # noqa: E501
                 "ssh_settings": None,
             }
         ]

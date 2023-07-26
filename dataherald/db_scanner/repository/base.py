@@ -24,6 +24,6 @@ class DBScannerRepository:
     def save_table_info(self, table_info: TableSchemaDetail) -> None:
         self.storage.update_or_create(
             "table_schema_detail",
-            {"db_alias": table_info.db_alias, "table_name": table_info.db_alias},
+            {"db_alias": table_info.db_alias, "table_name": table_info.table_name},
             table_info.dict(),
         )
