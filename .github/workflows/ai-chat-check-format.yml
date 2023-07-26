@@ -1,4 +1,4 @@
-name: Check AI Code Format
+name: AI Chat - Code Format
 
 on:
   push:

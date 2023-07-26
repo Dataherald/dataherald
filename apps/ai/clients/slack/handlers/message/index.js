@@ -22,7 +22,7 @@ async function handleMessage(context, say) {
 
     try {
         const query = encodeURIComponent(message)
-        const endpointUrl = `${API_URL}/question?question=${query}&db_alias=v2_real_estate`
+        const endpointUrl = `${API_URL}/k2/question?question=${query}`
         log('fetching data from', endpointUrl)
         const response = await fetch(endpointUrl, {
             method: 'POST',
