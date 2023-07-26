@@ -1,38 +1,64 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Admin Console - Dataherald AI
 
-## Getting Started
+The admin console is a front-end application for Data teams to access to their Dataherald AI (DH AI) resources. The main goal is enable the Data teams to check and verify all the questions made to DH AI by the users within their organization. Also, the users of this application will be able to connect SQL databases and context stores.
 
-First, run the development server:
+## Technologies
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+- **Next.js**: The core framework of this project is Next.js, a React framework for server-rendered applications.
+- **TypeScript**: TypeScript is used for static type checking in the project.
+- **Tailwind CSS**: Tailwind CSS is a utility-first CSS framework for rapid UI development.
+- **shadcn/ui**: This project uses the shadcn/ui component library, built on top of Radix UI and styled with Tailwind CSS, for the UI components.
+- **Lucide React**: Lucide React is used for icons.
+- **SWR**: SWR is a React Hooks library for data fetching.
+- **ts-jest**: ts-jest is used for testing TypeScript code with Jest.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+The project follows the standard Next.js directory structure:
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+- `pages/`: Contains all page components.
+- `components/`: Contains all reusable components.
+- `lib/`: Contains utility functions.
+- `styles/`: Contains global CSS styles.
+- `next.config.js`: Next.js configuration file.
+- `postcss.config.js`: PostCSS configuration file.
+- `tailwind.config.js`: Tailwind CSS configuration file.
+- `tsconfig.json`: TypeScript configuration file.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## Development
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Running the Project
 
-## Learn More
+1. Navigate into the project directory:
 
-To learn more about Next.js, take a look at the following resources:
+   ```
+   cd project
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. Install dependencies:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+   ```
+   pnpm install
+   ```
 
-## Deploy on Vercel
+3. Run the development server:
+   ```
+   pnpm dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The project will be available at `http://localhost:3000`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### Linting and Testing
+
+You can lint your code using ESLint and test it with Jest using the following commands:
+
+- **Linting**:
+
+  ```
+  pnpm lint
+  ```
+
+- **Testing**:
+  ```
+  pnpm test
+  ```
