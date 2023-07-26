@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, List
 
+from dataherald.api.types import Query
 from dataherald.config import Component
 from dataherald.eval import Evaluation
 from dataherald.sql_database.models.types import SSHSettings
@@ -37,4 +38,8 @@ class API(Component, ABC):
 
     @abstractmethod
     def add_golden_records(self, golden_records: List) -> bool:
+        pass
+
+    @abstractmethod
+    def execute_query(self, query: Query) -> tuple[str, dict]:
         pass
