@@ -7,6 +7,7 @@ from sql_metadata import Parser
 
 from dataherald.config import System
 from dataherald.context_store import ContextStore
+from dataherald.repositories.base import NLQueryResponseRepository
 from dataherald.types import NLQuery, NLQueryResponse
 
 logger = logging.getLogger(__name__)
@@ -30,16 +31,17 @@ class DefaultContextStore(ContextStore):
         )
 
         samples = []
+        nl_query_response_repository = NLQueryResponseRepository(self.db)
         for question in closest_questions:
-            golden_query = self.db.find_one(
-                "nl_query_response", {"nl_question_id": ObjectId(question["id"])}
+            golden_query = nl_query_response_repository.find_one(
+                {"nl_question_id": ObjectId(question["id"])}
             )
             associated_nl_question = self.db.find_by_id("nl_question", question["id"])
             if golden_query is not None and associated_nl_question is not None:
                 samples.append(
                     {
                         "nl_question": associated_nl_question["question"],
-                        "sql_query": golden_query["sql_query"],
+                        "sql_query": golden_query.sql_query,
                         "score": question["score"],
                     }
                 )
@@ -51,6 +53,7 @@ class DefaultContextStore(ContextStore):
     @override
     def add_golden_records(self, golden_records: List) -> bool:
         """Creates embeddings of the questions and adds them to the VectorDB. Also adds the golden records to the DB"""
+        nl_query_response_repository = NLQueryResponseRepository(self.db)
         for record in golden_records:
             tables = Parser(record["sql"]).tables
             question = record["nl_question"]
@@ -69,7 +72,7 @@ class DefaultContextStore(ContextStore):
                 sql_query=record["sql"],
                 golden_record=True,
             )
-            self.db.insert_one("nl_query_response", nlqueryresponse_object.dict())
+            nl_query_response_repository.insert(nlqueryresponse_object)
         return True
 
     @override

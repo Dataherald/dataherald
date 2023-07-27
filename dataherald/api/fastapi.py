@@ -15,6 +15,7 @@ from dataherald.db import DB
 from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.eval import Evaluation, Evaluator
+from dataherald.repositories.base import NLQueryResponseRepository
 from dataherald.smart_cache import SmartCache
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
@@ -100,10 +101,10 @@ class FastAPI(API):
             ):
                 cache.add(question, generated_answer)
         generated_answer.exec_time = time.time() - start_generated_answer
-        self.storage.insert_one(
-            "nl_query_response", generated_answer.dict(exclude={"id"})
-        )
-        return json.loads(json_util.dumps(generated_answer))
+
+        nl_query_response_repository = NLQueryResponseRepository(self.storage)
+        nl_query_response = nl_query_response_repository.insert(generated_answer)
+        return json.loads(json_util.dumps(nl_query_response))
 
     @override
     def evaluate_question(self, question: str, golden_sql: str) -> Evaluation:
