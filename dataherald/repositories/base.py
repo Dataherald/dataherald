@@ -14,7 +14,7 @@ class NLQueryResponseRepository:
         return nl_query_response
 
     def find_one(self, query: dict) -> NLQueryResponse | None:
-        row = self.db.find_one(DB_COLLECTION, query)
+        row = self.storage.find_one(DB_COLLECTION, query)
         if not row:
             return None
         return NLQueryResponse(**row)
