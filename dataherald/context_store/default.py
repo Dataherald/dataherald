@@ -20,8 +20,7 @@ class DefaultContextStore(ContextStore):
     def retrieve_context_for_question(
         self, nl_question: NLQuery, number_of_samples: int = 3
     ) -> List[dict] | None:
-        logger.info(f"getting context for {nl_question.question}")
-
+        logger.info(f"Getting context for {nl_question.question}")
         closest_questions = self.vector_store.query(
             query_texts=[nl_question.question],
             db_alias=nl_question.db_alias,
