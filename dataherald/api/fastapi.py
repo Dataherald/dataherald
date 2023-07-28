@@ -92,7 +92,7 @@ class FastAPI(API):
         context = context_store.retrieve_context_for_question(user_question)
         start_generated_answer = time.time()
 
-        generated_answer = cache.lookup(user_question.question)
+        generated_answer = cache.lookup(user_question.question + db_alias)
         if generated_answer is None:
             generated_answer = sql_generation.generate_response(
                 user_question, database_connection, context
@@ -102,7 +102,7 @@ class FastAPI(API):
             if evaluator.is_acceptable_response(
                 user_question, generated_answer, database_connection
             ):
-                cache.add(question, generated_answer)
+                cache.add(question + db_alias, generated_answer)
         generated_answer.exec_time = time.time() - start_generated_answer
 
         nl_query_response_repository = NLQueryResponseRepository(self.storage)

@@ -13,16 +13,15 @@ from dataherald.utils.encrypt import FernetEncrypt
 logger = logging.getLogger(__name__)
 
 
-class Singleton(type):
-    _instances = {}
+class DBConnections:
+    db_connections = {}
 
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(type(cls), cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
+    @staticmethod
+    def add(uri, engine):
+        DBConnections.db_connections[uri] = engine
 
 
-class SQLDatabase(LangchainSQLDatabase, metaclass=Singleton):
+class SQLDatabase(LangchainSQLDatabase):
     """SQL Database.
 
     Wrapper around SQLDatabase object from langchain. Offers
@@ -57,10 +56,17 @@ class SQLDatabase(LangchainSQLDatabase, metaclass=Singleton):
     @classmethod
     def get_sql_engine(cls, database_info: DatabaseConnection) -> "SQLDatabase":
         logger.info(f"Connecting db: {database_info.alias}")
+        if database_info.alias in DBConnections.db_connections:
+            return DBConnections.db_connections[database_info.alias]
+
         fernet_encrypt = FernetEncrypt()
         if database_info.use_ssh:
-            return cls.from_uri_ssh(database_info)
-        return cls.from_uri(fernet_encrypt.decrypt(database_info.uri))
+            engine = cls.from_uri_ssh(database_info)
+            DBConnections.add(database_info.alias, engine)
+            return engine
+        engine = cls.from_uri(fernet_encrypt.decrypt(database_info.uri))
+        DBConnections.add(database_info.alias, engine)
+        return engine
 
     @classmethod
     def from_uri_ssh(cls, database_info: DatabaseConnection):
