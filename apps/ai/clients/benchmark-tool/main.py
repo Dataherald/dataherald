@@ -15,6 +15,8 @@ from botocore.exceptions import ClientError
 
 URI = "http://localhost:80/api/v1/"
 S3_BUCKET = "k2-benchmark-results"
+TOP_K = 10
+MAX_RETRIES = 5
 
 def add_context(samples: List[dict]):
     """Add context to the benchmark tool."""
@@ -126,7 +128,7 @@ def list_of_dicts_to_list_of_tuples(list_of_dicts: List[dict]) -> List[Tuple]:
     list_of_tuples = [tuple(d.values()) for d in list_of_dicts]
     return list_of_tuples
 
-def run(db: str, sql: str) -> List[dict]:
+def run(db: str, sql: str) -> Tuple[List[dict],bool]:
     """Run the SQL query against the database."""
     payload = {
         "db_alias" : db,
@@ -137,44 +139,57 @@ def run(db: str, sql: str) -> List[dict]:
         response.raise_for_status()  # Raise an exception for non-2xx status codes
         result = response.json()[1]["result"]
         result = list_of_dicts_to_list_of_tuples(result)
-        return result
+        return result, True
     except requests.exceptions.RequestException as e:
         print("Error: An exception occurred during the request:", e)
         # Handle the request exception (connection errors, timeouts, etc.)
-        return []
+        return [],False
     except ValueError as ve:
         print("Error: Unable to parse JSON response:", ve)
         # Handle the JSON parsing error (invalid JSON format, missing keys, etc.)
-        return []
+        return [],False
     except KeyError as ke:
         print("Error: Missing 'result' key in the JSON response:", ke)
         # Handle the missing 'result' key error
-        return [] 
+        return [],False
     except Exception as ex:
         print("Error: An unexpected exception occurred:", ex)
         # Handle any other unexpected exception
-        return [] 
+        return [],False
 
 def validate_response_object(
         test_dict: dict,
         response_dict: dict,
         keep_distinct: bool = False) -> dict:
-    print("Validating response object...")
     db = test_dict["db"]
     gold_sql = test_dict["sql"]
     sql_generated = response_dict["sql_query"]
+    print(f"Generated SQL: {sql_generated}")
     gold_sql, sql_generated = postprocess(gold_sql), postprocess(sql_generated)
     if not keep_distinct:
         gold_sql = remove_distinct(gold_sql)
         sql_generated = remove_distinct(sql_generated)
     order_matters = 'order by' in gold_sql.lower()
-    p_denotation = run(db,sql_generated)
-    g_denotation = run(db,gold_sql)
+    if f"limit {TOP_K}" in sql_generated.lower():
+        sql_generated = sql_generated.lower().replace(f"limit {TOP_K}", "")
+    if f"limit {TOP_K}" in gold_sql.lower():
+        gold_sql = gold_sql.lower().replace(f"limit {TOP_K}", "")
+    generated_execution_flag = False
+    retries = 0
+    while not generated_execution_flag and retries < MAX_RETRIES:
+        p_denotation,generated_execution_flag = run(db,sql_generated)
+        retries += 1
+    gold_execution_flag = False
+    retries = 0
+    while not gold_execution_flag:
+        g_denotation,gold_execution_flag = run(db,gold_sql)
+        retries += 1
     equivalence = result_eq(g_denotation, p_denotation, order_matters=order_matters)
     if equivalence:
         label = "CORRECT"
     else:
         label = "WRONG"
+    print(f"Response -> label: {label}, total_cost: {response_dict['total_cost']}, exec_time: {response_dict['exec_time']}")  # noqa: E501
     benchmark_result = {
         "question" : test_dict["nl_question"],
         "db" : db,
@@ -196,7 +211,10 @@ def run_benchmark(tests: List[dict], output_file_name: str = "benchmark_results.
                 "db_alias" : test["db"],
                 "question" : test["nl_question"],
             }
+            print("Validating response object...")
+            print(f"Gold SQL: {test['sql']}")
             end_point = URI + "question?" + urllib.parse.urlencode(payload)
+            print(f"Generating SQL for question: {test['nl_question']}...")
             response = requests.post(end_point)#, json=json.dumps(payload))
             response_dict = response.json()
             validation_result = validate_response_object(test, response_dict) 
@@ -255,11 +273,9 @@ if __name__ == "__main__":
         default=1,
         help="What percent of the test suite to use in the test")
     args = parser.parse_args()
-    print(args)
     config = vars(args)
     test_set_size = config["size"]
     context_benchmark_split = config["percent"]
-    print(config)
     with open(config["file"], "r") as f:
         json_list = list(f)
         tests = []
