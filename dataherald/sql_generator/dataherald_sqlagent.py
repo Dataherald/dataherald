@@ -21,11 +21,12 @@ from overrides import override
 from pydantic import BaseModel, Extra, Field
 
 from dataherald.context_store import ContextStore
+from dataherald.db import DB
+from dataherald.db_scanner.models.types import TableSchemaDetail
+from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import (
     DatabaseConnection,
-    TableSchemaDetail,
-    get_mock_table_schema_detail,
 )
 from dataherald.sql_generator import SQLGenerator
 from dataherald.types import NLQuery, NLQueryResponse
@@ -44,15 +45,18 @@ Here is the process to follow for the given input question:
 1) Identify the relevant tables related to the question.
 2) Retrieve the schema of the relevant tables to determine potentially relevant columns.
 3) Gather more information about the possibly relevant columns, filtering them to find the relevant ones.
-4) Always Obtain a few examples of Question/SQL pairs to understand the task and columns relationships better.
+4) Gather examples of Question/SQL pairs to understand the SQL query syntax to use and the relationship between tables and columns.
 5) Execute the SQL query on the database to obtain the results.
 #
 Some tips:
 tip1) For complex questions that has many relevant columns and tables request for more examples of Question/SQL pairs.
 tip2) The maximum number of Question/SQL pairs you can request is {max_examples}.
 tip3) If the SQL query resulted in errors, rewrite the SQL query and try again.
-tip4) If you are still unsure about which columns and tables to use, ask for more examples.
+tip4) If you are still unsure about which columns and tables to use, ask for more Question/SQL pairs.
 #
+The Question/SQL pairs are labelled as correct pairs, so you can use them to learn how to construct the SQL query.
+If there is a strong similarity between the input question and the question in the Question/SQL pair:
+You can use the SQL query from the pair, and change it to fit the input question.
 If the question does not seem related to the database, just return "I don't know" as the answer.
 The SQL query MUST have in-line comments to explain what each clause does.
 """
@@ -269,10 +273,10 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
 
     name = "fewshot_examples_retriever"
     description = """
-    Input: Number of required examples.
-    Output: List of similar questions with their SQL queries.
+    Input: Number of required Question/SQL pairs.
+    Output: List of similar Question/SQL pairs related to the given question.
     Use this tool to fetch previously asked Question/SQL pairs as examples for improving SQL query generation.
-    For complex questions, request more examples to gain a better understanding of tables and columns.
+    For complex questions, request more examples to gain a better understanding of tables and columns and the SQL keywords to use.
     Always use this tool before using the sql_db_query tool!
     """
     few_shot_examples: List[dict]
@@ -372,7 +376,7 @@ class DataheraldSQLAgent(SQLGenerator):
         format_instructions: str = FORMAT_INSTRUCTIONS,
         input_variables: List[str] | None = None,
         max_examples: int = 20,
-        top_k: int = 10,
+        top_k: int = 13,
         max_iterations: int | None = 15,
         max_execution_time: float | None = None,
         early_stopping_method: str = "force",
@@ -419,11 +423,18 @@ class DataheraldSQLAgent(SQLGenerator):
     ) -> NLQueryResponse:
         start_time = time.time()
         context_store = self.system.instance(ContextStore)
-        db_scan = get_mock_table_schema_detail()
+        storage = self.system.instance(DB)
+        repository = DBScannerRepository(storage)
+        db_scan = repository.get_all_tables_by_db(db_alias=database_connection.alias)
         few_shot_examples = context_store.retrieve_context_for_question(
             user_question, number_of_samples=self.max_number_of_examples
         )
-        new_fewshot_examples = self.remove_duplicate_examples(few_shot_examples)
+        if few_shot_examples is not None:
+            new_fewshot_examples = self.remove_duplicate_examples(few_shot_examples)
+            number_of_samples = len(new_fewshot_examples)
+        else:
+            new_fewshot_examples = None
+            number_of_samples = 0
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
         self.database = SQLDatabase.get_sql_engine(database_connection)
         toolkit = SQLDatabaseToolkit(
@@ -435,7 +446,7 @@ class DataheraldSQLAgent(SQLGenerator):
         agent_executor = self.create_sql_agent(
             toolkit=toolkit,
             verbose=True,
-            max_examples=len(new_fewshot_examples),
+            max_examples=number_of_samples,
         )
         agent_executor.return_intermediate_steps = True
         agent_executor.handle_parsing_errors = (True,)
