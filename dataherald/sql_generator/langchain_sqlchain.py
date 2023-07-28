@@ -46,10 +46,10 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         context: List[dict] = None,
     ) -> NLQueryResponse:
         start_time = time.time()
+        self.database = SQLDatabase.get_sql_engine(database_connection)
         logger.info(
             f"Generating SQL response to question: {str(user_question.dict())} with passed context {context}"
         )
-        self.database = SQLDatabase.get_sql_engine(database_connection)
         if context is not None:
             samples_prompt_string = "The following are some similar previous questions and their correct SQL queries from these databases: \
             \n"
@@ -57,7 +57,7 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
                 samples_prompt_string += (
                     f"Question: {sample['nl_question']} \nSQL: {sample['sql_query']} \n"
                 )
-        if context is not None:
+
             prompt = PROMPT_WITH_CONTEXT.format(
                 user_question=user_question.question, context=samples_prompt_string
             )

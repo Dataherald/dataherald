@@ -1,4 +1,5 @@
 """SQL wrapper around SQLDatabase in langchain."""
+import logging
 from typing import Any, List
 
 from langchain.sql_database import SQLDatabase as LangchainSQLDatabase
@@ -8,6 +9,8 @@ from sshtunnel import SSHTunnelForwarder
 
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.utils.encrypt import FernetEncrypt
+
+logger = logging.getLogger(__name__)
 
 
 class SQLDatabase(LangchainSQLDatabase):
@@ -43,6 +46,7 @@ class SQLDatabase(LangchainSQLDatabase):
 
     @classmethod
     def get_sql_engine(cls, database_info: DatabaseConnection) -> "SQLDatabase":
+        logger.info(f"Connecting db: {database_info.alias}")
         fernet_encrypt = FernetEncrypt()
         if database_info.use_ssh:
             return cls.from_uri_ssh(database_info)

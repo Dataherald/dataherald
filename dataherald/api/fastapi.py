@@ -72,6 +72,7 @@ class FastAPI(API):
     @override
     def answer_question(self, question: str, db_alias: str) -> NLQueryResponse:
         """Takes in an English question and answers it based on content from the registered databases"""
+        logger.info(f"Answer question: {question}")
         cache = self.system.instance(SmartCache)
         sql_generation = self.system.instance(SQLGenerator)
         evaluator = self.system.instance(Evaluator)
@@ -96,6 +97,8 @@ class FastAPI(API):
             generated_answer = sql_generation.generate_response(
                 user_question, database_connection, context
             )
+
+            logger.info("Starts evaluator...")
             if evaluator.is_acceptable_response(
                 user_question, generated_answer, database_connection
             ):
