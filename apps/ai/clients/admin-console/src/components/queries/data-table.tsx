@@ -13,15 +13,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Ref } from 'react'
+import { LoadingTableRows } from './loading-rows'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  isLoadingMore: boolean
+  loadingRef: Ref<HTMLDivElement>
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  isLoadingMore = false,
+  loadingRef,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -65,12 +71,18 @@ export function DataTable<TData, TValue>({
             </TableRow>
           ))
         ) : (
-          <TableRow>
+          <TableRow className="border-none">
             <TableCell colSpan={columns.length} className="h-24 text-center">
               No results.
             </TableCell>
           </TableRow>
         )}
+        {isLoadingMore && <LoadingTableRows columnLength={columns.length} />}
+        <TableRow className="border-none">
+          <TableCell className="p-0" colSpan={columns.length}>
+            <div ref={loadingRef}></div>
+          </TableCell>
+        </TableRow>
       </TableBody>
     </Table>
   )
