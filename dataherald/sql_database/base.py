@@ -13,6 +13,14 @@ from dataherald.utils.encrypt import FernetEncrypt
 logger = logging.getLogger(__name__)
 
 
+class DBConnections:
+    db_connections = {}
+
+    @staticmethod
+    def add(uri, engine):
+        DBConnections.db_connections[uri] = engine
+
+
 class SQLDatabase(LangchainSQLDatabase):
     """SQL Database.
 
@@ -42,15 +50,23 @@ class SQLDatabase(LangchainSQLDatabase):
     ) -> "SQLDatabase":
         """Construct a SQLAlchemy engine from URI."""
         _engine_args = engine_args or {}
-        return cls(create_engine(database_uri, **_engine_args), **kwargs)
+        engine = create_engine(database_uri, **_engine_args)
+        return cls(engine, **kwargs)
 
     @classmethod
     def get_sql_engine(cls, database_info: DatabaseConnection) -> "SQLDatabase":
         logger.info(f"Connecting db: {database_info.alias}")
+        if database_info.alias in DBConnections.db_connections:
+            return DBConnections.db_connections[database_info.alias]
+
         fernet_encrypt = FernetEncrypt()
         if database_info.use_ssh:
-            return cls.from_uri_ssh(database_info)
-        return cls.from_uri(fernet_encrypt.decrypt(database_info.uri))
+            engine = cls.from_uri_ssh(database_info)
+            DBConnections.add(database_info.alias, engine)
+            return engine
+        engine = cls.from_uri(fernet_encrypt.decrypt(database_info.uri))
+        DBConnections.add(database_info.alias, engine)
+        return engine
 
     @classmethod
     def from_uri_ssh(cls, database_info: DatabaseConnection):
