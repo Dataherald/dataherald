@@ -3,6 +3,7 @@ name: ai-server-tests
 on:
     push:
       paths:
+        - .github/workflows/ai-server-tests.yml
         - apps/ai/server/**
 
 jobs:

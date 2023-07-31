@@ -1,3 +1,11 @@
 from fastapi import APIRouter
 
-router = APIRouter(prefix="/databases", responses={404: {"description": "Not found"}})
+from modules.db_connection.models.responses import DatabaseResponse
+from modules.db_connection.service import DBConnectionService
+
+router = APIRouter(prefix="/databases")
+
+
+@router.get("/")
+async def get_databases() -> list[DatabaseResponse]:
+    return DBConnectionService().get_databases()

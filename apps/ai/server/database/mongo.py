@@ -1,35 +1,42 @@
 from bson.objectid import ObjectId
-from overrides import override
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
 
-from config import MONGODB_DB_NAME, MONGODB_URI
-from database import DB
+from config import dbsettings
 
 
-class MongoDB(DB):
-    def __init__(self):
-        self.db_uri = MONGODB_URI
-        self.db_name = MONGODB_DB_NAME
-        self._data_store = MongoClient(self.db_uri)[self.db_name]
+class MongoDB:
+    db_uri = dbsettings.mongodb_uri
+    db_name = dbsettings.mongodb_db_name
+    _data_store = MongoClient(db_uri)[db_name]
 
-    @override
-    def find_one(self, collection: str, query: dict) -> dict:
-        return self._data_store[collection].find_one(query)
+    @classmethod
+    def find_one(cls, collection: str, query: dict) -> dict:
+        return cls._data_store[collection].find_one(query)
 
-    @override
-    def insert_one(self, collection: str, obj: dict) -> int:
-        return self._data_store[collection].insert_one(obj).inserted_id
+    @classmethod
+    def insert_one(cls, collection: str, obj: dict) -> int:
+        return cls._data_store[collection].insert_one(obj).inserted_id
 
-    @override
-    def update_or_create(self, collection: str, query: dict, obj: dict) -> int:
-        row = self.find_one(collection, query)
+    @classmethod
+    def update_or_create(cls, collection: str, query: dict, obj: dict) -> int:
+        row = cls.find_one(collection, query)
         if row:
-            return self._data_store[collection].update_one(query, {"$set": obj})
-        return self.insert_one(collection, obj)
+            return cls._data_store[collection].update_one(query, {"$set": obj})
+        return cls.insert_one(collection, obj)
 
-    def find_by_id(self, collection: str, id: str) -> dict:
-        return self._data_store[collection].find_one({"_id": ObjectId(id)})
+    @classmethod
+    def find_by_id(cls, collection: str, id: ObjectId) -> dict:
+        return cls._data_store[collection].find_one({"_id": id})
 
-    def find(self, collection: str, query: dict) -> Cursor:
-        return self._data_store[collection].find(query)
+    @classmethod
+    def find_by_object_id(cls, collection: str, id: str) -> dict:
+        return cls._data_store[collection].find_one({"_id": ObjectId(id)})
+
+    @classmethod
+    def find_by_object_ids(cls, collection: str, ids: list[ObjectId]) -> Cursor:
+        return cls._data_store[collection].find({"_id": {"$in": ids}})
+
+    @classmethod
+    def find(cls, collection: str, query: dict) -> Cursor:
+        return cls._data_store[collection].find(query)

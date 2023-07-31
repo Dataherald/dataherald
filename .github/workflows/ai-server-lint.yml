@@ -2,6 +2,7 @@ name: ai-server-lint
 on:
   push:
     paths:
+      - .github/workflows/ai-server-lint.yml
       - apps/ai/server/**
 jobs:
   lint:
@@ -14,6 +15,6 @@ jobs:
       - uses: chartboost/ruff-action@v1
         with:
           src: ./apps/ai/server
-      - uses: rickstaa/action-black@v1
+      - uses: psf/black@stable
         with:
-          black_args: ". --check"
+          src: ./apps/ai/server
