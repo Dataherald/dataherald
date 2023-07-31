@@ -1,5 +1,10 @@
+import {
+  formatQueryStatus,
+  getDomainStatus,
+  getDomainStatusColor,
+} from '@/lib/domain/query-status'
 import { cn } from '@/lib/utils'
-import { EQueryStatus, Query } from '@/models/api'
+import { Query } from '@/models/api'
 import { ColumnDef } from '@tanstack/react-table'
 
 export const columns: ColumnDef<Query>[] = [
@@ -27,55 +32,18 @@ export const columns: ColumnDef<Query>[] = [
   {
     id: 'status_col',
     header: () => <div className="xl:min-w-[200px]">Status</div>,
-    accessorFn: ({ status, evaluation: { confidence_level } }) => {
-      switch (status) {
-        case EQueryStatus.SQL_ERROR:
-          return 'SQL Error'
-        case EQueryStatus.NOT_VERIFIED: {
-          let text = ''
-
-          if (confidence_level < 70) {
-            text = 'Low confidence'
-          } else if (confidence_level < 90) {
-            text = 'Medium confidence'
-          } else {
-            text = 'High confidence'
-          }
-
-          return `${text} (${confidence_level}%)`
-        }
-        case EQueryStatus.VERIFIED:
-          return 'Verified (100%)'
-      }
+    accessorFn: ({ status, evaluation }) => {
+      const domainStatus = getDomainStatus(status, evaluation)
+      return `${formatQueryStatus(domainStatus)} (${
+        evaluation.confidence_level
+      }%)`
     },
     cell: ({ row }) => {
       const query = row.original
-      let textColor = ''
-      const {
-        status,
-        evaluation: { confidence_level },
-      } = query
-      switch (status) {
-        case EQueryStatus.SQL_ERROR:
-          textColor = 'text-red-500'
-          break
-        case EQueryStatus.NOT_VERIFIED:
-          {
-            if (confidence_level < 70) {
-              textColor = 'text-orange-600'
-            } else if (confidence_level < 90) {
-              textColor = 'text-yellow-500'
-            } else {
-              textColor = 'text-green-500'
-            }
-          }
-          break
-        case EQueryStatus.VERIFIED:
-          textColor = 'text-green-700'
-          break
-      }
+      const { status, evaluation } = query
+      const textColor = `text-${getDomainStatusColor(status, evaluation)}`
       return (
-        <div className={cn(textColor, 'flex flex-row items-center')}>
+        <div className={cn(textColor, 'flex flex-row items-center capitalize')}>
           <div className="w-2 h-2 mr-2 rounded-full bg-current flex-shrink-0" />
           {row.getValue('status_col')}
         </div>
