@@ -5,6 +5,7 @@ import {
 } from '@/lib/domain/query-status'
 import { cn } from '@/lib/utils'
 import { Query } from '@/models/api'
+import { EDomainQueryStatus } from '@/models/domain'
 import { ColumnDef } from '@tanstack/react-table'
 import { Microscope } from 'lucide-react'
 
@@ -56,9 +57,11 @@ export const columns: ColumnDef<Query>[] = [
     header: () => <div className="xl:min-w-[200px]">Status</div>,
     accessorFn: ({ status, evaluation }) => {
       const domainStatus = getDomainStatus(status, evaluation)
-      return `${formatQueryStatus(domainStatus)} (${
-        evaluation.confidence_level
-      }%)`
+      return `${formatQueryStatus(domainStatus)} ${
+        status !== EDomainQueryStatus.SQL_ERROR
+          ? `(${evaluation.confidence_level}%)`
+          : ''
+      }`
     },
     cell: ({ row }) => {
       const query = row.original

@@ -10,7 +10,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-04-14T18:04:48',
     last_updated: '2023-04-30T09:24:59',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 97, uncertainty_level: 3 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 58607,
@@ -65,7 +65,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-03-30T09:05:02',
     last_updated: '2023-03-28T18:49:42',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 51, uncertainty_level: 49 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 15994,
@@ -87,7 +87,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-05-20T14:42:26',
     last_updated: '2023-06-01T07:15:45',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 90, uncertainty_level: 10 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 54921,
@@ -98,7 +98,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-07-25T12:16:48',
     last_updated: '2023-07-02T10:52:50',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 57, uncertainty_level: 43 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 29550,
@@ -109,7 +109,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-02-09T20:00:55',
     last_updated: '2023-05-22T21:43:50',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 65, uncertainty_level: 35 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 85181,
@@ -120,7 +120,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-07-08T20:48:42',
     last_updated: '2023-02-13T18:42:06',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 60, uncertainty_level: 40 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 75633,
@@ -153,7 +153,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-06-17T16:12:33',
     last_updated: '2023-01-28T07:02:45',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 84, uncertainty_level: 16 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 25193,
@@ -231,7 +231,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-04-14T18:04:48',
     last_updated: '2023-04-30T09:24:59',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 97, uncertainty_level: 3 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 58607,
@@ -286,7 +286,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-03-30T09:05:02',
     last_updated: '2023-03-28T18:49:42',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 51, uncertainty_level: 49 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 15994,
@@ -308,7 +308,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-05-20T14:42:26',
     last_updated: '2023-06-01T07:15:45',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 90, uncertainty_level: 10 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 54921,
@@ -319,7 +319,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-07-25T12:16:48',
     last_updated: '2023-07-02T10:52:50',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 57, uncertainty_level: 43 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 29550,
@@ -330,7 +330,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-02-09T20:00:55',
     last_updated: '2023-05-22T21:43:50',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 65, uncertainty_level: 35 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 85181,
@@ -341,7 +341,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-07-08T20:48:42',
     last_updated: '2023-02-13T18:42:06',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 60, uncertainty_level: 40 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 75633,
@@ -374,7 +374,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-06-17T16:12:33',
     last_updated: '2023-01-28T07:02:45',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 84, uncertainty_level: 16 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 25193,
@@ -452,7 +452,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-04-14T18:04:48',
     last_updated: '2023-04-30T09:24:59',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 97, uncertainty_level: 3 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 58607,
@@ -507,7 +507,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-03-30T09:05:02',
     last_updated: '2023-03-28T18:49:42',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 51, uncertainty_level: 49 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 15994,
@@ -529,7 +529,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-05-20T14:42:26',
     last_updated: '2023-06-01T07:15:45',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 90, uncertainty_level: 10 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 54921,
@@ -540,7 +540,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-07-25T12:16:48',
     last_updated: '2023-07-02T10:52:50',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 57, uncertainty_level: 43 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 29550,
@@ -551,7 +551,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-02-09T20:00:55',
     last_updated: '2023-05-22T21:43:50',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 65, uncertainty_level: 35 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 85181,
@@ -562,7 +562,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-07-08T20:48:42',
     last_updated: '2023-02-13T18:42:06',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 60, uncertainty_level: 40 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 75633,
@@ -595,7 +595,7 @@ const MOCK_QUERIES: Queries = [
     question_date: '2023-06-17T16:12:33',
     last_updated: '2023-01-28T07:02:45',
     status: 'VERIFIED',
-    evaluation: { confidence_level: 84, uncertainty_level: 16 },
+    evaluation: { confidence_level: 100, uncertainty_level: 0 },
   },
   {
     id: 25193,
