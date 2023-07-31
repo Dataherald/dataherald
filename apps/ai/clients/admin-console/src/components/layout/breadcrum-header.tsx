@@ -1,33 +1,43 @@
 import { cn } from '@/lib/utils'
-import { useRouter } from 'next/router'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const BreadcrumbHeader = () => {
-  const router = useRouter()
-  const pathSegments = router.pathname
-    .split('/')
-    .filter(Boolean)
-    .map((segment) => segment.replace('-', ' '))
+  const pathname = usePathname()
+  const pathSegments =
+    pathname
+      ?.split('/')
+      .filter(Boolean)
+      .map((segment) => segment.replace('-', ' ')) || []
 
   return (
     <header className="w-full px-8 py-5">
       <nav aria-label="Breadcrumb">
         <ol className="list-none p-0 inline-flex">
-          {pathSegments.map((segment, idx) => (
-            <li key={idx}>
-              {idx > 0 && <span className="mx-4 text-gray-400">/</span>}
-              <span
-                className={cn(
-                  idx === pathSegments.length - 1
-                    ? 'text-black'
-                    : 'text-gray-400',
-                  'capitalize',
-                  'font-bold',
+          {pathSegments.map((segment, idx) => {
+            const isLastSegment = idx === pathSegments.length - 1
+            return (
+              <li key={idx} className={cn('capitalize', 'font-bold')}>
+                {idx > 0 && <span className="mx-4 text-gray-400">/</span>}
+                {!isLastSegment ? (
+                  <Link
+                    href={`/${segment}`} // only supports one level for now
+                    className={cn(
+                      'font-normal',
+                      'text-gray-400',
+                      'hover:cursor-pointer',
+                      'hover:text-primary',
+                      'hover:underline',
+                    )}
+                  >
+                    {segment}
+                  </Link>
+                ) : (
+                  <span className="text-black">{segment}</span>
                 )}
-              >
-                {segment}
-              </span>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ol>
       </nav>
     </header>

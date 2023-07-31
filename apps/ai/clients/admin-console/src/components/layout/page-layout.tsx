@@ -17,7 +17,9 @@ const PageLayout: FC<PageLayoutProps> = ({
       <div className="flex-1">
         <BreadcrumbHeader />
         <Separator />
-        <main className="overflow-auto">{children}</main>
+        <div className="container mx-auto p-8">
+          <main className="overflow-auto">{children}</main>
+        </div>
       </div>
     </div>
   )
