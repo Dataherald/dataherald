@@ -2,7 +2,7 @@ import { EQueryStatus, QueryEvaluation, QueryStatus } from '@/models/api'
 import {
   DomainQueryStatus,
   EDomainQueryStatus,
-  EDomainQueryStatusColor,
+  EDomainQueryStatusTextColor,
 } from '@/models/domain'
 
 export const getDomainStatus = (
@@ -30,9 +30,9 @@ export const getDomainStatus = (
 export const getDomainStatusColor = (
   status: QueryStatus,
   evaluation: QueryEvaluation,
-): EDomainQueryStatusColor => {
+): EDomainQueryStatusTextColor => {
   const domainStatus = getDomainStatus(status, evaluation) as DomainQueryStatus
-  return EDomainQueryStatusColor[domainStatus]
+  return EDomainQueryStatusTextColor[domainStatus]
 }
 
 export const formatQueryStatus = (status?: DomainQueryStatus) =>

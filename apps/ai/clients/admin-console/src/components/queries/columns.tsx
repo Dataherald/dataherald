@@ -15,7 +15,7 @@ export const columns: ColumnDef<Query>[] = [
     cell: ({ row }) => {
       const query = row.original
       const { status, evaluation } = query
-      const textColor = `text-${getDomainStatusColor(status, evaluation)}`
+      const textColor = getDomainStatusColor(status, evaluation)
       return (
         <div className="relative flex items-center justify-center w-8 h-8 rounded-full border border-gray-400">
           <Microscope size={18} />
@@ -63,7 +63,7 @@ export const columns: ColumnDef<Query>[] = [
     cell: ({ row }) => {
       const query = row.original
       const { status, evaluation } = query
-      const textColor = `text-${getDomainStatusColor(status, evaluation)}`
+      const textColor = getDomainStatusColor(status, evaluation)
       return (
         <div className={cn(textColor, 'flex flex-row items-center capitalize')}>
           <div className="w-2 h-2 mr-2 rounded-full bg-current flex-shrink-0" />

@@ -13,10 +13,10 @@ export type DomainQueryStatus =
   | 'HIGH_CONFIDENCE'
   | 'VERIFIED'
 
-export enum EDomainQueryStatusColor {
-  SQL_ERROR = 'red-500',
-  LOW_CONFIDENCE = 'orange-600',
-  MEDIUM_CONFIDENCE = 'yellow-500',
-  HIGH_CONFIDENCE = 'green-500',
-  VERIFIED = 'green-700',
+export enum EDomainQueryStatusTextColor {
+  SQL_ERROR = 'text-red-500',
+  LOW_CONFIDENCE = 'text-orange-600',
+  MEDIUM_CONFIDENCE = 'text-yellow-500',
+  HIGH_CONFIDENCE = 'text-green-500',
+  VERIFIED = 'text-green-700',
 }
