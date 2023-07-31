@@ -1,4 +1,4 @@
-import Layout from '@/components/layout'
+import PageLayout from '@/components/layout/page-layout'
 import { apiFetcher } from '@/lib/api/fetcher'
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
@@ -20,9 +20,9 @@ export default function App({ Component, pageProps }: AppProps) {
         fetcher: apiFetcher,
       }}
     >
-      <Layout className={`${lato.variable} font-lato`}>
+      <PageLayout className={`${lato.variable} font-lato`}>
         <Component {...pageProps} />
-      </Layout>
+      </PageLayout>
     </SWRConfig>
   )
 }

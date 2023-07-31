@@ -4,13 +4,13 @@ import { Separator } from '../ui/separator'
 import BreadcrumbHeader from './breadcrum-header'
 import SidebarNav from './sidebar-nav'
 
-export type LayoutProps = HTMLAttributes<HTMLDivElement>
+export type PageLayoutProps = HTMLAttributes<HTMLDivElement>
 
-const Layout: FC<LayoutProps> = ({
+const PageLayout: FC<PageLayoutProps> = ({
   className,
   children,
   ...props
-}: LayoutProps) => {
+}: PageLayoutProps) => {
   return (
     <div className={cn('flex h-screen overflow-hidden', className)} {...props}>
       <SidebarNav />
@@ -23,4 +23,4 @@ const Layout: FC<LayoutProps> = ({
   )
 }
 
-export default Layout
+export default PageLayout
