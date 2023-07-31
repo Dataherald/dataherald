@@ -39,7 +39,7 @@ const SidebarNav = ({
   const pathname = usePathname()
 
   return (
-    <aside className="flex flex-col gap-8 bg-gray-100">
+    <aside className="flex flex-col gap-8 bg-gray-50">
       <Image
         priority
         src="/images/dh_ai_logo.svg"
@@ -56,10 +56,10 @@ const SidebarNav = ({
             href={item.href}
             className={cn(
               buttonVariants({ variant: 'secondary-outline' }),
-              'bg-gray-100',
-              'hover:bg-gray-300',
+              'bg-gray-50',
+              'hover:bg-gray-200',
               'border-none',
-              pathname === item.href
+              pathname?.includes(item.href)
                 ? 'bg-black/10 hover:bg-black/10 font-bold'
                 : '',
               'justify-start',

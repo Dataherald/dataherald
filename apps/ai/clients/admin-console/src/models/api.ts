@@ -11,11 +11,6 @@ export enum EQueryStatus {
 
 export type QueryStatus = 'SQL_ERROR' | 'NOT_VERIFIED' | 'VERIFIED'
 
-export interface QueryEvaluation {
-  confidence_level: number
-  uncertainty_level: number
-}
-
 export interface Query {
   id: string | number // TODO remove number
   user: User
@@ -25,7 +20,7 @@ export interface Query {
   question_date: string
   last_updated: string
   status: QueryStatus
-  evaluation: QueryEvaluation
+  evaluation_score: number
 }
 
 export type Queries = Query[]

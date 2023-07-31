@@ -1,4 +1,4 @@
-import { EQueryStatus, QueryEvaluation, QueryStatus } from '@/models/api'
+import { EQueryStatus, QueryStatus } from '@/models/api'
 import {
   DomainQueryStatus,
   EDomainQueryStatus,
@@ -7,16 +7,15 @@ import {
 
 export const getDomainStatus = (
   status: QueryStatus,
-  evaluation: QueryEvaluation,
+  evaluation_score: number,
 ): DomainQueryStatus | undefined => {
-  const { confidence_level } = evaluation
   switch (status) {
     case EQueryStatus.SQL_ERROR:
       return EDomainQueryStatus.SQL_ERROR
     case EQueryStatus.NOT_VERIFIED: {
-      if (confidence_level < 70) {
+      if (evaluation_score < 70) {
         return EDomainQueryStatus.LOW_CONFIDENCE
-      } else if (confidence_level < 90) {
+      } else if (evaluation_score < 90) {
         return EDomainQueryStatus.MEDIUM_CONFIDENCE
       } else {
         return EDomainQueryStatus.HIGH_CONFIDENCE
@@ -29,9 +28,12 @@ export const getDomainStatus = (
 
 export const getDomainStatusColor = (
   status: QueryStatus,
-  evaluation: QueryEvaluation,
+  evaluation_score: number,
 ): EDomainQueryStatusTextColor => {
-  const domainStatus = getDomainStatus(status, evaluation) as DomainQueryStatus
+  const domainStatus = getDomainStatus(
+    status,
+    evaluation_score,
+  ) as DomainQueryStatus
   return EDomainQueryStatusTextColor[domainStatus]
 }
 
