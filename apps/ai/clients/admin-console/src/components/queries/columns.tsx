@@ -6,8 +6,30 @@ import {
 import { cn } from '@/lib/utils'
 import { Query } from '@/models/api'
 import { ColumnDef } from '@tanstack/react-table'
+import { Microscope } from 'lucide-react'
 
 export const columns: ColumnDef<Query>[] = [
+  {
+    id: 'status-icon',
+    header: '',
+    cell: ({ row }) => {
+      const query = row.original
+      const { status, evaluation } = query
+      const textColor = `text-${getDomainStatusColor(status, evaluation)}`
+      return (
+        <div className="relative flex items-center justify-center w-8 h-8 rounded-full border border-gray-400">
+          <Microscope size={18} />
+          <div
+            className={cn(
+              textColor,
+              'w-2 h-2 rounded-full bg-current flex-shrink-0',
+              'absolute bottom-0 right-0',
+            )}
+          />
+        </div>
+      )
+    },
+  },
   {
     header: () => <div className="min-w-[60px]">Query ID</div>,
     accessorKey: 'id',
