@@ -72,7 +72,6 @@ class SQLDatabase(LangchainSQLDatabase):
     def from_uri_ssh(cls, database_info: DatabaseConnection):
         fernet_encrypt = FernetEncrypt()
         ssh = database_info.ssh_settings
-        database = "v2_real_estate"
         server = SSHTunnelForwarder(
             (ssh.host, 22),
             ssh_username=ssh.username,
@@ -86,7 +85,7 @@ class SQLDatabase(LangchainSQLDatabase):
         local_host = str(server.local_bind_host)
 
         return cls.from_uri(
-            f"{ssh.db_driver}://{ssh.remote_db_name}:{fernet_encrypt.decrypt(ssh.remote_db_password)}@{local_host}:{local_port}/{database}"
+            f"{ssh.db_driver}://{ssh.remote_db_name}:{fernet_encrypt.decrypt(ssh.remote_db_password)}@{local_host}:{local_port}/{ssh.db_name}"
         )
 
     def run_sql(self, command: str) -> tuple[str, dict]:
