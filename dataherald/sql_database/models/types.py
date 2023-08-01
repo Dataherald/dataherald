@@ -8,7 +8,7 @@ from dataherald.utils.encrypt import FernetEncrypt
 
 class SSHSettings(BaseSettings):
     load_dotenv()
-
+    db_name: str | None = "v2_real_estate"
     host: str | None
     username: str | None
     password: str | None
