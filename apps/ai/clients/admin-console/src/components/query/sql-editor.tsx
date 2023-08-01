@@ -22,6 +22,15 @@ const SqlEditor: FC<SqlEditorProps> = ({ initialQuery, onValueChange }) => {
       language="sql"
       options={{
         lineHeight: 1.5,
+        scrollBeyondLastLine: false,
+        lineNumbersMinChars: 0,
+        renderLineHighlight: 'gutter',
+        scrollbar: {
+          useShadows: true,
+          arrowSize: 0,
+          verticalSliderSize: 8,
+          horizontalSliderSize: 8,
+        },
         fontSize: 14,
         minimap: { enabled: false },
       }}

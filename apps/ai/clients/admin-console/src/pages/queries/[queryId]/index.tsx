@@ -10,7 +10,7 @@ const QueryPage: FC = () => {
   const router = useRouter()
   const { queryId } = router.query
 
-  const { query, isLoading, error } = useQuery(Number(queryId))
+  const { query, isLoading, error } = useQuery(queryId as string)
 
   let pageContent: JSX.Element
 

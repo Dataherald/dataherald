@@ -3,7 +3,7 @@ import { Query } from '@/models/api'
 import useSWR from 'swr'
 
 const fetcher = (url: string) => {
-  const queryId = parseInt(url.split('/').pop() || '0', 10)
+  const queryId = url.split('/').pop() || ''
   return new Promise<Query>((resolve) => {
     const timer = setTimeout(() => {
       resolve(MOCK_QUERIES.find((query) => query.id === queryId) as Query)
@@ -13,7 +13,7 @@ const fetcher = (url: string) => {
   })
 }
 
-export const useQuery = (queryId: number) => {
+export const useQuery = (queryId: string) => {
   const { data, isLoading, error } = useSWR<Query>(
     `/api/query/${queryId}`,
     fetcher,
