@@ -244,8 +244,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="The Dataherald Benchmark tool to test performance of text-to-SQL generation.",  # noqa: E501
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        "-f",
-        "--file",
+        "-t",
+        "--test",
         type=str,
         default="apps/ai/clients/benchmark-tool/test_suites/v2_real_estate.jsonl",
         help="The file containing the benchmark tests.")
@@ -272,22 +272,29 @@ if __name__ == "__main__":
         type=float,
         default=1,
         help="What percent of the test suite to use in the test")
+    parser.add_argument(
+        "-f",
+        "--freeze",
+        action='store_true',
+        help="freezing the random shuffling to reporoduce the same result.")
     args = parser.parse_args()
     config = vars(args)
     test_set_size = config["size"]
     context_benchmark_split = config["percent"]
-    with open(config["file"], "r") as f:
+    with open(config["test"], "r") as f:
         json_list = list(f)
         tests = []
         for test in json_list:
             tests.append(json.loads(test))
+        if config["freeze"]:
+            random.seed(0)
         random.shuffle(tests)
         tests = tests[:int(len(tests) * test_set_size)]
         print(f"Number of samples used for context: {int(len(tests) * context_benchmark_split)}") # noqa: E501
         print(f"Number of samples used for benchmark: {int(len(tests) * (1 - context_benchmark_split))}") # noqa: E501
         context_set =  tests[:int(len(tests) * context_benchmark_split)]
         benchmark_set = tests[int(len(tests) * context_benchmark_split):]
-    output_file_name = f'{os.path.basename(config["file"])}-{datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.jsonl'  # noqa: E501
+    output_file_name = f'{os.path.basename(config["test"])}-{datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.jsonl'  # noqa: E501
     output_file = f'{config["output"]}{output_file_name}'
     add_context(context_set)
     exec_acc = run_benchmark(benchmark_set, output_file)
