@@ -14,11 +14,14 @@ const fetcher = (url: string) => {
 }
 
 export const useQuery = (queryId: number) => {
-  const { data, error } = useSWR<Query>(`/api/query/${queryId}`, fetcher)
+  const { data, isLoading, error } = useSWR<Query>(
+    `/api/query/${queryId}`,
+    fetcher,
+  )
 
   return {
     query: data,
-    isLoading: !error && !data,
-    isError: error,
+    isLoading,
+    error,
   }
 }

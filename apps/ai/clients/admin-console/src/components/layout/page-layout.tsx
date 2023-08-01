@@ -14,12 +14,12 @@ const PageLayout: FC<PageLayoutProps> = ({
   return (
     <div className={cn('flex h-screen overflow-hidden', className)} {...props}>
       <SidebarNav />
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col">
         <BreadcrumbHeader />
         <Separator />
-        <div className="container mx-auto p-8">
-          <main className="overflow-auto">{children}</main>
-        </div>
+        <main className="container mx-auto p-6 flex-1 flex flex-col overflow-auto">
+          {children}
+        </main>
       </div>
     </div>
   )

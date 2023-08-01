@@ -11,7 +11,7 @@ const BreadcrumbHeader = () => {
       .map((segment) => segment.replace('-', ' ')) || []
 
   return (
-    <header className="w-full px-8 py-5">
+    <header className="w-full px-6 py-4">
       <nav aria-label="Breadcrumb">
         <ol className="list-none p-0 inline-flex">
           {pathSegments.map((segment, idx) => {

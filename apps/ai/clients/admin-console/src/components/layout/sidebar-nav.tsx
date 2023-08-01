@@ -59,6 +59,7 @@ const SidebarNav = ({
               'bg-gray-50',
               'hover:bg-gray-200',
               'border-none',
+              'font-normal',
               pathname?.includes(item.href)
                 ? 'bg-black/10 hover:bg-black/10 font-bold'
                 : '',
