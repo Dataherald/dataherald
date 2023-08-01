@@ -4,6 +4,7 @@ import sqlalchemy
 from overrides import override
 from sqlalchemy import MetaData, inspect
 from sqlalchemy.schema import CreateTable
+from sqlalchemy.sql import func
 
 from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.models.types import ColumnDetail, TableSchemaDetail
@@ -36,20 +37,24 @@ class SqlAlchemyScanner(Scanner):
     ) -> ColumnDetail:
         dynamic_meta_table = meta.tables[table]
 
-        field_size = db_engine.engine.execute(
-            f"SELECT \"{column['name']}\" FROM \"{table}\" where \"{column['name']}\" is not null limit 1;"  # noqa: S608
-        )
-        if len(str(field_size.scalar())) > MAX_SIZE_LETTERS:
+        field_size_query = sqlalchemy.select(
+            [dynamic_meta_table.c[column["name"]]]
+        ).limit(1)
+
+        field_size = db_engine.engine.execute(field_size_query).first()
+        if not field_size:
+            field_size = [""]
+        if len(str(str(field_size[0]))) > MAX_SIZE_LETTERS:
             return ColumnDetail(
                 name=column["name"],
                 data_type=str(column["type"]),
                 low_cardinality=False,
             )
-
         try:
-            cardinality = db_engine.engine.execute(
-                f"SELECT COUNT(*) FROM (SELECT DISTINCT \"{column['name']}\" FROM \"{table}\" limit 200) AS temp;"  # noqa: S608
-            )
+            cardinality_query = sqlalchemy.select(
+                [func.distinct(dynamic_meta_table.c[column["name"]])]
+            ).limit(200)
+            cardinality = db_engine.engine.execute(cardinality_query).fetchall()
         except Exception:
             return ColumnDetail(
                 name=column["name"],
@@ -57,7 +62,7 @@ class SqlAlchemyScanner(Scanner):
                 low_cardinality=False,
             )
 
-        if cardinality.scalar() > MAX_CATEGORY_VALUE:
+        if len(cardinality) > MAX_CATEGORY_VALUE:
             return ColumnDetail(
                 name=column["name"],
                 data_type=str(column["type"]),
