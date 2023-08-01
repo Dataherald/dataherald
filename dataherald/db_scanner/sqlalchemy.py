@@ -12,6 +12,7 @@ from dataherald.sql_database.base import SQLDatabase
 
 MIN_CATEGORY_VALUE = 1
 MAX_CATEGORY_VALUE = 60
+MAX_SIZE_LETTERS = 50
 
 
 class SqlAlchemyScanner(Scanner):
@@ -19,7 +20,7 @@ class SqlAlchemyScanner(Scanner):
         self, db_engine: SQLDatabase, table: str, rows_number: int = 3
     ) -> List[Any]:
         examples = db_engine.engine.execute(
-            f"select * from {table} limit {rows_number}"  # noqa: S608
+            f'select * from "{table}" limit {rows_number}'  # noqa: S608
         )
         examples_dict = []
         print(f"Create examples: {table}")
@@ -34,6 +35,35 @@ class SqlAlchemyScanner(Scanner):
         self, meta: MetaData, table: str, column: dict, db_engine: SQLDatabase
     ) -> ColumnDetail:
         dynamic_meta_table = meta.tables[table]
+
+        field_size = db_engine.engine.execute(
+            f"SELECT \"{column['name']}\" FROM \"{table}\" where \"{column['name']}\" is not null limit 1;"  # noqa: S608
+        )
+        if len(str(field_size.scalar())) > MAX_SIZE_LETTERS:
+            return ColumnDetail(
+                name=column["name"],
+                data_type=str(column["type"]),
+                low_cardinality=False,
+            )
+
+        try:
+            cardinality = db_engine.engine.execute(
+                f"SELECT COUNT(*) FROM (SELECT DISTINCT \"{column['name']}\" FROM \"{table}\" limit 200) AS temp;"  # noqa: S608
+            )
+        except Exception:
+            return ColumnDetail(
+                name=column["name"],
+                data_type=str(column["type"]),
+                low_cardinality=False,
+            )
+
+        if cardinality.scalar() > MAX_CATEGORY_VALUE:
+            return ColumnDetail(
+                name=column["name"],
+                data_type=str(column["type"]),
+                low_cardinality=False,
+            )
+
         query = sqlalchemy.select(
             [
                 dynamic_meta_table.c[column["name"]],
