@@ -1,10 +1,19 @@
 import SqlEditor from '@/components/query/sql-editor'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { EQueryStatus, Query } from '@/models/api'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { formatQueryStatus } from '@/lib/domain/query-status'
+import { cn } from '@/lib/utils'
+import { EQueryStatus, Query, QueryStatus } from '@/models/api'
 import { format } from 'date-fns'
 import {
   Calendar,
+  CheckCircle,
   Clock,
   Database,
   ListOrdered,
@@ -12,6 +21,7 @@ import {
   RefreshCw,
   Save,
   User2,
+  XCircle,
 } from 'lucide-react'
 import { FC, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
@@ -35,15 +45,28 @@ const QueryWorkstation: FC<QueryWorkstationProps> = ({ query }) => {
   const questionDate: Date = new Date(question_date)
   const lastUpdatedDate: Date = new Date(last_updated)
   const [currentSqlQuery, setCurrentSqlQuery] = useState(sql_query)
-  const [verified, setVerified] = useState(status === EQueryStatus.VERIFIED)
+  const [verifiedStatus, setVerifiedStatus] = useState<QueryStatus>(status)
 
   const handleSqlChange = (value: string) => {
     setCurrentSqlQuery(value)
   }
 
-  const handleVerifyChange = (verified: boolean) => {
-    setVerified(verified)
+  const handleVerifyChange = (verifiedStatus: QueryStatus) => {
+    setVerifiedStatus(verifiedStatus)
   }
+
+  const verifiedOptionDisplay: JSX.Element = (
+    <div className="flex items-center gap-3 capitalize font-semibold text-green-700">
+      <CheckCircle strokeWidth={2.5} />
+      {formatQueryStatus(EQueryStatus.VERIFIED)}
+    </div>
+  )
+  const notVerifiedOptionDisplay: JSX.Element = (
+    <div className="flex items-center gap-3 capitalize font-semibold text-red-500">
+      <XCircle strokeWidth={2.5} />
+      {formatQueryStatus(EQueryStatus.NOT_VERIFIED)}
+    </div>
+  )
 
   return (
     <div className="container p-0 flex-1 flex flex-col gap-5">
@@ -64,16 +87,46 @@ const QueryWorkstation: FC<QueryWorkstationProps> = ({ query }) => {
           </h3>
         </div>
         <div id="verify" className="min-w-fit flex items-center gap-5 px-8">
-          {verified ? (
-            <span className="text-lg text-green-700">Verified</span>
-          ) : (
-            <span className="text-lg text-red-600">Mark as verified</span>
-          )}
-          <Switch
-            className="scale-125 data-[state=checked]:bg-green-700 data-[state=unchecked]:bg-red-600"
-            defaultChecked={verified}
-            onCheckedChange={handleVerifyChange}
-          />
+          <span className="text-lg">Mark as </span>
+          <Select onValueChange={handleVerifyChange}>
+            <SelectTrigger
+              className={cn(
+                'w-[180px]',
+                verifiedStatus === EQueryStatus.VERIFIED
+                  ? 'border-green-700'
+                  : 'border-red-500',
+              )}
+            >
+              {verifiedStatus === EQueryStatus.VERIFIED ? (
+                <SelectValue placeholder={verifiedOptionDisplay} />
+              ) : (
+                <SelectValue placeholder={notVerifiedOptionDisplay} />
+              )}
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(EQueryStatus)
+                .filter((qs: QueryStatus) => qs !== EQueryStatus.SQL_ERROR)
+                .map((qs: QueryStatus, idx) =>
+                  qs === EQueryStatus.VERIFIED ? (
+                    <SelectItem
+                      key={qs + idx}
+                      value={qs}
+                      className="focus:bg-green-100"
+                    >
+                      {verifiedOptionDisplay}
+                    </SelectItem>
+                  ) : (
+                    <SelectItem
+                      key={qs + idx}
+                      value={qs}
+                      className="focus:bg-red-100"
+                    >
+                      {notVerifiedOptionDisplay}
+                    </SelectItem>
+                  ),
+                )}
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <div className="bg-white border rounded-xl flex-1 flex flex-col gap-5 max-h-[40vh] p-8">
