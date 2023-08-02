@@ -51,15 +51,14 @@ Here is the plan you have to follow:
 5) [Optional based on the question] Always use the db_column_entity_chekcer tool to make sure that relevant columns have the cell-values.
 6) Write a {dialect} query and use sql_db_query tool the Execute the SQL query on the database to obtain the results.
 #
-Some tips:
+Some tips to always keep in mind:
 tip1) For complex questions that has many relevant columns and tables request for more examples of Question/SQL pairs.
 tip2) The maximum number of Question/SQL pairs you can request is {max_examples}.
 tip3) If the SQL query resulted in errors, rewrite the SQL query and try again.
 tip4) If you are still unsure about which columns and tables to use, ask for more Question/SQL pairs.
+tip5) The Question/SQL pairs are labelled as correct pairs, so you can use them to learn how to construct the SQL query.
+tip6) If there is a strong similarity between the input question and the question in the Question/SQL pair, You can use the SQL query from the pair, and change it to fit the input question.
 #
-The Question/SQL pairs are labelled as correct pairs, so you can use them to learn how to construct the SQL query.
-If there is a strong similarity between the input question and the question in the Question/SQL pair:
-You can use the SQL query from the pair, and change it to fit the input question.
 If the question does not seem related to the database, just return "I don't know" as the answer.
 The SQL query MUST have in-line comments to explain what each clause does.
 """  # noqa: E501
@@ -235,8 +234,9 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
                 None, str(item[0]).strip(), target_string
             ).ratio()
             if similarity >= threshold:
-                similar_strings.append(str(item[0]).strip())
-        return similar_strings
+                similar_strings.append((str(item[0]).strip(), similarity))
+        similar_strings.sort(key=lambda x: x[1], reverse=True)
+        return similar_strings[:25]
 
     @catch_exceptions
     def _run(
@@ -252,7 +252,7 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
         results = self.find_similar_strings(results, entity)
         similar_items = "Similar items:\n"
         for item in results:
-            similar_items += f"{item}\n"
+            similar_items += f"{item[0]}\n"
         return similar_items
 
     async def _arun(
