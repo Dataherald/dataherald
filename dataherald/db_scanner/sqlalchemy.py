@@ -18,16 +18,16 @@ MAX_SIZE_LETTERS = 50
 
 class SqlAlchemyScanner(Scanner):
     def get_table_examples(
-        self, db_engine: SQLDatabase, table: str, rows_number: int = 3
+        self, meta: MetaData, db_engine: SQLDatabase, table: str, rows_number: int = 3
     ) -> List[Any]:
-        examples = db_engine.engine.execute(
-            f'select * from "{table}" limit {rows_number}'  # noqa: S608
-        )
+        examples_query = sqlalchemy.select(meta.tables[table]).limit(rows_number)
+        examples = db_engine.engine.execute(examples_query).fetchall()
         examples_dict = []
         print(f"Create examples: {table}")
+        columns = [column["name"] for column in examples_query.column_descriptions]
         for example in examples:
             temp_dict = {}
-            for index, value in enumerate(examples.keys()):
+            for index, value in enumerate(columns):
                 temp_dict[value] = str(example[index])
             examples_dict.append(temp_dict)
         return examples_dict
@@ -130,7 +130,7 @@ class SqlAlchemyScanner(Scanner):
                 meta=meta, db_engine=db_engine, table=table
             ),
             examples=self.get_table_examples(
-                db_engine=db_engine, table=table, rows_number=3
+                meta=meta, db_engine=db_engine, table=table, rows_number=3
             ),
         )
 
