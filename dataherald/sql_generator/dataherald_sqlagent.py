@@ -1,6 +1,8 @@
+import ast
+import difflib
 import logging
 import time
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
 import numpy as np
 import openai
@@ -41,12 +43,13 @@ You have access to tools for interacting with the database.
 Only use the below tools. Only use the information returned by the below tools to construct your final answer.
 DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
 #
-Here is the process to follow for the given input question:
-1) Identify the relevant tables related to the question.
-2) Retrieve the schema of the relevant tables to determine potentially relevant columns.
-3) Gather more information about the possibly relevant columns, filtering them to find the relevant ones.
-4) Gather examples of Question/SQL pairs to understand the SQL query syntax to use and the relationship between tables and columns.
-5) Execute the SQL query on the database to obtain the results.
+Here is the plan you have to follow:
+1) Use the fewshot_examples_retriever tool to retrieve a first set of possibly relevant tables and columns and the SQL syntax to use.
+2) Use the db_tables_with_relevance_scores tool to find the a second set of possibly relevant tables.
+3) Use the db_relevant_tables_schema tool to obtain the schema of the both sets of possibly relevant tables to identify the possibly relevant columns.
+4) Use the db_relevant_columns_info tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
+5) [Optional based on the question] Always use the db_column_entity_chekcer tool to make sure that relevant columns have the cell-values.
+6) Write a {dialect} query and use sql_db_query tool the Execute the SQL query on the database to obtain the results.
 #
 Some tips:
 tip1) For complex questions that has many relevant columns and tables request for more examples of Question/SQL pairs.
@@ -59,7 +62,7 @@ If there is a strong similarity between the input question and the question in t
 You can use the SQL query from the pair, and change it to fit the input question.
 If the question does not seem related to the database, just return "I don't know" as the answer.
 The SQL query MUST have in-line comments to explain what each clause does.
-"""
+"""  # noqa: E501
 
 FORMAT_INSTRUCTIONS = """Use the following format:
 
@@ -75,8 +78,35 @@ Final Answer: the final answer to the original input question"""
 AGENT_SUFFIX = """Begin!
 
 Question: {input}
-Thought: I should look at the tables in the database to see which of them are related to the question.
+Thought: I should Collect examples of Question/SQL pairs to identify possibly relevant tables, columns, and SQL query styles.
 {agent_scratchpad}"""
+
+
+def catch_exceptions(fn: Callable[[str], str]) -> Callable[[str], str]:
+    def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: PLR0911
+        try:
+            return fn(*args, **kwargs)
+        except openai.error.APIError as e:
+            # Handle API error here, e.g. retry or log
+            return f"OpenAI API returned an API Error: {e}"
+        except openai.error.APIConnectionError as e:
+            # Handle connection error here
+            return f"Failed to connect to OpenAI API: {e}"
+        except openai.error.RateLimitError as e:
+            # Handle rate limit error (we recommend using exponential backoff)
+            return f"OpenAI API request exceeded rate limit: {e}"
+        except openai.error.Timeout as e:
+            # Handle timeout error (we recommend using exponential backoff)
+            return f"OpenAI API request timed out: {e}"
+        except openai.error.ServiceUnavailableError as e:
+            # Handle service unavailable error (we recommend using exponential backoff)
+            return f"OpenAI API service unavailable: {e}"
+        except openai.error.InvalidRequestError as e:
+            return f"OpenAI API request was invalid: {e}"
+        except Exception as e:
+            return f"An unknown error occurred: {e}"
+
+    return wrapper
 
 
 # Classes needed for tools
@@ -104,6 +134,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     Use this tool to execute SQL queries.
     """
 
+    @catch_exceptions
     def _run(
         self,
         query: str,
@@ -142,6 +173,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     def cosine_similarity(self, a: List[float], b: List[float]) -> float:
         return round(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), 4)
 
+    @catch_exceptions
     def _run(
         self,
         user_question: str,
@@ -182,6 +214,55 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         )
 
 
+class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
+    """Tool for getting sample rows for the given column."""
+
+    name = "db_column_entity_chekcer"
+    description = """
+    Input: Column name and its corresponding table, and an entity.
+    Output: cell-values found in the column similar to the given entity.
+    Use this tool to get cell values similar to the given entity in the given column.
+
+    Example Input: table1 -> column2, entity
+    """
+
+    def find_similar_strings(
+        self, input_list: List[tuple], target_string: str, threshold=0.6
+    ):
+        similar_strings = []
+        for item in input_list:
+            similarity = difflib.SequenceMatcher(
+                None, str(item[0]).strip(), target_string
+            ).ratio()
+            if similarity >= threshold:
+                similar_strings.append(str(item[0]).strip())
+        return similar_strings
+
+    @catch_exceptions
+    def _run(
+        self,
+        tool_input: str,
+        run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
+    ) -> str:
+        schema, entity = tool_input.split(",")
+        table_name, column_name = schema.split("->")
+        query = f"SELECT DISTINCT {column_name} FROM {table_name}"  # noqa: S608
+        results = self.db.run_no_throw(query)
+        results = ast.literal_eval(results)
+        results = self.find_similar_strings(results, entity)
+        similar_items = "Similar items:\n"
+        for item in results:
+            similar_items += f"{item}\n"
+        return similar_items
+
+    async def _arun(
+        self,
+        tool_input: str,
+        run_manager: AsyncCallbackManagerForToolRun | None = None,
+    ) -> str:
+        raise NotImplementedError("ColumnsSampleRowsTool does not support async")
+
+
 class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for getting schema of relevant tables."""
 
@@ -195,6 +276,7 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """
     db_scan: List[TableSchemaDetail]
 
+    @catch_exceptions
     def _run(
         self,
         table_names: str,
@@ -231,6 +313,7 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
     """
     db_scan: List[TableSchemaDetail]
 
+    @catch_exceptions
     def _run(
         self,
         column_names: str,
@@ -252,10 +335,11 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
                             if column.low_cardinality:
                                 col_info += f" categories = {column.categories},"
                     col_info += " Sample rows: "
-                    for row in table.examples:
-                        col_info += row[column_name] + ", "
-                    col_info = col_info[:-2]
-                    column_full_info += f"Table: {table_name}, column: {column_name}, additional info: {col_info}\n"
+                    if found:
+                        for row in table.examples:
+                            col_info += row[column_name] + ", "
+                        col_info = col_info[:-2]
+                        column_full_info += f"Table: {table_name}, column: {column_name}, additional info: {col_info}\n"
             if not found:
                 column_full_info += f"Table: {table_name}, column: {column_name} not found in database\n"
         return column_full_info
@@ -277,10 +361,11 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
     Output: List of similar Question/SQL pairs related to the given question.
     Use this tool to fetch previously asked Question/SQL pairs as examples for improving SQL query generation.
     For complex questions, request more examples to gain a better understanding of tables and columns and the SQL keywords to use.
-    Always use this tool before using the sql_db_query tool!
+    Always use this tool first and before any other tool!
     """
     few_shot_examples: List[dict]
 
+    @catch_exceptions
     def _run(
         self,
         number_of_samples: str,
@@ -343,6 +428,8 @@ class SQLDatabaseToolkit(BaseToolkit):
             db=self.db, context=self.context, db_scan=self.db_scan
         )
         tools.append(info_relevant_tool)
+        column_sample_tool = ColumnEntityChecker(db=self.db, context=self.context)
+        tools.append(column_sample_tool)
         if self.few_shot_examples is not None:
             get_fewshot_examples_tool = GetFewShotExamples(
                 db=self.db,
