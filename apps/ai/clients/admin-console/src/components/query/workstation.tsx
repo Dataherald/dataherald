@@ -166,8 +166,21 @@ const QueryWorkstation: FC<QueryWorkstationProps> = ({ query }) => {
               <RefreshCw size={18} />
             </div>
           </TabsContent>
-          <TabsContent value="process" className="h-48 pt-5">
-            {ai_process}
+          <TabsContent value="process" className="h-48 pt-5 overflow-auto">
+            <ol>
+              {(typeof ai_process === 'string' ? [ai_process] : ai_process).map(
+                (step, idx) => (
+                  <li key={idx} className="mb-2 last:mb-0">
+                    <div className="flex gap-2">
+                      <span className="text-primary font-bold">
+                        {idx + 1}.{' '}
+                      </span>
+                      {step}
+                    </div>
+                  </li>
+                ),
+              )}
+            </ol>
           </TabsContent>
         </Tabs>
       </div>
