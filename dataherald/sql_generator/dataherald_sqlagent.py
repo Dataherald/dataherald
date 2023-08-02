@@ -81,24 +81,25 @@ Question: {input}
 Thought: I should Collect examples of Question/SQL pairs to identify possibly relevant tables, columns, and SQL query styles.
 {agent_scratchpad}"""
 
+
 def catch_exceptions(fn: Callable[[str], str]) -> Callable[[str], str]:
     def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: PLR0911
         try:
             return fn(*args, **kwargs)
         except openai.error.APIError as e:
-            #Handle API error here, e.g. retry or log
+            # Handle API error here, e.g. retry or log
             return f"OpenAI API returned an API Error: {e}"
         except openai.error.APIConnectionError as e:
-            #Handle connection error here
+            # Handle connection error here
             return f"Failed to connect to OpenAI API: {e}"
         except openai.error.RateLimitError as e:
-            #Handle rate limit error (we recommend using exponential backoff)
+            # Handle rate limit error (we recommend using exponential backoff)
             return f"OpenAI API request exceeded rate limit: {e}"
         except openai.error.Timeout as e:
-            #Handle timeout error (we recommend using exponential backoff)
+            # Handle timeout error (we recommend using exponential backoff)
             return f"OpenAI API request timed out: {e}"
         except openai.error.ServiceUnavailableError as e:
-            #Handle service unavailable error (we recommend using exponential backoff)
+            # Handle service unavailable error (we recommend using exponential backoff)
             return f"OpenAI API service unavailable: {e}"
         except openai.error.InvalidRequestError as e:
             return f"OpenAI API request was invalid: {e}"
@@ -106,6 +107,7 @@ def catch_exceptions(fn: Callable[[str], str]) -> Callable[[str], str]:
             return f"An unknown error occurred: {e}"
 
     return wrapper
+
 
 # Classes needed for tools
 class BaseSQLDatabaseTool(BaseModel):
@@ -224,10 +226,14 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
     Example Input: table1 -> column2, entity
     """
 
-    def find_similar_strings(self, input_list: List[tuple], target_string: str, threshold=0.6):
+    def find_similar_strings(
+        self, input_list: List[tuple], target_string: str, threshold=0.6
+    ):
         similar_strings = []
         for item in input_list:
-            similarity = difflib.SequenceMatcher(None, str(item[0]).strip(), target_string).ratio()
+            similarity = difflib.SequenceMatcher(
+                None, str(item[0]).strip(), target_string
+            ).ratio()
             if similarity >= threshold:
                 similar_strings.append(str(item[0]).strip())
         return similar_strings
@@ -238,7 +244,7 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
         tool_input: str,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
-        schema, entity= tool_input.split(",")
+        schema, entity = tool_input.split(",")
         table_name, column_name = schema.split("->")
         query = f"SELECT DISTINCT {column_name} FROM {table_name}"  # noqa: S608
         results = self.db.run_no_throw(query)
@@ -422,9 +428,7 @@ class SQLDatabaseToolkit(BaseToolkit):
             db=self.db, context=self.context, db_scan=self.db_scan
         )
         tools.append(info_relevant_tool)
-        column_sample_tool = ColumnEntityChecker(
-            db=self.db, context=self.context
-        )
+        column_sample_tool = ColumnEntityChecker(db=self.db, context=self.context)
         tools.append(column_sample_tool)
         if self.few_shot_examples is not None:
             get_fewshot_examples_tool = GetFewShotExamples(
