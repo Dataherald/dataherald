@@ -4,6 +4,7 @@ import sqlalchemy
 from overrides import override
 from sqlalchemy import MetaData, inspect
 from sqlalchemy.schema import CreateTable
+from sqlalchemy.sql import func
 
 from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.models.types import ColumnDetail, TableSchemaDetail
@@ -12,6 +13,7 @@ from dataherald.sql_database.base import SQLDatabase
 
 MIN_CATEGORY_VALUE = 1
 MAX_CATEGORY_VALUE = 60
+MAX_SIZE_LETTERS = 50
 
 
 class SqlAlchemyScanner(Scanner):
@@ -19,7 +21,7 @@ class SqlAlchemyScanner(Scanner):
         self, db_engine: SQLDatabase, table: str, rows_number: int = 3
     ) -> List[Any]:
         examples = db_engine.engine.execute(
-            f"select * from {table} limit {rows_number}"  # noqa: S608
+            f'select * from "{table}" limit {rows_number}'  # noqa: S608
         )
         examples_dict = []
         print(f"Create examples: {table}")
@@ -34,6 +36,39 @@ class SqlAlchemyScanner(Scanner):
         self, meta: MetaData, table: str, column: dict, db_engine: SQLDatabase
     ) -> ColumnDetail:
         dynamic_meta_table = meta.tables[table]
+
+        field_size_query = sqlalchemy.select(
+            [dynamic_meta_table.c[column["name"]]]
+        ).limit(1)
+
+        field_size = db_engine.engine.execute(field_size_query).first()
+        if not field_size:
+            field_size = [""]
+        if len(str(str(field_size[0]))) > MAX_SIZE_LETTERS:
+            return ColumnDetail(
+                name=column["name"],
+                data_type=str(column["type"]),
+                low_cardinality=False,
+            )
+        try:
+            cardinality_query = sqlalchemy.select(
+                [func.distinct(dynamic_meta_table.c[column["name"]])]
+            ).limit(200)
+            cardinality = db_engine.engine.execute(cardinality_query).fetchall()
+        except Exception:
+            return ColumnDetail(
+                name=column["name"],
+                data_type=str(column["type"]),
+                low_cardinality=False,
+            )
+
+        if len(cardinality) > MAX_CATEGORY_VALUE:
+            return ColumnDetail(
+                name=column["name"],
+                data_type=str(column["type"]),
+                low_cardinality=False,
+            )
+
         query = sqlalchemy.select(
             [
                 dynamic_meta_table.c[column["name"]],
