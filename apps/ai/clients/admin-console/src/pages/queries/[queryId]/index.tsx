@@ -1,6 +1,6 @@
 import QueryLayout from '@/components/query/layout'
 import LoadingQuery from '@/components/query/loading'
-import QueryWorkstation from '@/components/query/workstation'
+import QueryWorkspace from '@/components/query/workspace'
 import { useQuery } from '@/hooks/api/useQuery'
 import { Query } from '@/models/api'
 import { useRouter } from 'next/router'
@@ -16,7 +16,7 @@ const QueryPage: FC = () => {
 
   if (isLoading && !query) pageContent = <LoadingQuery />
   else if (error) pageContent = <div>Error loading the query</div>
-  else pageContent = <QueryWorkstation query={query as Query} />
+  else pageContent = <QueryWorkspace query={query as Query} />
 
   return <QueryLayout>{pageContent}</QueryLayout>
 }
