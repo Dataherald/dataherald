@@ -24,6 +24,7 @@ class QueriesService:
                 question=question.question,
                 nl_response=response.nl_response,
                 sql_query=response.sql_query,
+                ai_process=response.intermediate_steps,
                 question_date=response_ref.question_date,
                 last_updated=response_ref.last_updated,
                 status=random.choice(list(QueryStatus)),  # noqa: S311
@@ -55,6 +56,7 @@ class QueriesService:
                     question=questions[i].question,
                     nl_response=responses[i].nl_response,
                     sql_query=responses[i].sql_query,
+                    ai_process=responses[i].intermediate_steps,
                     question_date=response_refs[i].question_date,
                     last_updated=response_refs[i].last_updated,
                     status=random.choice(list(QueryStatus)),  # noqa: S311

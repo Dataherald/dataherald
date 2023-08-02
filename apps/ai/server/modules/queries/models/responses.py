@@ -16,3 +16,4 @@ class QueryResponse(BaseModel):
     last_updated: str
     status: QueryStatus
     evaluation_score: float
+    ai_process: list[str]
