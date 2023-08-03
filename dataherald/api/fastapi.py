@@ -114,8 +114,8 @@ class FastAPI(API):
             )
             if confidence_score >= evaluator.acceptance_threshold:
                 cache.add(question + db_alias, generated_answer)
+            generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
-        generated_answer.confidence_score = confidence_score
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
         nl_query_response = nl_query_response_repository.insert(generated_answer)
         return json.loads(json_util.dumps(nl_query_response))
