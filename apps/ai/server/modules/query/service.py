@@ -6,7 +6,11 @@ from config import settings
 from modules.k2_core.models.entities import SQLGenerationStatus
 from modules.k2_core.models.responses import NLQueryResponse
 from modules.query.models.entities import QueryRef, QueryStatus, Question
-from modules.query.models.requests import QueryEditRequest, SQLQueryRequest
+from modules.query.models.requests import (
+    QueryEditRequest,
+    QueryEditRequestCore,
+    SQLQueryRequest,
+)
 from modules.query.models.responses import QueryListResponse, QueryResponse
 from modules.query.repository import QueriesRepository
 
@@ -62,7 +66,10 @@ class QueriesService:
 
     def patch_query(self, query_id: str, data: QueryEditRequest) -> QueryResponse:
         object_id = ObjectId(query_id)
-
+        golden_record = True if data.query_status == QueryStatus.VERIFIED else False
+        data = QueryEditRequestCore(
+            sql_query=data.sql_query, golden_record=golden_record
+        )
         # request patch query to k2 (repo)
         with httpx.Client() as client:
             response = client.patch(
@@ -113,6 +120,7 @@ class QueriesService:
                 query_response.sql_generation_status, query_response.golden_record
             ),
             evaluation_score=query_response.confidence_level,
+            sql_error_message=query_response.error_message,
         )
 
     def _get_query_status(

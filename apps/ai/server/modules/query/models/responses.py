@@ -19,6 +19,7 @@ class QueryResponse(BaseModel):
     last_updated: str
     status: QueryStatus | None
     evaluation_score: float | None
+    sql_error_message: str | None
 
 
 class QueryListResponse(BaseModel):
