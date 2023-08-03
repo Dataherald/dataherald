@@ -8,7 +8,6 @@ from dataherald.sql_database.models.types import SSHSettings
 from dataherald.types import (
     DataDefinitionType,
     ExecuteTempQueryRequest,
-    ExecuteTempQueryResponse,
     NLQueryResponse,
     UpdateQueryRequest,
 )
@@ -57,5 +56,5 @@ class API(Component, ABC):
     @abstractmethod
     def execute_temp_query(
         self, query_id: str, query: ExecuteTempQueryRequest
-    ) -> ExecuteTempQueryResponse:
+    ) -> NLQueryResponse:
         pass

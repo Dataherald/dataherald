@@ -19,11 +19,6 @@ class SQLQueryResult(BaseModel):
     rows: list[dict]
 
 
-class ExecuteTempQueryResponse(BaseModel):
-    nl_response: str | None = None
-    sql_query_result: SQLQueryResult | None
-
-
 class NLQuery(BaseModel):
     id: Any
     question: str
