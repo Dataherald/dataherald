@@ -7,8 +7,6 @@ from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import NLQuery, NLQueryResponse
 
-ACCEPTANCE_THRESHOLD: confloat(ge=0, le=1) = 0.8
-
 
 class Evaluation(BaseModel):
     id: str | None = Field(alias="_id")
@@ -19,23 +17,24 @@ class Evaluation(BaseModel):
 
 class Evaluator(Component, ABC):
     database: SQLDatabase
+    acceptance_threshold: confloat(ge=0, le=1) = 0.8
 
     def __init__(self, system: System):
         self.system = system
 
-    def is_acceptable_response(
+    def get_confidence_score(
         self,
         question: NLQuery,
         generated_answer: NLQueryResponse,
         database_connection: DatabaseConnection,
-    ) -> bool:
+    ) -> confloat(ge=0, le=1):
         """Determines if a generated response from the engine is acceptable considering the ACCEPTANCE_THRESHOLD"""
         evaluation = self.evaluate(
             question=question,
             generated_answer=generated_answer,
             database_connection=database_connection,
         )
-        return evaluation.score >= ACCEPTANCE_THRESHOLD
+        return evaluation.score
 
     @abstractmethod
     def evaluate(
