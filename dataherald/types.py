@@ -2,7 +2,7 @@
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, confloat
 
 
 class NLQuery(BaseModel):
@@ -21,7 +21,7 @@ class NLQueryResponse(BaseModel):
     total_tokens: int | None = None
     total_cost: float | None = None
     golden_record: bool = False
-    confidence_score: float | None = None
+    confidence_score: confloat | None = None
     # date_entered: datetime = datetime.now() add this later
 
 
