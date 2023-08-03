@@ -21,7 +21,15 @@ from dataherald.smart_cache import SmartCache
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.sql_generator import SQLGenerator
-from dataherald.types import DataDefinitionType, NLQuery, NLQueryResponse
+from dataherald.types import (
+    DataDefinitionType,
+    ExecuteTempQueryRequest,
+    ExecuteTempQueryResponse,
+    NLQuery,
+    NLQueryResponse,
+    SQLQueryResult,
+    UpdateQueryRequest,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -161,3 +169,31 @@ class FastAPI(API):
         database = SQLDatabase.get_sql_engine(database_connection)
         print(type(database.run_sql(query.sql_statement)))
         return database.run_sql(query.sql_statement)
+
+    @override
+    def update_query(
+        self, query_id: str, query: UpdateQueryRequest  # noqa: ARG002
+    ) -> NLQueryResponse:
+        nl_query_response = NLQueryResponse(
+            id="foo",
+            nl_question_id="foo",
+            sql_query="foo",
+            sql_query_result=SQLQueryResult(
+                columns=["h1", "h2"], rows=[{"h1": "foo", "h2": "bar"}]
+            ),
+        )
+
+        return json.loads(json_util.dumps(nl_query_response))
+
+    @override
+    def execute_temp_query(
+        self, query_id: str, query: ExecuteTempQueryRequest  # noqa: ARG002
+    ) -> ExecuteTempQueryResponse:
+        response = ExecuteTempQueryResponse(
+            nl_response="foo",
+            sql_query_result=SQLQueryResult(
+                columns=["h1", "h2"], rows=[{"h1": "foo", "h2": "bar"}]
+            ),
+        )
+
+        return json.loads(json_util.dumps(response))
