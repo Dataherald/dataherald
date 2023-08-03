@@ -21,7 +21,7 @@ class NLQueryResponse(BaseModel):
     total_tokens: int | None = None
     total_cost: float | None = None
     golden_record: bool = False
-    confidence_score: confloat | None = None
+    confidence_score: float | None = None
     # date_entered: datetime = datetime.now() add this later
 
 
