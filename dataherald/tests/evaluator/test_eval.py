@@ -17,7 +17,7 @@ class TestEvaluator(Evaluator):
         question: NLQuery,
         generated_answer: NLQueryResponse,
         database_connection: DatabaseConnection,
-    ) -> confloat(ge=0, le=1):
+    ) -> confloat:
         score: confloat(ge=0, le=1) = 1.0
         return score
 
