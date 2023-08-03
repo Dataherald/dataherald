@@ -164,6 +164,18 @@ def validate_response_object(
     db = test_dict["db"]
     gold_sql = test_dict["sql"]
     sql_generated = response_dict["sql_query"]
+    if sql_generated == "":
+        print(f"Response -> label: Wrong, total_cost: {response_dict['total_cost']}, exec_time: {response_dict['exec_time']}")  # noqa: E501
+        return {
+        "question" : test_dict["nl_question"],
+        "db" : db,
+        "gold_sql" : gold_sql,
+        "num_tockens_used" : response_dict["total_tokens"],
+        "total_cost": response_dict["total_cost"],
+        "sql_generated": sql_generated,
+        "exec_time": response_dict["exec_time"],
+        "status": "WRONG"
+        }    
     print(f"Generated SQL: {sql_generated}")
     gold_sql, sql_generated = postprocess(gold_sql), postprocess(sql_generated)
     if not keep_distinct:
@@ -221,6 +233,7 @@ def run_benchmark(tests: List[dict], output_file_name: str = "benchmark_results.
             final_execution_acc += 1 if validation_result["status"] == "CORRECT" else 0
             jout = json.dumps(validation_result) + '\n'
             out.write(jout)
+            input("Press Enter to continue...")
     return final_execution_acc
 
 def upload_to_cloud(
