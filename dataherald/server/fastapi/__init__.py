@@ -11,7 +11,13 @@ from dataherald.api.types import Query
 from dataherald.config import Settings
 from dataherald.eval import Evaluation
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
-from dataherald.types import DataDefinitionType, NLQueryResponse
+from dataherald.types import (
+    DataDefinitionType,
+    ExecuteTempQueryRequest,
+    ExecuteTempQueryResponse,
+    NLQueryResponse,
+    UpdateQueryRequest,
+)
 
 
 def use_route_names_as_operation_ids(app: _FastAPI) -> None:
@@ -58,6 +64,16 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route("/api/v1/query", self.execute_query, methods=["POST"])
+
+        self.router.add_api_route(
+            "/api/v1/query/{query_id}", self.update_query, methods=["PATCH"]
+        )
+
+        self.router.add_api_route(
+            "/api/v1/query/{query_id}/execution",
+            self.execute_temp_query,
+            methods=["POST"],
+        )
 
         self._app.include_router(self.router)
         use_route_names_as_operation_ids(self._app)
@@ -106,3 +122,13 @@ class FastAPI(dataherald.server.Server):
     def execute_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_alias"""
         return self._api.execute_query(query)
+
+    def update_query(self, query_id: str, query: UpdateQueryRequest) -> NLQueryResponse:
+        """Executes a query on the given db_alias"""
+        return self._api.update_query(query_id, query)
+
+    def execute_temp_query(
+        self, query_id: str, query: ExecuteTempQueryRequest
+    ) -> ExecuteTempQueryResponse:
+        """Executes a query on the given db_alias"""
+        return self._api.execute_temp_query(query_id, query)

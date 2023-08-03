@@ -5,7 +5,13 @@ from dataherald.api.types import Query
 from dataherald.config import Component
 from dataherald.eval import Evaluation
 from dataherald.sql_database.models.types import SSHSettings
-from dataherald.types import DataDefinitionType, NLQueryResponse
+from dataherald.types import (
+    DataDefinitionType,
+    ExecuteTempQueryRequest,
+    ExecuteTempQueryResponse,
+    NLQueryResponse,
+    UpdateQueryRequest,
+)
 
 
 class API(Component, ABC):
@@ -42,4 +48,14 @@ class API(Component, ABC):
 
     @abstractmethod
     def execute_query(self, query: Query) -> tuple[str, dict]:
+        pass
+
+    @abstractmethod
+    def update_query(self, query_id: str, query: UpdateQueryRequest) -> NLQueryResponse:
+        pass
+
+    @abstractmethod
+    def execute_temp_query(
+        self, query_id: str, query: ExecuteTempQueryRequest
+    ) -> ExecuteTempQueryResponse:
         pass
