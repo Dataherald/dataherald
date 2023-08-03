@@ -15,9 +15,9 @@ class Question(BaseModel):
 
 
 class QueryStatus(Enum):
-    SQL_ERROR = "SQL_ERROR"
     NOT_VERIFIED = "NOT_VERIFIED"
     VERIFIED = "VERIFIED"
+    SQL_ERROR = "SQL_ERROR"
 
 
 class QueryRef(BaseModel):
@@ -26,15 +26,3 @@ class QueryRef(BaseModel):
     user: User
     question_date: str
     last_updated: str
-
-
-class Query(BaseModel):
-    id: Any = Field(alias="_id")
-    nl_question_id: Any
-    nl_response: str
-    intermediate_steps: list[str]
-    sql_query: str
-    exec_time: float
-    total_tokens: int
-    total_cost: float
-    golden_record: bool

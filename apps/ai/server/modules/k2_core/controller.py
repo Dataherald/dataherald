@@ -3,6 +3,7 @@ from typing import List
 from fastapi import APIRouter
 
 from modules.k2_core.models.entities import DataDefinitionType, SSHSettings
+from modules.k2_core.models.requests import EvaluationRequest
 from modules.k2_core.models.responses import Evaluation, NLQueryResponse
 from modules.k2_core.service import K2Service
 
@@ -20,8 +21,8 @@ async def answer_question(question: str) -> NLQueryResponse:
 
 
 @router.post("/question/evaluate")
-async def evaluate_question(question: str, golden_sql: str) -> Evaluation:
-    return K2Service().evaluate(question, golden_sql)
+async def evaluate_question(evaluation: EvaluationRequest) -> Evaluation:
+    return K2Service().evaluate(evaluation)
 
 
 @router.post("/database")
@@ -40,8 +41,8 @@ async def add_golden_records(golden_records: List) -> bool:
 
 
 @router.post("/data-definition")
-async def add_data_definition(uri: str, type: DataDefinitionType) -> bool:
-    return K2Service().add_data_definition(uri, type)
+async def add_data_definition(uri: str, data: DataDefinitionType) -> bool:
+    return K2Service().add_data_definition(uri, data)
 
 
 @router.get("/heartbeat")

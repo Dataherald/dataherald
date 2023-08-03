@@ -4,11 +4,11 @@ from bson import ObjectId
 
 from config import QUERY_RESPONSE_REF_COL
 from database.mongo import MongoDB
-from modules.queries.models.entities import QueryRef, User
+from modules.query.models.entities import QueryRef, User
 
 
 class K2CoreRepository:
-    def record_response_pointer(self, object_id):
+    def record_response_pointer(self, object_id: ObjectId):
         if not MongoDB.find_one(
             QUERY_RESPONSE_REF_COL,
             {"query_response_id": ObjectId(object_id["$oid"])},

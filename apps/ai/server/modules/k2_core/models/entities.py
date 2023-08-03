@@ -31,3 +31,14 @@ class SSHSettings(BaseSettings):
     private_key_path: str | None
     private_key_password: str | None
     db_driver: str | None
+
+
+class SQLQueryResult(BaseModel):
+    columns: list[str]
+    rows: list[dict]
+
+
+class SQLGenerationStatus(Enum):
+    none = "NONE"
+    invalid = "INVALID"
+    valid = "VALID"
