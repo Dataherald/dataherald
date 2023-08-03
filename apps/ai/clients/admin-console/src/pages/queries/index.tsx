@@ -1,6 +1,5 @@
 import { columns as cols } from '@/components/queries/columns'
 import { DataTable } from '@/components/queries/data-table'
-import QueriesLayout from '@/components/queries/layout'
 import { LoadingTable } from '@/components/queries/loading-table'
 import useQueries from '@/hooks/api/useQueries'
 import { Query } from '@/models/api'
@@ -47,14 +46,14 @@ export default function QueriesPage() {
 
   if (isLoadingFirst) {
     return (
-      <QueriesLayout>
+      <div className="rounded-xl border bg-gray-50 p-6">
         <LoadingTable />
-      </QueriesLayout>
+      </div>
     )
   }
 
   return (
-    <QueriesLayout>
+    <div className="grow overflow-auto flex flex-col gap-4 rounded-xl border bg-gray-50 p-6">
       <h1 className="font-bold">Latest Queries</h1>
       <DataTable
         columns={columns}
@@ -63,6 +62,6 @@ export default function QueriesPage() {
         loadingRef={loadingRef}
         onRowClick={handleQueryClick}
       />
-    </QueriesLayout>
+    </div>
   )
 }

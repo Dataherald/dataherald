@@ -5,6 +5,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 
+import { LoadingTableRows } from '@/components/queries/loading-rows'
 import {
   Table,
   TableBody,
@@ -14,7 +15,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Ref } from 'react'
-import { LoadingTableRows } from './loading-rows'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]

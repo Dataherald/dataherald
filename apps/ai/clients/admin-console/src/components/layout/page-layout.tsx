@@ -1,8 +1,8 @@
+import BreadcrumbHeader from '@/components/layout/breadcrum-header'
+import SidebarNav from '@/components/layout/sidebar-nav'
+import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { FC, HTMLAttributes } from 'react'
-import { Separator } from '../ui/separator'
-import BreadcrumbHeader from './breadcrum-header'
-import SidebarNav from './sidebar-nav'
 
 export type PageLayoutProps = HTMLAttributes<HTMLDivElement>
 
@@ -12,14 +12,12 @@ const PageLayout: FC<PageLayoutProps> = ({
   ...props
 }: PageLayoutProps) => {
   return (
-    <div className={cn('flex h-screen overflow-hidden', className)} {...props}>
+    <div className={cn('flex h-screen', className)} {...props}>
       <SidebarNav />
-      <div className="flex-1 flex flex-col">
+      <div className="w-full h-full overflow-auto flex flex-col">
         <BreadcrumbHeader />
         <Separator />
-        <main className="container mx-auto p-6 flex-1 flex flex-col overflow-auto">
-          {children}
-        </main>
+        <main className="grow flex flex-col overflow-auto p-6">{children}</main>
       </div>
     </div>
   )

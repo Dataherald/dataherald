@@ -1,16 +1,23 @@
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { cn } from '@/lib/utils'
+import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { Ref } from 'react'
+import { ClassValue } from 'clsx'
 
 export interface SqlResultsTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-  isLoadingMore: boolean
-  loadingRef: Ref<HTMLDivElement>
 }
 
 export function SqlResultsTable<TData, TValue>({
@@ -23,50 +30,51 @@ export function SqlResultsTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
   })
 
+  const cellClasses: ClassValue =
+    'h-8 py-0 border-b border-r last:border-r-0 last:max-w-none max-w-[20px]'
+
   return (
-    <table className="min-w-full h-full bg-white border">
-      <thead>
+    <Table>
+      <TableHeader className="bg-gray-100">
         {table.getHeaderGroups().map((headerGroup) => (
-          <tr key={headerGroup.id}>
+          <TableRow key={headerGroup.id}>
             {headerGroup.headers.map((header) => {
               return (
-                <th key={header.id}>
+                <TableHead
+                  key={header.id}
+                  className={cn(cellClasses, 'text-gray-500')}
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
                         header.column.columnDef.header,
                         header.getContext(),
                       )}
-                </th>
+                </TableHead>
               )
             })}
-          </tr>
+          </TableRow>
         ))}
-      </thead>
-      <tbody>
-        {table.getRowModel().rows?.length ? (
-          table.getRowModel().rows.map((row) => (
-            <tr
-              key={row.id}
-              data-state={row.getIsSelected() && 'selected'}
-              className="hover:bg-gray-100 cursor-pointer"
-            >
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))
-        ) : (
-          <tr className="border-none">
-            <td colSpan={columns.length} className="h-24 text-center">
-              No results.
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
+      </TableHeader>
+      <TableBody>
+        {table.getRowModel().rows.map((row) => (
+          <TableRow
+            key={row.id}
+            data-state={row.getIsSelected() && 'selected'}
+            className="hover:bg-gray-50"
+          >
+            {row.getVisibleCells().map((cell) => (
+              <TableCell
+                key={cell.id}
+                className={cn(cellClasses, 'text-gray-600')}
+              >
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   )
 }
 export default SqlResultsTable

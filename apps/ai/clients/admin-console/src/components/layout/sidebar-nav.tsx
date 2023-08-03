@@ -39,7 +39,7 @@ const SidebarNav = ({
   const pathname = usePathname()
 
   return (
-    <aside className="flex flex-col gap-8 bg-gray-50 border-r">
+    <aside className="w-60 flex flex-col gap-8 bg-gray-50 border-r">
       <Image
         priority
         src="/images/dh_ai_logo.svg"

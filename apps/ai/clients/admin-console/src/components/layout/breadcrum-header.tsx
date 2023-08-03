@@ -1,8 +1,11 @@
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { FC, HTMLAttributes } from 'react'
 
-const BreadcrumbHeader = () => {
+export type BreadcrumbHeaderProps = HTMLAttributes<HTMLHeadingElement>
+
+const BreadcrumbHeader: FC<BreadcrumbHeaderProps> = ({ className }) => {
   const pathname = usePathname()
   const pathSegments =
     pathname
@@ -11,7 +14,7 @@ const BreadcrumbHeader = () => {
       .map((segment) => segment.replace('-', ' ')) || []
 
   return (
-    <header className="w-full px-6 py-4">
+    <header className={cn(className, 'w-full px-6 py-5')}>
       <nav aria-label="Breadcrumb">
         <ol className="list-none p-0 inline-flex">
           {pathSegments.map((segment, idx) => {

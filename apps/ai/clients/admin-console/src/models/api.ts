@@ -13,15 +13,18 @@ export type QueryStatus = 'SQL_ERROR' | 'NOT_VERIFIED' | 'VERIFIED'
 
 export type QuerySqlResult = {
   columns: string[]
-  rows: { [columnKey: string]: string | number }[]
+  rows: QuerySqlResultData[]
 }
+
+export type QuerySqlResultData = { [columnKey: string]: string | number }
 
 export interface Query {
   id: string
   question: string
   question_date: string
   sql_query: string
-  sql_query_result: QuerySqlResult
+  sql_query_result: QuerySqlResult | null
+  sql_error_message?: string
   ai_process: string[]
   nl_response: string
   status: QueryStatus
