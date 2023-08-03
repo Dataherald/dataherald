@@ -41,7 +41,7 @@ class DefaultContextStore(ContextStore):
             if golden_query is not None and associated_nl_question is not None:
                 samples.append(
                     {
-                        "nl_question": associated_nl_question["question"],
+                        "nl_question": associated_nl_question.question,
                         "sql_query": golden_query.sql_query,
                         "score": question["score"],
                     }
