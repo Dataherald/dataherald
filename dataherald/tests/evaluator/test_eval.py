@@ -18,7 +18,8 @@ class TestEvaluator(Evaluator):
         generated_answer: NLQueryResponse,
         database_connection: DatabaseConnection,
     ) -> confloat(ge=0, le=1):
-        return 1.0
+        score: confloat(ge=0, le=1) = 1.0
+        return score
 
     @override
     def evaluate(
