@@ -1,4 +1,5 @@
 from overrides import override
+from pydantic import confloat
 
 from dataherald.config import System
 from dataherald.eval import Evaluation, Evaluator
@@ -11,12 +12,12 @@ class TestEvaluator(Evaluator):
         pass
 
     @override
-    def is_acceptable_response(
+    def get_confidence_score(
         self,
         question: NLQuery,
         generated_answer: NLQueryResponse,
         database_connection: DatabaseConnection,
-    ) -> bool:
+    ) -> confloat(ge=0, le=1):
         return True
 
     @override
