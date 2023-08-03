@@ -246,7 +246,7 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
         schema, entity = tool_input.split(",")
         table_name, column_name = schema.split("->")
         query = f"SELECT DISTINCT {column_name} FROM {table_name}"  # noqa: S608
-        results = self.db.run_sql(query)[1]['result']
+        results = self.db.run_sql(query)[1]["result"]
         results = self.find_similar_strings(results, entity)
         similar_items = "Similar items:\n"
         for item in results:
