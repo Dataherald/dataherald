@@ -8,6 +8,7 @@ from sql_metadata import Parser
 from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.repositories.base import NLQueryResponseRepository
+from dataherald.repositories.nl_question import NLQuestionRepository
 from dataherald.types import NLQuery, NLQueryResponse
 
 logger = logging.getLogger(__name__)
@@ -30,12 +31,13 @@ class DefaultContextStore(ContextStore):
         )
 
         samples = []
+        nl_question_repository = NLQuestionRepository(self.db)
         nl_query_response_repository = NLQueryResponseRepository(self.db)
         for question in closest_questions:
             golden_query = nl_query_response_repository.find_one(
                 {"nl_question_id": ObjectId(question["id"])}
             )
-            associated_nl_question = self.db.find_by_id("nl_question", question["id"])
+            associated_nl_question = nl_question_repository.find_by_id(question["id"])
             if golden_query is not None and associated_nl_question is not None:
                 samples.append(
                     {
@@ -57,7 +59,8 @@ class DefaultContextStore(ContextStore):
             tables = Parser(record["sql"]).tables
             question = record["nl_question"]
             user_question = NLQuery(question=question, db_alias=record["db"])
-            user_question.id = self.db.insert_one("nl_question", user_question.dict())
+            nl_query_repository = NLQuestionRepository(self.db)
+            user_question = nl_query_repository.insert(user_question)
             self.vector_store.add_record(
                 documents=question,
                 collection=self.golden_record_collection,

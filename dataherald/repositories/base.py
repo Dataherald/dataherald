@@ -1,3 +1,5 @@
+from bson.objectid import ObjectId
+
 from dataherald.types import NLQueryResponse
 
 DB_COLLECTION = "nl_query_response"
@@ -15,6 +17,20 @@ class NLQueryResponseRepository:
 
     def find_one(self, query: dict) -> NLQueryResponse | None:
         row = self.storage.find_one(DB_COLLECTION, query)
+        if not row:
+            return None
+        return NLQueryResponse(**row)
+
+    def update(self, nl_query_response: NLQueryResponse) -> int:
+        self.storage.update_or_create(
+            DB_COLLECTION,
+            {"_id": ObjectId(nl_query_response.id)},
+            nl_query_response.dict(exclude={"id"}),
+        )
+        return nl_query_response
+
+    def find_by_id(self, id: str) -> NLQueryResponse | None:
+        row = self.storage.find_one(DB_COLLECTION, {"_id": ObjectId(id)})
         if not row:
             return None
         return NLQueryResponse(**row)

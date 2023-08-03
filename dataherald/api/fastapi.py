@@ -16,6 +16,7 @@ from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.eval import Evaluation, Evaluator
 from dataherald.repositories.base import NLQueryResponseRepository
+from dataherald.repositories.nl_question import NLQuestionRepository
 from dataherald.smart_cache import SmartCache
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
@@ -79,9 +80,10 @@ class FastAPI(API):
         context_store = self.system.instance(ContextStore)
 
         user_question = NLQuery(question=question, db_alias=db_alias)
-        user_question.id = self.storage.insert_one(
-            "nl_question", user_question.dict(exclude={"id"})
-        )
+
+        nl_question_repository = NLQuestionRepository(self.storage)
+        user_question = nl_question_repository.insert(user_question)
+
         db_connection = self.storage.find_one(
             "database_connection", {"alias": db_alias}
         )
