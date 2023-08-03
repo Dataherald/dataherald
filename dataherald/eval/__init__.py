@@ -27,7 +27,7 @@ class Evaluator(Component, ABC):
         question: NLQuery,
         generated_answer: NLQueryResponse,
         database_connection: DatabaseConnection,
-    ) -> confloat(ge=0, le=1):
+    ) -> confloat:
         """Determines if a generated response from the engine is acceptable considering the ACCEPTANCE_THRESHOLD"""
         evaluation = self.evaluate(
             question=question,
