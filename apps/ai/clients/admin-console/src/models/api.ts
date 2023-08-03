@@ -1,5 +1,5 @@
 export interface User {
-  id: string | number // TODO remove number
+  id: string
   name: string
 }
 
@@ -11,17 +11,23 @@ export enum EQueryStatus {
 
 export type QueryStatus = 'SQL_ERROR' | 'NOT_VERIFIED' | 'VERIFIED'
 
+export type QuerySqlResult = {
+  columns: string[]
+  rows: { [columnKey: string]: string | number }[]
+}
+
 export interface Query {
   id: string
-  user: User
   question: string
-  nl_response: string
-  sql_query: string
   question_date: string
-  ai_process: string | string[]
-  last_updated: string
+  sql_query: string
+  sql_query_result: QuerySqlResult
+  ai_process: string[]
+  nl_response: string
   status: QueryStatus
   evaluation_score: number
+  user: User
+  last_updated: string
 }
 
 export type Queries = Query[]
