@@ -1,4 +1,3 @@
-import ast
 import difflib
 import logging
 import time
@@ -48,7 +47,7 @@ Here is the plan you have to follow:
 2) Use the db_tables_with_relevance_scores tool to find the a second set of possibly relevant tables.
 3) Use the db_relevant_tables_schema tool to obtain the schema of the both sets of possibly relevant tables to identify the possibly relevant columns.
 4) Use the db_relevant_columns_info tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
-5) [Optional based on the question] Always use the db_column_entity_chekcer tool to make sure that relevant columns have the cell-values.
+5) [Optional based on the question] Always use the db_column_entity_checker tool to make sure that relevant columns have the cell-values.
 6) Write a {dialect} query and use sql_db_query tool the Execute the SQL query on the database to obtain the results.
 #
 Some tips to always keep in mind:
@@ -216,7 +215,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
 class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
     """Tool for getting sample rows for the given column."""
 
-    name = "db_column_entity_chekcer"
+    name = "db_column_entity_checker"
     description = """
     Input: Column name and its corresponding table, and an entity.
     Output: cell-values found in the column similar to the given entity.
@@ -247,8 +246,7 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
         schema, entity = tool_input.split(",")
         table_name, column_name = schema.split("->")
         query = f"SELECT DISTINCT {column_name} FROM {table_name}"  # noqa: S608
-        results = self.db.run_no_throw(query)
-        results = ast.literal_eval(results)
+        results = self.db.run_sql(query)[1]["result"]
         results = self.find_similar_strings(results, entity)
         similar_items = "Similar items:\n"
         for item in results:
