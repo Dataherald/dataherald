@@ -14,7 +14,6 @@ from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
     DataDefinitionType,
     ExecuteTempQueryRequest,
-    ExecuteTempQueryResponse,
     NLQueryResponse,
     UpdateQueryRequest,
 )
@@ -129,6 +128,6 @@ class FastAPI(dataherald.server.Server):
 
     def execute_temp_query(
         self, query_id: str, query: ExecuteTempQueryRequest
-    ) -> ExecuteTempQueryResponse:
+    ) -> NLQueryResponse:
         """Executes a query on the given db_alias"""
         return self._api.execute_temp_query(query_id, query)

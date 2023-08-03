@@ -24,10 +24,8 @@ from dataherald.sql_generator import SQLGenerator
 from dataherald.types import (
     DataDefinitionType,
     ExecuteTempQueryRequest,
-    ExecuteTempQueryResponse,
     NLQuery,
     NLQueryResponse,
-    SQLQueryResult,
     UpdateQueryRequest,
 )
 
@@ -175,26 +173,14 @@ class FastAPI(API):
     def update_query(
         self, query_id: str, query: UpdateQueryRequest  # noqa: ARG002
     ) -> NLQueryResponse:
-        nl_query_response = NLQueryResponse(
-            id="foo",
-            nl_question_id="foo",
-            sql_query="foo",
-            sql_query_result=SQLQueryResult(
-                columns=["h1", "h2"], rows=[{"h1": "foo", "h2": "bar"}]
-            ),
-        )
-
+        nl_query_response_repository = NLQueryResponseRepository(self.storage)
+        nl_query_response = nl_query_response_repository.find_by_id(query_id)
         return json.loads(json_util.dumps(nl_query_response))
 
     @override
     def execute_temp_query(
         self, query_id: str, query: ExecuteTempQueryRequest  # noqa: ARG002
-    ) -> ExecuteTempQueryResponse:
-        response = ExecuteTempQueryResponse(
-            nl_response="foo",
-            sql_query_result=SQLQueryResult(
-                columns=["h1", "h2"], rows=[{"h1": "foo", "h2": "bar"}]
-            ),
-        )
-
-        return json.loads(json_util.dumps(response))
+    ) -> NLQueryResponse:
+        nl_query_response_repository = NLQueryResponseRepository(self.storage)
+        nl_query_response = nl_query_response_repository.find_by_id(query_id)
+        return json.loads(json_util.dumps(nl_query_response))
