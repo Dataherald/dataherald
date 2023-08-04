@@ -1,23 +1,8 @@
-import MOCK_QUERIES from '@/mocks/queries'
+import { API_URL } from '@/config'
 import { Queries } from '@/models/api'
 import useSWRInfinite from 'swr/infinite'
 
 const PAGE_SIZE = 10
-
-const fetcher = (url: string): Promise<Queries> => {
-  return new Promise((resolve) => {
-    const params = new URLSearchParams(url.split('?')[1])
-    const page = Number(params.get('page') || 0)
-    const startIdx = page * PAGE_SIZE
-    const endIdx = startIdx + PAGE_SIZE
-
-    const timeoutId = setTimeout(() => {
-      resolve(MOCK_QUERIES.slice(startIdx, endIdx))
-    }, 1000)
-
-    return () => clearTimeout(timeoutId)
-  })
-}
 
 interface QueriesResponse {
   queries: Queries | undefined
@@ -37,8 +22,7 @@ const useQueries = (): QueriesResponse => {
     setSize: setPage,
     isLoading,
   } = useSWRInfinite<Queries>(
-    (index) => `/api/queries?page=${index + 1}`,
-    fetcher,
+    (index) => `${API_URL}/query/list?page=${index}&page_size=${PAGE_SIZE}`,
   )
 
   const queries = queriesPages?.flat()
