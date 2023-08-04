@@ -37,5 +37,14 @@ export const getDomainStatusColor = (
   return EDomainQueryStatusTextColor[domainStatus]
 }
 
-export const formatQueryStatus = (status?: DomainQueryStatus | QueryStatus) =>
-  status?.replace('_', ' ').toLowerCase()
+export const formatQueryStatus = (
+  status?: DomainQueryStatus | QueryStatus,
+): string => {
+  if (status) {
+    const formattedStatus = status?.replace('_', ' ').toLowerCase()
+    return status === EQueryStatus.SQL_ERROR
+      ? formattedStatus.replace('sql', 'SQL')
+      : formattedStatus
+  }
+  return ''
+}

@@ -30,8 +30,7 @@ export function SqlResultsTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
   })
 
-  const cellClasses: ClassValue =
-    'h-8 py-0 border-b border-r last:border-r-0 last:max-w-none max-w-[20px]'
+  const cellClasses: ClassValue = 'h-8 py-0 border-b border-r last:border-r-0'
 
   return (
     <Table>

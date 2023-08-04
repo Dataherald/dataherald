@@ -112,7 +112,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query }) => {
         <>
           <div
             id="query_results"
-            className="shrink-0 h-44 overflow-auto border bg-white"
+            className="shrink-0 h-44 overflow-auto flex flex-col border bg-white"
           >
             {sql_query_result === null ? (
               <div className="w-full h-full flex items-center justify-center bg-gray-100">
