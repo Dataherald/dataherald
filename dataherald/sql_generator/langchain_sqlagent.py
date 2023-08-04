@@ -78,4 +78,4 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
             total_cost=cb.total_cost,
             sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",
         )
-        return self.create_sql_query_status(self.database,response.sql_query,response)
+        return self.create_sql_query_status(self.database, response.sql_query, response)

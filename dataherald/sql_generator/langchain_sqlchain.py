@@ -86,4 +86,4 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
             total_tokens=cb.total_tokens,
             sql_query=result["intermediate_steps"][1],
         )
-        return self.create_sql_query_status(self.database,response.sql_query,response)
+        return self.create_sql_query_status(self.database, response.sql_query, response)

@@ -26,11 +26,9 @@ class SQLGenerator(Component, ABC):
             model_name="gpt-4-32k",
         )
 
-    def create_sql_query_status(self,
-                                db: SQLDatabase,
-                                query: str,
-                                response: NLQueryResponse
-                                ) -> NLQueryResponse:
+    def create_sql_query_status(
+        self, db: SQLDatabase, query: str, response: NLQueryResponse
+    ) -> NLQueryResponse:
         """Find the sql query status and populate the fields sql_query_result, sql_generation_status, and error_message"""
         if query == "":
             response.sql_generation_status = "NONE"
@@ -48,13 +46,19 @@ class SQLGenerator(Component, ABC):
                     rows = []
                     for row in result:
                         modified_row = {}
-                        for key, value in zip(row.keys(), row,strict=True):
-                            if type(value) is date:  # Check if the value is an instance of datetime.date
-                                modified_row[key] = datetime(value.year, value.month, value.day)
+                        for key, value in zip(row.keys(), row, strict=True):
+                            if (
+                                type(value) is date
+                            ):  # Check if the value is an instance of datetime.date
+                                modified_row[key] = datetime(
+                                    value.year, value.month, value.day
+                                )
                             else:
                                 modified_row[key] = value
                         rows.append(modified_row)
-                    response.sql_query_result = SQLQueryResult(columns=columns, rows=rows)
+                    response.sql_query_result = SQLQueryResult(
+                        columns=columns, rows=rows
+                    )
                 response.sql_generation_status = "VALID"
                 response.error_message = None
             except Exception as e:

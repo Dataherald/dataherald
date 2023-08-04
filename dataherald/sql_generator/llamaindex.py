@@ -101,4 +101,4 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             intermediate_steps=[str(result.metadata)],
             sql_query=result.metadata["sql_query"],
         )
-        return self.create_sql_query_status(self.database,response.sql_query,response)
+        return self.create_sql_query_status(self.database, response.sql_query, response)
