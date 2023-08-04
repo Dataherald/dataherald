@@ -4,7 +4,7 @@ import useSWR from 'swr'
 
 export const useQuery = (queryId: string) => {
   const { data, isLoading, error } = useSWR<Query>(
-    `${API_URL}/query/${queryId}`,
+    queryId ? `${API_URL}/query/${queryId}` : null,
   )
 
   return {

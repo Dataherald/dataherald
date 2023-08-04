@@ -1,4 +1,5 @@
 import QueryLastUpdated from '@/components/query/last-updated'
+import LoadingQueryResults from '@/components/query/loading-results'
 import QueryProcess from '@/components/query/process'
 import QueryQuestion from '@/components/query/question'
 import SqlEditor from '@/components/query/sql-editor'
@@ -13,9 +14,10 @@ import { FC, useState } from 'react'
 
 export interface QueryWorkspaceProps {
   query: Query
+  onExecuteQuery: (sql_query: string) => void
 }
 
-const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query }) => {
+const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query, onExecuteQuery }) => {
   const {
     question,
     question_date,
@@ -33,6 +35,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query }) => {
   const lastUpdatedDate: Date = new Date(last_updated)
   const [currentSqlQuery, setCurrentSqlQuery] = useState(sql_query)
   const [verifiedStatus, setVerifiedStatus] = useState<QueryStatus>(status)
+  const [loadingQueryResults, setLoadingQueryResults] = useState(false)
 
   const handleSqlChange = (value: string) => {
     setCurrentSqlQuery(value)
@@ -42,8 +45,14 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query }) => {
     setVerifiedStatus(verifiedStatus)
   }
 
+  const handleRunClick = async () => {
+    setLoadingQueryResults(true)
+    await onExecuteQuery(currentSqlQuery)
+    setLoadingQueryResults(false)
+  }
+
   return (
-    <div className="grow overflow-auto flex flex-col gap-5">
+    <div className="grow flex flex-col gap-5">
       <div id="header" className="flex justify-between gap-3">
         <QueryQuestion {...{ username, question, questionDate }} />
         <div className="flex items-center gap-5">
@@ -59,7 +68,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query }) => {
       </div>
       <div
         id="tabs"
-        className="grow overflow-auto flex flex-col gap-5 bg-white border rounded-xl p-6"
+        className="shrink-0 h-80 grow flex-auto flex flex-col gap-5 bg-white border rounded-xl p-6"
       >
         <Tabs
           defaultValue="sql"
@@ -82,7 +91,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query }) => {
                   verifiedStatus={verifiedStatus}
                   onValueChange={handleVerifyChange}
                 />
-                <Button>
+                <Button onClick={handleRunClick}>
                   <Play className="mr-2" size={20} strokeWidth={2.5} /> Run
                 </Button>
               </div>
@@ -100,22 +109,28 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query }) => {
         </Tabs>
         <QueryLastUpdated date={lastUpdatedDate} />
       </div>
-      {sql_error_message ? (
-        <div className="flex flex-col items-center justify-center gap-5 bg-white border border-red-600 text-red-600 p-10">
-          <div className="flex items-center gap-3  font-bold">
+      {loadingQueryResults ? (
+        <div className="shrink-0 h-60">
+          <LoadingQueryResults />
+        </div>
+      ) : sql_error_message ? (
+        <div className="shrink-0 h-60 flex flex-col items-center bg-white border border-red-600 text-red-600">
+          <div className="flex items-center gap-3 py-5 font-bold">
             <XOctagon size={28} />
             <span>SQL Error</span>
           </div>
-          <div className="whitespace-pre ">{sql_error_message}</div>
+          <div className="w-full overflow-auto px-8 pb-3">
+            {sql_error_message}
+          </div>
         </div>
       ) : (
-        <>
+        <div className="flex flex-col gap-3">
           <div
             id="query_results"
-            className="shrink-0 h-44 overflow-auto flex flex-col border bg-white"
+            className="min-h-[12rem] max-h-80 flex flex-col border bg-white"
           >
             {sql_query_result === null ? (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
+              <div className="w-full h-60 flex items-center justify-center bg-gray-100">
                 <div className="text-gray-600">No Results</div>
               </div>
             ) : (
@@ -129,11 +144,13 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query }) => {
               />
             )}
           </div>
-          <div id="nl_response" className="flex-none">
-            <span className="font-bold">Answer:</span> {nl_response}
-            {nl_response}
-          </div>
-        </>
+          {sql_query_result && (
+            <div id="nl_response">
+              <span className="font-bold mr-1">Answer:</span>
+              {nl_response}
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
