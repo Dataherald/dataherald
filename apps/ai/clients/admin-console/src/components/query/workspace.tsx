@@ -15,9 +15,17 @@ import { FC, useState } from 'react'
 export interface QueryWorkspaceProps {
   query: Query
   onExecuteQuery: (sql_query: string) => void
+  onPatchQuery: (patches: {
+    sql_query: string
+    query_status: QueryStatus
+  }) => void
 }
 
-const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query, onExecuteQuery }) => {
+const QueryWorkspace: FC<QueryWorkspaceProps> = ({
+  query,
+  onExecuteQuery,
+  onPatchQuery,
+}) => {
   const {
     question,
     question_date,
@@ -45,10 +53,17 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query, onExecuteQuery }) => {
     setVerifiedStatus(verifiedStatus)
   }
 
-  const handleRunClick = async () => {
+  const handleRunQuery = async () => {
     setLoadingQueryResults(true)
     await onExecuteQuery(currentSqlQuery)
     setLoadingQueryResults(false)
+  }
+
+  const handleSaveQuery = async () => {
+    await onPatchQuery({
+      query_status: verifiedStatus,
+      sql_query: currentSqlQuery,
+    })
   }
 
   return (
@@ -61,7 +76,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query, onExecuteQuery }) => {
               Cancel
             </Button>
           </Link>
-          <Button variant="primary" className="px-6">
+          <Button variant="primary" className="px-6" onClick={handleSaveQuery}>
             <Save className="mr-2" size={20} strokeWidth={2.5} /> Save
           </Button>
         </div>
@@ -91,7 +106,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query, onExecuteQuery }) => {
                   verifiedStatus={verifiedStatus}
                   onValueChange={handleVerifyChange}
                 />
-                <Button onClick={handleRunClick}>
+                <Button onClick={handleRunQuery}>
                   <Play className="mr-2" size={20} strokeWidth={2.5} /> Run
                 </Button>
               </div>

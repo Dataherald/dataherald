@@ -3,7 +3,7 @@ import { Query } from '@/models/api'
 import useSWR from 'swr'
 
 export const useQuery = (queryId: string) => {
-  const { data, isLoading, error } = useSWR<Query>(
+  const { data, isLoading, error, mutate } = useSWR<Query>(
     queryId ? `${API_URL}/query/${queryId}` : null,
   )
 
@@ -11,5 +11,6 @@ export const useQuery = (queryId: string) => {
     query: data,
     isLoading,
     error,
+    mutate,
   }
 }
