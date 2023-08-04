@@ -19,6 +19,7 @@ class NLQueryResponseRepository:
         row = self.storage.find_one(DB_COLLECTION, query)
         if not row:
             return None
+        row["id"] = row["_id"]
         return NLQueryResponse(**row)
 
     def update(self, nl_query_response: NLQueryResponse) -> int:
@@ -33,4 +34,5 @@ class NLQueryResponseRepository:
         row = self.storage.find_one(DB_COLLECTION, {"_id": ObjectId(id)})
         if not row:
             return None
+        row["id"] = row["_id"]
         return NLQueryResponse(**row)
