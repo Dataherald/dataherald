@@ -21,6 +21,7 @@ from dataherald.smart_cache import SmartCache
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.sql_generator import SQLGenerator
+from dataherald.sql_generator.generates_nl_answer import GeneratesNlAnswer
 from dataherald.types import (
     DataDefinitionType,
     ExecuteTempQueryRequest,
@@ -175,6 +176,11 @@ class FastAPI(API):
     ) -> NLQueryResponse:
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
         nl_query_response = nl_query_response_repository.find_by_id(query_id)
+        nl_query_response.sql_query = query.sql_query
+        nl_query_response.golden_record = query.golden_record
+        generates_nl_answer = GeneratesNlAnswer(self.storage)
+        nl_query_response = generates_nl_answer.execute(nl_query_response)
+        nl_query_response_repository.update(nl_query_response)
         return json.loads(json_util.dumps(nl_query_response))
 
     @override
@@ -183,4 +189,7 @@ class FastAPI(API):
     ) -> NLQueryResponse:
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
         nl_query_response = nl_query_response_repository.find_by_id(query_id)
+        nl_query_response.sql_query = query.sql_query
+        generates_nl_answer = GeneratesNlAnswer(self.storage)
+        nl_query_response = generates_nl_answer.execute(nl_query_response)
         return json.loads(json_util.dumps(nl_query_response))
