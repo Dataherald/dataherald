@@ -64,15 +64,15 @@ class QueriesService:
             ]
         raise HTTPException(status_code=404, detail="no queries")
 
-    def patch_query(self, query_id: str, data: QueryEditRequest) -> QueryResponse:
+    async def patch_query(self, query_id: str, data: QueryEditRequest) -> QueryResponse:
         object_id = ObjectId(query_id)
         golden_record = True if data.query_status == QueryStatus.VERIFIED else False
         data = QueryEditRequestCore(
             sql_query=data.sql_query, golden_record=golden_record
         )
         # request patch query to k2 (repo)
-        with httpx.Client() as client:
-            response = client.patch(
+        async with httpx.AsyncClient() as client:
+            response = await client.patch(
                 settings.k2_core_url + f"/query/{query_id}", data=data.json()
             )
             response.raise_for_status()
@@ -84,10 +84,10 @@ class QueriesService:
                 query_id, response_ref, question, new_query_response
             )
 
-    def run_query(self, query_id: str, sql_query: SQLQueryRequest):
+    async def run_query(self, query_id: str, sql_query: SQLQueryRequest):
         object_id = ObjectId(query_id)
-        with httpx.Client() as client:
-            response = client.post(
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
                 settings.k2_core_url + f"/query/{query_id}/execution",
                 data=sql_query.json(),
             )

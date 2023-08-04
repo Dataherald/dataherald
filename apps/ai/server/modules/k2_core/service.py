@@ -16,20 +16,20 @@ class K2Service:
     def __init__(self):
         self.repo = K2CoreRepository()
 
-    def answer_question(self, question: str) -> NLQueryResponse:
+    async def answer_question(self, question: str) -> NLQueryResponse:
         path = "/question"
         params = {"question": question, "db_alias": dbsettings.db_alias}
 
-        response: NLQueryResponse = self._k2_post_request(path, params=params)
+        response: NLQueryResponse = await self._k2_post_request(path, params=params)
         self.repo.record_response_pointer(response["id"])
         return response
 
-    def evaluate(self, data) -> Evaluation:
+    async def evaluate(self, data) -> Evaluation:
         path = "/question/evaluate"
 
-        return self._k2_post_request(path, data)
+        return await self._k2_post_request(path, data)
 
-    def connect_database(
+    async def connect_database(
         self,
         alias: str,
         use_ssh: bool,
@@ -46,25 +46,25 @@ class K2Service:
 
         return self._k2_post_request(path, data)
 
-    def add_golden_records(self, golden_records: List) -> bool:
+    async def add_golden_records(self, golden_records: List) -> bool:
         path = "/golden-record"
         data = {"golden_records": golden_records}
 
-        return self._k2_post_request(path, data)
+        return await self._k2_post_request(path, data)
 
-    def add_data_definition(self, uri: str, type: DataDefinitionType) -> bool:
+    async def add_data_definition(self, uri: str, type: DataDefinitionType) -> bool:
         path = "/data-definition"
         data = {"uri": uri, "type": type}
 
-        return self._k2_post_request(path, data)
+        return await self._k2_post_request(path, data)
 
-    def heartbeat(self):
+    async def heartbeat(self):
         path = "/heartbeat"
-        return self._k2_get_request(path)
+        return await self._k2_get_request(path)
 
-    def _k2_post_request(self, path, data=None, params=None):
-        with httpx.Client() as client:
-            response = client.post(
+    async def _k2_post_request(self, path, data=None, params=None):
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
                 settings.k2_core_url + path,
                 params=params,
                 data=data,
@@ -73,8 +73,8 @@ class K2Service:
             response.raise_for_status()  # Raise an exception for non-2xx status codes
             return response.json()
 
-    def _k2_get_request(self, path):
-        with httpx.Client() as client:
-            response = client.get(settings.k2_core_url + path)
+    async def _k2_get_request(self, path):
+        async with httpx.AsyncClient() as client:
+            response = await client.get(settings.k2_core_url + path)
             response.raise_for_status()  # Raise an exception for non-2xx status codes
             return response.json()

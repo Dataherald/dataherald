@@ -29,9 +29,9 @@ async def get_query(query_id: str) -> QueryResponse:
 
 @router.patch("/{query_id}")
 async def patch_query(query_id: str, data: QueryEditRequest) -> QueryResponse:
-    return QueriesService().patch_query(query_id, data)
+    return await QueriesService().patch_query(query_id, data)
 
 
 @router.post("/{query_id}/execution")
 async def run_query(query_id: str, data: SQLQueryRequest) -> QueryResponse:
-    return QueriesService().run_query(query_id, data)
+    return await QueriesService().run_query(query_id, data)

@@ -17,12 +17,12 @@ router = APIRouter(
 
 @router.post("/question")
 async def answer_question(question: str) -> NLQueryResponse:
-    return K2Service().answer_question(question)
+    return await K2Service().answer_question(question)
 
 
 @router.post("/question/evaluate")
 async def evaluate_question(evaluation: EvaluationRequest) -> Evaluation:
-    return K2Service().evaluate(evaluation)
+    return await K2Service().evaluate(evaluation)
 
 
 @router.post("/database")
@@ -32,19 +32,21 @@ async def connect_database(
     connection_uri: str | None = None,
     ssh_settings: SSHSettings | None = None,
 ) -> bool:
-    return K2Service().connect_database(alias, use_ssh, connection_uri, ssh_settings)
+    return await K2Service().connect_database(
+        alias, use_ssh, connection_uri, ssh_settings
+    )
 
 
 @router.post("/golden-record")
 async def add_golden_records(golden_records: List) -> bool:
-    return K2Service().add_golden_records(golden_records)
+    return await K2Service().add_golden_records(golden_records)
 
 
 @router.post("/data-definition")
 async def add_data_definition(uri: str, data: DataDefinitionType) -> bool:
-    return K2Service().add_data_definition(uri, data)
+    return await K2Service().add_data_definition(uri, data)
 
 
 @router.get("/heartbeat")
 async def heartbeat():
-    return K2Service().heartbeat()
+    return await K2Service().heartbeat()
