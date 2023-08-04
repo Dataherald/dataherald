@@ -9,7 +9,7 @@ export const patchQuery = async (
     query_status: QueryStatus
   },
 ): Promise<Query> =>
-  apiFetcher<Query>(`${API_URL}/query/${queryId}/`, {
+  apiFetcher<Query>(`${API_URL}/query/${queryId}`, {
     method: 'PATCH',
     body: JSON.stringify(patches),
   })
