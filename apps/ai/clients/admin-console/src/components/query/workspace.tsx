@@ -68,14 +68,14 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({ query, onExecuteQuery }) => {
       </div>
       <div
         id="tabs"
-        className="shrink-0 h-80 grow flex-auto flex flex-col gap-5 bg-white border rounded-xl p-6"
+        className="shrink-0 h-80 grow flex-auto flex flex-col gap-5 bg-white border rounded-xl px-6 py-4"
       >
         <Tabs
           defaultValue="sql"
           className="w-full grow overflow-auto flex flex-col"
         >
           <TabsList className="w-full">
-            <div className="w-full flex gap-3 justify-between">
+            <div className="w-full flex gap-3 justify-between py-2">
               <div id="tab-triggers" className="flex gap-5">
                 <TabsTrigger value="sql">
                   <Database className="mr-2" size={20} strokeWidth={2.5} /> SQL
