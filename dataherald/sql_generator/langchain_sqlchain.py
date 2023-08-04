@@ -77,7 +77,7 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         logger.info(
             f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
         )
-        return NLQueryResponse(
+        response = NLQueryResponse(
             nl_question_id=user_question.id,
             nl_response=result["result"],
             intermediate_steps=intermediate_steps,
@@ -86,3 +86,4 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
             total_tokens=cb.total_tokens,
             sql_query=result["intermediate_steps"][1],
         )
+        return self.create_sql_query_status(self.database,response.sql_query,response)

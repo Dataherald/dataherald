@@ -92,7 +92,7 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             f"total cost: {str(total_cost)} {str(token_counter.total_llm_token_count)}"
         )
         exec_time = time.time() - start_time
-        return NLQueryResponse(
+        response = NLQueryResponse(
             nl_question_id=user_question.id,
             nl_response=result.response,
             exec_time=exec_time,
@@ -101,3 +101,4 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             intermediate_steps=[str(result.metadata)],
             sql_query=result.metadata["sql_query"],
         )
+        return self.create_sql_query_status(self.database,response.sql_query,response)
