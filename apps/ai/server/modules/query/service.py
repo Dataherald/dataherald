@@ -73,7 +73,9 @@ class QueriesService:
         # request patch query to k2 (repo)
         async with httpx.AsyncClient() as client:
             response = await client.patch(
-                settings.k2_core_url + f"/query/{query_id}", data=data.json()
+                settings.k2_core_url + f"/query/{query_id}",
+                data=data.json(),
+                timeout=settings.default_k2_core_timeout,
             )
             response.raise_for_status()
             self.repo.update_last_updated(object_id)
@@ -90,6 +92,7 @@ class QueriesService:
             response = await client.post(
                 settings.k2_core_url + f"/query/{query_id}/execution",
                 data=sql_query.json(),
+                timeout=settings.default_k2_core_timeout,
             )
             response.raise_for_status()
             response_ref = self.repo.get_query_response_ref(object_id)
