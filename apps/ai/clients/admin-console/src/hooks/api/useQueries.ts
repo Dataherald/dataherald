@@ -1,5 +1,6 @@
 import { API_URL } from '@/config'
 import { QueryList } from '@/models/api'
+import { KeyedMutator } from 'swr'
 import useSWRInfinite from 'swr/infinite'
 
 const PAGE_SIZE = 10
@@ -13,6 +14,7 @@ interface QueriesResponse {
   setPage: (
     page: number | ((_page: number) => number),
   ) => Promise<QueryList[] | undefined>
+  mutate: KeyedMutator<QueryList[]>
 }
 
 const useQueries = (): QueriesResponse => {
@@ -21,6 +23,7 @@ const useQueries = (): QueriesResponse => {
     size: page,
     setSize: setPage,
     isLoading,
+    mutate,
   } = useSWRInfinite<QueryList>(
     (index) => `${API_URL}/query/list?page=${index}&page_size=${PAGE_SIZE}`,
   )
@@ -45,6 +48,7 @@ const useQueries = (): QueriesResponse => {
     isReachingEnd,
     page,
     setPage,
+    mutate,
   }
 }
 

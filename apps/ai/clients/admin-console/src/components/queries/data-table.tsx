@@ -1,4 +1,5 @@
 import { LoadingTableRows } from '@/components/queries/loading-rows'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -13,7 +14,6 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { Button } from '../ui/button'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
