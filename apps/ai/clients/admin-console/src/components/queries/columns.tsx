@@ -4,13 +4,13 @@ import {
   getDomainStatusColor,
 } from '@/lib/domain/query-status'
 import { cn } from '@/lib/utils'
-import { Query } from '@/models/api'
+import { QueryListItem } from '@/models/api'
 import { EDomainQueryStatus } from '@/models/domain'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import { Microscope } from 'lucide-react'
 
-export const columns: ColumnDef<Query>[] = [
+export const columns: ColumnDef<QueryListItem>[] = [
   {
     id: 'status-icon',
     header: '',

@@ -1,6 +1,6 @@
-import { Queries } from '@/models/api'
+import { Queries, QueryList } from '@/models/api'
 
-const MOCK_QUERIES: Queries = [
+const MOCK_QUERIES: Queries | QueryList = [
   {
     id: 'DH600438',
     question: 'Senior behind share represent together.?',

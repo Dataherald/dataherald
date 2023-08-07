@@ -18,6 +18,18 @@ export type QuerySqlResult = {
 
 export type QuerySqlResultData = { [columnKey: string]: string | number }
 
+export interface QueryListItem {
+  id: string
+  user: User
+  question: string
+  question_date: string
+  nl_response: string
+  status: QueryStatus
+  evaluation_score: number
+}
+
+export type QueryList = QueryListItem[]
+
 export interface Query {
   id: string
   question: string

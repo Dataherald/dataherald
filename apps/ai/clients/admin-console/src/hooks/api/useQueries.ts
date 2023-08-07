@@ -1,18 +1,18 @@
 import { API_URL } from '@/config'
-import { Queries } from '@/models/api'
+import { QueryList } from '@/models/api'
 import useSWRInfinite from 'swr/infinite'
 
 const PAGE_SIZE = 10
 
 interface QueriesResponse {
-  queries: Queries | undefined
+  queries: QueryList | undefined
   isLoadingFirst: boolean
   isLoadingMore: boolean
   isReachingEnd: boolean
   page: number
   setPage: (
     page: number | ((_page: number) => number),
-  ) => Promise<Queries[] | undefined>
+  ) => Promise<QueryList[] | undefined>
 }
 
 const useQueries = (): QueriesResponse => {
@@ -21,7 +21,7 @@ const useQueries = (): QueriesResponse => {
     size: page,
     setSize: setPage,
     isLoading,
-  } = useSWRInfinite<Queries>(
+  } = useSWRInfinite<QueryList>(
     (index) => `${API_URL}/query/list?page=${index}&page_size=${PAGE_SIZE}`,
   )
 

@@ -2,7 +2,7 @@ import { columns as cols } from '@/components/queries/columns'
 import { DataTable } from '@/components/queries/data-table'
 import { LoadingTable } from '@/components/queries/loading-table'
 import useQueries from '@/hooks/api/useQueries'
-import { Query } from '@/models/api'
+import { QueryListItem } from '@/models/api'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef } from 'react'
 
@@ -19,7 +19,8 @@ export default function QueriesPage() {
   const loadingRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
-  const handleQueryClick = (query: Query) => router.push(`/queries/${query.id}`)
+  const handleQueryClick = (query: QueryListItem) =>
+    router.push(`/queries/${query.id}`)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
