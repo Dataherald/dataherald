@@ -178,13 +178,19 @@ class FastAPI(API):
         nl_question_repository = NLQuestionRepository(self.storage)
         context_store = self.system.instance(ContextStore)
         nl_query_response = nl_query_response_repository.find_by_id(query_id)
-        nl_question = nl_question_repository.find_by_id(nl_query_response.nl_question_id)
+        nl_question = nl_question_repository.find_by_id(
+            nl_query_response.nl_question_id
+        )
         nl_query_response.sql_query = query.sql_query
         nl_query_response.golden_record = query.golden_record
         generates_nl_answer = GeneratesNlAnswer(self.storage)
         nl_query_response = generates_nl_answer.execute(nl_query_response)
         nl_query_response_repository.update(nl_query_response)
-        golden_record = {"nl_question":nl_question.question,"sql": nl_query_response.sql_query, "db": nl_question.db_alias}
+        golden_record = {
+            "nl_question": nl_question.question,
+            "sql": nl_query_response.sql_query,
+            "db": nl_question.db_alias,
+        }
         added_to_context_store = context_store.add_golden_records([golden_record])
         if not added_to_context_store:
             raise HTTPException(
