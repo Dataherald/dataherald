@@ -50,7 +50,11 @@ export default function QueriesPage() {
     <div className="grow overflow-auto flex flex-col gap-4 rounded-xl border bg-gray-50 p-6">
       <div className="flex items-center justify-between bg-gray-50 py-0">
         <h1 className="font-bold">Latest Queries</h1>
-        <Button variant="outline" onClick={handleRefresh}>
+        <Button
+          variant="outline"
+          className="bg-gray-50"
+          onClick={handleRefresh}
+        >
           <RefreshCw
             size={18}
             className={cn('mr-2', isRefreshing ? 'animate-spin' : '')}
