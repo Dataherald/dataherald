@@ -11,7 +11,14 @@ import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { useToast } from '@/components/ui/use-toast'
 import { Query, QueryStatus } from '@/models/api'
-import { Database, ListOrdered, Play, Save, XOctagon } from 'lucide-react'
+import {
+  Database,
+  ListOrdered,
+  Loader,
+  Play,
+  Save,
+  XOctagon,
+} from 'lucide-react'
 import Link from 'next/link'
 import { FC, useState } from 'react'
 
@@ -126,10 +133,16 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
               variant="primary"
               className="px-6"
               onClick={handleSaveQuery}
+              disabled={savingQuery}
             >
               {savingQuery ? (
                 <>
-                  <div className="spinner mr-2"></div> Saving
+                  <Loader
+                    className="mr-2 animate-spin"
+                    size={20}
+                    strokeWidth={2.5}
+                  />{' '}
+                  Saving
                 </>
               ) : (
                 <>
@@ -165,8 +178,25 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                     verifiedStatus={verifiedStatus}
                     onValueChange={handleVerifyChange}
                   />
-                  <Button onClick={handleRunQuery}>
-                    <Play className="mr-2" size={20} strokeWidth={2.5} /> Run
+                  <Button
+                    onClick={handleRunQuery}
+                    disabled={loadingQueryResults}
+                  >
+                    {loadingQueryResults ? (
+                      <>
+                        <Loader
+                          className="mr-2 animate-spin"
+                          size={20}
+                          strokeWidth={2.5}
+                        />{' '}
+                        Running
+                      </>
+                    ) : (
+                      <>
+                        <Play className="mr-2" size={20} strokeWidth={2.5} />
+                        Run
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
