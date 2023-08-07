@@ -191,12 +191,7 @@ class FastAPI(API):
             "sql": nl_query_response.sql_query,
             "db": nl_question.db_alias,
         }
-        added_to_context_store = context_store.add_golden_records([golden_record])
-        if not added_to_context_store:
-            raise HTTPException(
-                status_code=500,
-                detail="Could not add golden record to context store",
-            )
+        context_store.add_golden_records([golden_record])
         return json.loads(json_util.dumps(nl_query_response))
 
     @override
