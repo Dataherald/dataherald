@@ -175,12 +175,23 @@ class FastAPI(API):
         self, query_id: str, query: UpdateQueryRequest  # noqa: ARG002
     ) -> NLQueryResponse:
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
+        nl_question_repository = NLQuestionRepository(self.storage)
+        context_store = self.system.instance(ContextStore)
         nl_query_response = nl_query_response_repository.find_by_id(query_id)
+        nl_question = nl_question_repository.find_by_id(
+            nl_query_response.nl_question_id
+        )
         nl_query_response.sql_query = query.sql_query
         nl_query_response.golden_record = query.golden_record
         generates_nl_answer = GeneratesNlAnswer(self.storage)
         nl_query_response = generates_nl_answer.execute(nl_query_response)
         nl_query_response_repository.update(nl_query_response)
+        golden_record = {
+            "nl_question": nl_question.question,
+            "sql": nl_query_response.sql_query,
+            "db": nl_question.db_alias,
+        }
+        context_store.add_golden_records([golden_record])
         return json.loads(json_util.dumps(nl_query_response))
 
     @override
