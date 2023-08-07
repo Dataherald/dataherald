@@ -40,7 +40,7 @@ class QueriesService:
     ) -> list[QueryListResponse]:
         # assuming all return objects in order
         response_refs = self.repo.get_query_response_refs(
-            skip=page * page_size, limit=page_size
+            skip=page * page_size, limit=page_size, order=order
         )
         object_ids = [qrr.query_response_id for qrr in response_refs]
         query_responses = self.repo.get_query_responses(object_ids)
@@ -64,7 +64,7 @@ class QueriesService:
                         query_responses[i].sql_generation_status,
                         query_responses[i].golden_record,
                     ),
-                    evaluation_score=query_responses[i].confidence_level,
+                    evaluation_score=query_responses[i].confidence_score * 100,
                 )
                 for i in range(len(query_responses))
             ]
@@ -128,7 +128,7 @@ class QueriesService:
             status=self._get_query_status(
                 query_response.sql_generation_status, query_response.golden_record
             ),
-            evaluation_score=query_response.confidence_level,
+            evaluation_score=query_response.confidence_score * 100,
             sql_error_message=query_response.error_message,
         )
 

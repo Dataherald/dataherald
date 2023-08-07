@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+import pymongo
 from bson.objectid import ObjectId
 
 from config import QUERY_RESPONSE_COL, QUERY_RESPONSE_REF_COL, QUESTION_COL
@@ -34,8 +35,13 @@ class QueriesRepository:
             **MongoDB.find_one(QUERY_RESPONSE_REF_COL, {"query_response_id": query_id})
         )
 
-    def get_query_response_refs(self, skip, limit) -> list[QueryRef]:
-        query_refs = MongoDB.find(QUERY_RESPONSE_REF_COL, {}).skip(skip).limit(limit)
+    def get_query_response_refs(self, skip, limit, order) -> list[QueryRef]:
+        query_refs = (
+            MongoDB.find(QUERY_RESPONSE_REF_COL, {})
+            .sort([(order, pymongo.DESCENDING)])
+            .skip(skip)
+            .limit(limit)
+        )
         return [QueryRef(**qrr) for qrr in query_refs]
 
     def update_last_updated(self, query_id: ObjectId):

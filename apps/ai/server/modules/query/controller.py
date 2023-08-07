@@ -14,7 +14,7 @@ router = APIRouter(
 async def get_queries(
     page: int = 0,
     page_size: int = 20,
-    order: str = "created_at",
+    order: str = "question_date",
     ascend: bool = True,
 ) -> list[QueryListResponse]:
     return QueriesService().get_queries(
