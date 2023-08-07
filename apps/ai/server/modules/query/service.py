@@ -46,12 +46,18 @@ class QueriesService:
         query_responses = self.repo.get_query_responses(object_ids)
         questions = self.repo.get_questions([r.nl_question_id for r in query_responses])
 
+        questions_dict = {}
+        for q in questions:
+            q_id = q.id
+            if q_id not in questions_dict:
+                questions_dict[q_id] = q.question
+
         if query_responses:
             return [
                 QueryListResponse(
                     id=str(object_ids[i]),
                     user=response_refs[i].user,
-                    question=questions[i].question,
+                    question=questions_dict[query_responses[i].nl_question_id],
                     nl_response=query_responses[i].nl_response,
                     question_date=response_refs[i].question_date,
                     status=self._get_query_status(
@@ -60,7 +66,7 @@ class QueriesService:
                     ),
                     evaluation_score=query_responses[i].confidence_level,
                 )
-                for i in range(len(questions))
+                for i in range(len(query_responses))
             ]
         raise HTTPException(status_code=404, detail="no queries")
 
