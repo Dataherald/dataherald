@@ -183,6 +183,7 @@ class FastAPI(API):
         )
         nl_query_response.sql_query = query.sql_query
         nl_query_response.golden_record = query.golden_record
+        nl_query_response.confidence_score = 1.0
         generates_nl_answer = GeneratesNlAnswer(self.storage)
         nl_query_response = generates_nl_answer.execute(nl_query_response)
         nl_query_response_repository.update(nl_query_response)
