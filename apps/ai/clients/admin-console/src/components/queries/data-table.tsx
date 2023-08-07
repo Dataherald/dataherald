@@ -1,10 +1,3 @@
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
-
 import { LoadingTableRows } from '@/components/queries/loading-rows'
 import {
   Table,
@@ -14,22 +7,30 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Ref } from 'react'
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
+import { Button } from '../ui/button'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   isLoadingMore: boolean
-  loadingRef: Ref<HTMLDivElement>
+  isReachingEnd: boolean
   onRowClick: (row: TData) => void
+  onLoadMore: () => void
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   isLoadingMore = false,
-  loadingRef,
+  isReachingEnd = true,
   onRowClick,
+  onLoadMore,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -81,11 +82,23 @@ export function DataTable<TData, TValue>({
           </TableRow>
         )}
         {isLoadingMore && <LoadingTableRows columnLength={columns.length} />}
-        <TableRow className="border-none">
-          <TableCell className="p-0" colSpan={columns.length}>
-            <div ref={loadingRef}></div>
-          </TableCell>
-        </TableRow>
+        {!isLoadingMore && (
+          <TableRow className="border-none hover:bg-gray-50">
+            <TableCell colSpan={columns.length} className="pb-8 text-center">
+              {!isReachingEnd ? (
+                <Button
+                  variant="outline"
+                  className="w-full bg-gray-50"
+                  onClick={onLoadMore}
+                >
+                  Load More
+                </Button>
+              ) : (
+                'No previous queries'
+              )}
+            </TableCell>
+          </TableRow>
+        )}
       </TableBody>
     </Table>
   )

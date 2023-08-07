@@ -3,8 +3,8 @@ import { DataTable } from '@/components/queries/data-table'
 import { LoadingTable } from '@/components/queries/loading-table'
 import useQueries from '@/hooks/api/useQueries'
 import { QueryListItem } from '@/models/api'
-import { useRouter } from 'next/navigation'
-import { useEffect, useMemo, useRef } from 'react'
+import { useRouter } from 'next/router'
+import { useMemo } from 'react'
 
 export default function QueriesPage() {
   const {
@@ -16,34 +16,16 @@ export default function QueriesPage() {
     setPage,
   } = useQueries()
   const columns = useMemo(() => cols, [])
-  const loadingRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   const handleQueryClick = (query: QueryListItem) =>
     router.push(`/queries/${query.id}`)
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isLoadingMore && !isReachingEnd) {
-          setPage(page + 1)
-        }
-      },
-      { threshold: 1 },
-    )
-
-    const loadingRefCurrent = loadingRef.current
-
-    if (loadingRefCurrent) {
-      observer.observe(loadingRefCurrent)
+  const handleLoadMore = () => {
+    if (!isLoadingMore) {
+      setPage(page + 1)
     }
-
-    return () => {
-      if (loadingRefCurrent) {
-        observer.unobserve(loadingRefCurrent)
-      }
-    }
-  }, [isLoadingMore, isReachingEnd, page, setPage])
+  }
 
   if (isLoadingFirst) {
     return (
@@ -60,8 +42,9 @@ export default function QueriesPage() {
         columns={columns}
         data={queries}
         isLoadingMore={isLoadingMore}
-        loadingRef={loadingRef}
+        isReachingEnd={isReachingEnd}
         onRowClick={handleQueryClick}
+        onLoadMore={handleLoadMore}
       />
     </div>
   )
