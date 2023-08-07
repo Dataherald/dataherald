@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 import httpx
 from bson.objectid import ObjectId
 from fastapi import HTTPException
@@ -39,34 +41,45 @@ class QueriesService:
         ascend: bool,  # noqa: ARG002
     ) -> list[QueryListResponse]:
         # assuming all return objects in order
-        response_refs = self.repo.get_query_response_refs(
+        query_response_refs = self.repo.get_query_response_refs(
             skip=page * page_size, limit=page_size, order=order
         )
-        object_ids = [qrr.query_response_id for qrr in response_refs]
+        object_ids = [qrr.query_response_id for qrr in query_response_refs]
         query_responses = self.repo.get_query_responses(object_ids)
         questions = self.repo.get_questions([r.nl_question_id for r in query_responses])
 
-        questions_dict = {}
+        question_dict: Dict[Any, str] = {}
         for q in questions:
             q_id = q.id
-            if q_id not in questions_dict:
-                questions_dict[q_id] = q.question
+            if q_id not in question_dict:
+                question_dict[q_id] = q.question
+
+        query_response_dict: Dict[Any, NLQueryResponse] = {}
+        for qr in query_responses:
+            query_response_dict[qr.id] = qr
 
         if query_responses:
             return [
                 QueryListResponse(
-                    id=str(object_ids[i]),
-                    user=response_refs[i].user,
-                    question=questions_dict[query_responses[i].nl_question_id],
-                    nl_response=query_responses[i].nl_response,
-                    question_date=response_refs[i].question_date,
+                    id=str(qrr.query_response_id),
+                    user=qrr.user,
+                    question=question_dict[
+                        query_response_dict[qrr.query_response_id].nl_question_id
+                    ],
+                    nl_response=query_response_dict[qrr.query_response_id].nl_response,
+                    question_date=qrr.question_date,
                     status=self._get_query_status(
-                        query_responses[i].sql_generation_status,
-                        query_responses[i].golden_record,
+                        query_response_dict[
+                            qrr.query_response_id
+                        ].sql_generation_status,
+                        query_response_dict[qrr.query_response_id].golden_record,
                     ),
-                    evaluation_score=query_responses[i].confidence_score * 100,
+                    evaluation_score=query_response_dict[
+                        qrr.query_response_id
+                    ].confidence_score
+                    * 100,
                 )
-                for i in range(len(query_responses))
+                for qrr in query_response_refs
             ]
         raise HTTPException(status_code=404, detail="no queries")
 
