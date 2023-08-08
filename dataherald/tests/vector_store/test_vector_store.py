@@ -27,6 +27,10 @@ class TestVectorStore(VectorStore):
         pass
 
     @override
+    def delete_record(self, collection: str, id: str):
+        pass
+
+    @override
     def delete_collection(self, collection: str):  # noqa: ARG002
         pass
 
