@@ -6,9 +6,13 @@ from dataherald.config import Component
 from dataherald.eval import Evaluation
 from dataherald.sql_database.models.types import SSHSettings
 from dataherald.types import (
-    DataDefinitionType,
+    DatabaseConnectionRequest,
+    DataDefinitionRequest,
+    EvaluationRequest,
     ExecuteTempQueryRequest,
     NLQueryResponse,
+    QuestionRequest,
+    ScannerRequest,
     UpdateQueryRequest,
 )
 
@@ -20,24 +24,20 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def scan_db(self, db_alias: str, table_name: str | None = None) -> bool:
+    def scan_db(self, scanner_request: ScannerRequest) -> bool:
         pass
 
     @abstractmethod
-    def answer_question(self, question: str, db_alias: str) -> NLQueryResponse:
+    def answer_question(self, question_request: QuestionRequest) -> NLQueryResponse:
         pass
 
     @abstractmethod
-    def evaluate_question(self, question: str, golden_sql: str) -> Evaluation:
+    def evaluate_question(self, evaluation_request: EvaluationRequest) -> Evaluation:
         pass
 
     @abstractmethod
     def connect_database(
-        self,
-        alias: str,
-        use_ssh: bool,
-        connection_uri: str | None = None,
-        ssh_settings: SSHSettings | None = None,
+        self, database_connection_request: DatabaseConnectionRequest
     ) -> bool:
         pass
 
@@ -47,6 +47,12 @@ class API(Component, ABC):
 
     @abstractmethod
     def execute_query(self, query: Query) -> tuple[str, dict]:
+        pass
+
+    @abstractmethod
+    def add_data_definition(
+        self, data_definition_request: DataDefinitionRequest
+    ) -> bool:
         pass
 
     @abstractmethod

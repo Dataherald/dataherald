@@ -4,6 +4,8 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from dataherald.sql_database.models.types import SSHSettings
+
 
 class UpdateQueryRequest(BaseModel):
     sql_query: str
@@ -58,3 +60,30 @@ class SupportedDatabase(Enum):
     DATABRICKS = "DATABRICKS"
     SNOWFLAKE = "SNOWFLAKE"
     SQLSERVER = "SQLSERVER"
+
+
+class QuestionRequest(BaseModel):
+    question: str
+    db_alias: str
+
+
+class ScannerRequest(BaseModel):
+    db_alias: str
+    table_name: str | None
+
+
+class EvaluationRequest(BaseModel):
+    question: str
+    golden_sql: str
+
+
+class DatabaseConnectionRequest(BaseModel):
+    db_alias: str
+    use_ssh: bool
+    connection_uri: str | None
+    ssh_settings: SSHSettings | None
+
+
+class DataDefinitionRequest(BaseModel):
+    uri: str
+    type: DataDefinitionType
