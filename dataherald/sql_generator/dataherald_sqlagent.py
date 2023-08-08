@@ -56,9 +56,9 @@ tip2) The maximum number of Question/SQL pairs you can request is {max_examples}
 tip3) If the SQL query resulted in errors, rewrite the SQL query and try again.
 tip4) If you are still unsure about which columns and tables to use, ask for more Question/SQL pairs.
 tip5) The Question/SQL pairs are labelled as correct pairs, so you can use them to learn how to construct the SQL query.
-tip6) If there is a strong similarity between the input question and the question in the Question/SQL pair, You can use the SQL query from the pair, and change it to fit the input question.
 #
 If the question does not seem related to the database, just return "I don't know" as the answer.
+If the there is a strong similarity between the input question and the question in the Question/SQL pair, You can use the SQL query from the pair, and change it to fit the input question.
 The SQL query MUST have in-line comments to explain what each clause does.
 """  # noqa: E501
 
