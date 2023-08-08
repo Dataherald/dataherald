@@ -93,7 +93,7 @@ class QueriesService:
         async with httpx.AsyncClient() as client:
             response = await client.patch(
                 settings.k2_core_url + f"/query/{query_id}",
-                data=data.json(),
+                json=data.dict(),
                 timeout=settings.default_k2_core_timeout,
             )
             response.raise_for_status()
@@ -110,7 +110,7 @@ class QueriesService:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.k2_core_url + f"/query/{query_id}/execution",
-                data=sql_query.json(),
+                json=sql_query.dict(),
                 timeout=settings.default_k2_core_timeout,
             )
             response.raise_for_status()
