@@ -15,15 +15,12 @@ def load_db_connections():
         for db_connection in db_connections:
             db_connection = json.loads(db_connection)
             payload = {
-                'connection_uri': db_connection['connection_uri'],
+                'db_alias': db_connection['db_alias'],
                 'use_ssh': db_connection['use_ssh'],
-                'alias': db_connection['db_alias']
+                'connection_uri': db_connection['connection_uri'],
+                'ssh_settings': db_connection['ssh_settings']
                 }
-            end_point = URI + "database?" + urllib.parse.urlencode(payload)
-            if payload['use_ssh']:
-                response = requests.post(end_point, json=db_connection['ssh_settings'])
-            else:
-                response = requests.post(end_point)
+            response = requests.post(URI + "database", json=payload)
             print(response.text)
             #requests.post(URI + 'database', json=db_connection) switch to this once JC implements change
 

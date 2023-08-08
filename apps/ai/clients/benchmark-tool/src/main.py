@@ -225,9 +225,8 @@ def run_benchmark(tests: List[dict], output_file_name: str = "benchmark_results.
             }
             print("Validating response object...")
             print(f"Gold SQL: {test['sql']}")
-            end_point = URI + "question?" + urllib.parse.urlencode(payload)
             print(f"Generating SQL for question: {test['nl_question']}...")
-            response = requests.post(end_point)#, json=json.dumps(payload))
+            response = requests.post(URI + "question", json=payload)
             response_dict = response.json()
             validation_result = validate_response_object(test, response_dict) 
             final_execution_acc += 1 if validation_result["status"] == "CORRECT" else 0
