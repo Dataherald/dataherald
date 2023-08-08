@@ -15,10 +15,12 @@ class Pinecone(VectorStore):
     def __init__(self, system: System):
         super().__init__(system)
         api_key = os.environ.get("PINECONE_API_KEY")
+        environment = os.environ.get("PINECONE_ENVIRONMENT")
         if api_key is None:
             raise ValueError("PINECONE_API_KEY environment variable not set")
-
-        pinecone.init(api_key=api_key, environment="us-west4-gcp")
+        if environment is None:
+            raise ValueError("PINECONE_ENVIRONMENT environment variable not set")
+        pinecone.init(api_key=api_key, environment=environment)
 
     @override
     def query(

@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 from typing import Any, List
 
@@ -10,13 +11,15 @@ from dataherald.vector_store import VectorStore
 class ContextStore(Component, ABC):
     DocStore: DB
     VectorStore: VectorStore
-    golden_record_collection = "golden-records"
     doc_store_collection = "table_meta_data"
 
     @abstractmethod
     def __init__(self, system: System):
         self.system = system
         self.db = self.system.instance(DB)
+        self.golden_record_collection = os.environ.get("PINECONE_COLLECTION")
+        if self.golden_record_collection is None:
+            raise ValueError("PINECONE_COLLECTION environment variable not set")
         self.vector_store = self.system.instance(VectorStore)
 
     @abstractmethod
