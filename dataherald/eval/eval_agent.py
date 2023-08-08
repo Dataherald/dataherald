@@ -46,6 +46,7 @@ Perform all of the below checks by using the tools:
 4) nested queries and sub-queries should be broken down to simpler parts and all of those part should be checked.
 5) the columns used for joining tables must have matching values in both tables
 6) execute the given SQL query to check its results and compare it to the expectations
+Always predict the score equal to zero if the query returns an empty result.
 """
 FORMAT_INSTRUCTIONS = """Use the following format:
 

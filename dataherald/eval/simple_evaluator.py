@@ -107,6 +107,14 @@ class SimpleEvaluator(Evaluator):
         tables = Parser(sql).tables
         database._sample_rows_in_table_info = 0
         schema = database.get_table_info_no_throw(tables)
+        run_result = database.run_no_throw(sql)
+        if run_result == "[]" or "Error:" in run_result:
+            logger.info(
+                f"(Simple evaluator) SQL query: {sql} is not valid. Returning score 0"
+            )
+            return Evaluation(
+                question_id=question.id, answer_id=generated_answer.id, score=0
+            )
         chain = LLMChain(llm=self.llm, prompt=chat_prompt)
         answer = chain.run(
             {
