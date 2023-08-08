@@ -19,14 +19,18 @@ from dataherald.repositories.base import NLQueryResponseRepository
 from dataherald.repositories.nl_question import NLQuestionRepository
 from dataherald.smart_cache import SmartCache
 from dataherald.sql_database.base import SQLDatabase
-from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
 from dataherald.sql_generator.generates_nl_answer import GeneratesNlAnswer
 from dataherald.types import (
-    DataDefinitionType,
+    DatabaseConnectionRequest,
+    DataDefinitionRequest,
+    EvaluationRequest,
     ExecuteTempQueryRequest,
     NLQuery,
     NLQueryResponse,
+    QuestionRequest,
+    ScannerRequest,
     UpdateQueryRequest,
 )
 
@@ -58,10 +62,10 @@ class FastAPI(API):
         return int(time.time_ns())
 
     @override
-    def scan_db(self, db_alias: str, table_name: str | None = None) -> bool:
+    def scan_db(self, scanner_request: ScannerRequest) -> bool:
         """Takes a db_alias and scan all the tables columns"""
         db_connection = self.storage.find_one(
-            "database_connection", {"alias": db_alias}
+            "database_connection", {"alias": scanner_request.db_alias}
         )
         if not db_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
@@ -71,28 +75,33 @@ class FastAPI(API):
         scanner = self.system.instance(Scanner)
         try:
             scanner.scan(
-                database, db_alias, table_name, DBScannerRepository(self.storage)
+                database,
+                scanner_request.db_alias,
+                scanner_request.table_name,
+                DBScannerRepository(self.storage),
             )
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e))  # noqa: B904
         return True
 
     @override
-    def answer_question(self, question: str, db_alias: str) -> NLQueryResponse:
+    def answer_question(self, question_request: QuestionRequest) -> NLQueryResponse:
         """Takes in an English question and answers it based on content from the registered databases"""
-        logger.info(f"Answer question: {question}")
+        logger.info(f"Answer question: {question_request.question}")
         cache = self.system.instance(SmartCache)
         sql_generation = self.system.instance(SQLGenerator)
         evaluator = self.system.instance(Evaluator)
         context_store = self.system.instance(ContextStore)
 
-        user_question = NLQuery(question=question, db_alias=db_alias)
+        user_question = NLQuery(
+            question=question_request.question, db_alias=question_request.db_alias
+        )
 
         nl_question_repository = NLQuestionRepository(self.storage)
         user_question = nl_question_repository.insert(user_question)
 
         db_connection = self.storage.find_one(
-            "database_connection", {"alias": db_alias}
+            "database_connection", {"alias": question_request.db_alias}
         )
         if not db_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
@@ -101,7 +110,9 @@ class FastAPI(API):
         context = context_store.retrieve_context_for_question(user_question)
         start_generated_answer = time.time()
 
-        generated_answer = cache.lookup(user_question.question + db_alias)
+        generated_answer = cache.lookup(
+            user_question.question + question_request.db_alias
+        )
         if generated_answer is None:
             generated_answer = sql_generation.generate_response(
                 user_question, database_connection, context
@@ -112,7 +123,10 @@ class FastAPI(API):
                 user_question, generated_answer, database_connection
             )
             if confidence_score >= evaluator.acceptance_threshold:
-                cache.add(question + db_alias, generated_answer)
+                cache.add(
+                    question_request.question + question_request.db_alias,
+                    generated_answer,
+                )
             generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
@@ -120,36 +134,39 @@ class FastAPI(API):
         return json.loads(json_util.dumps(nl_query_response))
 
     @override
-    def evaluate_question(self, question: str, golden_sql: str) -> Evaluation:
+    def evaluate_question(self, evaluation_request: EvaluationRequest) -> Evaluation:
         """Evaluates an English question within the registered Evaluator"""
         pass
 
     @override
     def connect_database(
-        self,
-        alias: str,
-        use_ssh: bool,
-        connection_uri: str | None = None,
-        ssh_settings: SSHSettings | None = None,
+        self, database_connection_request: DatabaseConnectionRequest
     ) -> bool:
         try:
             db_connection = DatabaseConnection(
-                uri=connection_uri,
-                alias=alias,
-                use_ssh=use_ssh,
-                ssh_settings=ssh_settings,
+                uri=database_connection_request.connection_uri,
+                alias=database_connection_request.db_alias,
+                use_ssh=database_connection_request.use_ssh,
+                ssh_settings=database_connection_request.ssh_settings,
             )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))  # noqa: B904
         self.storage.update_or_create(
-            "database_connection", {"alias": alias}, db_connection.dict()
+            "database_connection",
+            {"alias": database_connection_request.db_alias},
+            db_connection.dict(),
         )
         return True
 
-    def add_data_definition(self, type: DataDefinitionType, uri: str) -> bool:
+    @override
+    def add_data_definition(
+        self, data_definition_request: DataDefinitionRequest
+    ) -> bool:
         """Take in a URI to a document containing data definitions"""
         context_store = self.system.instance(ContextStore)
-        return context_store.add_data_definition(type, uri)
+        return context_store.add_data_definition(
+            data_definition_request.type, data_definition_request.uri
+        )
 
     @override
     def add_golden_records(self, golden_records: List) -> bool:

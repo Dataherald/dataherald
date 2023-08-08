@@ -12,9 +12,13 @@ from dataherald.config import Settings
 from dataherald.eval import Evaluation
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
-    DataDefinitionType,
+    DatabaseConnectionRequest,
+    DataDefinitionRequest,
+    EvaluationRequest,
     ExecuteTempQueryRequest,
     NLQueryResponse,
+    QuestionRequest,
+    ScannerRequest,
     UpdateQueryRequest,
 )
 
@@ -80,14 +84,14 @@ class FastAPI(dataherald.server.Server):
     def app(self) -> fastapi.FastAPI:
         return self._app
 
-    def scan_db(self, db_alias: str, table_name: str = None) -> bool:
-        return self._api.scan_db(db_alias, table_name)
+    def scan_db(self, scanner_request: ScannerRequest) -> bool:
+        return self._api.scan_db(scanner_request)
 
-    def answer_question(self, question: str, db_alias: str) -> NLQueryResponse:
-        return self._api.answer_question(question, db_alias)
+    def answer_question(self, question_request: QuestionRequest) -> NLQueryResponse:
+        return self._api.answer_question(question_request)
 
-    def evaluate_question(self, question: str, golden_sql: str) -> Evaluation:
-        return self._api.evaluate(question, golden_sql)
+    def evaluate_question(self, evaluation_request: EvaluationRequest) -> Evaluation:
+        return self._api.evaluate(evaluation_request)
 
     def root(self) -> dict[str, int]:
         return {"nanosecond heartbeat": self._api.heartbeat()}
@@ -96,27 +100,20 @@ class FastAPI(dataherald.server.Server):
         return self.root()
 
     def connect_database(
-        self,
-        alias: str,
-        use_ssh: bool,
-        connection_uri: str | None = None,
-        ssh_settings: SSHSettings | None = None,
+        self, database_connection_request: DatabaseConnectionRequest
     ) -> bool:
         """Connects a database to the Dataherald service"""
-        return self._api.connect_database(
-            alias=alias,
-            connection_uri=connection_uri,
-            use_ssh=use_ssh,
-            ssh_settings=ssh_settings,
-        )
+        return self._api.connect_database(database_connection_request)
 
     def add_golden_records(self, golden_records: List) -> bool:
         """Takes in an English question and answers it based on content from the registered databases"""
         return self._api.add_golden_records(golden_records)
 
-    def add_data_definition(self, uri: str, type: DataDefinitionType) -> bool:
+    def add_data_definition(
+        self, data_definition_request: DataDefinitionRequest
+    ) -> bool:
         """Takes in an English question and answers it based on content from the registered databases"""
-        return self._api.add_data_definition(type, uri)
+        return self._api.add_data_definition(data_definition_request)
 
     def execute_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_alias"""
