@@ -28,5 +28,9 @@ class VectorStore(Component, ABC):
         pass
 
     @abstractmethod
+    def delete_record(self, collection: str, id: str):
+        pass
+
+    @abstractmethod
     def delete_collection(self, collection: str):
         pass
