@@ -21,12 +21,14 @@ async function handleMessage(context, say) {
     })
 
     try {
-        const query = encodeURIComponent(message)
-        const endpointUrl = `${API_URL}/k2/question?question=${query}`
+        const endpointUrl = `${API_URL}/k2/question`
         log('fetching data from', endpointUrl)
         const response = await fetch(endpointUrl, {
             method: 'POST',
             headers: { 'Content-type': 'application/json' },
+            body: JSON.stringify({
+                question: message
+            })
         })
         const data = await response.json()
         const { nl_response, sql_query, exec_time } = data
