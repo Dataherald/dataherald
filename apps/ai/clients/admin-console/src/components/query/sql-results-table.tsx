@@ -33,7 +33,7 @@ export function SqlResultsTable<TData, TValue>({
   const cellClasses: ClassValue = 'h-8 py-0 border-b border-r last:border-r-0'
 
   return (
-    <Table>
+    <Table className="font-source-code">
       <TableHeader className="bg-gray-100">
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>

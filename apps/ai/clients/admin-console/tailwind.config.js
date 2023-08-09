@@ -72,6 +72,7 @@ module.exports = {
       },
       fontFamily: {
         lato: ['var(--font-lato)'],
+        'source-code': ['var(--font-source-code)'],
       },
     },
   },
