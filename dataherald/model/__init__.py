@@ -4,7 +4,7 @@ from typing import Any
 from dataherald.config import Component, System
 
 
-class Model(Component, ABC):
+class LLMModel(Component, ABC):
     model: Any
 
     @abstractmethod
