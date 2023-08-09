@@ -200,16 +200,20 @@ class FastAPI(API):
         )
         nl_query_response.sql_query = query.sql_query
         nl_query_response.golden_record = query.golden_record
-        nl_query_response.confidence_score = 1.0
+        if query.golden_record:
+            nl_query_response.confidence_score = 1.0
+            golden_record = {
+                "nl_question": nl_question.question,
+                "sql": nl_query_response.sql_query,
+                "db": nl_question.db_alias,
+            }
+            context_store.add_golden_records([golden_record])
+        else:
+            question_id = str(nl_question.id)
+            context_store.remove_golden_records([question_id])
         generates_nl_answer = GeneratesNlAnswer(self.storage)
         nl_query_response = generates_nl_answer.execute(nl_query_response)
         nl_query_response_repository.update(nl_query_response)
-        golden_record = {
-            "nl_question": nl_question.question,
-            "sql": nl_query_response.sql_query,
-            "db": nl_question.db_alias,
-        }
-        context_store.add_golden_records([golden_record])
         return json.loads(json_util.dumps(nl_query_response))
 
     @override
