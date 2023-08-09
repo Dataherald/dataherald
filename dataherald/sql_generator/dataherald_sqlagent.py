@@ -58,7 +58,7 @@ tip4) If you are still unsure about which columns and tables to use, ask for mor
 tip5) The Question/SQL pairs are labelled as correct pairs, so you can use them to learn how to construct the SQL query.
 #
 If the question does not seem related to the database, just return "I don't know" as the answer.
-If the there is a strong similarity between the input question and the question in the Question/SQL pair, You can use the SQL query from the pair, and change it to fit the input question.
+If the there is a very similar question among the fewshot examples, modify the SQL query to fit the given question and return the answer.
 The SQL query MUST have in-line comments to explain what each clause does.
 """  # noqa: E501
 
@@ -76,8 +76,8 @@ Final Answer: the final answer to the original input question"""
 AGENT_SUFFIX = """Begin!
 
 Question: {input}
-Thought: I should Collect examples of Question/SQL pairs to identify possibly relevant tables, columns, and SQL query styles.
-{agent_scratchpad}"""
+Thought: I should Collect examples of Question/SQL pairs to identify possibly relevant tables, columns, and SQL query styles. If there is a similar question among the examples, I can use the SQL query from the example and modify it to fit the given question.
+{agent_scratchpad}"""  # noqa: E501
 
 
 def catch_exceptions(fn: Callable[[str], str]) -> Callable[[str], str]:
@@ -359,8 +359,9 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
     Output: List of similar Question/SQL pairs related to the given question.
     Use this tool to fetch previously asked Question/SQL pairs as examples for improving SQL query generation.
     For complex questions, request more examples to gain a better understanding of tables and columns and the SQL keywords to use.
+    If the given question is very similar to one of the retrieved examples, it is recommended to use the same SQL query and modify it slightly to fit the given question.
     Always use this tool first and before any other tool!
-    """
+    """  # noqa: E501
     few_shot_examples: List[dict]
 
     @catch_exceptions
