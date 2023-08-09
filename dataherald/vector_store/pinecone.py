@@ -52,6 +52,11 @@ class Pinecone(VectorStore):
         index.upsert(vectors=record)
 
     @override
+    def delete_record(self, collection: str, id: str):
+        index = pinecone.Index(collection)
+        index.delete(ids=[id])
+
+    @override
     def delete_collection(self, collection: str):
         return pinecone.delete_index(collection)
 

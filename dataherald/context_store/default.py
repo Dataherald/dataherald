@@ -78,5 +78,14 @@ class DefaultContextStore(ContextStore):
         return True
 
     @override
+    def remove_golden_records(self, ids: List) -> bool:
+        """Removes the golden records from the DB and the VectorDB"""
+        for id in ids:
+            self.vector_store.delete_record(
+                collection=self.golden_record_collection, id=id
+            )
+        return True
+
+    @override
     def add_table_metadata(self, table_name: str, table_metadata: dict) -> bool:
         return super().add_table_metadata(table_name, table_metadata)

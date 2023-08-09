@@ -42,6 +42,11 @@ class Chroma(VectorStore):
         target_collection.add(documents=documents, metadatas=metadata, ids=ids)
 
     @override
+    def delete_record(self, collection: str, id: str):
+        target_collection = self.chroma_client.get_collection(collection)
+        target_collection.delete(ids=[id])
+
+    @override
     def delete_collection(self, collection: str):
         return super().delete_collection(collection)
 
