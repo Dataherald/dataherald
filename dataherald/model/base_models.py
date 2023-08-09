@@ -7,7 +7,7 @@ from overrides import override
 from dataherald.model import LLMModel
 
 
-class BaseModel(LLM_MODEL):
+class BaseModel(LLMModel):
     def __init__(self, system):
         super().__init__(system)
         self.model_name = os.environ.get("LLM_MODEL")
