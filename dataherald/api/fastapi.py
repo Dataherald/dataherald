@@ -236,7 +236,7 @@ class FastAPI(API):
         else:
             question_id = str(nl_query_response.nl_question_id)
             context_store.remove_golden_records([question_id])
-        generates_nl_answer = GeneratesNlAnswer(self.storage)
+        generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
         nl_query_response = generates_nl_answer.execute(nl_query_response)
         nl_query_response_repository.update(nl_query_response)
         return json.loads(json_util.dumps(nl_query_response))
