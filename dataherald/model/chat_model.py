@@ -4,15 +4,15 @@ from typing import Any
 from langchain.chat_models import ChatAnthropic, ChatGooglePalm, ChatOpenAI
 from overrides import override
 
-from dataherald.model import Model
+from dataherald.model import LLMModel
 
 
-class ChatModel(Model):
+class ChatModel(LLMModel):
     def __init__(self, system):
         super().__init__(system)
-        self.model_name = os.environ.get("MODEL_NAME")
+        self.model_name = os.environ.get("LLM_MODEL")
         if self.model_name is None:
-            raise ValueError("MODEL_NAME environment variable not set")
+            raise ValueError("LLM_MODEL environment variable not set")
         self.openai_api_key = os.environ.get("OPENAI_API_KEY")
         self.anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
         self.google_api_key = os.environ.get("GOOGLE_API_KEY")
