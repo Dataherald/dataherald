@@ -5,7 +5,6 @@ from langchain.prompts.chat import (
     SystemMessagePromptTemplate,
 )
 
-from dataherald.db import DB
 from dataherald.model.chat_model import ChatModel
 from dataherald.repositories.nl_question import NLQuestionRepository
 from dataherald.sql_database.base import SQLDatabase
@@ -25,9 +24,9 @@ SQL query result: {sql_query_result}
 
 
 class GeneratesNlAnswer:
-    def __init__(self, system):
+    def __init__(self, system, storage):
         self.system = system
-        self.storage = self.system.instance(DB)
+        self.storage = storage
         model = ChatModel(self.system)
         self.llm = model.get_model(temperature=0)
 
