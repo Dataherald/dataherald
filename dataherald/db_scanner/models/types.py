@@ -19,6 +19,7 @@ class ColumnDetail(BaseModel):
 
 
 class TableSchemaDetail(BaseModel):
+    id: Any
     db_alias: str
     table_name: str
     description: str | None

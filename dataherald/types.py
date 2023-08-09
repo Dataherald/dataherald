@@ -87,3 +87,13 @@ class DatabaseConnectionRequest(BaseModel):
 class DataDefinitionRequest(BaseModel):
     uri: str
     type: DataDefinitionType
+
+
+class ColumnDescriptionRequest(BaseModel):
+    name: str
+    description: str
+
+
+class TableDescriptionRequest(BaseModel):
+    description: str | None
+    columns: list[ColumnDescriptionRequest] | None
