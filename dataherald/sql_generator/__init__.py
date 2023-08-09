@@ -5,9 +5,9 @@ from datetime import date, datetime
 from typing import Any, List
 
 from langchain.base_language import BaseLanguageModel
-from langchain.chat_models import ChatOpenAI
 
 from dataherald.config import Component, System
+from dataherald.model.chat_model import ChatModel
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator.create_sql_query_status import create_sql_query_status
@@ -20,12 +20,8 @@ class SQLGenerator(Component, ABC):
 
     def __init__(self, system: System):  # noqa: ARG002
         self.system = system
-        openai_api_key = system.settings.require("openai_api_key")
-        self.llm = ChatOpenAI(
-            temperature=0,
-            openai_api_key=openai_api_key,
-            model_name="gpt-4-32k",
-        )
+        model = ChatModel(self.system)
+        self.llm = model.get_model(temperature=0)
 
     def create_sql_query_status(
         self, db: SQLDatabase, query: str, response: NLQueryResponse
