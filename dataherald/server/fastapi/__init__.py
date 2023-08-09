@@ -19,6 +19,7 @@ from dataherald.types import (
     NLQueryResponse,
     QuestionRequest,
     ScannerRequest,
+    TableDescriptionRequest,
     UpdateQueryRequest,
 )
 
@@ -56,6 +57,12 @@ class FastAPI(dataherald.server.Server):
 
         self.router.add_api_route(
             "/api/v1/database", self.connect_database, methods=["POST"]
+        )
+
+        self.router.add_api_route(
+            "/api/v1/scanned-db/{db_name}/{table_name}",
+            self.add_description,
+            methods=["PATCH"],
         )
 
         self.router.add_api_route(
@@ -104,6 +111,15 @@ class FastAPI(dataherald.server.Server):
     ) -> bool:
         """Connects a database to the Dataherald service"""
         return self._api.connect_database(database_connection_request)
+
+    def add_description(
+        self,
+        db_name: str,
+        table_name: str,
+        table_description_request: TableDescriptionRequest,
+    ) -> bool:
+        """Add descriptions for tables and columns"""
+        return self._api.add_description(db_name, table_name, table_description_request)
 
     def add_golden_records(self, golden_records: List) -> bool:
         """Takes in an English question and answers it based on content from the registered databases"""

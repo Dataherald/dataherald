@@ -31,6 +31,7 @@ from dataherald.types import (
     NLQueryResponse,
     QuestionRequest,
     ScannerRequest,
+    TableDescriptionRequest,
     UpdateQueryRequest,
 )
 
@@ -156,6 +157,26 @@ class FastAPI(API):
             {"alias": database_connection_request.db_alias},
             db_connection.dict(),
         )
+        return True
+
+    @override
+    def add_description(
+        self,
+        db_name: str,
+        table_name: str,
+        table_description_request: TableDescriptionRequest,
+    ) -> bool:
+        scanner_repository = DBScannerRepository(self.storage)
+        table = scanner_repository.get_table_info(db_name, table_name)
+        if table_description_request.description:
+            table.description = table_description_request.description
+        if table_description_request.columns:
+            for column_request in table_description_request.columns:
+                for column in table.columns:
+                    if column_request.name == column.name:
+                        column.description = column_request.description
+
+        scanner_repository.update(table)
         return True
 
     @override

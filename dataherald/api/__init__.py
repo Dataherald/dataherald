@@ -13,6 +13,7 @@ from dataherald.types import (
     NLQueryResponse,
     QuestionRequest,
     ScannerRequest,
+    TableDescriptionRequest,
     UpdateQueryRequest,
 )
 
@@ -38,6 +39,15 @@ class API(Component, ABC):
     @abstractmethod
     def connect_database(
         self, database_connection_request: DatabaseConnectionRequest
+    ) -> bool:
+        pass
+
+    @abstractmethod
+    def add_description(
+        self,
+        db_name: str,
+        table_name: str,
+        table_description_request: TableDescriptionRequest,
     ) -> bool:
         pass
 

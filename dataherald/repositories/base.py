@@ -22,7 +22,7 @@ class NLQueryResponseRepository:
         row["id"] = row["_id"]
         return NLQueryResponse(**row)
 
-    def update(self, nl_query_response: NLQueryResponse) -> int:
+    def update(self, nl_query_response: NLQueryResponse) -> NLQueryResponse:
         self.storage.update_or_create(
             DB_COLLECTION,
             {"_id": ObjectId(nl_query_response.id)},
