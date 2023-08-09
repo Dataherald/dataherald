@@ -6,6 +6,7 @@ from typing import List
 from bson import json_util
 from fastapi import HTTPException
 from overrides import override
+from sql_metadata import Parser
 
 from dataherald.api import API
 from dataherald.api.types import Query
@@ -202,14 +203,17 @@ class FastAPI(API):
         nl_query_response.golden_record = query.golden_record
         if query.golden_record:
             nl_query_response.confidence_score = 1.0
-            golden_record = {
-                "nl_question": nl_question.question,
-                "sql": nl_query_response.sql_query,
-                "db": nl_question.db_alias,
-            }
-            context_store.add_golden_records([golden_record])
+            tables = Parser(nl_query_response.sql_query).tables
+            context_store.vector_store.add_record(
+                documents=nl_question.question,
+                collection=context_store.golden_record_collection,
+                metadata=[
+                    {"tables_used": tables[0], "db_alias": nl_question.db_alias}
+                ],  # this should be updated for multiple tables
+                ids=[str(nl_query_response.nl_question_id)],
+            )
         else:
-            question_id = str(nl_question.id)
+            question_id = str(nl_query_response.nl_question_id)
             context_store.remove_golden_records([question_id])
         generates_nl_answer = GeneratesNlAnswer(self.storage)
         nl_query_response = generates_nl_answer.execute(nl_query_response)
