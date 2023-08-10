@@ -17,9 +17,9 @@ class ContextStore(Component, ABC):
     def __init__(self, system: System):
         self.system = system
         self.db = self.system.instance(DB)
-        self.golden_record_collection = os.environ.get("PINECONE_COLLECTION")
-        if self.golden_record_collection is None:
-            raise ValueError("PINECONE_COLLECTION environment variable not set")
+        self.golden_record_collection = os.environ.get(
+            "GOLDEN_RECORD_COLLECTION", "dataherald-staging"
+        )
         self.vector_store = self.system.instance(VectorStore)
 
     @abstractmethod
