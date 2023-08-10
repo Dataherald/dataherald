@@ -39,7 +39,9 @@ class Chroma(VectorStore):
     @override
     def add_record(self, documents: str, collection: str, metadata: Any, ids: List):
         target_collection = self.chroma_client.get_or_create_collection(collection)
-        target_collection.add(documents=documents, metadatas=metadata, ids=ids)
+        existing_rows = target_collection.get(ids=ids)
+        if len(existing_rows["documents"]) == 0:
+            target_collection.add(documents=documents, metadatas=metadata, ids=ids)
 
     @override
     def delete_record(self, collection: str, id: str):
