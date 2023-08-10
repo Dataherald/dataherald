@@ -1,3 +1,4 @@
+import datetime
 import difflib
 import logging
 import time
@@ -47,8 +48,9 @@ Here is the plan you have to follow:
 2) Use the db_tables_with_relevance_scores tool to find the a second set of possibly relevant tables.
 3) Use the db_relevant_tables_schema tool to obtain the schema of the both sets of possibly relevant tables to identify the possibly relevant columns.
 4) Use the db_relevant_columns_info tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
-5) [Optional based on the question] Always use the db_column_entity_checker tool to make sure that relevant columns have the cell-values.
-6) Write a {dialect} query and use sql_db_query tool the Execute the SQL query on the database to obtain the results.
+5) [Optional based on the question] Use the get_current_datetime tool if the question has any mentions of time or dates.
+6) [Optional based on the question] Always use the db_column_entity_checker tool to make sure that relevant columns have the cell-values.
+7) Write a {dialect} query and use sql_db_query tool the Execute the SQL query on the database to obtain the results.
 #
 Some tips to always keep in mind:
 tip1) For complex questions that has many relevant columns and tables request for more examples of Question/SQL pairs.
@@ -57,6 +59,7 @@ tip3) If the SQL query resulted in errors, rewrite the SQL query and try again.
 tip4) If you are still unsure about which columns and tables to use, ask for more Question/SQL pairs.
 tip5) The Question/SQL pairs are labelled as correct pairs, so you can use them to learn how to construct the SQL query.
 #
+Always use the get_current_datetime tool if there is any time or date in the given question.
 If the question does not seem related to the database, just return "I don't know" as the answer.
 If the there is a very similar question among the fewshot examples, modify the SQL query to fit the given question and return the answer.
 The SQL query MUST have in-line comments to explain what each clause does.
@@ -119,6 +122,32 @@ class BaseSQLDatabaseTool(BaseModel):
 
         arbitrary_types_allowed = True
         extra = Extra.forbid
+
+class GetCurrentTimeTool(BaseSQLDatabaseTool, BaseTool):
+    """Tool for querying a SQL database."""
+
+    name = "get_current_datetime"
+    description = """
+    Input is an empty string, output is the current data and time.
+    Always use this tool before generating a query if there is any time or date in the given question.
+    """
+
+    @catch_exceptions
+    def _run(
+        self,
+        tool_input: str = "",  # noqa: ARG002
+        run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
+    ) -> str:
+        """Execute the query, return the results or an error message."""
+        current_datetime = datetime.datetime.now()
+        return f"Current Date and Time: {str(current_datetime)}"
+
+    async def _arun(
+        self,
+        tool_input: str = "",
+        run_manager: AsyncCallbackManagerForToolRun | None = None,
+    ) -> str:
+        raise NotImplementedError("GetCurrentTimeTool does not support async")
 
 
 class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
@@ -415,6 +444,8 @@ class SQLDatabaseToolkit(BaseToolkit):
         tools = []
         query_sql_db_tool = QuerySQLDataBaseTool(db=self.db, context=self.context)
         tools.append(query_sql_db_tool)
+        get_current_datetime = GetCurrentTimeTool(db=self.db, context=self.context)
+        tools.append(get_current_datetime)
         tables_sql_db_tool = TablesSQLDatabaseTool(
             db=self.db, context=self.context, db_scan=self.db_scan
         )
