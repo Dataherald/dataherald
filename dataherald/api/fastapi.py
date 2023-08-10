@@ -248,6 +248,6 @@ class FastAPI(API):
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
         nl_query_response = nl_query_response_repository.find_by_id(query_id)
         nl_query_response.sql_query = query.sql_query
-        generates_nl_answer = GeneratesNlAnswer(self.storage)
+        generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
         nl_query_response = generates_nl_answer.execute(nl_query_response)
         return json.loads(json_util.dumps(nl_query_response))
