@@ -1,4 +1,5 @@
 import logging
+import re
 
 import httpx
 
@@ -17,7 +18,9 @@ class K2Service:
 
     async def answer_question(self, question: QuestionRequest) -> NLQueryResponse:
         path = "/question"
-        data = {"question": question.question, "db_alias": dbsettings.db_alias}
+        slack_mention_pattern = r"<@(.*?)>"
+        question_string = re.sub(slack_mention_pattern, "", question.question)
+        data = {"question": question_string, "db_alias": dbsettings.db_alias}
 
         response: NLQueryResponse = await self._k2_post_request(path, json=data)
         self.repo.record_response_pointer(response["id"])
