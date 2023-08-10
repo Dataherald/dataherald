@@ -123,6 +123,7 @@ class BaseSQLDatabaseTool(BaseModel):
         arbitrary_types_allowed = True
         extra = Extra.forbid
 
+
 class GetCurrentTimeTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for querying a SQL database."""
 
