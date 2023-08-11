@@ -3,13 +3,12 @@ from pydantic import BaseModel
 from modules.k2_core.models.entities import SQLQueryResult
 from modules.query.models.entities import (
     QueryStatus,
-    User,
 )
 
 
 class QueryResponse(BaseModel):
     id: str
-    user: User
+    username: str
     question: str
     question_date: str
     nl_response: str | None
@@ -24,7 +23,7 @@ class QueryResponse(BaseModel):
 
 class QueryListResponse(BaseModel):
     id: str
-    user: User
+    username: str
     question: str
     question_date: str
     nl_response: str | None

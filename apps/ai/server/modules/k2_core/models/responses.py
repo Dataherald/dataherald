@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel, Field, confloat
+from pydantic import BaseModel, Field
 
 from modules.k2_core.models.entities import SQLGenerationStatus, SQLQueryResult
 
@@ -19,10 +19,3 @@ class NLQueryResponse(BaseModel):
     golden_record: bool = False
     confidence_score: float | None = None
     error_message: str | None
-
-
-class Evaluation(BaseModel):
-    id: str | None = Field(alias="_id")
-    question_id: str | None = Field(alias="q_id")
-    answer_id: str | None = Field(alias="a_id")
-    score: confloat(ge=0, le=1) = 0.5

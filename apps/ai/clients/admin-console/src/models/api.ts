@@ -1,6 +1,6 @@
 export interface User {
-  id: string
-  name: string
+  slack_id: string
+  username: string
 }
 
 export enum EQueryStatus {

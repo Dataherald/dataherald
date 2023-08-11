@@ -35,12 +35,11 @@ class QueriesService:
 
     def get_queries(
         self,
-        order: str,  # noqa: ARG002
+        order: str,
         page: int,
         page_size: int,
         ascend: bool,  # noqa: ARG002
     ) -> list[QueryListResponse]:
-        # assuming all return objects in order
         query_response_refs = self.repo.get_query_response_refs(
             skip=page * page_size, limit=page_size, order=order
         )
@@ -62,7 +61,7 @@ class QueriesService:
             return [
                 QueryListResponse(
                     id=str(qrr.query_response_id),
-                    user=qrr.user,
+                    username=qrr.user.username,
                     question=question_dict[
                         query_response_dict[qrr.query_response_id].nl_question_id
                     ],
@@ -83,17 +82,21 @@ class QueriesService:
             ]
         raise HTTPException(status_code=404, detail="no queries")
 
-    async def patch_query(self, query_id: str, data: QueryEditRequest) -> QueryResponse:
+    async def patch_query(
+        self, query_id: str, query_request: QueryEditRequest
+    ) -> QueryResponse:
         object_id = ObjectId(query_id)
-        golden_record = True if data.query_status == QueryStatus.VERIFIED else False
-        data = QueryEditRequestCore(
-            sql_query=data.sql_query, golden_record=golden_record
+        golden_record = (
+            True if query_request.query_status == QueryStatus.VERIFIED else False
+        )
+        query_request = QueryEditRequestCore(
+            sql_query=query_request.sql_query, golden_record=golden_record
         )
         # request patch query to k2 (repo)
         async with httpx.AsyncClient() as client:
             response = await client.patch(
                 settings.k2_core_url + f"/query/{query_id}",
-                json=data.dict(),
+                json=query_request.dict(),
                 timeout=settings.default_k2_core_timeout,
             )
             response.raise_for_status()
@@ -105,12 +108,12 @@ class QueriesService:
                 query_id, response_ref, question, new_query_response
             )
 
-    async def run_query(self, query_id: str, sql_query: SQLQueryRequest):
+    async def run_query(self, query_id: str, query_request: SQLQueryRequest):
         object_id = ObjectId(query_id)
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.k2_core_url + f"/query/{query_id}/execution",
-                json=sql_query.dict(),
+                json=query_request.dict(),
                 timeout=settings.default_k2_core_timeout,
             )
             response.raise_for_status()
@@ -130,7 +133,7 @@ class QueriesService:
     ) -> QueryResponse:
         return QueryResponse(
             id=query_id,
-            user=response_ref.user,
+            username=response_ref.user.username,
             question=question.question,
             nl_response=query_response.nl_response,
             sql_query=query_response.sql_query,

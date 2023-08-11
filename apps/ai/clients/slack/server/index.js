@@ -21,13 +21,13 @@ const app = new App({
 })
 
 // Listens to incoming messages in direct messages with the bot
-app.message(({ message, say }) =>
-    handleMessage(message, say)
+app.message(({ message, say }) => 
+    handleMessage(message, say, app.client.users.info)
 )
 
 // Listens to incoming messages that mention the bot user
 app.event('app_mention', ({ event, say }) =>
-    handleMessage(event, say)
+    handleMessage(event, say, app.client.users.info)
 )
 
 async function startServer() {

@@ -13,8 +13,8 @@ router = APIRouter(
 
 
 @router.post("/question")
-async def answer_question(question: QuestionRequest) -> NLQueryResponse:
-    return await K2Service().answer_question(question)
+async def answer_question(question_request: QuestionRequest) -> NLQueryResponse:
+    return await K2Service().answer_question(question_request)
 
 
 @router.get("/heartbeat")

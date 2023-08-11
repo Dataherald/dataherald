@@ -16,14 +16,17 @@ class K2Service:
     def __init__(self):
         self.repo = K2CoreRepository()
 
-    async def answer_question(self, question: QuestionRequest) -> NLQueryResponse:
+    async def answer_question(
+        self, question_request: QuestionRequest
+    ) -> NLQueryResponse:
         path = "/question"
         slack_mention_pattern = r"<@(.*?)>"
-        question_string = re.sub(slack_mention_pattern, "", question.question)
+        question_string = re.sub(slack_mention_pattern, "", question_request.question)
         data = {"question": question_string, "db_alias": dbsettings.db_alias}
 
         response: NLQueryResponse = await self._k2_post_request(path, json=data)
-        self.repo.record_response_pointer(response["id"])
+        # adds document that links user info to query response
+        self.repo.record_response_pointer(response["id"], question_request.user)
         return response
 
     async def heartbeat(self):

@@ -3,16 +3,17 @@ const { log } = require('console')
 
 const API_URL = process.env.API_URL
 
-async function handleMessage(context, say) {
-    const { text: message, user, ts: thread_ts } = context
-    log('Slack message received', message)
+async function handleMessage(context, say, getUserInfo) {
+    const { text: message, user: userId, ts: thread_ts } = context
+    log(`Slack message "${message}" received from user ${userId}`)
+
     await say({
         blocks: [
             {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `:wave: Hello, <@${user}>. I will look up in your database for an answer to your inquiry. Please, give me a few moments and I'll get back to you.`,
+                    text: `:wave: Hello, <@${userId}>. I will look up in your database for an answer to your inquiry. Please, give me a few moments and I'll get back to you.`,
                 },
             },
         ],
@@ -21,13 +22,18 @@ async function handleMessage(context, say) {
     })
 
     try {
+        const userInfo = await getUserInfo({ user: userId })
         const endpointUrl = `${API_URL}/k2/question`
         log('fetching data from', endpointUrl)
         const response = await fetch(endpointUrl, {
             method: 'POST',
             headers: { 'Content-type': 'application/json' },
             body: JSON.stringify({
-                question: message
+                question: message,
+                user: {
+                    slack_id: userId,
+                    username: userInfo.user.real_name
+                }
             })
         })
         const data = await response.json()
