@@ -34,8 +34,13 @@ export const columns: ColumnDef<QueryListItem>[] = [
   },
   {
     id: 'id',
-    header: () => <div className="min-w-[60px]">Query ID</div>,
+    header: 'Query ID',
     accessorKey: 'id',
+    cell: ({ row }) => (
+      <div className="truncate max-w-[5rem] 2xl:max-w-none">
+        {row.getValue('id')}
+      </div>
+    ),
   },
   {
     id: 'username',
@@ -52,7 +57,7 @@ export const columns: ColumnDef<QueryListItem>[] = [
     header: 'Question',
     accessorKey: 'question',
     cell: ({ row }) => (
-      <div className="truncate max-w-[12rem] 2xl:max-w-none">
+      <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
         {row.getValue('question')}
       </div>
     ),
@@ -62,7 +67,7 @@ export const columns: ColumnDef<QueryListItem>[] = [
     header: 'Answer',
     accessorKey: 'nl_response',
     cell: ({ row }) => (
-      <div className="truncate max-w-[12rem] 2xl:max-w-none">
+      <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
         {row.getValue('answer')}
       </div>
     ),
