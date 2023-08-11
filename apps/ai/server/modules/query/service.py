@@ -61,7 +61,7 @@ class QueriesService:
             return [
                 QueryListResponse(
                     id=str(qrr.query_response_id),
-                    username=qrr.user.username,
+                    username=qrr.user.username or "unknown",
                     question=question_dict[
                         query_response_dict[qrr.query_response_id].nl_question_id
                     ],
@@ -134,7 +134,7 @@ class QueriesService:
     ) -> QueryResponse:
         return QueryResponse(
             id=query_id,
-            username=response_ref.user.username,
+            username=response_ref.user.username or "unknown",
             question=question.question,
             nl_response=query_response.nl_response,
             sql_query=query_response.sql_query,

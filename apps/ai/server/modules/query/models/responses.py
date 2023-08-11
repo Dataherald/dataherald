@@ -6,7 +6,7 @@ from modules.query.models.entities import QueryStatus
 
 class QueryResponse(BaseModel):
     id: str
-    username: str = "unknown"
+    username: str
     question: str
     question_date: str
     nl_response: str | None
@@ -21,7 +21,7 @@ class QueryResponse(BaseModel):
 
 class QueryListResponse(BaseModel):
     id: str
-    username: str = "unknown"
+    username: str
     question: str
     question_date: str
     nl_response: str | None
