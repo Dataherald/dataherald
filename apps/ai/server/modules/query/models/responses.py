@@ -1,14 +1,12 @@
 from pydantic import BaseModel
 
 from modules.k2_core.models.entities import SQLQueryResult
-from modules.query.models.entities import (
-    QueryStatus,
-)
+from modules.query.models.entities import QueryStatus
 
 
 class QueryResponse(BaseModel):
     id: str
-    username: str
+    username: str = "unknown"
     question: str
     question_date: str
     nl_response: str | None
@@ -23,7 +21,7 @@ class QueryResponse(BaseModel):
 
 class QueryListResponse(BaseModel):
     id: str
-    username: str
+    username: str = "unknown"
     question: str
     question_date: str
     nl_response: str | None

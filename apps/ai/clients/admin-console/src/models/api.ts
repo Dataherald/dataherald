@@ -1,5 +1,5 @@
 export interface User {
-  slack_id: string
+  slack_id?: string
   username: string
 }
 
@@ -20,7 +20,7 @@ export type QuerySqlResultData = { [columnKey: string]: string | number }
 
 export interface QueryListItem {
   id: string
-  user: User
+  username: string
   question: string
   question_date: string
   nl_response: string
@@ -41,7 +41,7 @@ export interface Query {
   nl_response: string
   status: QueryStatus
   evaluation_score: number
-  user: User
+  username: string
   last_updated: string
 }
 

@@ -12,8 +12,8 @@ class User(BaseModel):
 
 # temporary placemnent, will need to move to the module that relates with user authentication
 class SlackQuestionUser(BaseModel):
-    slack_id: str
-    username: str
+    slack_id: str | None
+    username: str | None
 
 
 class Question(BaseModel):

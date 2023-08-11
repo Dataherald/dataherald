@@ -40,7 +40,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     question,
     question_date,
     nl_response,
-    user: { username },
+    username,
     sql_query,
     sql_query_result,
     sql_error_message,

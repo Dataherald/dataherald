@@ -80,7 +80,8 @@ class QueriesService:
                 )
                 for qrr in query_response_refs
             ]
-        raise HTTPException(status_code=404, detail="no queries")
+
+        return []
 
     async def patch_query(
         self, query_id: str, query_request: QueryEditRequest
