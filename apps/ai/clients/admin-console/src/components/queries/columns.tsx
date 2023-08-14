@@ -8,30 +8,8 @@ import { QueryListItem } from '@/models/api'
 import { EDomainQueryStatus } from '@/models/domain'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
-import { Microscope } from 'lucide-react'
 
 export const columns: ColumnDef<QueryListItem>[] = [
-  {
-    id: 'status-icon',
-    header: '',
-    cell: ({ row }) => {
-      const query = row.original
-      const { status, evaluation_score } = query
-      const textColor = getDomainStatusColor(status, evaluation_score)
-      return (
-        <div className="relative flex items-center justify-center w-8 h-8 rounded-full border border-gray-400">
-          <Microscope size={18} />
-          <div
-            className={cn(
-              textColor,
-              'w-2 h-2 rounded-full bg-current flex-shrink-0',
-              'absolute bottom-0 right-0',
-            )}
-          />
-        </div>
-      )
-    },
-  },
   {
     id: 'id',
     header: 'Query ID',
