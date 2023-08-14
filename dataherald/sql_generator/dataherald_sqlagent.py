@@ -7,7 +7,6 @@ from typing import Any, Callable, Dict, List
 import numpy as np
 import openai
 import pandas as pd
-from fastapi import HTTPException
 from langchain.agents.agent import AgentExecutor
 from langchain.agents.agent_toolkits.base import BaseToolkit
 from langchain.agents.mrkl.base import ZeroShotAgent
@@ -546,7 +545,7 @@ class DataheraldSQLAgent(SQLGenerator):
         repository = DBScannerRepository(storage)
         db_scan = repository.get_all_tables_by_db(db_alias=database_connection.alias)
         if not db_scan:
-            raise HTTPException(status_code=404, detail="Scanned database not found")
+            raise ValueError("No scanned tables found for database")
         few_shot_examples = context_store.retrieve_context_for_question(
             user_question, number_of_samples=self.max_number_of_examples
         )

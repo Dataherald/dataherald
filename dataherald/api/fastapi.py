@@ -116,10 +116,12 @@ class FastAPI(API):
             user_question.question + question_request.db_alias
         )
         if generated_answer is None:
-            generated_answer = sql_generation.generate_response(
-                user_question, database_connection, context
-            )
-
+            try:
+                generated_answer = sql_generation.generate_response(
+                    user_question, database_connection, context
+                )
+            except ValueError as e:
+                raise HTTPException(status_code=404, detail=str(e))  # noqa: B904
             logger.info("Starts evaluator...")
             confidence_score = evaluator.get_confidence_score(
                 user_question, generated_answer, database_connection
