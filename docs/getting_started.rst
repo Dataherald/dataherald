@@ -1,9 +1,9 @@
-API
+Getting started
 =====
 
-.. _api:
+.. _getting_started:
 
-Create a db connection
+Installation and Configuration
 ------------
 
 To use Lumache, first install it using pip:
@@ -12,7 +12,7 @@ To use Lumache, first install it using pip:
 
    (.venv) $ pip install lumache
 
-Scan a db
+Running with Docker
 ----------------
 
 To retrieve a list of random ingredients,
@@ -32,6 +32,7 @@ For example:
 >>> lumache.get_random_ingredients()
 ['shells', 'gorgonzola', 'parsley']
 
-Ask a question
+Running Tests
 ----------------
-foo
+
+Foo
