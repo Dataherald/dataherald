@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://discord.gg/A59Uxyy2k9" target="_blank">
-      <img src="https://img.shields.io/discord/1073293645303795742" alt="Discord">
+      <img src="https://img.shields.io/discord/1138593282184716441" alt="Discord">
   </a> |
   <a href="https://www.dataherald.com/" target="_blank">
       <img src="https://img.shields.io/static/v1?label=license&message=Apache 2.0&color=white" alt="License">
@@ -25,121 +25,58 @@
 
 Dataherald is a text-to-sql engine built for enteprise-level question answering over structured data. It allows you to set up an API from your database that can answer questions in plain English. You can use Dataherald to:
 
-- Enable Q+A from your production DBs inside your SaaS application
 - Allow business users to get insights from the data warehouse without going through a data analyst
+- Enable Q+A from your production DBs inside your SaaS application
 - Create a ChatGPT plug-in from your proprietary data
 
 ... and many more!
 
-Documentation
-
-Discord
+The service is 
 
 ## Overview
 
 ### Background
 
-LLMs are a phenomenal piece of technology, and the latest models have gotten very good at writing SQL. However we could not get existing frameworks to work with our structured data at a level which we could incorporate into our application. That is why we built and released this engine.
+The latest LLMs have gotten remarkably good at writing SQL. However we could not get existing frameworks to work with our structured data at a level which we could incorporate into our application. That is why we built and released this engine.
 
 ### Goals
 
 Dataherald is built to:
 
-- Be easy to set up and add context
-- Be able to answer complex queries
+- Be modular, allowing different implementations of core components to be plugged-in
+- Come batteries included: Have best-in-class implementations for components like text to SQL, evaluation   
+- Be easy to set-up and use with major data waarehouses
 - Get better with usage
 - Be fast
 
 ## Get Started
 
-The simplest way to set up Dataherald is to use to create a managed deployment with a hosted API. We are rolling this service to select customers. Sign up for the waitlist <link>.
+The simplest way to set up Dataherald is to use to use the hosted version. We are rolling this service to select customers. Sign up for the <a href="https://www.dataherald.com/contact" target="_blank">waitlist</a>.
 
-You can also self-host the engine locally.
+You can also self-host the engine locally using Docker.
 
-## Run Dataherald locally
+## How to Run Dataherald with Docker
 
-To run Dataherald locally simply run
-
-uvicorn dataherald.app:app
-
-## Develop
-
-Things to know when developing for dataherald package.
-
-### Lint & Formatting
-
-Maintaining code quality and adhering to coding standards are essential for a well-structured and maintainable codebase. Ruff Python Linter and Black code formatter are powerful tools that can help you achieve these goals.
-
-#### Ruff Python Linter
-
-[Ruff Python Linter](https://beta.ruff.rs/docs/) analyzes Python code for errors, enforces coding standards, and provides suggestions for improvement.
-
-The [rules](https://beta.ruff.rs/docs/rules/) are set in the [pyproject.toml](./pyproject.toml) file.
-
-Lint all files in the current directory:
-
-```shell
-ruff check .
-```
-
-Lint and fix whenever possible:
-```shell
-ruff check --fix .
-```
-
-Lint specific files:
-
-```shell
-ruff check path/to/code.py
-```
-
-#### Black Code Formatter
-
-[Black](https://black.readthedocs.io/en/stable/#) is a Python code formatter that ensures consistent code style and improves readability.
-
-Format all files in the current directory:
-
-```shell
-black .
-```
-
-Format a specific file:
-
-```shell
-black path/to/code.py
-```
-
-> Recommendation: Look up for Ruff and Black IDE extensions to easily format and lint the code automatically while you're developing.
-
-
-## Running with Docker
-
-## Prerequisites
-* If you use a MAC computer you should have installed docker for MAC, check [here](https://docs.docker.com/desktop/install/mac-install/)
-
-## Steps to setup and run docker app 
 1. Create `.env` file, you can use the `.env.example` file as a guide
 ```
 cp .env.example .env
 ```
-2. As we use a SSH tunnel to connect with PostgreSQL and mongodb, you should copy your id_rsa file in your project root directory. This is ignored in .gitignore so it shouldn’t be commited if you use this file name
-```
-cp ~/.ssh/id_rsa .
-```
-3. Check that Docker is running or run docker
 
-4. Create a Docker network for communication between services. 
+2. Install and run Docker
+
+3. Create a Docker network for communication between services. 
 >We need to set it up externally to enable external clients running on docker to communicate with this app. 
 Run the following command:
 ```
 docker network create backendnetwork
 ```
 
-4. Build docker images, create containers and raise them. It should raise the app and mongo container
+4. Build docker images, create containers and raise them. This will raise the app and mongo container
 ```
 docker-compose up --build
 ```
 > You can skip the `--build` if you don't have to rebuild the image due to updates to the dependencies
+
 5. Check that the containers are running, you should see 2 containers
 ```
 docker ps
@@ -150,13 +87,9 @@ CONTAINER ID   IMAGE            COMMAND                  CREATED         STATUS 
 72aa8df0d589   dataherald-app   "uvicorn dataherald.…"   7 seconds ago   Up 6 seconds   0.0.0.0:80->80/tcp         dataherald-app-1
 6595d145b0d7   mongo:latest     "docker-entrypoint.s…"   19 hours ago    Up 6 seconds   0.0.0.0:27017->27017/tcp   dataherald-mongodb-1
 ```
+
 6. In your browser visit [http://localhost/docs](http://localhost/docs)
 
-## Testing with Docker
-Once your containers are running just execute the next command
-```
-docker-compose exec app pytest
-```
 
 
 ## See Docker App container logs
@@ -205,7 +138,7 @@ DATABASE_URI = '<db-connection-uri>'
 
 ## Data encryption
 
-To encrypt and decrypt DB sensible data is required an encrypt key. Set in .env file this field `ENCRYPT_KEY`
+To encrypt and decrypt sensitive Database connection data that is stored in Mongo an encryption key is required. This can be set in the `ENCRYPT_KEY`field of the .env file
 
 ### Generate a new key
 ```
@@ -223,8 +156,11 @@ Fernet.generate_key()
 ```
 
 
+## Contributing
+As an open-source project in a rapidly developing field, we are extremely open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.
 
-## Troubleshooting
+For detailed information on how to contribute, see [here](CONTRIBUTING.md).
+
 
 ### DB errors
 
