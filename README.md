@@ -1,5 +1,28 @@
 # dataherald
 
+<p align="center">
+  <a href="https://dataherald.com"><img src="https://files.dataherald.com/logos/dataherald.png" alt="Dataherald logo"></a>
+</p>
+
+<p align="center">
+    <b>Dataherald - query your structured data in natural language</b>. <br />
+</p>
+
+<p align="center">
+  <a href="https://discord.gg/A59Uxyy2k9" target="_blank">
+      <img src="https://img.shields.io/discord/1073293645303795742" alt="Discord">
+  </a> |
+  <a href="https://www.dataherald.com/" target="_blank">
+      <img src="https://img.shields.io/static/v1?label=license&message=Apache 2.0&color=white" alt="License">
+  </a> |
+  <a href="https://www.dataherald.com/" target="_blank">
+      Docs
+  </a> |
+  <a href="https://www.dataherald.com/" target="_blank">
+      Homepage
+  </a>
+</p>
+
 Dataherald is a text-to-sql engine built for enteprise-level question answering over structured data. It allows you to set up an API from your database that can answer questions in plain English. You can use Dataherald to:
 
 - Enable Q+A from your production DBs inside your SaaS application
