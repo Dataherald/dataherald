@@ -1,10 +1,22 @@
+# Contributing to Dataherald
 
+Hi there! Thank you for even being interested in contributing. As a growing open source project we are open
+to contributions, whether they be in the form of new features, integrations with other tools and frameworks, better documentation, or bug fixes.
 
+## Guidelines
 
+To contribute to this project, please follow a ["fork and pull request"](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) workflow.
+Please do not try to push directly to this repo unless you are maintainer.
 
 ## Lint & Formatting
 
-Maintaining code quality and adhering to coding standards are essential for a well-structured and maintainable codebase. Ruff Python Linter and Black code formatter are powerful tools that can help you achieve these goals.
+Maintaining code quality and adhering to coding standards are essential for a well-structured and maintainable codebase. Ruff Python Linter and Black code formatter are powerful tools that can help you achieve these goals. Should you experience any difficulty getting setup, please
+contact a maintainer! Not only do we want to help get you unblocked, but we also want to make sure that the process is
+smooth for future contributors.
+
+In a similar vein, we do enforce certain linting, formatting, and documentation standards in the codebase.
+If you are finding these difficult (or even just annoying) to work with, feel free to contact a maintainer for help -
+we do not want these to get in the way of getting good code into the codebase.
 
 ### Ruff Python Linter
 
