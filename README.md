@@ -31,7 +31,7 @@ Dataherald is a text-to-sql engine built for enteprise-level question answering 
 
 ... and many more!
 
-The service is 
+This project is undergoing swift development, and as such, the API may be subject to change at any time.
 
 ## Overview
 
@@ -53,9 +53,9 @@ Dataherald is built to:
 
 The simplest way to set up Dataherald is to use to use the hosted version. We are rolling this service to select customers. Sign up for the <a href="https://www.dataherald.com/contact" target="_blank">waitlist</a>.
 
-You can also self-host the engine locally using Docker.
+You can also self-host the engine locally using Docker. By default the engine uses Mongo to store application data.
 
-## How to Run Dataherald with Docker
+## How to Run Dataherald (with local Mongo) with Docker
 
 1. Create `.env` file, you can use the `.env.example` file as a guide
 ```
