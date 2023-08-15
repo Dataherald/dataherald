@@ -45,7 +45,7 @@ Dataherald is built to:
 
 - Be modular, allowing different implementations of core components to be plugged-in
 - Come batteries included: Have best-in-class implementations for components like text to SQL, evaluation   
-- Be easy to set-up and use with major data waarehouses
+- Be easy to set-up and use with major data warehouses
 - Get better with usage
 - Be fast
 
@@ -125,7 +125,6 @@ We currently support connections to PostGres, BigQuery, Databricks and Snowflake
 You can define a DB connection through a call to the following API endpoint `/api/v1/database`. For example
 
 ```
-
 
 ```
 
