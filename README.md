@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <b>Dataherald - query your structured data in natural language</b>. <br />
+    <b>Query your structured data in natural language</b>. <br />
 </p>
 
 <p align="center">
@@ -29,7 +29,6 @@ Dataherald is a text-to-sql engine built for enteprise-level question answering 
 - Enable Q+A from your production DBs inside your SaaS application
 - Create a ChatGPT plug-in from your proprietary data
 
-... and many more!
 
 This project is undergoing swift development, and as such, the API may be subject to change at any time.
 
@@ -57,7 +56,7 @@ You can also self-host the engine locally using Docker. By default the engine us
 
 ## How to Run Dataherald (with local Mongo) with Docker
 
-1. Create `.env` file, you can use the `.env.example` file as a guide
+1. Create `.env` file, you can use the `.env.example` file as a guide. You must set these fields for the engine to start. 
 ```
 cp .env.example .env
 ```
@@ -92,13 +91,13 @@ CONTAINER ID   IMAGE            COMMAND                  CREATED         STATUS 
 
 
 
-## See Docker App container logs
+### See Docker App container logs
 Once app container is running just execute the next command
 ```
 docker-compose exec app cat dataherald.log
 ```
 
-## Connect to Docker MongoDB container
+### Connect to Docker MongoDB container
 Once your mongo container is running you can use any tool (Such as NoSQLBooster) to connect it.
 The default values are:
 ```
@@ -109,38 +108,30 @@ DB_USERNAME = admin
 DB_PASSWORD = admin
 ```
 
-## DB Connections
-DB credentials are stored in `database_connection` collection in MongoDB and we can use the endpoint `/api/v1/database`
-to set the credentials. Beside when the application starts it stores a default db connection which takes the fields from
-the .env file.
+## Connecting to and Querying data stores
+Once the engine is running, you will want to use it by:
+1- Connecting to you data warehouses
+2- Adding context about the data to the engine
+3- Querying the data in natural language
 
-So to generate the default db connection when the app starts is important to set this env vars.
-Using ssh
-```
-SSH_ENABLED = True
-SSH_HOST = 'dev-box.dataherald.com'
-SSH_USERNAME='<your-user>'
-SSH_PASSWORD='<your-pass>'
-SSH_REMOTE_HOST = 'higeorge-production.cocfmuuqq1ym.us-east-1.rds.amazonaws.com'
-SSH_PRIVATE_KEY_PATH = '/app/id_rsa'
-SSH_PRIVATE_KEY_PASSWORD = '<your-pass>'
-SSH_REMOTE_DB_NAME = 'postgres'
-SSH_REMOTE_DB_PASSWORD = '<your-pass>'
-SSH_DB_DRIVER = 'postgresql+psycopg2'
-DATABASE_URI = ''
+### Connecting to your data warehouses
+We currently support connections to PostGres, BigQuery, Databricks and Snowflake. You can create connections to these warehouses through the API or at application start-up using the envars.
+
+#### Connecting through the API
+
+You can define a DB connection through a call to the following API endpoint `/api/v1/database`. For example
+
 ```
 
-Without ssh
-```
-SSH_ENABLED = False
-DATABASE_URI = '<db-connection-uri>'
+
 ```
 
-## Data encryption
+By default, DB credentials are stored in `database_connection` collection in MongoDB. Connection URI information is encrypted using the key you provide as an environment variable (see below)
+
+#### Encrypting sensitive DB credentials
 
 To encrypt and decrypt sensitive Database connection data that is stored in Mongo an encryption key is required. This can be set in the `ENCRYPT_KEY`field of the .env file
 
-### Generate a new key
 ```
 # Install the package cryptography in the terminal
 pip3 install cryptography
@@ -155,6 +146,67 @@ from cryptography.fernet import Fernet
 Fernet.generate_key()
 ```
 
+#### Connecting through envars
+Alternatively, you can store a default db connection to be read in when the application starts from the .env file. We only recommend this if you need to access your Database through an SSH tunnel. 
+
+So to generate the default db connection when the app starts is important to set this env vars.
+Using ssh
+```
+SSH_ENABLED = True
+SSH_HOST = '<ssh-host domain name>'
+SSH_USERNAME='<your-user>'
+SSH_PASSWORD='<your-pass>'
+SSH_REMOTE_HOST = '<remote host name>'
+SSH_PRIVATE_KEY_PATH = '/app/id_rsa'
+SSH_PRIVATE_KEY_PASSWORD = '<your-pass>'
+SSH_REMOTE_DB_NAME = '<remote db name>'
+SSH_REMOTE_DB_PASSWORD = '<your-pass>'
+SSH_DB_DRIVER = 'postgresql+psycopg2'
+DATABASE_URI = ''
+```
+
+Without ssh
+```
+SSH_ENABLED = False
+DATABASE_URI = '<db-connection-uri>'
+```
+
+
+### Adding Context
+Once you have connected to the data warehouse, you should add context to the engine to help improve the accuracy of the generated SQL. While this step is optional, it is necessary for the tool to generate accurate SQL. Context can currently be added in one of three ways:
+
+1- Scanning the Database tables and columns
+2- Adding verified SQL (golden SQL)
+3- Adding string descriptions of the tables and columns
+
+#### Scanning the Database
+The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM. You can trigger a scan of a database from the following endpoint
+
+```
+
+```
+
+#### Adding verified SQL
+Sample NL<>SQL pairs (golden SQL) can be stored in the context store and used for few-shot in context learning. In the default context store and NL 2 SQL engine, these samples are stored in a vector store and the closest samples are retrieved for few shot learning. You can add golden SQL to the context store from the following API endpoint
+
+```
+
+```
+
+#### Adding string descriptions
+In addition to database table_info and golden_sql, you can add strings describing tables and/or columns to the context store manually from the following API endpoint
+
+
+### Querying the Database in Naturual Language
+Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse using the following endpoint.
+
+```
+
+```
+
+
+## Replacing core modules
+The Dataherald engine is made up 
 
 ## Contributing
 As an open-source project in a rapidly developing field, we are extremely open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.
@@ -162,6 +214,6 @@ As an open-source project in a rapidly developing field, we are extremely open t
 For detailed information on how to contribute, see [here](CONTRIBUTING.md).
 
 
-### DB errors
+### Mongo errors
 
-Try completely deleting `/dbdata` before rebuilding the databases to ensure there is no corrupted data.
+The Mongo installation is configured to store application data in the `/dbdata` folder. In case you want to wipe the local DB, try completely deleting `/dbdata` before rebuilding the databases.
