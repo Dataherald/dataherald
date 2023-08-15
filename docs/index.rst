@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to Dataherald AI documentation
-=====================================
+========================================
 .. toctree::
    getting_started
    api

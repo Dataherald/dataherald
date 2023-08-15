@@ -11,7 +11,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(".."))
 
-project = "Dataheral"
+project = "Dataherald"
 copyright = "2023, Dataherald"
 author = "Dataherald"
 release = "0.0.1"
