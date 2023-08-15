@@ -37,6 +37,24 @@ The Dataherald_sqlagent is equipped with a range of tools that enhance its capab
 
 7. **GetFewShotExamples**: Allows the agent to request relevant Question/SQL pairs dynamically. The agent can ask for more examples based on question complexity, fostering adaptive learning.
 
+Method Details
+--------------
+
+:class:`SQLGenerator`
+^^^^^^^^^^^^^^^^^^^^^
+
+This class is a base class that all SQL generation classes inherit from. It provides common methods for generating SQL responses.
+
+.. method:: create_sql_query_status(db, query, response)
+
+   Creates a SQL query status using provided parameters.
+
+.. method:: generate_response(user_question, database_connection, context=None)
+
+   Generates a response to a user question based on the given user question, database connection, and optional context.
+
+For detailed implementation guidelines and further assistance, consult our official documentation or reach out to our dedicated support team.
+
 Conclusion
 ----------
 
