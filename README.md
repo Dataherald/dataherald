@@ -23,7 +23,7 @@
   </a>
 </p>
 
-Dataherald is a text-to-sql engine built for enteprise-level question answering over structured data. It allows you to set up an API from your database that can answer questions in plain English. You can use Dataherald to:
+Dataherald is a natural language-to-SQL engine built for enteprise-level question answering over structured data. It allows you to set up an API from your database that can answer questions in plain English. You can use Dataherald to:
 
 - Allow business users to get insights from the data warehouse without going through a data analyst
 - Enable Q+A from your production DBs inside your SaaS application
@@ -54,7 +54,7 @@ The simplest way to set up Dataherald is to use to use the hosted version. We ar
 
 You can also self-host the engine locally using Docker. By default the engine uses Mongo to store application data.
 
-## How to Run Dataherald (with local Mongo) with Docker
+## How to Run Dataherald (with local Mongo) using Docker
 
 1. Create `.env` file, you can use the `.env.example` file as a guide. You must set these fields for the engine to start. 
 ```
@@ -108,11 +108,11 @@ DB_USERNAME = admin
 DB_PASSWORD = admin
 ```
 
-## Connecting to and Querying data stores
+## Connecting to and Querying your SQL Databases
 Once the engine is running, you will want to use it by:
-1- Connecting to you data warehouses
-2- Adding context about the data to the engine
-3- Querying the data in natural language
+1. Connecting to you data warehouses
+2. Adding context about the data to the engine
+3. Querying the data in natural language
 
 ### Connecting to your data warehouses
 We currently support connections to PostGres, BigQuery, Databricks and Snowflake. You can create connections to these warehouses through the API or at application start-up using the envars.
@@ -175,30 +175,34 @@ DATABASE_URI = '<db-connection-uri>'
 ### Adding Context
 Once you have connected to the data warehouse, you should add context to the engine to help improve the accuracy of the generated SQL. While this step is optional, it is necessary for the tool to generate accurate SQL. Context can currently be added in one of three ways:
 
-1- Scanning the Database tables and columns
-2- Adding verified SQL (golden SQL)
-3- Adding string descriptions of the tables and columns
+1. Scanning the Database tables and columns
+2. Adding verified SQL (golden SQL)
+3. Adding string descriptions of the tables and columns
 
 #### Scanning the Database
-The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM. You can trigger a scan of a database from the following endpoint
+The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM. You can trigger a scan of a database from the `POST /api/v1/scanner` endpoint. Example below
 
 ```
 
 ```
 
 #### Adding verified SQL
-Sample NL<>SQL pairs (golden SQL) can be stored in the context store and used for few-shot in context learning. In the default context store and NL 2 SQL engine, these samples are stored in a vector store and the closest samples are retrieved for few shot learning. You can add golden SQL to the context store from the following API endpoint
+Sample NL<>SQL pairs (golden SQL) can be stored in the context store and used for few-shot in context learning. In the default context store and NL 2 SQL engine, these samples are stored in a vector store and the closest samples are retrieved for few shot learning. You can add golden SQL to the context store from the `POST /api/v1/golden-record` endpoint
 
 ```
 
 ```
 
 #### Adding string descriptions
-In addition to database table_info and golden_sql, you can add strings describing tables and/or columns to the context store manually from the following API endpoint
+In addition to database table_info and golden_sql, you can add strings describing tables and/or columns to the context store manually from the `PATCH /api/v1/scanned-db/{db_name}/{table_name}` endpoint
+
+```
+
+```
 
 
 ### Querying the Database in Naturual Language
-Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse using the following endpoint.
+Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse using the `POST /api/v1/question` endpoint.
 
 ```
 
@@ -206,10 +210,17 @@ Once you have connected the engine to your data warehouse (and preferably added 
 
 
 ## Replacing core modules
-The Dataherald engine is made up 
+The Dataherald engine is made up of replaceable modules. Each of these can be replaced with a different implementation that extends the base class. Some of the main modules are:
+
+1. SQL Generator -- The module that generates SQL from a given natural language question. 
+2. Vector Store -- The Vector DB used to store context data such as sample SQL queries
+3. DB -- The DB that persists application logic. By default this is Mongo.
+4. Evaluator -- A module which evaluates accuracy of the generated SQL and assigns a score. 
+
+In some instances we have already included multiple implementations for testing and benchmarking. 
 
 ## Contributing
-As an open-source project in a rapidly developing field, we are extremely open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.
+As an open-source project in a rapidly developing field, we are open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.
 
 For detailed information on how to contribute, see [here](CONTRIBUTING.md).
 
