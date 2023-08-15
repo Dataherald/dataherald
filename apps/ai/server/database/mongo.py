@@ -20,7 +20,9 @@ class MongoDB:
 
     @classmethod
     def update_one(cls, collection: str, query: dict, obj: dict) -> int:
-        return cls._data_store[collection].update_one(query, {"$set": obj})
+        return (
+            cls._data_store[collection].update_one(query, {"$set": obj}).matched_count
+        )
 
     @classmethod
     def update_or_insert_one(cls, collection: str, query: dict, obj: dict) -> int:
@@ -30,12 +32,12 @@ class MongoDB:
         return cls.insert_one(collection, obj)
 
     @classmethod
-    def find_by_id(cls, collection: str, id: ObjectId) -> dict:
-        return cls._data_store[collection].find_one({"_id": id})
+    def find_by_id(cls, collection: str, id: str) -> dict:
+        return cls._data_store[collection].find_one({"_id": ObjectId(id)})
 
     @classmethod
-    def find_by_object_id(cls, collection: str, id: str) -> dict:
-        return cls._data_store[collection].find_one({"_id": ObjectId(id)})
+    def find_by_object_id(cls, collection: str, id: ObjectId) -> dict:
+        return cls._data_store[collection].find_one({"_id": id})
 
     @classmethod
     def find_by_object_ids(cls, collection: str, ids: list[ObjectId]) -> Cursor:
@@ -44,3 +46,7 @@ class MongoDB:
     @classmethod
     def find(cls, collection: str, query: dict) -> Cursor:
         return cls._data_store[collection].find(query)
+
+    @classmethod
+    def delete_one(cls, collection: str, query: dict) -> int:
+        return cls._data_store[collection].delete_one(query).deleted_count

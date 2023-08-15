@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from modules.k2_core import controller as k2_controller
 from modules.query import controller as query_controller
+from modules.user import controller as user_controller
 
 app = FastAPI()
 
@@ -19,6 +20,7 @@ app.add_middleware(
 
 app.include_router(k2_controller.router)
 app.include_router(query_controller.router)
+app.include_router(user_controller.router)
 
 
 @app.get("/heartbeat")

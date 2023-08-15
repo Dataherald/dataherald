@@ -9,6 +9,8 @@ QUESTION_COL = "nl_question"
 QUERY_RESPONSE_COL = "nl_query_response"
 QUERY_RESPONSE_REF_COL = "nl_query_response_ref"
 
+USER_COL = "user"
+
 
 class Settings(BaseSettings):
     load_dotenv()

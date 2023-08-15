@@ -9,14 +9,14 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-# will probably divide k2 into evaluation, sql_generation, and db_connection
+k2_service = K2Service()
 
 
 @router.post("/question")
 async def answer_question(question_request: QuestionRequest) -> NLQueryResponse:
-    return await K2Service().answer_question(question_request)
+    return await k2_service.answer_question(question_request)
 
 
 @router.get("/heartbeat")
 async def heartbeat():
-    return await K2Service().heartbeat()
+    return await k2_service.heartbeat()
