@@ -12,7 +12,7 @@
   <a href="https://discord.gg/A59Uxyy2k9" target="_blank">
       <img src="https://img.shields.io/discord/1138593282184716441" alt="Discord">
   </a> |
-  <a href="https://www.dataherald.com/" target="_blank">
+  <a href="./LICENSE" target="_blank">
       <img src="https://img.shields.io/static/v1?label=license&message=Apache 2.0&color=white" alt="License">
   </a> |
   <a href="https://www.dataherald.com/" target="_blank">
@@ -124,9 +124,43 @@ We currently support connections to PostGres, BigQuery, Databricks and Snowflake
 
 You can define a DB connection through a call to the following API endpoint `/api/v1/database`. For example
 
+Example 1. Without a SSH connection
+```
+curl -X 'POST' \
+  '<host>/api/v1/database' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "db_alias": "my_db_alias_identifier",
+  "use_ssh": false,
+  "connection_uri": "sqlite:///mydb.db"
+}'
 ```
 
+Example 2. With a SSH connection
 ```
+curl -X 'POST' \
+  'http://localhost/api/v1/database' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "db_alias": "my_db_alias_identifier",
+  "use_ssh": true,
+  "ssh_settings": {
+    "db_name": "db_name",
+    "host": "string",
+    "username": "string",
+    "password": "string",
+    "remote_host": "string",
+    "remote_db_name": "string",
+    "remote_db_password": "string",
+    "private_key_path": "string",
+    "private_key_password": "string",
+    "db_driver": "string"
+  }
+}'
+```
+With a SSH connection fill out all the ssh_settings fields
 
 By default, DB credentials are stored in `database_connection` collection in MongoDB. Connection URI information is encrypted using the key you provide as an environment variable (see below)
 
@@ -187,21 +221,54 @@ The database scan is used to gather information about the database including tab
 
 
 ```
-
+curl -X 'POST' \
+  '<host>/api/v1/scanner' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "db_alias": "db_name",
+    "table_name": "table_name"
+  }'
 ```
 
 #### Adding verified SQL
 Sample NL<>SQL pairs (golden SQL) can be stored in the context store and used for few-shot in context learning. In the default context store and NL 2 SQL engine, these samples are stored in a vector store and the closest samples are retrieved for few shot learning. You can add golden SQL to the context store from the `POST /api/v1/golden-record` endpoint
 
 ```
-
+curl -X 'POST' \
+  '<host>/api/v1/golden-record' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '[
+        {
+            "nl_question":"what was the most expensive zip code to rent in Los Angeles county in May 2022?", 
+            "sql": "SELECT location_name, metric_value FROM table_name WHERE dh_county_name = '\''Los Angeles'\'' AND dh_state_name = '\''California'\''   AND period_start='\''2022-05-01'\'' AND geo_type='\''zip'\'' ORDER BY metric_value DESC LIMIT 1;", 
+            "db":"db_name"
+        }
+  ]'
 ```
 
 #### Adding string descriptions
 In addition to database table_info and golden_sql, you can add strings describing tables and/or columns to the context store manually from the `PATCH /api/v1/scanned-db/{db_name}/{table_name}` endpoint
 
 ```
-
+curl -X 'PATCH' \
+  '<host>/api/v1/scanned-db/db_name/table_name' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "description": "Tabla description",
+  "columns": [
+    {
+      "name": "column1",
+      "description": "Column1 description"
+    },
+    {
+      "name": "column2",
+      "description": "Column2 description"
+    }
+  ]
+}'
 ```
 
 
@@ -209,7 +276,14 @@ In addition to database table_info and golden_sql, you can add strings describin
 Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse using the `POST /api/v1/question` endpoint.
 
 ```
-
+curl -X 'POST' \
+  '<host>/api/v1/question' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "question": "what was the most expensive zip code to rent in Los Angeles county in May 2022?"",
+        "db_alias": "db_name"
+    }'
 ```
 
 
@@ -232,3 +306,4 @@ For detailed information on how to contribute, see [here](CONTRIBUTING.md).
 ### Mongo errors
 
 The Mongo installation is configured to store application data in the `/dbdata` folder. In case you want to wipe the local DB, try completely deleting `/dbdata` before rebuilding the databases.
+
