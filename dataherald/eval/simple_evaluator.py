@@ -51,7 +51,6 @@ give me a one or two lines explanation and the score after 'Score: '.
 
 
 class SimpleEvaluator(Evaluator):
-
     def __init__(self, system: System):
         super().__init__(system)
         self.system = system
