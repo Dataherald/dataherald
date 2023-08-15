@@ -1,0 +1,33 @@
+[tool.ruff]
+line-length = 140
+select = [
+    "A",
+    "ARG",
+    "B",
+    "C",
+    "C4",
+    "E",
+    "ERA",
+    "F",
+    "I",
+    "N",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "RET",
+    "S",
+    "T10",
+    "UP",
+    "W",
+]
+ignore = ["A001", "A002", "A003", "UP006", "UP035", "PLR0913", "N805"]
+target-version = "py310"
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"dataherald/tests/**" = ["ARG", "S", "S101"]
+
+[tool.pytest.ini_options]
+env_override_existing_values = 1
+env_files = [".test.env"]
