@@ -13,7 +13,6 @@ from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
 )
 from langchain.chains.llm import LLMChain
-from langchain.chat_models import ChatOpenAI
 from langchain.tools import BaseTool
 from langchain.tools.sql_database.tool import (
     BaseSQLDatabaseTool,
@@ -168,18 +167,11 @@ class SQLEvaluationToolkit(BaseToolkit):
 
 
 class EvaluationAgent(Evaluator):
-    llm_model_name: str = "gpt-4"
     sample_rows: int = 10
 
     def __init__(self, system: System):
         super().__init__(system)
         self.system = system
-        openai_api_key = system.settings.require("openai_api_key")
-        self.llm = ChatOpenAI(
-            temperature=0,
-            openai_api_key=openai_api_key,
-            model_name=self.llm_model_name,
-        )
 
     def answer_parser(self, answer: str) -> int:
         """
