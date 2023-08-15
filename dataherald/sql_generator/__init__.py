@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 from datetime import date, datetime
 from typing import Any, List
 
-from langchain.base_language import BaseLanguageModel
-
 from dataherald.config import Component, System
 from dataherald.model.chat_model import ChatModel
 from dataherald.sql_database.base import SQLDatabase
@@ -16,7 +14,7 @@ from dataherald.types import NLQuery, NLQueryResponse, SQLQueryResult
 
 class SQLGenerator(Component, ABC):
     metadata: Any
-    llm: BaseLanguageModel | None = None
+    llm: ChatModel | None = None
 
     def __init__(self, system: System):  # noqa: ARG002
         self.system = system

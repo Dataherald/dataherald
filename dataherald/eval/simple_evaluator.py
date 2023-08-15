@@ -3,7 +3,6 @@ import re
 import time
 
 from langchain.chains import LLMChain
-from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
@@ -52,17 +51,10 @@ give me a one or two lines explanation and the score after 'Score: '.
 
 
 class SimpleEvaluator(Evaluator):
-    llm_model_name: str = "gpt-4"
 
     def __init__(self, system: System):
         super().__init__(system)
         self.system = system
-        openai_api_key = system.settings.require("openai_api_key")
-        self.llm = ChatOpenAI(
-            temperature=0,
-            openai_api_key=openai_api_key,
-            model_name=self.llm_model_name,
-        )
 
     def answer_parser(self, answer: str) -> int:
         """

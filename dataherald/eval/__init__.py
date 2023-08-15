@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel, Field, confloat
 
 from dataherald.config import Component, System
+from dataherald.model.chat_model import ChatModel
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import NLQuery, NLQueryResponse
@@ -18,9 +19,12 @@ class Evaluation(BaseModel):
 class Evaluator(Component, ABC):
     database: SQLDatabase
     acceptance_threshold: confloat(ge=0, le=1) = 0.8
+    llm: ChatModel | None = None
 
     def __init__(self, system: System):
         self.system = system
+        model = ChatModel(self.system)
+        self.llm = model.get_model(temperature=0)
 
     def get_confidence_score(
         self,
