@@ -23,6 +23,7 @@
   </a>
 </p>
 
+
 Dataherald is a natural language-to-SQL engine built for enteprise-level question answering over structured data. It allows you to set up an API from your database that can answer questions in plain English. You can use Dataherald to:
 
 - Allow business users to get insights from the data warehouse without going through a data analyst
@@ -54,9 +55,11 @@ The simplest way to set up Dataherald is to use to use the hosted version. We ar
 
 You can also self-host the engine locally using Docker. By default the engine uses Mongo to store application data.
 
+
 ## How to Run Dataherald (with local Mongo) using Docker
 
 1. Create `.env` file, you can use the `.env.example` file as a guide. You must set these fields for the engine to start. 
+
 ```
 cp .env.example .env
 ```
@@ -172,6 +175,7 @@ DATABASE_URI = '<db-connection-uri>'
 ```
 
 
+
 ### Adding Context
 Once you have connected to the data warehouse, you should add context to the engine to help improve the accuracy of the generated SQL. While this step is optional, it is necessary for the tool to generate accurate SQL. Context can currently be added in one of three ways:
 
@@ -181,6 +185,7 @@ Once you have connected to the data warehouse, you should add context to the eng
 
 #### Scanning the Database
 The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM. You can trigger a scan of a database from the `POST /api/v1/scanner` endpoint. Example below
+
 
 ```
 
