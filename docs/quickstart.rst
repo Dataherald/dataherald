@@ -39,6 +39,7 @@ The ``ENCRYPT_KEY`` is used to encrypt database connection data before storing i
     Fernet.generate_key()
 
 
+While not strictly required, we also strongly suggest you change the MONGO username and password as well in the ``MONGODB_DB_USERNAME``, ``MONGODB_DB_PASSWORD`` and ``MONGODB_URI`` fields before start-up.
 
 Starting Docker
 ----------------

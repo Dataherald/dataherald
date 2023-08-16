@@ -64,6 +64,20 @@ You can also self-host the engine locally using Docker. By default the engine us
 cp .env.example .env
 ```
 
+Specifically the following 5 fields must be manually set before the engine is started.
+
+```
+#OpenAI credentials and model 
+OPENAI_API_KEY = 
+LLM_MODEL =      
+ORG_ID =
+
+#Encryption key for storing DB connection data in Mongo
+ENCRYPT_KEY = 
+```
+
+While not strictly required, we also strongly suggest you change the MONGO username and password fields as well.
+
 2. Install and run Docker
 
 3. Create a Docker network for communication between services. 
