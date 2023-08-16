@@ -85,7 +85,3 @@ class DefaultContextStore(ContextStore):
                 collection=self.golden_record_collection, id=id
             )
         return True
-
-    @override
-    def add_table_metadata(self, table_name: str, table_metadata: dict) -> bool:
-        return super().add_table_metadata(table_name, table_metadata)

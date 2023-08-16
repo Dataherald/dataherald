@@ -35,7 +35,3 @@ class ContextStore(Component, ABC):
     @abstractmethod
     def remove_golden_records(self, ids: List) -> bool:
         pass
-
-    @abstractmethod
-    def add_table_metadata(self, table_name: str, table_metadata: dict) -> bool:
-        pass
