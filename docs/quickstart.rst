@@ -130,9 +130,9 @@ Adding context to the engine
 
 While you can start querying in natural language your data warehouse after adding a connection, the generated SQL will likely not be very accurate until you start adding some context about the business logic and data to the context store. Dataherald allows you to do this in three ways:
 
-#. Scanning the Database tables and columns using the `scanner <api.scan_database>`_
-#. Adding verified SQL to be used in few shot prompting `also referred to as Golden SQL <api.golden_record>`_
-#. Adding string descriptions of the tables and columns through the add_description `endpoint <api.add_descriptions>`_ 
+#. Scanning the Database tables and columns using the `scanner <api.scan_database.html>`_
+#. Adding verified SQL to be used in few shot prompting `also referred to as Golden SQL <api.golden_record.html>`_
+#. Adding string descriptions of the tables and columns through the add_description `endpoint <api.add_descriptions.html>`_ 
 
 The details of how to use these endpoints are outside the scope of this quickstart guide. Please refer to the API documentation from the links above for more information.
 
