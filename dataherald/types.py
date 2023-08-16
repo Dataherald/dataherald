@@ -60,6 +60,7 @@ class SupportedDatabase(Enum):
     DATABRICKS = "DATABRICKS"
     SNOWFLAKE = "SNOWFLAKE"
     SQLSERVER = "SQLSERVER"
+    BIGQUERY = "BIGQUERY"
 
 
 class QuestionRequest(BaseModel):
