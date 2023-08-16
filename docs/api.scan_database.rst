@@ -1,3 +1,5 @@
+.. api.scan_database:
+
 Scan a Database
 =======================
 
