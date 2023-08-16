@@ -35,7 +35,7 @@ class SSHSettings(BaseSettings):
 
 class DatabaseConnection(BaseModel):
     alias: str
-    use_ssh: bool
+    use_ssh: bool = False
     uri: str | None
     ssh_settings: SSHSettings | None = None
 
