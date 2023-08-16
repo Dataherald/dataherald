@@ -1,4 +1,4 @@
 API Server
-=====
+===========
 
-Foo
+Dataherald currently uses FastAPI as its server implementation.

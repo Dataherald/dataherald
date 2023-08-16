@@ -1,3 +1,5 @@
+.. _api.add_descriptions:
+
 Set descriptions
 =======================
 
