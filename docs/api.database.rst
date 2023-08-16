@@ -1,5 +1,5 @@
 Create a Database connection
-=======================
+=============================
 
 To create a database connection, currently it only supports these db managers
 ``databricks``, ``postgresql``, ``snowflake``, ``bigquery`` and databases behind a VPN using a SSH tunnel.
