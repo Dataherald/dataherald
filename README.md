@@ -15,7 +15,7 @@
   <a href="./LICENSE" target="_blank">
       <img src="https://img.shields.io/static/v1?label=license&message=Apache 2.0&color=white" alt="License">
   </a> |
-  <a href="https://www.dataherald.com/" target="_blank">
+  <a href="https://dataherald.readthedocs.io/" target="_blank">
       Docs
   </a> |
   <a href="https://www.dataherald.com/" target="_blank">
