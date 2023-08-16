@@ -15,7 +15,7 @@ from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.repository.base import DBScannerRepository
-from dataherald.eval import Evaluation, Evaluator
+from dataherald.eval import Evaluator
 from dataherald.repositories.base import NLQueryResponseRepository
 from dataherald.repositories.nl_question import NLQuestionRepository
 from dataherald.sql_database.base import SQLDatabase
@@ -24,8 +24,6 @@ from dataherald.sql_generator import SQLGenerator
 from dataherald.sql_generator.generates_nl_answer import GeneratesNlAnswer
 from dataherald.types import (
     DatabaseConnectionRequest,
-    DataDefinitionRequest,
-    EvaluationRequest,
     ExecuteTempQueryRequest,
     NLQuery,
     NLQueryResponse,
@@ -126,11 +124,6 @@ class FastAPI(API):
         return json.loads(json_util.dumps(nl_query_response))
 
     @override
-    def evaluate_question(self, evaluation_request: EvaluationRequest) -> Evaluation:
-        """Evaluates an English question within the registered Evaluator"""
-        pass
-
-    @override
     def connect_database(
         self, database_connection_request: DatabaseConnectionRequest
     ) -> bool:
@@ -169,16 +162,6 @@ class FastAPI(API):
 
         scanner_repository.update(table)
         return True
-
-    @override
-    def add_data_definition(
-        self, data_definition_request: DataDefinitionRequest
-    ) -> bool:
-        """Take in a URI to a document containing data definitions"""
-        context_store = self.system.instance(ContextStore)
-        return context_store.add_data_definition(
-            data_definition_request.type, data_definition_request.uri
-        )
 
     @override
     def add_golden_records(self, golden_records: List) -> bool:

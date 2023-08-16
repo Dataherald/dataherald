@@ -25,10 +25,6 @@ This abstract class provides a consistent interface for interacting with the API
 
    Provides a response to a user's question based on the provided question request.
 
-.. method:: evaluate_question(self, evaluation_request: EvaluationRequest) -> Evaluation
-
-   Evaluates a generated response to a user's question using the provided evaluation request.
-
 .. method:: connect_database(self, database_connection_request: DatabaseConnectionRequest) -> bool
 
    Establishes a connection to a database using the provided connection request.
@@ -44,10 +40,6 @@ This abstract class provides a consistent interface for interacting with the API
 .. method:: execute_query(self, query: Query) -> tuple[str, dict]
 
    Executes a query using the provided Query object and returns the query result.
-
-.. method:: add_data_definition(self, data_definition_request: DataDefinitionRequest) -> bool
-
-   Adds a data definition based on the provided request.
 
 .. method:: update_query(self, query_id: str, query: UpdateQueryRequest) -> NLQueryResponse
 
