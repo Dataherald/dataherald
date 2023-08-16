@@ -50,11 +50,6 @@ class NLQueryResponse(BaseModel):
     # date_entered: datetime = datetime.now() add this later
 
 
-class DataDefinitionType(Enum):
-    GOLDEN_SQL = "GOLDEN_SQL"
-    BUSINESS_CONTEXT = "BUSINESS_CONTEXT"
-
-
 class SupportedDatabase(Enum):
     POSTGRES = "POSTGRES"
     DATABRICKS = "DATABRICKS"
@@ -72,21 +67,11 @@ class ScannerRequest(BaseModel):
     table_name: str | None
 
 
-class EvaluationRequest(BaseModel):
-    question: str
-    golden_sql: str
-
-
 class DatabaseConnectionRequest(BaseModel):
     db_alias: str
     use_ssh: bool
     connection_uri: str | None
     ssh_settings: SSHSettings | None
-
-
-class DataDefinitionRequest(BaseModel):
-    uri: str
-    type: DataDefinitionType
 
 
 class ColumnDescriptionRequest(BaseModel):

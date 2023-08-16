@@ -7,8 +7,6 @@ from dataherald.eval import Evaluation
 from dataherald.sql_database.models.types import SSHSettings
 from dataherald.types import (
     DatabaseConnectionRequest,
-    DataDefinitionRequest,
-    EvaluationRequest,
     ExecuteTempQueryRequest,
     NLQueryResponse,
     QuestionRequest,
@@ -33,10 +31,6 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def evaluate_question(self, evaluation_request: EvaluationRequest) -> Evaluation:
-        pass
-
-    @abstractmethod
     def connect_database(
         self, database_connection_request: DatabaseConnectionRequest
     ) -> bool:
@@ -57,12 +51,6 @@ class API(Component, ABC):
 
     @abstractmethod
     def execute_query(self, query: Query) -> tuple[str, dict]:
-        pass
-
-    @abstractmethod
-    def add_data_definition(
-        self, data_definition_request: DataDefinitionRequest
-    ) -> bool:
         pass
 
     @abstractmethod
