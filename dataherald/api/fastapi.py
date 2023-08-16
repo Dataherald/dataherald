@@ -18,7 +18,6 @@ from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.eval import Evaluation, Evaluator
 from dataherald.repositories.base import NLQueryResponseRepository
 from dataherald.repositories.nl_question import NLQuestionRepository
-from dataherald.smart_cache import SmartCache
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
@@ -90,7 +89,6 @@ class FastAPI(API):
     def answer_question(self, question_request: QuestionRequest) -> NLQueryResponse:
         """Takes in an English question and answers it based on content from the registered databases"""
         logger.info(f"Answer question: {question_request.question}")
-        cache = self.system.instance(SmartCache)
         sql_generation = self.system.instance(SQLGenerator)
         evaluator = self.system.instance(Evaluator)
         context_store = self.system.instance(ContextStore)
@@ -111,27 +109,17 @@ class FastAPI(API):
 
         context = context_store.retrieve_context_for_question(user_question)
         start_generated_answer = time.time()
-
-        generated_answer = cache.lookup(
-            user_question.question + question_request.db_alias
-        )
-        if generated_answer is None:
-            try:
-                generated_answer = sql_generation.generate_response(
-                    user_question, database_connection, context
-                )
-            except ValueError as e:
-                raise HTTPException(status_code=404, detail=str(e))  # noqa: B904
-            logger.info("Starts evaluator...")
-            confidence_score = evaluator.get_confidence_score(
-                user_question, generated_answer, database_connection
+        try:
+            generated_answer = sql_generation.generate_response(
+                user_question, database_connection, context
             )
-            if confidence_score >= evaluator.acceptance_threshold:
-                cache.add(
-                    question_request.question + question_request.db_alias,
-                    generated_answer,
-                )
-            generated_answer.confidence_score = confidence_score
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))  # noqa: B904
+        logger.info("Starts evaluator...")
+        confidence_score = evaluator.get_confidence_score(
+            user_question, generated_answer, database_connection
+        )
+        generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
         nl_query_response = nl_query_response_repository.insert(generated_answer)
