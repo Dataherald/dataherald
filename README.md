@@ -78,6 +78,23 @@ ENCRYPT_KEY =
 
 While not strictly required, we also strongly suggest you change the MONGO username and password fields as well.
 
+Follow the next commands to generate an ENCRYPT_KEY and paste it in the .env file like 
+this `ENCRYPT_KEY = 4Mbe2GYx0Hk94o_f-irVHk1fKkCGAt1R7LLw5wHVghI=`
+
+```
+# Install the package cryptography in the terminal
+pip3 install cryptography
+
+# Run python in terminal
+python3
+
+# Import Fernet
+from cryptography.fernet import Fernet
+
+# Generate the key
+Fernet.generate_key()
+```
+
 2. Install and run Docker
 
 3. Create a Docker network for communication between services. 
@@ -176,52 +193,7 @@ curl -X 'POST' \
 ```
 With a SSH connection fill out all the ssh_settings fields
 
-By default, DB credentials are stored in `database_connection` collection in MongoDB. Connection URI information is encrypted using the key you provide as an environment variable (see below)
-
-#### Encrypting sensitive DB credentials
-
-To encrypt and decrypt sensitive Database connection data that is stored in Mongo an encryption key is required. This can be set in the `ENCRYPT_KEY`field of the .env file
-
-```
-# Install the package cryptography in the terminal
-pip3 install cryptography
-
-# Run python in terminal
-python3
-
-# Import Fernet
-from cryptography.fernet import Fernet
-
-# Generate the key
-Fernet.generate_key()
-```
-
-#### Connecting through envars
-Alternatively, you can store a default db connection to be read in when the application starts from the .env file. We only recommend this if you need to access your Database through an SSH tunnel. 
-
-So to generate the default db connection when the app starts is important to set this env vars.
-Using ssh
-```
-SSH_ENABLED = True
-SSH_HOST = '<ssh-host domain name>'
-SSH_USERNAME='<your-user>'
-SSH_PASSWORD='<your-pass>'
-SSH_REMOTE_HOST = '<remote host name>'
-SSH_PRIVATE_KEY_PATH = '/app/id_rsa'
-SSH_PRIVATE_KEY_PASSWORD = '<your-pass>'
-SSH_REMOTE_DB_NAME = '<remote db name>'
-SSH_REMOTE_DB_PASSWORD = '<your-pass>'
-SSH_DB_DRIVER = 'postgresql+psycopg2'
-DATABASE_URI = ''
-```
-
-Without ssh
-```
-SSH_ENABLED = False
-DATABASE_URI = '<db-connection-uri>'
-```
-
-
+By default, DB credentials are stored in `database_connection` collection in MongoDB. Connection URI information is encrypted using the ENCRYPT_KEY you provided as an environment variable
 
 ### Adding Context
 Once you have connected to the data warehouse, you should add context to the engine to help improve the accuracy of the generated SQL. While this step is optional, it is necessary for the tool to generate accurate SQL. Context can currently be added in one of three ways:

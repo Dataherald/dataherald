@@ -70,7 +70,7 @@ class ScannerRequest(BaseModel):
 
 class DatabaseConnectionRequest(BaseModel):
     db_alias: str
-    use_ssh: bool
+    use_ssh: bool = False
     connection_uri: str | None
     ssh_settings: SSHSettings | None
 
