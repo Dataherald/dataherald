@@ -10,7 +10,6 @@ from pydantic import BaseSettings
 
 _abstract_type_keys: Dict[str, str] = {
     "dataherald.api.API": "api_impl",
-    "dataherald.smart_cache.SmartCache": "cache_impl",
     "dataherald.db_scanner.Scanner": "db_scanner_impl",
     "dataherald.sql_generator.SQLGenerator": "sql_generator_impl",
     "dataherald.eval.Evaluator": "eval_impl",
@@ -29,9 +28,6 @@ class Settings(BaseSettings):
         "DB_SCANNER", "dataherald.db_scanner.sqlalchemy.SqlAlchemyScanner"
     )
 
-    cache_impl: str = os.environ.get(
-        "CACHE", "dataherald.smart_cache.in_memory.InMemoryCache"
-    )
     sql_generator_impl: str = os.environ.get(
         "SQL_GENERATOR",
         "dataherald.sql_generator.langchain_sqlchain.LangChainSQLChainSQLGenerator",
