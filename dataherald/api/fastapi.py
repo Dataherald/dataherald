@@ -10,7 +10,7 @@ from sql_metadata import Parser
 
 from dataherald.api import API
 from dataherald.api.types import Query
-from dataherald.config import DBConnectionConfigSettings, System
+from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.db_scanner import Scanner
@@ -41,19 +41,6 @@ class FastAPI(API):
         super().__init__(system)
         self.system = system
         self.storage = self.system.instance(DB)
-
-        # stores a database connection
-        self.create_first_db_connection()
-
-    def create_first_db_connection(self):
-        db_connection_setting = DatabaseConnection(
-            alias="v2_real_estate", **DBConnectionConfigSettings().dict()
-        )
-        self.storage.update_or_create(
-            "database_connection",
-            {"alias": db_connection_setting.alias},
-            db_connection_setting.dict(),
-        )
 
     @override
     def heartbeat(self) -> int:

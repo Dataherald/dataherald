@@ -18,7 +18,7 @@ Request this ``POST`` endpoint::
       "use_ssh": true,
       "connection_uri": "string",
       "ssh_settings": {
-        "db_name": "v2_real_estate",
+        "db_name": "string",
         "host": "string",
         "username": "string",
         "password": "string",

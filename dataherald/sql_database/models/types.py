@@ -1,14 +1,12 @@
 from typing import Any
 
-from dotenv import load_dotenv
 from pydantic import BaseModel, BaseSettings, validator
 
 from dataherald.utils.encrypt import FernetEncrypt
 
 
 class SSHSettings(BaseSettings):
-    load_dotenv()
-    db_name: str | None = "v2_real_estate"
+    db_name: str | None
     host: str | None
     username: str | None
     password: str | None
@@ -36,7 +34,6 @@ class SSHSettings(BaseSettings):
 
 
 class DatabaseConnection(BaseModel):
-    load_dotenv()
     alias: str
     use_ssh: bool
     uri: str | None
