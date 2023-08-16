@@ -1,3 +1,5 @@
+.. _api.golden_record:
+
 Add golden records
 =======================
 

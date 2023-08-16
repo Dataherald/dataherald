@@ -272,7 +272,7 @@ curl -X 'PATCH' \
 ```
 
 
-### Querying the Database in Naturual Language
+### Querying the Database in Natural Language
 Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse using the `POST /api/v1/question` endpoint.
 
 ```
