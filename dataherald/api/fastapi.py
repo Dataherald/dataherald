@@ -56,8 +56,14 @@ class FastAPI(API):
         if not db_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
         database_connection = DatabaseConnection(**db_connection)
+        try:
+            database = SQLDatabase.get_sql_engine(database_connection)
+        except Exception:
+            raise HTTPException(  # noqa: B904
+                status_code=400,
+                detail=f"Unable to connect to db: {scanner_request.db_alias}",
+            )
 
-        database = SQLDatabase.get_sql_engine(database_connection)
         scanner = self.system.instance(Scanner)
         try:
             scanner.scan(
