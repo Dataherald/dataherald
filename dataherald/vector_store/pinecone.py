@@ -53,6 +53,8 @@ class Pinecone(VectorStore):
 
     @override
     def delete_record(self, collection: str, id: str):
+        if collection not in pinecone.list_indexes():
+            self.create_collection(collection)
         index = pinecone.Index(collection)
         index.delete(ids=[id])
 
