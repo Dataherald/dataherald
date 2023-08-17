@@ -3,7 +3,7 @@ name: ai-server-stage
 on:
   push:
     paths:
-      - .github/workflows/ai-k2-server-stage.yml # this file
+      - .github/workflows/ai-server-stage.yml # this file
       - apps/ai/server/**
     branches:
       - main 
