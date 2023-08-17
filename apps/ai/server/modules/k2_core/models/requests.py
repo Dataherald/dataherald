@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from modules.query.models.entities import SlackQuestionUser
+from modules.user.models.entities import SlackQuestionUser
 
 
 class EvaluationRequest(BaseModel):

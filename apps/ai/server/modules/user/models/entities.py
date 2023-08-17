@@ -11,3 +11,8 @@ class User(BaseModel):
     nickname: str | None
     picture: str | None
     organization_id: str | None
+
+
+class SlackQuestionUser(BaseModel):
+    slack_id: str | None
+    username: str | None

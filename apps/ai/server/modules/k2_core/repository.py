@@ -4,8 +4,8 @@ from bson import ObjectId
 
 from config import QUERY_RESPONSE_REF_COL
 from database.mongo import MongoDB
-from modules.k2_core.models.requests import SlackQuestionUser
 from modules.query.models.entities import QueryRef
+from modules.user.models.entities import SlackQuestionUser
 
 
 class K2CoreRepository:

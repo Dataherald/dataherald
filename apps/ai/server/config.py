@@ -35,5 +35,19 @@ class DBSettings(BaseSettings):
         return getattr(self, key)
 
 
+class AuthSettings(BaseSettings):
+    load_dotenv()
+
+    auth_enabled: bool = os.environ.get("AUTH_ENABLED", True)
+    auth0_domain: str = os.environ.get("AUTH0_DOMAIN")
+    auth0_algorithms: str = os.environ.get("AUTH0_ALGORITHMS", "RS256")
+    auth0_audience: str = os.environ.get("AUTH0_API_AUDIENCE")
+    auth0_issuer: str = os.environ.get("AUTH0_ISSUER")
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
+
+
 settings = Settings()
-dbsettings = DBSettings()
+db_settings = DBSettings()
+auth_settings = AuthSettings()

@@ -2,12 +2,12 @@ from bson.objectid import ObjectId
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
 
-from config import dbsettings
+from config import db_settings
 
 
 class MongoDB:
-    db_uri = dbsettings.mongodb_uri
-    db_name = dbsettings.mongodb_db_name
+    db_uri = db_settings.mongodb_uri
+    db_name = db_settings.mongodb_db_name
     _data_store = MongoClient(db_uri)[db_name]
 
     @classmethod

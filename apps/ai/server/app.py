@@ -3,6 +3,7 @@ import time
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from modules.auth import controller as auth_controller
 from modules.k2_core import controller as k2_controller
 from modules.organization import controller as organization_controller
 from modules.query import controller as query_controller
@@ -19,6 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_controller.router)
 app.include_router(k2_controller.router)
 app.include_router(query_controller.router)
 app.include_router(user_controller.router)
