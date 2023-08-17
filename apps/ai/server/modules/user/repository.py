@@ -14,11 +14,11 @@ class UserRepository:
         return User(**user) if user else None
 
     def get_user_by_email(self, email: str) -> User:
-        user = MongoDB.find_one("user", {"email": email})
+        user = MongoDB.find_one(USER_COL, {"email": email})
         return User(**user) if user else None
 
     def delete_user(self, id: str) -> int:
-        return MongoDB.delete_one("user", {"_id": ObjectId(id)})
+        return MongoDB.delete_one(USER_COL, {"_id": ObjectId(id)})
 
     def update_user(self, id: str, new_user_data: dict, email: str = None) -> int:
         if email:

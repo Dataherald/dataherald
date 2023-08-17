@@ -16,7 +16,7 @@ class OrganizationRepository:
         return Organization(**MongoDB.find_by_id(ORGANIZATION_COL, id))
 
     def delete_organization(self, id: str) -> int:
-        return MongoDB.delete_one("organization", {"_id": ObjectId(id)})
+        return MongoDB.delete_one(ORGANIZATION_COL, {"_id": ObjectId(id)})
 
     def update_organization(self, id: str, new_org_data: dict) -> int:
         return MongoDB.update_one(ORGANIZATION_COL, {"_id": ObjectId(id)}, new_org_data)
