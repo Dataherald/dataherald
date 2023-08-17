@@ -27,3 +27,11 @@ class DB(Component, ABC):
     @abstractmethod
     def find(self, collection: str, query: dict) -> list:
         pass
+
+    @abstractmethod
+    def find_all(self, collection: str) -> list:
+        pass
+
+    @abstractmethod
+    def delete_by_id(self, collection: str, id: str) -> int:
+        pass

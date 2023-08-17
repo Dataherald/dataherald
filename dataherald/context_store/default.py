@@ -1,15 +1,14 @@
 import logging
+from datetime import datetime
 from typing import List
 
-from bson.objectid import ObjectId
 from overrides import override
 from sql_metadata import Parser
 
 from dataherald.config import System
 from dataherald.context_store import ContextStore
-from dataherald.repositories.base import NLQueryResponseRepository
-from dataherald.repositories.nl_question import NLQuestionRepository
-from dataherald.types import NLQuery, NLQueryResponse
+from dataherald.repositories.golden_records import GoldenRecordRepository
+from dataherald.types import GoldenRecord, NLQuery
 
 logger = logging.getLogger(__name__)
 
@@ -31,18 +30,14 @@ class DefaultContextStore(ContextStore):
         )
 
         samples = []
-        nl_question_repository = NLQuestionRepository(self.db)
-        nl_query_response_repository = NLQueryResponseRepository(self.db)
+        golden_records_repository = GoldenRecordRepository(self.db)
         for question in closest_questions:
-            golden_query = nl_query_response_repository.find_one(
-                {"nl_question_id": ObjectId(question["id"])}
-            )
-            associated_nl_question = nl_question_repository.find_by_id(question["id"])
-            if golden_query is not None and associated_nl_question is not None:
+            golden_record = golden_records_repository.find_by_id(question["id"])
+            if golden_record is not None:
                 samples.append(
                     {
-                        "nl_question": associated_nl_question.question,
-                        "sql_query": golden_query.sql_query,
+                        "nl_question": golden_record.question,
+                        "sql_query": golden_record.sql_query,
                         "score": question["score"],
                     }
                 )
@@ -52,36 +47,39 @@ class DefaultContextStore(ContextStore):
         return samples
 
     @override
-    def add_golden_records(self, golden_records: List) -> bool:
+    def add_golden_records(self, golden_records: List, source: str) -> bool:
         """Creates embeddings of the questions and adds them to the VectorDB. Also adds the golden records to the DB"""
-        nl_query_response_repository = NLQueryResponseRepository(self.db)
+        golden_records_repository = GoldenRecordRepository(self.db)
         for record in golden_records:
             tables = Parser(record["sql"]).tables
             question = record["nl_question"]
-            user_question = NLQuery(question=question, db_alias=record["db"])
-            nl_query_repository = NLQuestionRepository(self.db)
-            user_question = nl_query_repository.insert(user_question)
+            golden_record = GoldenRecord(
+                question=question,
+                sql_query=record["sql"],
+                db_alias=record["db"],
+                source=source,
+                created_time=datetime.now(),
+            )
+            golden_record = golden_records_repository.insert(golden_record)
             self.vector_store.add_record(
                 documents=question,
                 collection=self.golden_record_collection,
                 metadata=[
                     {"tables_used": tables[0], "db_alias": record["db"]}
                 ],  # this should be updated for multiple tables
-                ids=[str(user_question.id)],
+                ids=[str(golden_record.id)],
             )
-            nlqueryresponse_object = NLQueryResponse(
-                nl_question_id=user_question.id,
-                sql_query=record["sql"],
-                golden_record=True,
-            )
-            nl_query_response_repository.insert(nlqueryresponse_object)
         return True
 
     @override
     def remove_golden_records(self, ids: List) -> bool:
         """Removes the golden records from the DB and the VectorDB"""
+        golden_records_repository = GoldenRecordRepository(self.db)
         for id in ids:
             self.vector_store.delete_record(
                 collection=self.golden_record_collection, id=id
             )
+            deleted = golden_records_repository.delete_by_id(id)
+            if deleted == 0:
+                logger.warning(f"Golden record with id {id} not found")
         return True

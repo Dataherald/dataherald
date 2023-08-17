@@ -1,4 +1,5 @@
 # from datetime import datetime add this later
+from datetime import datetime
 from enum import Enum
 from typing import Any
 
@@ -9,7 +10,6 @@ from dataherald.sql_database.models.types import SSHSettings
 
 class UpdateQueryRequest(BaseModel):
     sql_query: str
-    golden_record: bool
 
 
 class ExecuteTempQueryRequest(BaseModel):
@@ -25,6 +25,26 @@ class NLQuery(BaseModel):
     id: Any
     question: str
     db_alias: str
+
+
+class GoldenRecordRequest(BaseModel):
+    nl_question: str
+    sql: str
+    db: str
+
+
+class GoldenRecordSource(Enum):
+    QUERY_RESPONSE = "QUERY_RESPONSE"
+    PREDEFINED = "PREDEFINED"
+
+
+class GoldenRecord(BaseModel):
+    id: Any
+    question: str
+    sql_query: str
+    db_alias: str
+    source: str = "QUERY_RESPONSE"
+    created_time: datetime = datetime.now()
 
 
 class SQLGenerationStatus(Enum):
@@ -45,7 +65,6 @@ class NLQueryResponse(BaseModel):
     exec_time: float | None = None
     total_tokens: int | None = None
     total_cost: float | None = None
-    golden_record: bool = False
     confidence_score: float | None = None
     # date_entered: datetime = datetime.now() add this later
 

@@ -8,6 +8,8 @@ from dataherald.sql_database.models.types import SSHSettings
 from dataherald.types import (
     DatabaseConnectionRequest,
     ExecuteTempQueryRequest,
+    GoldenRecord,
+    GoldenRecordRequest,
     NLQueryResponse,
     QuestionRequest,
     ScannerRequest,
@@ -61,4 +63,16 @@ class API(Component, ABC):
     def execute_temp_query(
         self, query_id: str, query: ExecuteTempQueryRequest
     ) -> NLQueryResponse:
+        pass
+
+    @abstractmethod
+    def add_golden_record(self, golden_record: GoldenRecordRequest) -> bool:
+        pass
+
+    @abstractmethod
+    def delete_golden_record(self, golden_record_id: str) -> bool:
+        pass
+
+    @abstractmethod
+    def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
         pass

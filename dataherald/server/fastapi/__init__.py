@@ -14,6 +14,8 @@ from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
     DatabaseConnectionRequest,
     ExecuteTempQueryRequest,
+    GoldenRecord,
+    GoldenRecordRequest,
     NLQueryResponse,
     QuestionRequest,
     ScannerRequest,
@@ -75,6 +77,20 @@ class FastAPI(dataherald.server.Server):
             methods=["POST"],
         )
 
+        self.router.add_api_route(
+            "/api/v1/delete-golden-record/{golden_record_id}",
+            self.delete_golden_record,
+            methods=["DELETE"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/add-golden-record", self.add_golden_record, methods=["POST"]
+        )
+
+        self.router.add_api_route(
+            "/api/v1/get-golden-records", self.get_golden_records, methods=["GET"]
+        )
+
         self._app.include_router(self.router)
         use_route_names_as_operation_ids(self._app)
 
@@ -125,3 +141,15 @@ class FastAPI(dataherald.server.Server):
     ) -> NLQueryResponse:
         """Executes a query on the given db_alias"""
         return self._api.execute_temp_query(query_id, query)
+
+    def delete_golden_record(self, golden_record_id: str) -> bool:
+        """Deletes a golden record"""
+        return self._api.delete_golden_record(golden_record_id)
+
+    def add_golden_record(self, golden_record: GoldenRecordRequest) -> bool:
+        """Adds a golden record"""
+        return self._api.add_golden_record(golden_record)
+
+    def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
+        """Gets golden records"""
+        return self._api.get_golden_records(page, limit)

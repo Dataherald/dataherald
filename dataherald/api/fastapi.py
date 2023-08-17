@@ -6,7 +6,6 @@ from typing import List
 from bson import json_util
 from fastapi import HTTPException
 from overrides import override
-from sql_metadata import Parser
 
 from dataherald.api import API
 from dataherald.api.types import Query
@@ -17,6 +16,7 @@ from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.eval import Evaluator
 from dataherald.repositories.base import NLQueryResponseRepository
+from dataherald.repositories.golden_records import GoldenRecordRepository
 from dataherald.repositories.nl_question import NLQuestionRepository
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
@@ -25,6 +25,8 @@ from dataherald.sql_generator.generates_nl_answer import GeneratesNlAnswer
 from dataherald.types import (
     DatabaseConnectionRequest,
     ExecuteTempQueryRequest,
+    GoldenRecord,
+    GoldenRecordRequest,
     NLQuery,
     NLQueryResponse,
     QuestionRequest,
@@ -160,7 +162,7 @@ class FastAPI(API):
     def add_golden_records(self, golden_records: List) -> bool:
         """Takes in a list of NL <> SQL pairs and stores them to be used in prompts to the LLM"""
         context_store = self.system.instance(ContextStore)
-        return context_store.add_golden_records(golden_records)
+        return context_store.add_golden_records(golden_records, source="PREDEFINED")
 
     @override
     def execute_query(self, query: Query) -> tuple[str, dict]:
@@ -181,40 +183,22 @@ class FastAPI(API):
     ) -> NLQueryResponse:
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
         nl_question_repository = NLQuestionRepository(self.storage)
-        context_store = self.system.instance(ContextStore)
         nl_query_response = nl_query_response_repository.find_by_id(query_id)
         nl_question = nl_question_repository.find_by_id(
             nl_query_response.nl_question_id
         )
         nl_query_response.sql_query = query.sql_query
-        nl_query_response.golden_record = query.golden_record
-        if query.golden_record:
-            nl_query_response.confidence_score = 1.0
-            tables = Parser(nl_query_response.sql_query).tables
-            context_store.vector_store.add_record(
-                documents=nl_question.question,
-                collection=context_store.golden_record_collection,
-                metadata=[
-                    {"tables_used": tables[0], "db_alias": nl_question.db_alias}
-                ],  # this should be updated for multiple tables
-                ids=[str(nl_query_response.nl_question_id)],
-            )
-        else:
-            evaluator = self.system.instance(Evaluator)
-            db_connection = self.storage.find_one(
-                "database_connection", {"alias": nl_question.db_alias}
-            )
-            if not db_connection:
-                raise HTTPException(
-                    status_code=404, detail="Database connection not found"
-                )
-            database_connection = DatabaseConnection(**db_connection)
-            confidence_score = evaluator.get_confidence_score(
-                nl_question, nl_query_response, database_connection
-            )
-            nl_query_response.confidence_score = confidence_score
-            question_id = str(nl_query_response.nl_question_id)
-            context_store.remove_golden_records([question_id])
+        evaluator = self.system.instance(Evaluator)
+        db_connection = self.storage.find_one(
+            "database_connection", {"alias": nl_question.db_alias}
+        )
+        if not db_connection:
+            raise HTTPException(status_code=404, detail="Database connection not found")
+        database_connection = DatabaseConnection(**db_connection)
+        confidence_score = evaluator.get_confidence_score(
+            nl_question, nl_query_response, database_connection
+        )
+        nl_query_response.confidence_score = confidence_score
         generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
         nl_query_response = generates_nl_answer.execute(nl_query_response)
         nl_query_response_repository.update(nl_query_response)
@@ -230,3 +214,24 @@ class FastAPI(API):
         generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
         nl_query_response = generates_nl_answer.execute(nl_query_response)
         return json.loads(json_util.dumps(nl_query_response))
+
+    @override
+    def add_golden_record(self, golden_record: GoldenRecordRequest) -> bool:
+        context_store = self.system.instance(ContextStore)
+        return context_store.add_golden_records(
+            [golden_record.dict()], source="QUERY_RESPONSE"
+        )
+
+    @override
+    def delete_golden_record(self, golden_record_id: str) -> bool:
+        context_store = self.system.instance(ContextStore)
+        return context_store.remove_golden_records([golden_record_id])
+
+    @override
+    def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
+        golden_records_repository = GoldenRecordRepository(self.storage)
+        all_records = golden_records_repository.find_all()
+        # Calculate the start and end indices for pagination
+        start_idx = (page - 1) * limit
+        end_idx = start_idx + limit
+        return all_records[start_idx:end_idx]

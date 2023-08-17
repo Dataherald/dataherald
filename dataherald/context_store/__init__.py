@@ -29,7 +29,7 @@ class ContextStore(Component, ABC):
         pass
 
     @abstractmethod
-    def add_golden_records(self, golden_records: List) -> bool:
+    def add_golden_records(self, golden_records: List, source: str) -> bool:
         pass
 
     @abstractmethod
