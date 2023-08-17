@@ -200,6 +200,19 @@ class FastAPI(API):
                 ids=[str(nl_query_response.nl_question_id)],
             )
         else:
+            evaluator = self.system.instance(Evaluator)
+            db_connection = self.storage.find_one(
+                "database_connection", {"alias": nl_question.db_alias}
+            )
+            if not db_connection:
+                raise HTTPException(
+                    status_code=404, detail="Database connection not found"
+                )
+            database_connection = DatabaseConnection(**db_connection)
+            confidence_score = evaluator.get_confidence_score(
+                nl_question, nl_query_response, database_connection
+            )
+            nl_query_response.confidence_score = confidence_score
             question_id = str(nl_query_response.nl_question_id)
             context_store.remove_golden_records([question_id])
         generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
