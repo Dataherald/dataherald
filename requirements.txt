@@ -22,6 +22,7 @@ pytest== 7.4.0
 ipdb==0.13.13
 snowflake-connector-python==3.0.4
 snowflake-sqlalchemy==1.4.7
+databricks-sql-connector==2.7.0
 sqlalchemy-databricks==0.2.0
 sqlalchemy-bigquery==1.6.1
 chromadb==0.3.26
