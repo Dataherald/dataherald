@@ -4,8 +4,10 @@ const { log } = require('console')
 const API_URL = process.env.API_URL
 
 async function handleMessage(context, say, getUserInfo) {
-    const { text: message, user: userId, ts: thread_ts } = context
-    log(`Slack message "${message}" received from user ${userId}`)
+    const { text: message, user: userId, ts: thread_ts, team: teamId } = context
+    log(
+        `Slack message "${message}" received from ${userId} that belongs to ${teamId} workspace`
+    )
 
     await say({
         blocks: [
@@ -24,17 +26,20 @@ async function handleMessage(context, say, getUserInfo) {
     try {
         const userInfo = await getUserInfo({ user: userId })
         const endpointUrl = `${API_URL}/k2/question`
-        log('fetching data from', endpointUrl)
+        const payload = {
+            question: message,
+            user: {
+                slack_id: userId,
+                slack_workspace_id: teamId,
+                username: userInfo.user.real_name,
+            },
+        }
+        log('Fetching data from', endpointUrl)
+        log('Request payload:', payload)
         const response = await fetch(endpointUrl, {
             method: 'POST',
             headers: { 'Content-type': 'application/json' },
-            body: JSON.stringify({
-                question: message,
-                user: {
-                    slack_id: userId,
-                    username: userInfo.user.real_name
-                }
-            })
+            body: JSON.stringify(payload),
         })
         const data = await response.json()
         const { nl_response, sql_query, exec_time } = data
@@ -49,20 +54,24 @@ async function handleMessage(context, say, getUserInfo) {
                         text: `:mag: *Response*: ${nl_response}`,
                     },
                 },
-                {
-                    type: 'section',
-                    text: {
-                        type: 'mrkdwn',
-                        text: `:memo: *Generated SQL Query*: \n \`\`\`${sql_query}\`\`\``,
-                    },
-                },
-                {
-                    type: 'section',
-                    text: {
-                        type: 'mrkdwn',
-                        text: `:stopwatch: *Execution Time*: ${execTime}s`,
-                    },
-                },
+                ...(sql_query
+                    ? [
+                          {
+                              type: 'section',
+                              text: {
+                                  type: 'mrkdwn',
+                                  text: `:memo: *Generated SQL Query*: \n \`\`\`${sql_query}\`\`\``,
+                              },
+                          },
+                          {
+                              type: 'section',
+                              text: {
+                                  type: 'mrkdwn',
+                                  text: `:stopwatch: *Execution Time*: ${execTime}s`,
+                              },
+                          },
+                      ]
+                    : []),
             ],
             text: 'Fallback text for notifications',
             thread_ts,
