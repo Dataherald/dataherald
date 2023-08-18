@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status
 
 from modules.organization.models.requests import OrganizationRequest
+from modules.organization.models.responses import OrganizationResponse
 from modules.organization.service import OrganizationService
 
 router = APIRouter(
@@ -12,12 +13,12 @@ org_service = OrganizationService()
 
 
 @router.get("/list")
-async def list_organizations() -> list[OrganizationRequest]:
+async def list_organizations() -> list[OrganizationResponse]:
     return org_service.list_organizations()
 
 
 @router.get("/{id}")
-async def get_organization(id: str) -> OrganizationRequest:
+async def get_organization(id: str) -> OrganizationResponse:
     return org_service.get_organization(id)
 
 
@@ -29,10 +30,10 @@ async def delete_organization(id: str):
 @router.put("/{id}")
 async def update_organization(
     id: str, org_request: OrganizationRequest
-) -> OrganizationRequest:
+) -> OrganizationResponse:
     return org_service.update_organization(id, org_request)
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def add_organization(org_request: OrganizationRequest) -> OrganizationRequest:
+async def add_organization(org_request: OrganizationRequest) -> OrganizationResponse:
     return org_service.add_organization(org_request)
