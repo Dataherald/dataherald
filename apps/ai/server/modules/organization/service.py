@@ -17,8 +17,10 @@ class OrganizationService:
 
     def get_organization(self, id: str) -> Organization:
         organization = self.repo.get_organization(id)
-        organization.id = str(organization.id)
-        return organization
+        if organization:
+            organization.id = str(organization.id)
+            return organization
+        return None
 
     def delete_organization(self, id: str):
         if self.repo.delete_organization(id) == 1:

@@ -13,7 +13,8 @@ class OrganizationRepository:
         ]
 
     def get_organization(self, id: str) -> Organization:
-        return Organization(**MongoDB.find_by_id(ORGANIZATION_COL, id))
+        organization = MongoDB.find_by_id(ORGANIZATION_COL, id)
+        return Organization(**organization) if organization else None
 
     def delete_organization(self, id: str) -> int:
         return MongoDB.delete_one(ORGANIZATION_COL, {"_id": ObjectId(id)})

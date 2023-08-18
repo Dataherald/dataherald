@@ -15,7 +15,7 @@ class MongoDB:
         return cls._data_store[collection].find_one(query)
 
     @classmethod
-    def insert_one(cls, collection: str, obj: dict) -> int:
+    def insert_one(cls, collection: str, obj: dict) -> str:
         return cls._data_store[collection].insert_one(obj).inserted_id
 
     @classmethod
