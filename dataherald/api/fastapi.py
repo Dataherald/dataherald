@@ -159,10 +159,10 @@ class FastAPI(API):
         return True
 
     @override
-    def add_golden_records(self, golden_records: List) -> bool:
+    def add_golden_records(self, golden_records: List[GoldenRecordRequest]) -> bool:
         """Takes in a list of NL <> SQL pairs and stores them to be used in prompts to the LLM"""
         context_store = self.system.instance(ContextStore)
-        return context_store.add_golden_records(golden_records, source="PREDEFINED")
+        return context_store.add_golden_records(golden_records)
 
     @override
     def execute_query(self, query: Query) -> tuple[str, dict]:
@@ -214,13 +214,6 @@ class FastAPI(API):
         generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
         nl_query_response = generates_nl_answer.execute(nl_query_response)
         return json.loads(json_util.dumps(nl_query_response))
-
-    @override
-    def add_golden_record(self, golden_record: GoldenRecordRequest) -> bool:
-        context_store = self.system.instance(ContextStore)
-        return context_store.add_golden_records(
-            [golden_record.dict()], source="QUERY_RESPONSE"
-        )
 
     @override
     def delete_golden_record(self, golden_record_id: str) -> bool:

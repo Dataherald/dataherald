@@ -48,7 +48,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def add_golden_records(self, golden_records: List) -> bool:
+    def add_golden_records(self, golden_records: List[GoldenRecordRequest]) -> bool:
         pass
 
     @abstractmethod
@@ -63,10 +63,6 @@ class API(Component, ABC):
     def execute_temp_query(
         self, query_id: str, query: ExecuteTempQueryRequest
     ) -> NLQueryResponse:
-        pass
-
-    @abstractmethod
-    def add_golden_record(self, golden_record: GoldenRecordRequest) -> bool:
         pass
 
     @abstractmethod

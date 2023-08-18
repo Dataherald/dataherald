@@ -8,7 +8,7 @@ from sql_metadata import Parser
 from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.repositories.golden_records import GoldenRecordRepository
-from dataherald.types import GoldenRecord, NLQuery
+from dataherald.types import GoldenRecord, GoldenRecordRequest, NLQuery
 
 logger = logging.getLogger(__name__)
 
@@ -47,17 +47,16 @@ class DefaultContextStore(ContextStore):
         return samples
 
     @override
-    def add_golden_records(self, golden_records: List, source: str) -> bool:
+    def add_golden_records(self, golden_records: List[GoldenRecordRequest]) -> bool:
         """Creates embeddings of the questions and adds them to the VectorDB. Also adds the golden records to the DB"""
         golden_records_repository = GoldenRecordRepository(self.db)
         for record in golden_records:
-            tables = Parser(record["sql"]).tables
-            question = record["nl_question"]
+            tables = Parser(record.sql).tables
+            question = record.nl_question
             golden_record = GoldenRecord(
                 question=question,
-                sql_query=record["sql"],
-                db_alias=record["db"],
-                source=source,
+                sql_query=record.sql,
+                db_alias=record.db,
                 created_time=datetime.now(),
             )
             golden_record = golden_records_repository.insert(golden_record)
@@ -65,7 +64,7 @@ class DefaultContextStore(ContextStore):
                 documents=question,
                 collection=self.golden_record_collection,
                 metadata=[
-                    {"tables_used": tables[0], "db_alias": record["db"]}
+                    {"tables_used": tables[0], "db_alias": record.db}
                 ],  # this should be updated for multiple tables
                 ids=[str(golden_record.id)],
             )

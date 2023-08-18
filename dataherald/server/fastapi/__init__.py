@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Union
 
 import fastapi
 from fastapi import FastAPI as _FastAPI
@@ -61,10 +61,6 @@ class FastAPI(dataherald.server.Server):
             methods=["PATCH"],
         )
 
-        self.router.add_api_route(
-            "/api/v1/golden-record", self.add_golden_records, methods=["POST"]
-        )
-
         self.router.add_api_route("/api/v1/query", self.execute_query, methods=["POST"])
 
         self.router.add_api_route(
@@ -78,17 +74,19 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/delete-golden-record/{golden_record_id}",
+            "/api/v1/golden-records/{golden_record_id}",
             self.delete_golden_record,
             methods=["DELETE"],
         )
 
         self.router.add_api_route(
-            "/api/v1/add-golden-record", self.add_golden_record, methods=["POST"]
+            "/api/v1/golden-records",
+            self.add_golden_records_or_record,
+            methods=["POST"],
         )
 
         self.router.add_api_route(
-            "/api/v1/get-golden-records", self.get_golden_records, methods=["GET"]
+            "/api/v1/golden-records", self.get_golden_records, methods=["GET"]
         )
 
         self._app.include_router(self.router)
@@ -124,10 +122,6 @@ class FastAPI(dataherald.server.Server):
         """Add descriptions for tables and columns"""
         return self._api.add_description(db_name, table_name, table_description_request)
 
-    def add_golden_records(self, golden_records: List) -> bool:
-        """Takes in an English question and answers it based on content from the registered databases"""
-        return self._api.add_golden_records(golden_records)
-
     def execute_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_alias"""
         return self._api.execute_query(query)
@@ -146,9 +140,13 @@ class FastAPI(dataherald.server.Server):
         """Deletes a golden record"""
         return self._api.delete_golden_record(golden_record_id)
 
-    def add_golden_record(self, golden_record: GoldenRecordRequest) -> bool:
-        """Adds a golden record"""
-        return self._api.add_golden_record(golden_record)
+    def add_golden_records_or_record(
+        self, golden_records: List[GoldenRecordRequest] | GoldenRecordRequest
+    ):
+        if isinstance(golden_records, list):
+            # Handle list of GoldenRecordRequest
+            return self._api.add_golden_records(golden_records)
+        return self._api.add_golden_records([golden_records])
 
     def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
         """Gets golden records"""

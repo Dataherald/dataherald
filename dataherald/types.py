@@ -33,17 +33,11 @@ class GoldenRecordRequest(BaseModel):
     db: str
 
 
-class GoldenRecordSource(Enum):
-    QUERY_RESPONSE = "QUERY_RESPONSE"
-    PREDEFINED = "PREDEFINED"
-
-
 class GoldenRecord(BaseModel):
     id: Any
     question: str
     sql_query: str
     db_alias: str
-    source: str = "QUERY_RESPONSE"
     created_time: datetime = datetime.now()
 
 
