@@ -63,6 +63,17 @@ class NLQueryResponse(BaseModel):
     # date_entered: datetime = datetime.now() add this later
 
 
+class ScannedDBTable(BaseModel):
+    id: Any
+    name: str
+    columns: list[str]
+
+
+class ScannedDBResponse(BaseModel):
+    db_alias: str
+    tables: list[ScannedDBTable]
+
+
 class SupportedDatabase(Enum):
     POSTGRES = "POSTGRES"
     DATABRICKS = "DATABRICKS"
