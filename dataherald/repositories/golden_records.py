@@ -37,7 +37,7 @@ class GoldenRecordRepository:
 
     def find_all(self) -> list[GoldenRecord]:
         rows = self.storage.find_all(DB_COLLECTION)
-        return [GoldenRecord(id=row["_id"], **row) for row in rows]
+        return [GoldenRecord(id=str(row["_id"]), **row) for row in rows]
 
     def delete_by_id(self, id: str) -> int:
         return self.storage.delete_by_id(DB_COLLECTION, id)
