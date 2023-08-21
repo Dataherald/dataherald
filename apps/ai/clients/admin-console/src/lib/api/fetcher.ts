@@ -1,9 +1,10 @@
 export const apiFetcher = async <T>(
   url: string,
-  options?: RequestInit,
+  options?: RequestInit & { token?: string },
 ): Promise<T> => {
   const headers = {
     'Content-Type': 'application/json',
+    ...(options?.token ? { Authorization: `Bearer ${options?.token}` } : {}),
     ...(options?.headers || {}),
   }
 
@@ -13,7 +14,10 @@ export const apiFetcher = async <T>(
   })
 
   if (!response.ok) {
-    const error = new Error('An error occurred while fetching the data.')
+    const error = new Error(
+      `API Request failed\nURL: ${url}\nStatus: ${response.status} ${response.statusText}`,
+      { cause: response.status },
+    )
     throw error
   }
 

@@ -16,6 +16,14 @@ class OrganizationRepository:
         organization = MongoDB.find_by_id(ORGANIZATION_COL, id)
         return Organization(**organization) if organization else None
 
+    def get_organization_with_slack_workspace_id(
+        self, slack_workspace_id: str
+    ) -> Organization:
+        organization = MongoDB.find_one(
+            ORGANIZATION_COL, {"slack_workspace_id": slack_workspace_id}
+        )
+        return Organization(**organization) if organization else None
+
     def delete_organization(self, id: str) -> int:
         return MongoDB.delete_one(ORGANIZATION_COL, {"_id": ObjectId(id)})
 

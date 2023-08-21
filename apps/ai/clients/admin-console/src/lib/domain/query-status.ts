@@ -48,3 +48,9 @@ export const formatQueryStatus = (
   }
   return ''
 }
+
+export const isVerified = (status?: QueryStatus): boolean =>
+  EQueryStatus.VERIFIED === status
+
+export const isNotVerified = (status?: QueryStatus): boolean =>
+  EQueryStatus.NOT_VERIFIED === status

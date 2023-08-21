@@ -10,17 +10,15 @@ const PageLayout: FC<PageLayoutProps> = ({
   className,
   children,
   ...props
-}: PageLayoutProps) => {
-  return (
-    <div className={cn('flex h-screen', className)} {...props}>
-      <SidebarNav />
-      <div className="w-full h-full overflow-auto flex flex-col">
-        <BreadcrumbHeader />
-        <Separator />
-        <main className="grow flex flex-col overflow-auto p-6">{children}</main>
-      </div>
+}: PageLayoutProps) => (
+  <div className={cn('flex h-screen', className)} {...props}>
+    <SidebarNav />
+    <div className="w-full h-full overflow-auto flex flex-col">
+      <BreadcrumbHeader />
+      <Separator />
+      <main className="grow flex flex-col overflow-auto p-6">{children}</main>
     </div>
-  )
-}
+  </div>
+)
 
 export default PageLayout

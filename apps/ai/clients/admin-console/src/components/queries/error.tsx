@@ -1,10 +1,11 @@
+import PageErrorMessage from '@/components/layout/page-error-message'
 import { FC } from 'react'
 
 const QueriesError: FC = () => (
-  <div>
-    Something went wrong while fetching your organization queries. Please try
-    again later.
-  </div>
+  <PageErrorMessage
+    message="Something went wrong while fetching your organization queries. Please try
+  again later."
+  />
 )
 
 export default QueriesError

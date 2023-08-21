@@ -9,4 +9,3 @@ class UserRequest(BaseModel):
     picture: str | None
     sub: str | None
     updated_at: str | None
-    organization_id: str | None

@@ -1,6 +1,8 @@
-import PageLayout from '@/components/layout/page-layout'
+import { AuthProvider } from '@/contexts/auth-context'
 import { apiFetcher } from '@/lib/api/fetcher'
+import { cn } from '@/lib/utils'
 import '@/styles/globals.css'
+import { UserProvider } from '@auth0/nextjs-auth0/client'
 import type { AppProps } from 'next/app'
 import { Lato, Source_Code_Pro } from 'next/font/google'
 import { SWRConfig } from 'swr'
@@ -20,16 +22,18 @@ const lato = Lato({
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <SWRConfig
-      value={{
-        fetcher: apiFetcher,
-      }}
-    >
-      <PageLayout
-        className={`${lato.variable} ${sourceCode.variable} font-lato`}
-      >
-        <Component {...pageProps} />
-      </PageLayout>
-    </SWRConfig>
+    <UserProvider>
+      <AuthProvider>
+        <SWRConfig
+          value={{
+            fetcher: apiFetcher,
+          }}
+        >
+          <div className={cn(lato.variable, sourceCode.variable, 'font-lato')}>
+            <Component {...pageProps} />
+          </div>
+        </SWRConfig>
+      </AuthProvider>
+    </UserProvider>
   )
 }

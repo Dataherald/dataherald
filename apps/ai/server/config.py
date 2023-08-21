@@ -29,8 +29,6 @@ class DBSettings(BaseSettings):
     mongodb_uri: str = os.environ.get("MONGO_URI")
     mongodb_db_name: str = os.environ.get("MONGODB_DB_NAME")
 
-    db_alias: str = os.environ.get("DB_ALIAS", "v2_real_estate")
-
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
 

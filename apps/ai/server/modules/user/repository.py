@@ -6,7 +6,7 @@ from modules.user.models.entities import User
 
 
 class UserRepository:
-    def list_users(self, filter: dict) -> list[User]:
+    def get_users(self, filter: dict) -> list[User]:
         return [User(**user) for user in MongoDB.find(USER_COL, filter)]
 
     def get_user(self, id: str) -> User:
@@ -20,10 +20,7 @@ class UserRepository:
     def delete_user(self, id: str) -> int:
         return MongoDB.delete_one(USER_COL, {"_id": ObjectId(id)})
 
-    def update_user(self, id: str, new_user_data: dict, email: str = None) -> int:
-        if email:
-            return MongoDB.update_one(USER_COL, {"email": email}, new_user_data)
-
+    def update_user(self, id: str, new_user_data: dict) -> int:
         return MongoDB.update_one(USER_COL, {"_id": ObjectId(id)}, new_user_data)
 
     def add_user(self, new_user_data: dict) -> int:

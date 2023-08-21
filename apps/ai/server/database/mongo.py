@@ -25,13 +25,6 @@ class MongoDB:
         )
 
     @classmethod
-    def update_or_insert_one(cls, collection: str, query: dict, obj: dict) -> int:
-        row = cls.find_one(collection, query)
-        if row:
-            return cls._data_store[collection].update_one(query, {"$set": obj})
-        return cls.insert_one(collection, obj)
-
-    @classmethod
     def find_by_id(cls, collection: str, id: str) -> dict:
         return cls._data_store[collection].find_one({"_id": ObjectId(id)})
 

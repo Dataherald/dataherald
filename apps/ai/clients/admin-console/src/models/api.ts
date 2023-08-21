@@ -1,6 +1,20 @@
-export interface User {
+import { UserProfile } from '@auth0/nextjs-auth0/client'
+
+export interface Organization {
+  id: string
+  name: string
+  slack_workspace_id: string
+}
+
+// TODO temoporary class
+export interface AuthUser extends UserProfile {
   slack_id?: string
-  username: string
+  organization_name: string
+}
+
+export interface User extends UserProfile {
+  slack_id?: string
+  organization: Organization
 }
 
 export enum EQueryStatus {

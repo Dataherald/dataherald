@@ -3,10 +3,11 @@ import re
 
 import httpx
 
-from config import db_settings, settings
+from config import settings
 from modules.k2_core.models.requests import QuestionRequest
 from modules.k2_core.models.responses import NLQueryResponse
 from modules.k2_core.repository import K2CoreRepository
+from modules.organization.service import OrganizationService
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 class K2Service:
     def __init__(self):
         self.repo = K2CoreRepository()
+        self.org_service = OrganizationService()
 
     async def answer_question(
         self, question_request: QuestionRequest
@@ -22,11 +24,19 @@ class K2Service:
         path = "/question"
         slack_mention_pattern = r"<@(.*?)>"
         question_string = re.sub(slack_mention_pattern, "", question_request.question)
-        data = {"question": question_string, "db_alias": db_settings.db_alias}
+
+        organization = self.org_service.get_organization_with_slack_workspace_id(
+            question_request.user.slack_workspace_id
+        )
+
+        data = {"question": question_string, "db_alias": organization.db_alias}
 
         response: NLQueryResponse = await self._k2_post_request(path, json=data)
         # adds document that links user info to query response
-        self.repo.record_response_pointer(response["id"], question_request.user)
+
+        self.repo.record_response_pointer(
+            response["id"], question_request.user, organization.id
+        )
         return response
 
     async def heartbeat(self):

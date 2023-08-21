@@ -1,10 +1,13 @@
+import PageLayout from '@/components/layout/page-layout'
+import QueryError from '@/components/query/error'
 import QueryLayout from '@/components/query/layout'
 import LoadingQuery from '@/components/query/loading'
 import QueryWorkspace from '@/components/query/workspace'
 import { useQuery } from '@/hooks/api/useQuery'
-import { executeQuery } from '@/hooks/api/useQueryExecution' // Import the custom fetch hook
-import { patchQuery } from '@/hooks/api/useQueryPatch'
+import useQueryExecution from '@/hooks/api/useQueryExecution'
+import usePatchQuery from '@/hooks/api/useQueryPatch'
 import { Query, QueryStatus } from '@/models/api'
+import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/router'
 import { FC, useEffect, useState } from 'react'
 
@@ -18,6 +21,8 @@ const QueryPage: FC = () => {
     mutate,
   } = useQuery(queryId as string)
   const [query, setQuery] = useState<Query | undefined>(initialQuery)
+  const patchQuery = usePatchQuery()
+  const executeQuery = useQueryExecution()
 
   useEffect(() => setQuery(initialQuery), [initialQuery])
 
@@ -37,18 +42,26 @@ const QueryPage: FC = () => {
 
   let pageContent: JSX.Element = <></>
 
-  if (isLoadingInitialQuery && !query) pageContent = <LoadingQuery />
-  else if (error) pageContent = <div>Error loading the query</div>
-  else if (query)
+  if (isLoadingInitialQuery && !query) {
     pageContent = (
-      <QueryWorkspace
-        query={query as Query}
-        onExecuteQuery={handleExecuteQuery}
-        onPatchQuery={handlePatchQuery}
-      />
+      <QueryLayout>
+        <LoadingQuery />
+      </QueryLayout>
+    )
+  } else if (error) {
+    pageContent = <QueryError />
+  } else if (query)
+    pageContent = (
+      <QueryLayout>
+        <QueryWorkspace
+          query={query as Query}
+          onExecuteQuery={handleExecuteQuery}
+          onPatchQuery={handlePatchQuery}
+        />
+      </QueryLayout>
     )
 
-  return <QueryLayout>{pageContent}</QueryLayout>
+  return <PageLayout>{pageContent}</PageLayout>
 }
 
-export default QueryPage
+export default withPageAuthRequired(QueryPage)

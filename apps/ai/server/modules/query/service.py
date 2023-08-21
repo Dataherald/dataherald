@@ -14,12 +14,12 @@ from modules.query.models.requests import (
     SQLQueryRequest,
 )
 from modules.query.models.responses import QueryListResponse, QueryResponse
-from modules.query.repository import QueriesRepository
+from modules.query.repository import QueryRepository
 
 
-class QueriesService:
+class QueryService:
     def __init__(self):
-        self.repo = QueriesRepository()
+        self.repo = QueryRepository()
 
     def get_query(self, query_id: str):
         object_id = ObjectId(query_id)
@@ -39,9 +39,10 @@ class QueriesService:
         page: int,
         page_size: int,
         ascend: bool,  # noqa: ARG002
+        org_id: ObjectId,
     ) -> list[QueryListResponse]:
         query_response_refs = self.repo.get_query_response_refs(
-            skip=page * page_size, limit=page_size, order=order
+            skip=page * page_size, limit=page_size, order=order, org_id=org_id
         )
         object_ids = [qrr.query_response_id for qrr in query_response_refs]
         query_responses = self.repo.get_query_responses(object_ids)
@@ -124,6 +125,9 @@ class QueriesService:
             return self._get_mapped_query_response(
                 query_id, response_ref, question, new_query_response
             )
+
+    def get_query_ref(self, query_id: str):
+        return self.repo.get_query_response_ref(ObjectId(query_id))
 
     def _get_mapped_query_response(
         self,

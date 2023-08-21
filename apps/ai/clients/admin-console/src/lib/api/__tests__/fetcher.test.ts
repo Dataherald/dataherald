@@ -83,7 +83,7 @@ describe('apiFetcher', () => {
     fetchMock.mockResponseOnce(JSON.stringify({}), { status: 500 })
 
     await expect(apiFetcher('/api/test')).rejects.toThrow(
-      'An error occurred while fetching the data.',
+      'API Request failed\nURL: /api/test\nStatus: 500 Internal Server Error',
     )
   })
 })

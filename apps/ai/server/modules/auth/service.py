@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 from modules.auth.models.requests import AuthUserRequest
 from modules.auth.models.responses import AuthUserResponse
@@ -23,7 +23,9 @@ class AuthService:
                 exclude={"id", "email", "organization_id"},
             )
         else:
-            raise HTTPException(status_code=401, detail="Unauthorized User")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized User"
+            )
 
         # return updated user
         new_user = self.user_service.get_user_by_email(login_user.email)
@@ -32,7 +34,7 @@ class AuthService:
         new_user = AuthUserResponse(**new_user.dict())
         new_user.id = new_user_id
         new_user.organization_name = self.org_service.get_organization(
-            new_user.organization_id
+            str(new_user.organization_id)
         ).name
 
         return new_user

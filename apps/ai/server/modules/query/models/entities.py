@@ -23,3 +23,4 @@ class QueryRef(BaseModel):
     user: SlackQuestionUser
     question_date: str
     last_updated: str
+    organization_id: Any

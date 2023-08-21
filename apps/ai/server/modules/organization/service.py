@@ -22,6 +22,13 @@ class OrganizationService:
             return organization
         return None
 
+    def get_organization_with_slack_workspace_id(self, workspace_id) -> Organization:
+        organization = self.repo.get_organization_with_slack_workspace_id(workspace_id)
+        if organization:
+            organization.id = str(organization.id)
+            return organization
+        return None
+
     def delete_organization(self, id: str):
         if self.repo.delete_organization(id) == 1:
             return {"id": id}
@@ -30,13 +37,12 @@ class OrganizationService:
             status_code=400, detail="Organization not found or cannot be deleted"
         )
 
-    def update_organization(
-        self, id: str, org_request: OrganizationRequest
-    ) -> Organization:
-        new_org_data = Organization(**org_request.dict())
-        new_org_data.id = id
+    def update_organization(self, id: str, org_request: dict) -> Organization:
+        new_org_data = Organization(**org_request)
         if self.repo.update_organization(id, new_org_data.dict(exclude={"id"})) == 1:
-            return new_org_data
+            new_org = self.repo.get_organization(id)
+            new_org.id = str(new_org.id)
+            return new_org
 
         raise HTTPException(
             status_code=400, detail="Organization not found or cannot be updated"
@@ -45,9 +51,10 @@ class OrganizationService:
     def add_organization(self, org_request: OrganizationRequest) -> Organization:
         new_org_data = Organization(**org_request.dict())
         new_id = self.repo.add_organization(new_org_data.dict(exclude={"id"}))
-        new_org_data.id = str(new_id)
         if new_id:
-            return new_org_data
+            new_org = self.repo.get_organization(new_id)
+            new_org.id = str(new_org.id)
+            return new_org
 
         raise HTTPException(
             status_code=400, detail="Organization exists or cannot add organization"

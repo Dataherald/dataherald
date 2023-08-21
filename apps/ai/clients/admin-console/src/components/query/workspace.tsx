@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { useToast } from '@/components/ui/use-toast'
+import { isVerified } from '@/lib/domain/query-status'
 import { Query, QueryStatus } from '@/models/api'
 import {
   Database,
@@ -72,7 +73,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       await onExecuteQuery(currentSqlQuery)
       toast({
         variant: 'success',
-        title: 'Query executed!',
+        title: 'Query executed succesfully',
       })
     } catch (e) {
       toast({
@@ -97,11 +98,20 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
         query_status: verifiedStatus,
         sql_query: currentSqlQuery,
       })
-      toast({
-        variant: 'success',
-        title: 'Saved!',
-        description: 'Your changes over the query were successfully applied',
-      })
+      if (isVerified(status)) {
+        toast({
+          variant: 'success',
+          title: 'Saved and Verified',
+          description:
+            'This query is added as a Golden SQL query and used to further train the model for similar questions. You can remove it by marking it as unverified or deleting it in your Golden SQL tab.',
+        })
+      } else {
+        toast({
+          title: 'Saved and marked as Unverified',
+          description:
+            'This query is removed from the Golden SQL list and is not used in further training.',
+        })
+      }
     } catch (e) {
       toast({
         variant: 'destructive',
