@@ -30,6 +30,8 @@ from dataherald.types import (
     NLQuery,
     NLQueryResponse,
     QuestionRequest,
+    ScannedDBResponse,
+    ScannedDBTable,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateQueryRequest,
@@ -217,6 +219,24 @@ class FastAPI(API):
         generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
         nl_query_response = generates_nl_answer.execute(nl_query_response)
         return json.loads(json_util.dumps(nl_query_response))
+
+    @override
+    def get_scanned_databases(self, db_alias: str) -> ScannedDBResponse:
+        scanner_repository = DBScannerRepository(self.storage)
+        tables = scanner_repository.get_all_tables_by_db(db_alias)
+        process_tables = []
+        for table in tables:
+            process_tables.append(
+                ScannedDBTable(
+                    id=table.id,
+                    name=table.table_name,
+                    columns=[column.name for column in table.columns],
+                )
+            )
+        scanned_db_response = ScannedDBResponse(
+            db_alias=db_alias, tables=process_tables
+        )
+        return json.loads(json_util.dumps(scanned_db_response))
 
     @override
     def delete_golden_record(self, golden_record_id: str) -> bool:
