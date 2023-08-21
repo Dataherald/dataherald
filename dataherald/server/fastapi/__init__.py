@@ -18,6 +18,7 @@ from dataherald.types import (
     GoldenRecordRequest,
     NLQueryResponse,
     QuestionRequest,
+    ScannedDBResponse,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateQueryRequest,
@@ -89,6 +90,10 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/golden-records", self.get_golden_records, methods=["GET"]
         )
 
+        self.router.add_api_route(
+            "/api/v1/scanned-databases", self.get_scanned_databases, methods=["GET"]
+        )
+
         self._app.include_router(self.router)
         use_route_names_as_operation_ids(self._app)
 
@@ -151,3 +156,7 @@ class FastAPI(dataherald.server.Server):
     def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
         """Gets golden records"""
         return self._api.get_golden_records(page, limit)
+
+    def get_scanned_databases(self, db_alias: str) -> ScannedDBResponse:
+        """Gets golden records"""
+        return self._api.get_scanned_databases(db_alias)

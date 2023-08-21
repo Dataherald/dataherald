@@ -12,6 +12,7 @@ from dataherald.types import (
     GoldenRecordRequest,
     NLQueryResponse,
     QuestionRequest,
+    ScannedDBResponse,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateQueryRequest,
@@ -63,6 +64,10 @@ class API(Component, ABC):
     def execute_temp_query(
         self, query_id: str, query: ExecuteTempQueryRequest
     ) -> NLQueryResponse:
+        pass
+
+    @abstractmethod
+    def get_scanned_databases(self, db_alias: str) -> ScannedDBResponse:
         pass
 
     @abstractmethod
