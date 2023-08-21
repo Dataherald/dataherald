@@ -53,3 +53,20 @@ class TestDB(DB):
     @override
     def update_or_create(self, collection: str, query: dict, obj: dict) -> int:
         return self.insert_one(collection, obj)
+
+    @override
+    def find_all(self, collection: str) -> list:
+        return self.memory[collection]
+
+    @override
+    def delete_by_id(self, collection: str, id: str) -> int:
+        try:
+            collection = self.memory[collection]
+        except KeyError:
+            return 0
+
+        for i, item in enumerate(collection):
+            if item.get("_id") == id:
+                del collection[i]
+                return 1
+        return 0
