@@ -187,21 +187,24 @@ class FastAPI(API):
         nl_question = nl_question_repository.find_by_id(
             nl_query_response.nl_question_id
         )
-        nl_query_response.sql_query = query.sql_query
-        evaluator = self.system.instance(Evaluator)
-        db_connection = self.storage.find_one(
-            "database_connection", {"alias": nl_question.db_alias}
-        )
-        if not db_connection:
-            raise HTTPException(status_code=404, detail="Database connection not found")
-        database_connection = DatabaseConnection(**db_connection)
-        confidence_score = evaluator.get_confidence_score(
-            nl_question, nl_query_response, database_connection
-        )
-        nl_query_response.confidence_score = confidence_score
-        generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
-        nl_query_response = generates_nl_answer.execute(nl_query_response)
-        nl_query_response_repository.update(nl_query_response)
+        if nl_query_response.sql_query.strip() != query.sql_query.strip():
+            nl_query_response.sql_query = query.sql_query
+            evaluator = self.system.instance(Evaluator)
+            db_connection = self.storage.find_one(
+                "database_connection", {"alias": nl_question.db_alias}
+            )
+            if not db_connection:
+                raise HTTPException(
+                    status_code=404, detail="Database connection not found"
+                )
+            database_connection = DatabaseConnection(**db_connection)
+            confidence_score = evaluator.get_confidence_score(
+                nl_question, nl_query_response, database_connection
+            )
+            nl_query_response.confidence_score = confidence_score
+            generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
+            nl_query_response = generates_nl_answer.execute(nl_query_response)
+            nl_query_response_repository.update(nl_query_response)
         return json.loads(json_util.dumps(nl_query_response))
 
     @override
