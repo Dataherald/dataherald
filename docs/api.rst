@@ -8,3 +8,4 @@ API
     api.add_descriptions
     api.question
     api.update_query
+    api.get_scanned_databases
