@@ -2,6 +2,7 @@ import logging
 import re
 
 import httpx
+from bson import ObjectId
 
 from config import settings
 from modules.k2_core.models.requests import QuestionRequest
@@ -35,7 +36,7 @@ class K2Service:
         # adds document that links user info to query response
 
         self.repo.record_response_pointer(
-            response["id"], question_request.user, organization.id
+            response["id"], question_request.user, ObjectId(organization.id)
         )
         return response
 

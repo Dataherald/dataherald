@@ -19,7 +19,7 @@ class K2CoreRepository:
             current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
             query_ptr = QueryRef(
                 query_response_id=ObjectId(object_id["$oid"]),
-                user=user.dict(exclude={"slack_workspace_id"}),
+                user=user,
                 question_date=current_utc_time,
                 last_updated=current_utc_time,
                 organization_id=org_id,
