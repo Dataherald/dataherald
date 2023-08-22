@@ -1,21 +1,28 @@
 .. _api.golden_record:
 
-Add golden records
+golden records
 =======================
 
-Set golden records to improve the accuracy, so when a question is asked if there
-is a golden record similar to the question it will be used as an example.
+In order to improve the perfromance of NL-to-SQL engines, our system includes a few verfied Question SQL samples in the prompts.
+As more samples are verfied, the performance of the NL-to-SQL engine not only improves in terms of accuracy but also improves in terms speed.
+The verfied Question SQL samples are called golden records. These golden records are stored in vector database for fast retrieval and also in our application storage for easy access and management.
+
+
+Add golden records
+-------------------
+
+You can add golden records to the system by sending a POST request to the ``/api/v1/golden-record`` endpoint.
 
 Request this ``POST`` endpoint::
 
-   /api/v1/golden-record
+   /api/v1/golden-records
 
 **Request body**
 
 .. code-block:: rst
 
    [
-    {"nl_question": "question", "sql": "sql_query", "db":"db_alias"},
+    {"nl_question": "question", "sql": "sql_query", "db":"db_alias", "organzation":"dataherald"},
    ]
 
 **Responses**
@@ -24,7 +31,9 @@ HTTP 200 code response
 
 .. code-block:: rst
 
-    True
+   [
+    {"nl_question": "question", "sql": "sql_query", "db":"db_alias", "organzation":"dataherald"},
+   ]
 
 **Example**
 
@@ -32,13 +41,82 @@ HTTP 200 code response
 .. code-block:: rst
 
    curl -X 'POST' \
-  '<host>/api/v1/golden-record' \
+  'http://localhost/api/v1/golden-records' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '[
-        {
-            "nl_question":"what was the most expensive zip code to rent in Los Angeles county in May 2022?",
-            "sql": "SELECT location_name, metric_value FROM table_name WHERE dh_county_name = '\''Los Angeles'\'' AND dh_state_name = '\''California'\''   AND period_start='\''2022-05-01'\'' AND geo_type='\''zip'\'' ORDER BY metric_value DESC LIMIT 1;",
-            "db":"db_name"
-        }
-  ]'
+  {
+    "nl_question": "what was the median home sale price in Califronia in Q1 2021?",
+    "sql": "SELECT location_name, period_end, metric_value FROM redfin_median_sale_price rmsp WHERE geo_type = '\''state'\'' AND location_name='\''California'\'' AND property_type = '\''All Residential'\''   AND period_start BETWEEN '\''2021-01-01'\'' AND '\''2021-03-31'\'' ORDER BY period_end;",
+    "db": "v2_real_estate",
+    "organzation": "dataherald"
+  }]'
+
+Delete golden records
+-----------------------
+
+You can delete a golden record by sending a DELETE request to the ``/api/v1/golden-record/{golden_record_id}`` endpoint.
+
+Request this ``DELETE`` endpoint::
+
+   /api/v1/golden-records/{golden_record_id}
+
+**Parameters**
+
+.. csv-table::
+   :header: "Name", "Type", "Description"
+   :widths: 15, 10, 30
+
+   "golden_record_id", "string", "Generated golden record id, ``Required``"
+
+**Responses**
+
+HTTP 200 code response
+
+.. code-block:: rst
+
+    {"status": true}
+
+**Example**
+
+.. code-block:: rst
+
+   curl -X 'DELETE' \
+  'http://localhost/api/v1/golden-records/64e503fa85dbfee0d981f8ce' \
+  -H 'accept: application/json'
+
+
+Get golden records
+-----------------------
+
+
+Request this ``GET`` endpoint::
+
+   /api/v1/golden-records
+
+**Parameters**
+
+.. csv-table::
+   :header: "Name", "Type", "Description"
+   :widths: 15, 10, 30
+
+   "page", "integer", "Page number, ``Optoinal``"
+   "limit", "integer", "Page size, ``Optoinal``"
+
+**Responses**
+
+HTTP 200 code response
+
+.. code-block:: rst
+
+   [
+    {"nl_question": "question", "sql": "sql_query", "db":"db_alias", "organzation":"dataherald"},
+   ]
+
+**Example**
+
+.. code-block:: rst
+
+   curl -X 'GET' \
+  'http://localhost/api/v1/golden-records?page=1&limit=10' \
+  -H 'accept: application/json'
