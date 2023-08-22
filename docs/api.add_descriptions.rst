@@ -14,7 +14,7 @@ Request this ``PATCH`` endpoint::
 
 .. csv-table::
    :header: "Name", "Type", "Description"
-   :widths: 15, 10, 30
+   :widths: 20, 20, 60
 
    "db_name", "String", "Database name, ``Required``"
    "table_name", "String", "Table name, ``Required``"
