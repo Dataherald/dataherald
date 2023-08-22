@@ -77,3 +77,7 @@ class API(Component, ABC):
     @abstractmethod
     def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
         pass
+
+    @abstractmethod
+    def sync_vector_store(self) -> bool:
+        pass

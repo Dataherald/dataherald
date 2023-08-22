@@ -50,7 +50,11 @@ class Chroma(VectorStore):
 
     @override
     def delete_collection(self, collection: str):
-        return super().delete_collection(collection)
+        try:
+            self.chroma_client.get_collection(collection)
+            self.chroma_client.delete_collection(name=collection)
+        except ValueError:
+            pass
 
     @override
     def create_collection(self, collection: str):

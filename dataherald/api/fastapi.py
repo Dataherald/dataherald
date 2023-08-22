@@ -251,3 +251,8 @@ class FastAPI(API):
         start_idx = (page - 1) * limit
         end_idx = start_idx + limit
         return all_records[start_idx:end_idx]
+
+    @override
+    def sync_vector_store(self) -> bool:
+        context_store = self.system.instance(ContextStore)
+        return context_store.sync_vector_store()

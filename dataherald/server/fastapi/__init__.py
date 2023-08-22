@@ -94,6 +94,10 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/scanned-databases", self.get_scanned_databases, methods=["GET"]
         )
 
+        self.router.add_api_route(
+            "/api/v1/sync", self.sync_vector_store, methods=["POST"]
+        )
+
         self._app.include_router(self.router)
         use_route_names_as_operation_ids(self._app)
 
@@ -147,7 +151,7 @@ class FastAPI(dataherald.server.Server):
 
     def add_golden_records_or_record(
         self, golden_records: List[GoldenRecordRequest] | GoldenRecordRequest
-    ):
+    ) -> bool:
         if isinstance(golden_records, list):
             # Handle list of GoldenRecordRequest
             return self._api.add_golden_records(golden_records)
@@ -160,3 +164,7 @@ class FastAPI(dataherald.server.Server):
     def get_scanned_databases(self, db_alias: str) -> ScannedDBResponse:
         """Gets golden records"""
         return self._api.get_scanned_databases(db_alias)
+
+    def sync_vector_store(self) -> bool:
+        """Syncs the vector store"""
+        return self._api.sync_vector_store()

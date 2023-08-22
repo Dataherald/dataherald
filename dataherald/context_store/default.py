@@ -82,3 +82,31 @@ class DefaultContextStore(ContextStore):
             if deleted == 0:
                 logger.warning(f"Golden record with id {id} not found")
         return True
+
+    @override
+    def sync_vector_store(self) -> bool:
+        """Syncs the vector store with the golden records in the DB"""
+        golden_records_repository = GoldenRecordRepository(self.db)
+        golden_records = golden_records_repository.find_all()
+        golden_record_requests = []
+        for record in golden_records:
+            id = str(record.id)
+            nl_question = record.question
+            sql = record.sql_query
+            db = record.db_alias
+            golden_record_requests.append(
+                GoldenRecordRequest(nl_question=nl_question, sql=sql, db=db, id=id)
+            )
+        self.vector_store.delete_collection(self.golden_record_collection)
+        for record in golden_record_requests:
+            tables = Parser(record.sql).tables
+            question = record.nl_question
+            self.vector_store.add_record(
+                documents=question,
+                collection=self.golden_record_collection,
+                metadata=[
+                    {"tables_used": tables[0], "db_alias": record.db}
+                ],  # this should be updated for multiple tables
+                ids=[str(record.id)],
+            )
+        return True

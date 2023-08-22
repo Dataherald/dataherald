@@ -60,7 +60,9 @@ class Pinecone(VectorStore):
 
     @override
     def delete_collection(self, collection: str):
-        return pinecone.delete_index(collection)
+        if collection in pinecone.list_indexes():
+            return pinecone.delete_index(collection)
+        return None
 
     @override
     def create_collection(self, collection: str):

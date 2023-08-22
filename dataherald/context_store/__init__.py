@@ -35,3 +35,7 @@ class ContextStore(Component, ABC):
     @abstractmethod
     def remove_golden_records(self, ids: List) -> bool:
         pass
+
+    @abstractmethod
+    def sync_vector_store(self) -> bool:
+        pass
