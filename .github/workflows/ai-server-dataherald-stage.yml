@@ -1,12 +1,13 @@
-name: push-deploy-image-stage
+name: ai-server-dataherald-stage
 
 on:
   push:
     paths:
         - .github/workflows/ai-server-dataherald-stage.yml # this file
-        - apps/ai/server/dataherald/** # does not get triggered
+        - apps/ai/server/dataherald/**
     branches:
       - main 
+      - test
 
 env:
   AWS_REGION: us-east-1               
@@ -26,12 +27,15 @@ jobs:
 
     defaults:
         run: 
-          working-directory: ./apps/ai/server/dataherald
+          working-directory: ./apps/ai/server
 
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-      
+        with: 
+          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          submodules: true
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -49,6 +53,9 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: latest
         run: |
+          cd dataherald
+          ls
+          echo building dockerfile
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
