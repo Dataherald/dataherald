@@ -6,7 +6,7 @@ Modules
 Dataherald is built on a modular architecture and provides standaridized, extensible interfaces for anyone to replace any of these modules with their own implementation. This section outlines these modules. 
 
 .. toctree::
-   :maxdepth: 2
+   :hidden:
 
    context_store
    text_to_sql_engine

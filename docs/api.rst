@@ -2,6 +2,8 @@ API
 =======================
 
 .. toctree::
+    :hidden:
+
     api.database
     api.scan_database
     api.golden_record

@@ -6,6 +6,8 @@
 Welcome to Dataherald AI documentation
 ========================================
 .. toctree::
+   :hidden:
+
    getting_started
    api
    modules
