@@ -6,7 +6,7 @@ from modules.organization.models.entities import Organization
 
 
 class OrganizationRepository:
-    def list_organizations(self) -> list[Organization]:
+    def get_organizations(self) -> list[Organization]:
         return [
             Organization(**organization)
             for organization in MongoDB.find(ORGANIZATION_COL, {})

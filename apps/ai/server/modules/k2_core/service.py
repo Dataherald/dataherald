@@ -8,7 +8,7 @@ from config import settings
 from modules.k2_core.models.requests import QuestionRequest
 from modules.k2_core.models.responses import NLQueryResponse
 from modules.k2_core.repository import K2CoreRepository
-from modules.organization.service import OrganizationService
+from modules.organization.models.entities import Organization
 
 logger = logging.getLogger(__name__)
 
@@ -17,18 +17,13 @@ logger = logging.getLogger(__name__)
 class K2Service:
     def __init__(self):
         self.repo = K2CoreRepository()
-        self.org_service = OrganizationService()
 
     async def answer_question(
-        self, question_request: QuestionRequest
+        self, question_request: QuestionRequest, organization: Organization
     ) -> NLQueryResponse:
         path = "/question"
         slack_mention_pattern = r"<@(.*?)>"
         question_string = re.sub(slack_mention_pattern, "", question_request.question)
-
-        organization = self.org_service.get_organization_with_slack_workspace_id(
-            question_request.user.slack_workspace_id
-        )
 
         data = {"question": question_string, "db_alias": organization.db_alias}
 

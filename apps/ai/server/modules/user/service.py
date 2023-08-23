@@ -57,6 +57,7 @@ class UserService:
         if new_id:
             new_user = self.repo.get_user(new_id)
             self._ids_to_str(new_user)
+            return new_user
 
         raise HTTPException(status_code=400, detail="User exists or cannot add user")
 

@@ -8,10 +8,5 @@ class QueryEditRequest(BaseModel):
     query_status: QueryStatus | None
 
 
-class QueryEditRequestCore(BaseModel):
-    sql_query: str
-    golden_record: bool
-
-
 class SQLQueryRequest(BaseModel):
     sql_query: str

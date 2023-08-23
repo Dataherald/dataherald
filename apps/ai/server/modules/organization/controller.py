@@ -16,11 +16,11 @@ org_service = OrganizationService()
 
 
 @router.get("/list")
-async def list_organizations(
+async def get_organizations(
     token: str = Depends(token_auth_scheme),
 ) -> list[OrganizationResponse]:
     VerifyToken(token.credentials)
-    return org_service.list_organizations()
+    return org_service.get_organizations()
 
 
 @router.get("/{id}")

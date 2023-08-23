@@ -9,8 +9,8 @@ class OrganizationService:
     def __init__(self):
         self.repo = OrganizationRepository()
 
-    def list_organizations(self) -> list[Organization]:
-        organizations = self.repo.list_organizations()
+    def get_organizations(self) -> list[Organization]:
+        organizations = self.repo.get_organizations()
         for organization in organizations:
             organization.id = str(organization.id)
         return organizations

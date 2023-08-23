@@ -11,6 +11,8 @@ QUERY_RESPONSE_REF_COL = "nl_query_response_ref"
 
 USER_COL = "user"
 ORGANIZATION_COL = "organization"
+GOLDEN_SQL_COL = "golden_records"
+GOLDEN_SQL_REF_COL = "golden_sql_ref"
 
 
 class Settings(BaseSettings):

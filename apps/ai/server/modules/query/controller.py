@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPBearer
 
+from modules.organization.service import OrganizationService
 from modules.query.models.requests import QueryEditRequest, SQLQueryRequest
 from modules.query.models.responses import QueryListResponse, QueryResponse
 from modules.query.service import QueryService
-from utils.auth import Authorize, VerifyToken
+from utils.auth import Authorize, VerifyToken, test_organization
 
 router = APIRouter(
     prefix="/query",
@@ -14,6 +15,7 @@ router = APIRouter(
 token_auth_scheme = HTTPBearer()
 authorize = Authorize()
 query_service = QueryService()
+org_service = OrganizationService()
 
 
 @router.get("/list")
@@ -47,7 +49,11 @@ async def patch_query(
 ) -> QueryResponse:
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
     authorize.query_in_organization(query_id, str(org_id))
-    return await query_service.patch_query(query_id, query_request)
+    if org_id == test_organization.id:
+        organization = test_organization
+    else:
+        organization = org_service.get_organization(org_id)
+    return await query_service.patch_query(query_id, query_request, organization)
 
 
 @router.post("/{query_id}/execution")
