@@ -23,7 +23,12 @@ class TestVectorStore(VectorStore):
 
     @override
     def add_record(
-        self, documents: str, namespace:str, collection: str, metadata: Any, ids: List  # noqa: ARG002
+        self,
+        documents: str,
+        namespace: str,
+        collection: str,
+        metadata: Any,
+        ids: List,  # noqa: ARG002
     ):
         pass
 
