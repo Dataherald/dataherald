@@ -49,7 +49,9 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def add_golden_records(self, namespace: str, golden_records: List[GoldenRecordRequest]) -> list[dict]:
+    def add_golden_records(
+        self, namespace: str, golden_records: List[GoldenRecordRequest]
+    ) -> list[dict]:
         pass
 
     @abstractmethod
@@ -75,5 +77,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def get_golden_records(self, namespace:str, page: int = 1, limit: int = 10) -> List[dict]:
+    def get_golden_records(
+        self, namespace: str, page: int = 1, limit: int = 10
+    ) -> List[dict]:
         pass

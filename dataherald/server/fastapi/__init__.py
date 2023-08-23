@@ -87,7 +87,9 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/golden-records/{namespace}", self.get_golden_records, methods=["GET"]
+            "/api/v1/golden-records/{namespace}",
+            self.get_golden_records,
+            methods=["GET"],
         )
 
         self.router.add_api_route(
@@ -148,10 +150,11 @@ class FastAPI(dataherald.server.Server):
     def add_golden_records(
         self, namespace: str, golden_records: List[GoldenRecordRequest]
     ):
-        return self._api.add_golden_records(namespace,golden_records)
+        return self._api.add_golden_records(namespace, golden_records)
 
-
-    def get_golden_records(self, namespace: str, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
+    def get_golden_records(
+        self, namespace: str, page: int = 1, limit: int = 10
+    ) -> List[GoldenRecord]:
         """Gets golden records"""
         return self._api.get_golden_records(namespace, page, limit)
 

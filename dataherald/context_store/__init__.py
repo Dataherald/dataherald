@@ -29,7 +29,9 @@ class ContextStore(Component, ABC):
         pass
 
     @abstractmethod
-    def add_golden_records(self, golden_records: List[GoldenRecordRequest], namespace: str) -> bool:
+    def add_golden_records(
+        self, golden_records: List[GoldenRecordRequest], namespace: str
+    ) -> bool:
         pass
 
     @abstractmethod

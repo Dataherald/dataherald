@@ -48,7 +48,9 @@ class DefaultContextStore(ContextStore):
         return samples
 
     @override
-    def add_golden_records(self, golden_records: List[GoldenRecordRequest], namespace: str) -> bool:
+    def add_golden_records(
+        self, golden_records: List[GoldenRecordRequest], namespace: str
+    ) -> bool:
         """Creates embeddings of the questions and adds them to the VectorDB. Also adds the golden records to the DB"""
         golden_records_repository = GoldenRecordRepository(self.db)
         for record in golden_records:
