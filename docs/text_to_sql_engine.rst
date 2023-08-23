@@ -1,27 +1,20 @@
 Text-to-SQL Engine
 ==========================
 
-When choosing a text-to-SQL engine for your tasks, various options are available to cater to different requirements. These options include:
+The Text-to-SQL agent is a core component which translated the Natural Language question received through the ``question`` endpoint to SQL. The implementation can leverage business and data logic stored in the Context Store component 
+to generate accurate SQL given the DB schema. Currently the following NL-to-SQL implementations are included in the codebase:
 
-- **langchain_sqlagent**: [External Link](https://python.langchain.com/docs/integrations/toolkits/sql_database)
-- **langchain_sqlchain**: [External Link](https://js.langchain.com/docs/modules/chains/popular/sqlite)
-- **llamaindex_sqlgenerator**: [External Link](https://gpt-index.readthedocs.io/en/v0.6.16/guides/tutorials/sql_guide.html)
-- **Dataherald_sqlagent**: Our in-house developed text-to-SQL engine that offers unparalleled accuracy and compatibility with our system.
+- ``Langchain SQL Agent`` - A wrapper around the `Langchain SQLAgent <https://python.langchain.com/docs/integrations/toolkits/sql_database>`_ 
+- ``Langchain SQL Chain`` - A wrapper around the `Langchain SQLChain <https://python.langchain.com/docs/integrations/tools/sqlite>`_
+- ``LlamaIndex SQL Generator`` - A wrapper around the `LlamaIndex SQL Generator <https://gpt-index.readthedocs.io/en/v0.6.16/guides/tutorials/sql_guide.html>`_
+- ``Dataherald SQL Agent`` - Our in-house Natural Language-to-SQL agent which uses uses in-context learning 
 
-Choosing Dataherald_sqlagent
-----------------------------
 
-Based on an extensive analysis of our internal databases and their corresponding SQL/Question pairs, the Dataherald_sqlagent emerges as the top choice. Its ability to provide highly accurate answers, coupled with its seamless integration with our platform, makes it the recommended option.
-
-Overview of Dataherald_sqlagent
+Overview of Dataherald SQL Agent
 -------------------------------
 
-Our Dataherald_sqlagent is designed to bridge the gap between natural language queries and SQL queries. Utilizing advanced language processing techniques and a deep understanding of database schemas, it efficiently translates user questions into precise SQL queries.
-
-Tools Available to Dataherald_sqlagent
---------------------------------------
-
-The Dataherald_sqlagent is equipped with a range of tools that enhance its capabilities and enable it to provide accurate answers across various scenarios. Depending on the availability of previously verified SQL/Question pairs, the agent has access to 6 or 7 tools:
+The ``dataherald_sqlagent`` is an agent that outperforms the Langchain SQL Agent by 12%-250% in our benchmarking. It does this by leveraging up to 
+7 tools to generate valid SQL:     
 
 1. **QuerySQLDataBaseTool**: Executes a given SQL query on the database and returns the string representation of the results.
 
@@ -37,13 +30,13 @@ The Dataherald_sqlagent is equipped with a range of tools that enhance its capab
 
 7. **GetFewShotExamples**: Allows the agent to request relevant Question/SQL pairs dynamically. The agent can ask for more examples based on question complexity, fostering adaptive learning.
 
-Method Details
---------------
+
 
 :class:`SQLGenerator`
 ^^^^^^^^^^^^^^^^^^^^^
 
-This class is a base class that all SQL generation classes inherit from. It provides common methods for generating SQL responses.
+All implementations of the NL-to-SQL module must inherit and implement the abstract `SQLGenerator` class. There are only two required methods that need to be implemented:
+
 
 .. method:: create_sql_query_status(db, query, response)
 
@@ -53,12 +46,6 @@ This class is a base class that all SQL generation classes inherit from. It prov
 
    Generates a response to a user question based on the given user question, database connection, and optional context.
 
-For detailed implementation guidelines and further assistance, consult our official documentation or reach out to our dedicated support team.
-
-Conclusion
-----------
-
-The Dataherald_sqlagent, with its comprehensive toolset and proven accuracy, is an integral component of our platform. By harnessing its capabilities, you can confidently generate SQL queries from natural language queries and achieve precise answers. For detailed implementation guidelines and further assistance, consult our official documentation or reach out to our dedicated support team.
 
 
 

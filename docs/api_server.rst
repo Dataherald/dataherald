@@ -1,17 +1,17 @@
-API Server Module
+API Module
 =================
 
-The API Server module is responsible for coordinating all other modules and providing APIs to users. Currently, we support FastAPI as our API module, offering a robust and efficient framework for building APIs. FastAPI allows seamless integration with various modules in our system.
+The API module implements the controller that orchestrates component calls once API calls are made and also sets up the server that exposes the APIs. Currently, FastAPI is the only supported API server implementation.
 
 Abstract API Class
 -------------------
 
-The API Server options, including FastAPI, inherit from the abstract `API` class. This abstract class defines the common methods that all API server solutions should implement.
+The API Server options, including FastAPI, inherit from the abstract `API` class. The following are required methods that need to be implemented.
 
 :class:`API`
 ^^^^^^^^^^^^
 
-This abstract class provides a consistent interface for interacting with the API server.
+All implementations of the API module must inherit and implement the abstract `API` class. 
 
 .. method:: heartbeat(self) -> int
 
@@ -49,7 +49,4 @@ This abstract class provides a consistent interface for interacting with the API
 
    Executes a temporary query using the provided query ID and ExecuteTempQueryRequest.
 
-By utilizing the `API` abstract class, you can seamlessly switch between different API server implementations while maintaining consistent interaction with the underlying systems.
-
-For detailed implementation guidelines and further assistance, consult our official documentation or reach out to our dedicated support team.
 
