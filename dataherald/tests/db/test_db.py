@@ -59,6 +59,10 @@ class TestDB(DB):
         return self.memory[collection]
 
     @override
+    def find_all_from_namespace(self, collection: str, namespace: str) -> list:
+        return self.memory[collection]
+
+    @override
     def delete_by_id(self, collection: str, id: str) -> int:
         try:
             collection = self.memory[collection]
