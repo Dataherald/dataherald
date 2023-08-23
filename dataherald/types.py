@@ -1,5 +1,4 @@
 # from datetime import datetime add this later
-from datetime import datetime
 from enum import Enum
 from typing import Any
 
@@ -28,9 +27,9 @@ class NLQuery(BaseModel):
 
 
 class GoldenRecordRequest(BaseModel):
-    nl_question: str
-    sql: str
-    db: str
+    question: str
+    sql_query: str
+    db_alias: str
 
 
 class GoldenRecord(BaseModel):
@@ -38,7 +37,6 @@ class GoldenRecord(BaseModel):
     question: str
     sql_query: str
     db_alias: str
-    created_time: datetime = datetime.now()
 
 
 class SQLGenerationStatus(Enum):

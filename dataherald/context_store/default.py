@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from typing import List
 
 from overrides import override
@@ -51,20 +50,19 @@ class DefaultContextStore(ContextStore):
         """Creates embeddings of the questions and adds them to the VectorDB. Also adds the golden records to the DB"""
         golden_records_repository = GoldenRecordRepository(self.db)
         for record in golden_records:
-            tables = Parser(record.sql).tables
-            question = record.nl_question
+            tables = Parser(record.sql_query).tables
+            question = record.question
             golden_record = GoldenRecord(
                 question=question,
-                sql_query=record.sql,
-                db_alias=record.db,
-                created_time=datetime.now(),
+                sql_query=record.sql_query,
+                db_alias=record.db_alias,
             )
             golden_record = golden_records_repository.insert(golden_record)
             self.vector_store.add_record(
                 documents=question,
                 collection=self.golden_record_collection,
                 metadata=[
-                    {"tables_used": tables[0], "db_alias": record.db}
+                    {"tables_used": tables[0], "db_alias": record.db_alias}
                 ],  # this should be updated for multiple tables
                 ids=[str(golden_record.id)],
             )

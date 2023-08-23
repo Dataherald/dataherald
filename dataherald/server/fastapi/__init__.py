@@ -2,6 +2,7 @@ from typing import Any, List, Union
 
 import fastapi
 from fastapi import FastAPI as _FastAPI
+from fastapi import status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
@@ -82,7 +83,7 @@ class FastAPI(dataherald.server.Server):
 
         self.router.add_api_route(
             "/api/v1/golden-records",
-            self.add_golden_records_or_record,
+            self.add_golden_records,
             methods=["POST"],
         )
 
@@ -145,13 +146,17 @@ class FastAPI(dataherald.server.Server):
         """Deletes a golden record"""
         return self._api.delete_golden_record(golden_record_id)
 
-    def add_golden_records_or_record(
-        self, golden_records: List[GoldenRecordRequest] | GoldenRecordRequest
-    ):
-        if isinstance(golden_records, list):
-            # Handle list of GoldenRecordRequest
-            return self._api.add_golden_records(golden_records)
-        return self._api.add_golden_records([golden_records])
+    def add_golden_records(
+        self, golden_records: List[GoldenRecordRequest]
+    ) -> List[GoldenRecordRequest]:
+        created_records = self._api.add_golden_records(golden_records)
+
+        # Return a JSONResponse with status code 201 and the location header.
+        golden_records_as_dicts = [record.dict() for record in created_records]
+
+        return JSONResponse(
+            content=golden_records_as_dicts, status_code=status.HTTP_201_CREATED
+        )
 
     def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
         """Gets golden records"""
