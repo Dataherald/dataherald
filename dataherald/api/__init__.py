@@ -71,7 +71,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def delete_golden_record(self, golden_record_id: str) -> bool:
+    def delete_golden_record(self, golden_record_id: str) -> dict:
         pass
 
     @abstractmethod

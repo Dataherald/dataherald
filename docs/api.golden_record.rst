@@ -22,7 +22,7 @@ Request this ``POST`` endpoint::
 .. code-block:: rst
 
    [
-    {"nl_question": "question", "sql": "sql_query", "db":"db_alias", "organzation":"dataherald"},
+    {"question": "question", "sql_query": "sql_query", "db":"db_alias"},
    ]
 
 **Responses**
@@ -32,7 +32,7 @@ HTTP 200 code response
 .. code-block:: rst
 
    [
-    {"nl_question": "question", "sql": "sql_query", "db":"db_alias", "organzation":"dataherald"},
+    {"question": "question", "sql_query": "sql_query", "db":"db_alias"},
    ]
 
 **Example**
@@ -46,10 +46,9 @@ HTTP 200 code response
   -H 'Content-Type: application/json' \
   -d '[
   {
-    "nl_question": "what was the median home sale price in Califronia in Q1 2021?",
-    "sql": "SELECT location_name, period_end, metric_value FROM redfin_median_sale_price rmsp WHERE geo_type = '\''state'\'' AND location_name='\''California'\'' AND property_type = '\''All Residential'\''   AND period_start BETWEEN '\''2021-01-01'\'' AND '\''2021-03-31'\'' ORDER BY period_end;",
-    "db": "v2_real_estate",
-    "organzation": "dataherald"
+    "question": "what was the median home sale price in Califronia in Q1 2021?",
+    "sql_query": "SELECT location_name, period_end, metric_value FROM redfin_median_sale_price rmsp WHERE geo_type = '\''state'\'' AND location_name='\''California'\'' AND property_type = '\''All Residential'\''   AND period_start BETWEEN '\''2021-01-01'\'' AND '\''2021-03-31'\'' ORDER BY period_end;",
+    "db_alias": "v2_real_estate",
   }]'
 
 Delete golden records
@@ -110,7 +109,7 @@ HTTP 200 code response
 .. code-block:: rst
 
    [
-    {"nl_question": "question", "sql": "sql_query", "db":"db_alias", "organzation":"dataherald"},
+   {"id": "id", "question": "question", "sql_query":"sql", db_alias: "database alias"},
    ]
 
 **Example**

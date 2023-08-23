@@ -239,9 +239,10 @@ class FastAPI(API):
         return json.loads(json_util.dumps(scanned_db_response))
 
     @override
-    def delete_golden_record(self, golden_record_id: str) -> bool:
+    def delete_golden_record(self, golden_record_id: str) -> dict:
         context_store = self.system.instance(ContextStore)
-        return context_store.remove_golden_records([golden_record_id])
+        status = context_store.remove_golden_records([golden_record_id])
+        return {"status": status}
 
     @override
     def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
