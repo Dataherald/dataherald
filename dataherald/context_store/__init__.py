@@ -4,7 +4,7 @@ from typing import Any, List
 
 from dataherald.config import Component, System
 from dataherald.db import DB
-from dataherald.types import GoldenRecordRequest, NLQuery
+from dataherald.types import GoldenRecord, GoldenRecordRequest, NLQuery
 from dataherald.vector_store import VectorStore
 
 
@@ -29,7 +29,9 @@ class ContextStore(Component, ABC):
         pass
 
     @abstractmethod
-    def add_golden_records(self, golden_records: List[GoldenRecordRequest]) -> bool:
+    def add_golden_records(
+        self, golden_records: List[GoldenRecordRequest]
+    ) -> List[GoldenRecord]:
         pass
 
     @abstractmethod

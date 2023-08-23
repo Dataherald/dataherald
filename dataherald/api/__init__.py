@@ -51,7 +51,7 @@ class API(Component, ABC):
     @abstractmethod
     def add_golden_records(
         self, golden_records: List[GoldenRecordRequest]
-    ) -> List[GoldenRecordRequest]:
+    ) -> List[GoldenRecord]:
         pass
 
     @abstractmethod
