@@ -1,25 +1,8 @@
-Vector Store Options
+Vector Store 
 ====================
 
-In our system, we currently support two commonly used vector stores: ChromaDB and Pinecone. Each vector store offers distinct features and advantages that cater to different use cases.
-
-ChromaDB
---------
-
-ChromaDB is a powerful vector database that provides efficient storage and retrieval of high-dimensional vectors. Its advantages include:
-
-- **Local Storage**: ChromaDB stores vectors in a local database, ensuring fast access and low-latency queries.
-- **Flexible Schema**: ChromaDB allows for flexible schema designs, making it suitable for a variety of vector types and applications.
-- **Efficient Indexing**: ChromaDB employs advanced indexing techniques to accelerate vector similarity searches, enabling quick and accurate retrieval of similar vectors.
-
-Pinecone
---------
-
-Pinecone is a cloud-based vector search engine that specializes in delivering high-performance vector search capabilities. Its advantages include:
-
-- **Scalability**: Pinecone offers seamless scalability, enabling you to handle large-scale vector datasets and dynamic workloads.
-- **Real-time Search**: Pinecone is optimized for real-time vector search, making it suitable for applications that require low-latency retrieval of similar vectors.
-- **API-Driven**: Pinecone provides a comprehensive API that allows you to integrate vector search capabilities into your applications with ease.
+The Dataherald Engine uses a Vector store for retrieving similar few shot examples from previous Natural Language to SQL pairs that have been marked as correct. Currently Pinecone and ChromaDB are the 
+supported vector stores, though developers can easily add support for other vector stores by implementing the abstract VectorStore class.
 
 Abstract Vector Store Class
 ---------------------------

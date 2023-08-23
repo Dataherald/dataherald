@@ -1,4 +1,4 @@
-Context Store Module
+Context Store
 ====================
 
 The Context Store module is responsible for managing a vector database that stores relevant information for accurately generating SQL queries based on natural language prompts.

@@ -1,6 +1,6 @@
 .. _api.golden_record:
 
-golden records
+Golden Records
 =======================
 
 In order to improve the perfromance of NL-to-SQL engines, our system includes a few verfied Question SQL samples in the prompts.

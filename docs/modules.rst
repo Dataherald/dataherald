@@ -1,4 +1,4 @@
-.. _dataherald-modules:
+.. _modules:
 
 Modules
 ====================================================
@@ -6,7 +6,7 @@ Modules
 Dataherald is built on a modular architecture and provides standaridized, extensible interfaces for anyone to replace any of these modules with their own implementation. This section outlines these modules. 
 
 .. toctree::
-   :maxdepth: 2
+   :hidden:
 
    context_store
    text_to_sql_engine
@@ -18,7 +18,7 @@ Dataherald is built on a modular architecture and provides standaridized, extens
 Introduction
 ------------
 
-Modular design has been one of the design goals of the Dataherald team. The system is built on the following components, and you can implement your own and replace the default implementation from the ``.env`` file. In many instances the codebase already has multiple implementations which can be selected. We encourage the community to build their own modules and submit them for inclusion in the codebase.  
+The system is built on the following components, and you can implement your own and replace the default implementation from the ``.env`` file. In many instances the codebase already has multiple implementations which can be selected. We encourage the community to build their own modules and submit them for inclusion in the codebase.  
 
 System Modules
 --------------
@@ -53,4 +53,4 @@ Get Involved
 
 We encourage you to imeplemnt your own modules and engage with the Dataherald community on `Discord <https://discord.gg/A59Uxyy2k9>`_ or on `GitHub <https://github.com/Dataherald/dataherald>`_. Your input drives our ongoing development and improvement.
 
-:ref:`Back to Top <dataherald-modules>`
+:ref:`Back to Top <modules>`
