@@ -142,7 +142,7 @@ class FastAPI(dataherald.server.Server):
         """Executes a query on the given db_alias"""
         return self._api.execute_temp_query(query_id, query)
 
-    def delete_golden_record(self, golden_record_id: str) -> bool:
+    def delete_golden_record(self, golden_record_id: str) -> dict:
         """Deletes a golden record"""
         return self._api.delete_golden_record(golden_record_id)
 
