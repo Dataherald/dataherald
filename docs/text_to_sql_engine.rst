@@ -1,4 +1,4 @@
-Text-to-SQL Engine Options
+Text-to-SQL Engine
 ==========================
 
 When choosing a text-to-SQL engine for your tasks, various options are available to cater to different requirements. These options include:

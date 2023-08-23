@@ -1,4 +1,4 @@
-Vector Store Options
+Vector Store 
 ====================
 
 In our system, we currently support two commonly used vector stores: ChromaDB and Pinecone. Each vector store offers distinct features and advantages that cater to different use cases.
