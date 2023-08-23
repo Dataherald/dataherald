@@ -27,6 +27,7 @@ def test_scan_one_table():
 
 def test_answer_question():
     response = client.post(
-        "/api/v1/question", json={"question": "Who am I?", "db_alias": "foo"}
+        "/api/v1/question",
+        json={"question": "Who am I?", "db_alias": "foo", "namespace": "bar"},
     )
     assert response.status_code == HTTP_200_CODE
