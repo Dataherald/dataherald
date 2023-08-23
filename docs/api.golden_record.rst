@@ -1,6 +1,6 @@
 .. _api.golden_record:
 
-golden records
+Golden Records
 =======================
 
 In order to improve the perfromance of NL-to-SQL engines, our system includes a few verfied Question SQL samples in the prompts.
@@ -31,7 +31,7 @@ Request this ``POST`` endpoint::
 .. code-block:: rst
 
    [
-    {"nl_question": "question", "sql": "sql_query", "db":"db_alias"},
+    {"nl_question": "question", "sql": "sql_query", "db":"db_alias", "organzation":"dataherald"},
    ]
 
 **Responses**
