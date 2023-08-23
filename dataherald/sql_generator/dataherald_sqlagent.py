@@ -22,7 +22,6 @@ from langchain.tools.base import BaseTool
 from overrides import override
 from pydantic import BaseModel, Extra, Field
 
-from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.db_scanner.models.types import TableSchemaDetail
 from dataherald.db_scanner.repository.base import DBScannerRepository
@@ -540,15 +539,12 @@ class DataheraldSQLAgent(SQLGenerator):
         context: List[dict] = None,
     ) -> NLQueryResponse:
         start_time = time.time()
-        context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
         repository = DBScannerRepository(storage)
         db_scan = repository.get_all_tables_by_db(db_alias=database_connection.alias)
         if not db_scan:
             raise ValueError("No scanned tables found for database")
-        few_shot_examples = context_store.retrieve_context_for_question(
-            user_question, number_of_samples=self.max_number_of_examples
-        )
+        few_shot_examples = context
         if few_shot_examples is not None:
             new_fewshot_examples = self.remove_duplicate_examples(few_shot_examples)
             number_of_samples = len(new_fewshot_examples)

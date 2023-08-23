@@ -13,7 +13,7 @@ Request this ``POST`` endpoint::
 .. code-block:: rst
 
    [
-    {"nl_question": "question", "sql": "sql_query", "db":"db_alias"},
+    {"nl_question": "question", "db":"db_alias", "namespace": "namespace"},
    ]
 
 **Responses**
@@ -57,7 +57,8 @@ HTTP 200 code response
   -H 'Content-Type: application/json' \
       -d '{
       "question": "What is the median rent price for each property type in Los angeles city?",
-      "db_alias": "db_alias"
+      "db_alias": "db_alias",
+      "namespace": "dataherald"
     }'
 
 **Response example**

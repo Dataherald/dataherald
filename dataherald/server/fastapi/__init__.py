@@ -75,19 +75,19 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/golden-records/{golden_record_id}",
+            "/api/v1/golden-records/{namespace}/{golden_record_id}/",
             self.delete_golden_record,
             methods=["DELETE"],
         )
 
         self.router.add_api_route(
-            "/api/v1/golden-records",
-            self.add_golden_records_or_record,
+            "/api/v1/golden-records/{namespace}",
+            self.add_golden_records,
             methods=["POST"],
         )
 
         self.router.add_api_route(
-            "/api/v1/golden-records", self.get_golden_records, methods=["GET"]
+            "/api/v1/golden-records/{namespace}", self.get_golden_records, methods=["GET"]
         )
 
         self.router.add_api_route(
@@ -141,21 +141,19 @@ class FastAPI(dataherald.server.Server):
         """Executes a query on the given db_alias"""
         return self._api.execute_temp_query(query_id, query)
 
-    def delete_golden_record(self, golden_record_id: str) -> bool:
+    def delete_golden_record(self, namespace: str, golden_record_id: str) -> dict:
         """Deletes a golden record"""
-        return self._api.delete_golden_record(golden_record_id)
+        return self._api.delete_golden_record(namespace, golden_record_id)
 
-    def add_golden_records_or_record(
-        self, golden_records: List[GoldenRecordRequest] | GoldenRecordRequest
+    def add_golden_records(
+        self, namespace: str, golden_records: List[GoldenRecordRequest]
     ):
-        if isinstance(golden_records, list):
-            # Handle list of GoldenRecordRequest
-            return self._api.add_golden_records(golden_records)
-        return self._api.add_golden_records([golden_records])
+        return self._api.add_golden_records(namespace,golden_records)
 
-    def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
+
+    def get_golden_records(self, namespace: str, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
         """Gets golden records"""
-        return self._api.get_golden_records(page, limit)
+        return self._api.get_golden_records(namespace, page, limit)
 
     def get_scanned_databases(self, db_alias: str) -> ScannedDBResponse:
         """Gets golden records"""

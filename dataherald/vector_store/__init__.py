@@ -13,7 +13,7 @@ class VectorStore(Component, ABC):
 
     @abstractmethod
     def query(
-        self, query_texts: List[str], db_alias: str, collection: str, num_results: int
+        self, query_texts: List[str], db_alias: str, namespace: str, collection: str, num_results: int
     ) -> list:
         pass
 
@@ -23,12 +23,12 @@ class VectorStore(Component, ABC):
 
     @abstractmethod
     def add_record(
-        self, documents: str, collection: str, metadata: Any, ids: List = None
+        self, documents: str, namespace: str, collection: str, metadata: Any, ids: List = None
     ):
         pass
 
     @abstractmethod
-    def delete_record(self, collection: str, id: str):
+    def delete_record(self, namespace: str, collection: str, id: str):
         pass
 
     @abstractmethod

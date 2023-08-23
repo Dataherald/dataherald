@@ -38,6 +38,7 @@ class GoldenRecord(BaseModel):
     question: str
     sql_query: str
     db_alias: str
+    namespace: str
     created_time: datetime = datetime.now()
 
 
@@ -85,6 +86,7 @@ class SupportedDatabase(Enum):
 class QuestionRequest(BaseModel):
     question: str
     db_alias: str
+    namespace: str
 
 
 class ScannerRequest(BaseModel):

@@ -35,8 +35,8 @@ class GoldenRecordRepository:
             return None
         return GoldenRecord(**row)
 
-    def find_all(self) -> list[GoldenRecord]:
-        rows = self.storage.find_all(DB_COLLECTION)
+    def find_all(self, namespace: str) -> list[GoldenRecord]:
+        rows = self.storage.find_all_from_namespace(DB_COLLECTION, namespace)
         return [GoldenRecord(id=str(row["_id"]), **row) for row in rows]
 
     def delete_by_id(self, id: str) -> int:

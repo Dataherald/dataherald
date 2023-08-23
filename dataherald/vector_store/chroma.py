@@ -22,7 +22,7 @@ class Chroma(VectorStore):
 
     @override
     def query(
-        self, query_texts: List[str], db_alias: str, collection: str, num_results: int
+        self, query_texts: List[str], db_alias: str, namespace: str, collection: str, num_results: int
     ) -> list:
         try:
             target_collection = self.chroma_client.get_collection(collection)
@@ -32,21 +32,28 @@ class Chroma(VectorStore):
         query_results = target_collection.query(
             query_texts=query_texts,
             n_results=num_results,
-            where={"db_alias": db_alias},
+            where={"$and": [
+                {"db_alias": db_alias},
+                {"namespace": namespace}]
+            }
         )
         return self.convert_to_pinecone_object_model(query_results)
 
     @override
-    def add_record(self, documents: str, collection: str, metadata: Any, ids: List):
+    def add_record(self, documents: str, namespace: str,  collection: str, metadata: Any, ids: List):
         target_collection = self.chroma_client.get_or_create_collection(collection)
         existing_rows = target_collection.get(ids=ids)
+        metadata[0]['namespace'] = namespace
         if len(existing_rows["documents"]) == 0:
             target_collection.add(documents=documents, metadatas=metadata, ids=ids)
 
     @override
-    def delete_record(self, collection: str, id: str):
+    def delete_record(self, namespace: str, collection: str, id: str):
         target_collection = self.chroma_client.get_or_create_collection(collection)
-        target_collection.delete(ids=[id])
+        target_collection.delete(
+            ids=[id],
+            where={"namespace": namespace}
+            )
 
     @override
     def delete_collection(self, collection: str):

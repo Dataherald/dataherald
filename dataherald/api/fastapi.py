@@ -25,7 +25,6 @@ from dataherald.sql_generator.generates_nl_answer import GeneratesNlAnswer
 from dataherald.types import (
     DatabaseConnectionRequest,
     ExecuteTempQueryRequest,
-    GoldenRecord,
     GoldenRecordRequest,
     NLQuery,
     NLQueryResponse,
@@ -102,7 +101,7 @@ class FastAPI(API):
             raise HTTPException(status_code=404, detail="Database connection not found")
         database_connection = DatabaseConnection(**db_connection)
 
-        context = context_store.retrieve_context_for_question(user_question)
+        context = context_store.retrieve_context_for_question(user_question, namespace=question_request.namespace)
         start_generated_answer = time.time()
         try:
             generated_answer = sql_generation.generate_response(
@@ -161,10 +160,11 @@ class FastAPI(API):
         return True
 
     @override
-    def add_golden_records(self, golden_records: List[GoldenRecordRequest]) -> bool:
+    def add_golden_records(self, namespace: str, golden_records: List[GoldenRecordRequest]) -> list[dict]:
         """Takes in a list of NL <> SQL pairs and stores them to be used in prompts to the LLM"""
         context_store = self.system.instance(ContextStore)
-        return context_store.add_golden_records(golden_records)
+        context_store.add_golden_records(golden_records, namespace)
+        return golden_records
 
     @override
     def execute_query(self, query: Query) -> tuple[str, dict]:
@@ -239,14 +239,15 @@ class FastAPI(API):
         return json.loads(json_util.dumps(scanned_db_response))
 
     @override
-    def delete_golden_record(self, golden_record_id: str) -> bool:
+    def delete_golden_record(self,  namespace: str, golden_record_id: str) -> dict:
         context_store = self.system.instance(ContextStore)
-        return context_store.remove_golden_records([golden_record_id])
+        status = context_store.remove_golden_records([golden_record_id],namespace)
+        return {"status": status}
 
     @override
-    def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
+    def get_golden_records(self, namespace: str,  page: int = 1, limit: int = 10) -> List[dict]:
         golden_records_repository = GoldenRecordRepository(self.storage)
-        all_records = golden_records_repository.find_all()
+        all_records = golden_records_repository.find_all(namespace=namespace)
         # Calculate the start and end indices for pagination
         start_idx = (page - 1) * limit
         end_idx = start_idx + limit

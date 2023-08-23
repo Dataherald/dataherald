@@ -43,6 +43,10 @@ class MongoDB(DB):
         return list(self._data_store[collection].find({}))
 
     @override
+    def find_all_from_namespace(self, collection: str, namespace: str) -> list:
+        return list(self._data_store[collection].find({"namespace": namespace}))
+
+    @override
     def delete_by_id(self, collection: str, id: str) -> int:
         result = self._data_store[collection].delete_one({"_id": ObjectId(id)})
         return result.deleted_count

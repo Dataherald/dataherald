@@ -24,14 +24,14 @@ class ContextStore(Component, ABC):
 
     @abstractmethod
     def retrieve_context_for_question(
-        self, nl_question: NLQuery, number_of_samples: int = 3
+        self, nl_question: NLQuery, namespace: str, number_of_samples: int = 3
     ) -> List[dict] | None:
         pass
 
     @abstractmethod
-    def add_golden_records(self, golden_records: List[GoldenRecordRequest]) -> bool:
+    def add_golden_records(self, golden_records: List[GoldenRecordRequest], namespace: str) -> bool:
         pass
 
     @abstractmethod
-    def remove_golden_records(self, ids: List) -> bool:
+    def remove_golden_records(self, ids: List, namespace: str) -> bool:
         pass

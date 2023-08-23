@@ -33,5 +33,9 @@ class DB(Component, ABC):
         pass
 
     @abstractmethod
+    def find_all_from_namespace(self, collection: str, namespace: str) -> list:
+        pass
+
+    @abstractmethod
     def delete_by_id(self, collection: str, id: str) -> int:
         pass
