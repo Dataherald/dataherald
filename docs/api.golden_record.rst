@@ -22,7 +22,7 @@ Request this ``POST`` endpoint::
 .. code-block:: rst
 
    [
-    {"question": "question", "sql_query": "sql_query", "db":"db_alias"},
+    {"question": "question", "sql_query": "sql_query", "db_alias":"db_alias"},
    ]
 
 **Responses**
@@ -32,7 +32,7 @@ HTTP 200 code response
 .. code-block:: rst
 
    [
-    {"question": "question", "sql_query": "sql_query", "db":"db_alias"},
+    {"question": "question", "sql_query": "sql_query", "db_alias":"db_alias"},
    ]
 
 **Example**
