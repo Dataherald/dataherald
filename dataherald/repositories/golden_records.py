@@ -10,8 +10,8 @@ class GoldenRecordRepository:
         self.storage = storage
 
     def insert(self, golden_record: GoldenRecord) -> GoldenRecord:
-        golden_record.id = self.storage.insert_one(
-            DB_COLLECTION, golden_record.dict(exclude={"id"})
+        golden_record.id = str(
+            self.storage.insert_one(DB_COLLECTION, golden_record.dict(exclude={"id"}))
         )
         return golden_record
 

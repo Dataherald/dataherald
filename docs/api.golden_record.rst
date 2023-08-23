@@ -32,7 +32,7 @@ HTTP 200 code response
 .. code-block:: rst
 
    [
-    {"question": "question", "sql_query": "sql_query", "db_alias":"db_alias"},
+    {"id": "id", "question": "question", "sql_query":"sql", db_alias: "database alias"},
    ]
 
 **Example**
