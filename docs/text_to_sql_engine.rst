@@ -10,8 +10,8 @@ to generate accurate SQL given the DB schema. Currently the following NL-to-SQL 
 - ``Dataherald SQL Agent`` - Our in-house Natural Language-to-SQL agent which uses uses in-context learning 
 
 
-Overview of Dataherald SQL Agent
--------------------------------
+Dataherald SQL Agent
+---------------------------------
 
 The ``dataherald_sqlagent`` is an agent that outperforms the Langchain SQL Agent by 12%-250% in our benchmarking. It does this by leveraging up to 
 7 tools to generate valid SQL:     
