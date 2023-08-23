@@ -4,7 +4,7 @@ on:
   push:
     paths:
         - .github/workflows/ai-server-dataherald-stage.yml # this file
-        - apps/ai/server/dataherald/**
+        - apps/ai/server/dataherald/** # does not get triggered
     branches:
       - main 
 
