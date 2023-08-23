@@ -161,7 +161,9 @@ class FastAPI(API):
         return True
 
     @override
-    def add_golden_records(self, golden_records: List[GoldenRecordRequest]) -> List[GoldenRecordRequest]:
+    def add_golden_records(
+        self, golden_records: List[GoldenRecordRequest]
+    ) -> List[GoldenRecordRequest]:
         """Takes in a list of NL <> SQL pairs and stores them to be used in prompts to the LLM"""
         context_store = self.system.instance(ContextStore)
         context_store.add_golden_records(golden_records)

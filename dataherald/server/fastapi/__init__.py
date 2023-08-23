@@ -148,13 +148,15 @@ class FastAPI(dataherald.server.Server):
 
     def add_golden_records(
         self, golden_records: List[GoldenRecordRequest]
-    ) ->  List[GoldenRecordRequest]:
+    ) -> List[GoldenRecordRequest]:
         created_records = self._api.add_golden_records(golden_records)
 
         # Return a JSONResponse with status code 201 and the location header.
         golden_records_as_dicts = [record.dict() for record in created_records]
 
-        return JSONResponse(content=golden_records_as_dicts, status_code=status.HTTP_201_CREATED)
+        return JSONResponse(
+            content=golden_records_as_dicts, status_code=status.HTTP_201_CREATED
+        )
 
     def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
         """Gets golden records"""
