@@ -15,6 +15,7 @@ class TestVectorStore(VectorStore):
         self,
         query_texts: List[str],
         db_alias: str,
+        namespace: str,
         collection: str,
         num_results: int,  # noqa: ARG002
     ) -> list:
@@ -22,12 +23,12 @@ class TestVectorStore(VectorStore):
 
     @override
     def add_record(
-        self, documents: str, collection: str, metadata: Any, ids: List  # noqa: ARG002
+        self, documents: str, namespace:str, collection: str, metadata: Any, ids: List  # noqa: ARG002
     ):
         pass
 
     @override
-    def delete_record(self, collection: str, id: str):
+    def delete_record(self, namespace: str, collection: str, id: str):
         pass
 
     @override
