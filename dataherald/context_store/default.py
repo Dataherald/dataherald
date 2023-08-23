@@ -46,9 +46,12 @@ class DefaultContextStore(ContextStore):
         return samples
 
     @override
-    def add_golden_records(self, golden_records: List[GoldenRecordRequest]) -> bool:
+    def add_golden_records(
+        self, golden_records: List[GoldenRecordRequest]
+    ) -> List[GoldenRecord]:
         """Creates embeddings of the questions and adds them to the VectorDB. Also adds the golden records to the DB"""
         golden_records_repository = GoldenRecordRepository(self.db)
+        retruned_golden_records = []
         for record in golden_records:
             tables = Parser(record.sql_query).tables
             question = record.question
@@ -57,6 +60,7 @@ class DefaultContextStore(ContextStore):
                 sql_query=record.sql_query,
                 db_alias=record.db_alias,
             )
+            retruned_golden_records.append(golden_record)
             golden_record = golden_records_repository.insert(golden_record)
             self.vector_store.add_record(
                 documents=question,
@@ -66,7 +70,7 @@ class DefaultContextStore(ContextStore):
                 ],  # this should be updated for multiple tables
                 ids=[str(golden_record.id)],
             )
-        return True
+        return retruned_golden_records
 
     @override
     def remove_golden_records(self, ids: List) -> bool:
