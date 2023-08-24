@@ -18,7 +18,7 @@ from dataherald.eval import Evaluator
 from dataherald.repositories.base import NLQueryResponseRepository
 from dataherald.repositories.golden_records import GoldenRecordRepository
 from dataherald.repositories.nl_question import NLQuestionRepository
-from dataherald.sql_database.base import SQLDatabase
+from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
 from dataherald.sql_generator.generates_nl_answer import GeneratesNlAnswer
@@ -108,12 +108,14 @@ class FastAPI(API):
             generated_answer = sql_generation.generate_response(
                 user_question, database_connection, context
             )
+            logger.info("Starts evaluator...")
+            confidence_score = evaluator.get_confidence_score(
+                user_question, generated_answer, database_connection
+            )
         except ValueError as e:
-            raise HTTPException(status_code=404, detail=str(e))  # noqa: B904
-        logger.info("Starts evaluator...")
-        confidence_score = evaluator.get_confidence_score(
-            user_question, generated_answer, database_connection
-        )
+            raise HTTPException(status_code=404, detail=str(e)) from e
+        except SQLInjectionError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
         generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
@@ -178,8 +180,11 @@ class FastAPI(API):
             raise HTTPException(status_code=404, detail="Database connection not found")
         database_connection = DatabaseConnection(**db_connection)
         database = SQLDatabase.get_sql_engine(database_connection)
-        print(type(database.run_sql(query.sql_statement)))
-        return database.run_sql(query.sql_statement)
+        try:
+            result = database.run_sql(query.sql_statement)
+        except SQLInjectionError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
+        return result
 
     @override
     def update_query(
@@ -202,9 +207,12 @@ class FastAPI(API):
                     status_code=404, detail="Database connection not found"
                 )
             database_connection = DatabaseConnection(**db_connection)
-            confidence_score = evaluator.get_confidence_score(
-                nl_question, nl_query_response, database_connection
-            )
+            try:
+                confidence_score = evaluator.get_confidence_score(
+                    nl_question, nl_query_response, database_connection
+                )
+            except SQLInjectionError as e:
+                raise HTTPException(status_code=404, detail=str(e)) from e
             nl_query_response.confidence_score = confidence_score
             generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
             nl_query_response = generates_nl_answer.execute(nl_query_response)

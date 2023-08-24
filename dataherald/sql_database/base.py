@@ -14,6 +14,11 @@ from dataherald.utils.encrypt import FernetEncrypt
 logger = logging.getLogger(__name__)
 
 
+# Define a custom exception class
+class SQLInjectionError(Exception):
+    pass
+
+
 class DBConnections:
     db_connections = {}
 
@@ -108,7 +113,7 @@ class SQLDatabase(LangchainSQLDatabase):
         )
         match = re.search(pattern, command, re.IGNORECASE)
         if match:
-            raise Exception(
+            raise SQLInjectionError(
                 f"Sensitive SQL keyword '{match.group()}' detected in the query."
             )
         return command

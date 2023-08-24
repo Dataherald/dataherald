@@ -104,7 +104,7 @@ def catch_exceptions(fn: Callable[[str], str]) -> Callable[[str], str]:
             return f"OpenAI API service unavailable: {e}"
         except openai.error.InvalidRequestError as e:
             return f"OpenAI API request was invalid: {e}"
-        except Exception as e:
+        except SQLAlchemyError as e:
             return f"An unknown error occurred: {e}"
 
     return wrapper
