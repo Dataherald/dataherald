@@ -21,6 +21,7 @@ from langchain.schema import AgentAction
 from langchain.tools.base import BaseTool
 from overrides import override
 from pydantic import BaseModel, Extra, Field
+from sqlalchemy.exc import SQLAlchemyError
 
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
@@ -41,7 +42,6 @@ Given an input question, create a syntactically correct {dialect} query to run, 
 Unless the user specifies a specific number of examples they wish to obtain, always limit your query to at most {top_k} results.
 You have access to tools for interacting with the database.
 Only use the below tools. Only use the information returned by the below tools to construct your final answer.
-DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
 #
 Here is the plan you have to follow:
 1) Use the fewshot_examples_retriever tool to retrieve a first set of possibly relevant tables and columns and the SQL syntax to use.
@@ -169,7 +169,12 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Execute the query, return the results or an error message."""
-        return self.db.run_no_throw(query)
+        try:
+            run_result = self.db.run_sql(query)[0]
+        except SQLAlchemyError as e:
+            """Format the error message"""
+            run_result =  f"Error: {e}"
+        return run_result
 
     async def _arun(
         self,

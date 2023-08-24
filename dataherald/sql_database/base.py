@@ -1,5 +1,6 @@
 """SQL wrapper around SQLDatabase in langchain."""
 import logging
+import re
 from typing import Any, List
 
 from langchain.sql_database import SQLDatabase as LangchainSQLDatabase
@@ -88,6 +89,16 @@ class SQLDatabase(LangchainSQLDatabase):
             f"{ssh.db_driver}://{ssh.remote_db_name}:{fernet_encrypt.decrypt(ssh.remote_db_password)}@{local_host}:{local_port}/{ssh.db_name}"
         )
 
+    @classmethod
+    def parser_to_filter_commands(cls, command: str) -> str:
+        sensitive_keywords = ['DROP', 'DELETE', 'UPDATE', 'INSERT', 'GRANT', 'REVOKE', 'ALTER', 'TRUNCATE','MERGE','EXECUTE']
+        pattern = r'\b(?:' + '|'.join(re.escape(word) for word in sensitive_keywords) + r')\b'
+        match = re.search(pattern, command, re.IGNORECASE)
+        if match:
+            raise Exception(f"Sensitive SQL keyword '{match.group()}' detected in the query.")
+        return command
+
+
     def run_sql(self, command: str) -> tuple[str, dict]:
         """Execute a SQL statement and return a string representing the results.
 
@@ -95,6 +106,7 @@ class SQLDatabase(LangchainSQLDatabase):
         If the statement returns no rows, an empty string is returned.
         """
         with self._engine.connect() as connection:
+            command = self.parser_to_filter_commands(command)
             cursor = connection.execute(text(command))
             if cursor.returns_rows:
                 result = cursor.fetchall()

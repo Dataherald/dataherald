@@ -10,6 +10,7 @@ from langchain.prompts.chat import (
 )
 from overrides import override
 from sql_metadata import Parser
+from sqlalchemy.exc import SQLAlchemyError
 
 from dataherald.config import System
 from dataherald.eval import Evaluation, Evaluator
@@ -98,7 +99,11 @@ class SimpleEvaluator(Evaluator):
         tables = Parser(sql).tables
         database._sample_rows_in_table_info = 0
         schema = database.get_table_info_no_throw(tables)
-        run_result = database.run_no_throw(sql)
+        try:
+            run_result = database.run_sql(sql)[0]
+        except SQLAlchemyError as e:
+            """Format the error message"""
+            run_result =  f"Error: {e}"
         if run_result == "[]" or "Error:" in run_result:
             logger.info(
                 f"(Simple evaluator) SQL query: {sql} is not valid. Returning score 0"
