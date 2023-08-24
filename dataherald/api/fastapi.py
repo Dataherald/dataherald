@@ -230,7 +230,7 @@ class FastAPI(API):
         for table in tables:
             process_tables.append(
                 ScannedDBTable(
-                    id=table.id,
+                    id=str(table.id),
                     name=table.table_name,
                     columns=[column.name for column in table.columns],
                 )

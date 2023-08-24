@@ -26,9 +26,7 @@ HTTP 200 code response
       "db_alias": "string",
       "tables": [
         {
-          "id": {
-            "$oid": "string"
-          },
+          "id": "string",
           "name": "string",
           "columns": [
             "string"
@@ -53,9 +51,7 @@ HTTP 200 code response
       "db_alias": "databricks",
       "tables": [
         {
-          "id": {
-            "$oid": "64dfa18c03f5134086f7090d"
-          },
+          "id": "64dfa18c03f5134086f7090d",
           "name": "median_rent",
           "columns": [
             "period_start",
