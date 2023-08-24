@@ -98,11 +98,13 @@ class Authorize:
             QUERY_RESPONSE_REF_COL, query_id, org_id, key="query_response_id"
         )
 
+    def golden_sql_in_organization(self, golden_sql_id: str, org_id: str):
+        self._item_in_organization(
+            GOLDEN_SQL_REF_COL, golden_sql_id, org_id, key="golden_sql_id"
+        )
+
     def user_in_organization(self, user_id: str, org_id: str):
         self._item_in_organization(USER_COL, user_id, org_id)
-
-    def golden_sql_in_organization(self, golden_sql_id: str, org_id: str):
-        self._item_in_organization(GOLDEN_SQL_REF_COL, golden_sql_id, org_id)
 
     def user_and_get_org_id(self, payload) -> ObjectId:
         user = self.user(payload)
@@ -131,6 +133,8 @@ class Authorize:
         else:
             item = MongoDB.find_by_object_id(collection, ObjectId(id))
         if not item:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+            )
         if org_id != str(item["organization_id"]):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
