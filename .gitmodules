@@ -1,5 +1,5 @@
 [submodule "apps/ai/server/dataherald"]
-	path = apps/ai/server/dataherald
+	path = apps/ai/server/k2_core/dataherald
 	url = https://github.com/Dataherald/dataherald
 [submodule "apps/bariloche/programmatic-seo"]
 	path = apps/bariloche/programmatic-seo
