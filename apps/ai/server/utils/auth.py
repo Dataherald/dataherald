@@ -127,9 +127,9 @@ class Authorize:
             return
 
         if key:
-            item = MongoDB.find_one(collection, {key: id})
+            item = MongoDB.find_one(collection, {key: ObjectId(id)})
         else:
-            item = MongoDB.find_by_id(collection, id)
+            item = MongoDB.find_by_object_id(collection, ObjectId(id))
         if not item:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         if org_id != str(item.organization_id):
