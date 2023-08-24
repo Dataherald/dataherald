@@ -569,7 +569,7 @@ class DataheraldSQLAgent(SQLGenerator):
             max_examples=number_of_samples,
         )
         agent_executor.return_intermediate_steps = True
-        agent_executor.handle_parsing_errors = (True,)
+        agent_executor.handle_parsing_errors = True
         with get_openai_callback() as cb:
             result = agent_executor({"input": user_question.question})
         intermediate_steps = []
