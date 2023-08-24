@@ -4,7 +4,7 @@ on:
   push:
     paths:
         - .github/workflows/ai-server-dataherald-stage.yml # this file
-        - apps/ai/server/k2_core/**
+        - apps/ai/server/dataherald/**
     branches:
       - main 
       - test
@@ -53,7 +53,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: latest
         run: |
-          cd k2_core/dataherald
+          cd dataherald
           ls
           echo building dockerfile
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
