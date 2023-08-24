@@ -62,7 +62,7 @@ class NLQueryResponse(BaseModel):
 
 
 class ScannedDBTable(BaseModel):
-    id: Any
+    id: str
     name: str
     columns: list[str]
 
