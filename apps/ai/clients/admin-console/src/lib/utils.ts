@@ -1,6 +1,11 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
-export function cn(...inputs: ClassValue[]) {
+export const cn = (...inputs: ClassValue[]): string => {
   return twMerge(clsx(inputs))
 }
+
+export const formatUrl = (segment: string): string =>
+  segment.replace('sql', 'SQL').replace('-', ' ')
+
+export const formatKey = (key: string): string => key.replace('_', ' ')

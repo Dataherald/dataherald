@@ -24,7 +24,7 @@ const UserSettingsPopover: FC<UserSettingsPopoverProps> = ({ user }) => {
   return (
     <Popover>
       <PopoverTrigger className="rounded-xl p-2 hover:bg-gray-100 hover:text-black/90">
-        <Settings />
+        <Settings strokeWidth={1.5} />
       </PopoverTrigger>
       <PopoverContent align="end" className="flex flex-col gap-3 ml-3 mb-3">
         <div className="grid grid-cols-[auto,1fr,auto] items-center gap-3">

@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn, formatUrl } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { FC, HTMLAttributes } from 'react'
@@ -36,7 +36,7 @@ const BreadcrumbHeader: FC<BreadcrumbHeaderProps> = ({ className }) => {
                     {segment}
                   </Link>
                 ) : (
-                  <span className="text-black">{segment}</span>
+                  <span className="text-black">{formatUrl(segment)}</span>
                 )}
               </li>
             )

@@ -1,9 +1,10 @@
+import { DataTable } from '@/components/data-table/data-table'
+import { LoadingTable } from '@/components/data-table/loading-table'
 import PageLayout from '@/components/layout/page-layout'
 import { columns as cols } from '@/components/queries/columns'
-import { DataTable } from '@/components/queries/data-table'
 import QueriesError from '@/components/queries/error'
-import { LoadingTable } from '@/components/queries/loading-table'
 import { Button } from '@/components/ui/button'
+import { ContentBox } from '@/components/ui/content-box'
 import useQueries from '@/hooks/api/useQueries'
 import { cn } from '@/lib/utils'
 import { QueryListItem } from '@/models/api'
@@ -14,7 +15,7 @@ import { FC, useMemo, useState } from 'react'
 
 const QueriesPage: FC = () => {
   const {
-    queries = [],
+    items = [],
     isLoadingFirst,
     isLoadingMore,
     isReachingEnd,
@@ -47,19 +48,28 @@ const QueriesPage: FC = () => {
   if (error) {
     pageContent = <QueriesError />
   } else if (isLoadingFirst) {
-    pageContent = (
-      <div className="rounded-xl border bg-gray-50 p-6">
-        <LoadingTable />
-      </div>
-    )
+    pageContent = <LoadingTable />
   } else
     pageContent = (
-      <div className="grow overflow-auto flex flex-col gap-4 rounded-xl border bg-gray-50 p-6">
+      <DataTable
+        columns={columns}
+        data={items}
+        isLoadingMore={isLoadingMore}
+        isReachingEnd={isReachingEnd}
+        onRowClick={handleQueryClick}
+        onLoadMore={handleLoadMore}
+      />
+    )
+
+  return (
+    <PageLayout>
+      <ContentBox className="overflow-auto">
         <div className="flex items-center justify-between bg-gray-50 py-0">
           <h1 className="font-bold">Latest Queries</h1>
           <Button
             variant="outline"
             className="bg-gray-50"
+            disabled={isLoadingFirst}
             onClick={handleRefresh}
           >
             <RefreshCw
@@ -69,18 +79,10 @@ const QueriesPage: FC = () => {
             {!isRefreshing ? 'Refresh' : 'Refreshing'}
           </Button>
         </div>
-        <DataTable
-          columns={columns}
-          data={queries}
-          isLoadingMore={isLoadingMore}
-          isReachingEnd={isReachingEnd}
-          onRowClick={handleQueryClick}
-          onLoadMore={handleLoadMore}
-        />
-      </div>
-    )
-
-  return <PageLayout>{pageContent}</PageLayout>
+        {pageContent}
+      </ContentBox>
+    </PageLayout>
+  )
 }
 
 export default withPageAuthRequired(QueriesPage)

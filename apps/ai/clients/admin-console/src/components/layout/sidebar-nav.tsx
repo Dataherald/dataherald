@@ -9,7 +9,7 @@ import UserSettingsPopover from '@/components/user/user-settings-popover'
 import { cn } from '@/lib/utils'
 import { User } from '@/models/api'
 import { useUser } from '@auth0/nextjs-auth0/client'
-import { Cable, Database, LucideIcon, Microscope } from 'lucide-react'
+import { Database, ListChecks, LucideIcon, Microscope } from 'lucide-react'
 
 export interface MenuItem {
   text: string
@@ -31,9 +31,9 @@ const NAV_ITEMS: MenuItems = [
     icon: Database,
   },
   {
-    text: 'Context Stores',
-    href: '/context-stores',
-    icon: Cable,
+    text: 'Golden SQL',
+    href: '/golden-sql',
+    icon: ListChecks,
   },
 ]
 

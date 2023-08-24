@@ -57,6 +57,26 @@ export interface Query {
   evaluation_score: number
   username: string
   last_updated: string
+  updated_by: User
+  verified_date: string
 }
 
 export type Queries = Query[]
+
+export enum EGoldenSqlSource {
+  USER_UPLOAD = 'user_upload',
+  VERIFIED_QUERY = 'verified_query',
+}
+
+export type GoldenSqlSource = 'user_upload' | 'verified_query'
+
+export interface GoldenSqlListItem {
+  id: string
+  question: string
+  sql_query: string
+  created_time: string
+  source: GoldenSqlSource
+  verified_query_id?: string | null
+}
+
+export type GoldenSqlList = GoldenSqlListItem[]

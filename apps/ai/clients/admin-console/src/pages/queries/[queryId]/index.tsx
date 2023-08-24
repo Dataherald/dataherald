@@ -1,8 +1,8 @@
 import PageLayout from '@/components/layout/page-layout'
 import QueryError from '@/components/query/error'
-import QueryLayout from '@/components/query/layout'
 import LoadingQuery from '@/components/query/loading'
 import QueryWorkspace from '@/components/query/workspace'
+import { ContentBox } from '@/components/ui/content-box'
 import { useQuery } from '@/hooks/api/useQuery'
 import useQueryExecution from '@/hooks/api/useQueryExecution'
 import usePatchQuery from '@/hooks/api/useQueryPatch'
@@ -43,25 +43,23 @@ const QueryPage: FC = () => {
   let pageContent: JSX.Element = <></>
 
   if (isLoadingInitialQuery && !query) {
-    pageContent = (
-      <QueryLayout>
-        <LoadingQuery />
-      </QueryLayout>
-    )
+    pageContent = <LoadingQuery />
   } else if (error) {
     pageContent = <QueryError />
   } else if (query)
     pageContent = (
-      <QueryLayout>
-        <QueryWorkspace
-          query={query as Query}
-          onExecuteQuery={handleExecuteQuery}
-          onPatchQuery={handlePatchQuery}
-        />
-      </QueryLayout>
+      <QueryWorkspace
+        query={query as Query}
+        onExecuteQuery={handleExecuteQuery}
+        onPatchQuery={handlePatchQuery}
+      />
     )
 
-  return <PageLayout>{pageContent}</PageLayout>
+  return (
+    <PageLayout>
+      <ContentBox>{pageContent}</ContentBox>
+    </PageLayout>
+  )
 }
 
 export default withPageAuthRequired(QueryPage)

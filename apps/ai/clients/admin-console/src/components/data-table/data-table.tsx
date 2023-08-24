@@ -1,4 +1,4 @@
-import { LoadingTableRows } from '@/components/queries/loading-rows'
+import { LoadingTableRows } from '@/components/data-table/loading-rows'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { cn } from '@/lib/utils'
 import {
   ColumnDef,
   flexRender,
@@ -20,7 +21,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[]
   isLoadingMore: boolean
   isReachingEnd: boolean
-  onRowClick: (row: TData) => void
+  onRowClick?: (row: TData) => void
   onLoadMore: () => void
 }
 
@@ -67,8 +68,11 @@ export function DataTable<TData, TValue>({
             <TableRow
               key={row.id}
               data-state={row.getIsSelected() && 'selected'}
-              className="hover:bg-gray-100 cursor-pointer"
-              onClick={() => onRowClick(row.original)}
+              className={cn(
+                'hover:bg-gray-100 border-b-0 first:border-t-0 border-t',
+                onRowClick ? 'cursor-pointer' : '',
+              )}
+              onClick={() => onRowClick && onRowClick(row.original)}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
@@ -78,16 +82,19 @@ export function DataTable<TData, TValue>({
             </TableRow>
           ))
         ) : (
-          <TableRow className="border-none">
+          <TableRow className="border-none hover:bg-gray-50">
             <TableCell colSpan={columns.length} className="h-24 text-center">
               No results.
             </TableCell>
           </TableRow>
         )}
         {isLoadingMore && <LoadingTableRows columnLength={columns.length} />}
-        {!isLoadingMore && (
+        {table.getRowModel().rows?.length > 0 && !isLoadingMore && (
           <TableRow className="border-none hover:bg-gray-50">
-            <TableCell colSpan={columns.length} className="pb-8 text-center">
+            <TableCell
+              colSpan={columns.length}
+              className="p-0 pt-2 text-center"
+            >
               {!isReachingEnd ? (
                 <Button
                   variant="outline"
@@ -97,7 +104,7 @@ export function DataTable<TData, TValue>({
                   Load More
                 </Button>
               ) : (
-                'No previous queries'
+                <div className="p-4">No previous queries</div>
               )}
             </TableCell>
           </TableRow>

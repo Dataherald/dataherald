@@ -48,6 +48,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     status,
     ai_process,
     last_updated,
+    updated_by,
   } = query
 
   const questionDate: Date = new Date(question_date)
@@ -221,7 +222,10 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
               <QueryProcess processSteps={ai_process} />
             </TabsContent>
           </Tabs>
-          <QueryLastUpdated date={lastUpdatedDate} />
+          <QueryLastUpdated
+            responsible={updated_by?.name as string}
+            date={lastUpdatedDate}
+          />
         </div>
         {loadingQueryResults ? (
           <div className="shrink-0 h-60">
