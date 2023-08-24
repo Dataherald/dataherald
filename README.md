@@ -153,9 +153,50 @@ We currently support connections to Postgres, BigQuery, Databricks and Snowflake
 
 #### Connecting through the API
 
-You can define a DB connection through a call to the following API endpoint `/api/v1/database`. For example
+You can define a DB connection through a call to the following API endpoint `/api/v1/database`. For example 
 
-To generate the `connection_uri` param follow the next examples per every data warehouse that we support:
+Example 1. Without a SSH connection
+```
+curl -X 'POST' \
+  '<host>/api/v1/database' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "db_alias": "my_db_alias_identifier",
+  "use_ssh": false,
+  "connection_uri": "sqlite:///mydb.db"
+}'
+```
+
+Example 2. With a SSH connection
+```
+curl -X 'POST' \
+  'http://localhost/api/v1/database' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "db_alias": "my_db_alias_identifier",
+  "use_ssh": true,
+  "ssh_settings": {
+    "db_name": "db_name",
+    "host": "string",
+    "username": "string",
+    "password": "string",
+    "remote_host": "string",
+    "remote_db_name": "string",
+    "remote_db_password": "string",
+    "private_key_path": "string",
+    "private_key_password": "string",
+    "db_driver": "string"
+  }
+}'
+```
+If you need to set up an SSH connection to connect to your DB you need to fill out all the ssh_settings fields
+
+By default, DB credentials are stored in `database_connection` collection in MongoDB. Connection URI information is encrypted using the ENCRYPT_KEY you provided as an environment variable
+
+##### Connecting to supported Data warehouses
+You can generate the `connection_uri` parameter in the API call for each of the supported warehouses by using the steps outlined below.
 
 **Postgres**
 Uri structure:
@@ -203,45 +244,7 @@ Example:
 "connection_uri": bigquery://v2-real-estate/K2?credentials_path=./private_credentials/my-db-123456acbd.json
 ```
 
-Example 1. Without a SSH connection
-```
-curl -X 'POST' \
-  '<host>/api/v1/database' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "db_alias": "my_db_alias_identifier",
-  "use_ssh": false,
-  "connection_uri": "sqlite:///mydb.db"
-}'
-```
 
-Example 2. With a SSH connection
-```
-curl -X 'POST' \
-  'http://localhost/api/v1/database' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "db_alias": "my_db_alias_identifier",
-  "use_ssh": true,
-  "ssh_settings": {
-    "db_name": "db_name",
-    "host": "string",
-    "username": "string",
-    "password": "string",
-    "remote_host": "string",
-    "remote_db_name": "string",
-    "remote_db_password": "string",
-    "private_key_path": "string",
-    "private_key_password": "string",
-    "db_driver": "string"
-  }
-}'
-```
-With a SSH connection fill out all the ssh_settings fields
-
-By default, DB credentials are stored in `database_connection` collection in MongoDB. Connection URI information is encrypted using the ENCRYPT_KEY you provided as an environment variable
 
 ### Adding Context
 Once you have connected to the data warehouse, you should add context to the engine to help improve the accuracy of the generated SQL. While this step is optional, it is necessary for the tool to generate accurate SQL. Context can currently be added in one of three ways:
