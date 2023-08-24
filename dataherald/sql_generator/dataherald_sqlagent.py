@@ -173,7 +173,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
             run_result = self.db.run_sql(query)[0]
         except SQLAlchemyError as e:
             """Format the error message"""
-            run_result =  f"Error: {e}"
+            run_result = f"Error: {e}"
         return run_result
 
     async def _arun(

@@ -91,13 +91,27 @@ class SQLDatabase(LangchainSQLDatabase):
 
     @classmethod
     def parser_to_filter_commands(cls, command: str) -> str:
-        sensitive_keywords = ['DROP', 'DELETE', 'UPDATE', 'INSERT', 'GRANT', 'REVOKE', 'ALTER', 'TRUNCATE','MERGE','EXECUTE']
-        pattern = r'\b(?:' + '|'.join(re.escape(word) for word in sensitive_keywords) + r')\b'
+        sensitive_keywords = [
+            "DROP",
+            "DELETE",
+            "UPDATE",
+            "INSERT",
+            "GRANT",
+            "REVOKE",
+            "ALTER",
+            "TRUNCATE",
+            "MERGE",
+            "EXECUTE",
+        ]
+        pattern = (
+            r"\b(?:" + "|".join(re.escape(word) for word in sensitive_keywords) + r")\b"
+        )
         match = re.search(pattern, command, re.IGNORECASE)
         if match:
-            raise Exception(f"Sensitive SQL keyword '{match.group()}' detected in the query.")
+            raise Exception(
+                f"Sensitive SQL keyword '{match.group()}' detected in the query."
+            )
         return command
-
 
     def run_sql(self, command: str) -> tuple[str, dict]:
         """Execute a SQL statement and return a string representing the results.

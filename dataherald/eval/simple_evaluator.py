@@ -103,7 +103,7 @@ class SimpleEvaluator(Evaluator):
             run_result = database.run_sql(sql)[0]
         except SQLAlchemyError as e:
             """Format the error message"""
-            run_result =  f"Error: {e}"
+            run_result = f"Error: {e}"
         if run_result == "[]" or "Error:" in run_result:
             logger.info(
                 f"(Simple evaluator) SQL query: {sql} is not valid. Returning score 0"
