@@ -53,6 +53,8 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: latest
         run: |
+          git submodule init
+          git submodule update
           cd dataherald
           ls
           echo building dockerfile
