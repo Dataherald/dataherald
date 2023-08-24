@@ -132,5 +132,5 @@ class Authorize:
             item = MongoDB.find_by_object_id(collection, ObjectId(id))
         if not item:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-        if org_id != str(item.organization_id):
+        if org_id != str(item["organization_id"]):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
