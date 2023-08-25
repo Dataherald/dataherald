@@ -17,8 +17,8 @@ class DBScannerRepository:
         row = self.storage.find_one(
             DB_COLLECTION, {"db_alias": db_alias, "table_name": table_name}
         )
-        row["id"] = row["_id"]
         if row:
+            row["id"] = row["_id"]
             return TableSchemaDetail(**row)
         return None
 
