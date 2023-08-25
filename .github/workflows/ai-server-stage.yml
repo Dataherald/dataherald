@@ -5,6 +5,8 @@ on:
     paths:
       - .github/workflows/ai-server-stage.yml # this file
       - apps/ai/server/**
+    paths-ignore:
+      - apps/ai/server/dataherald # ignore k2-core changes
     branches:
       - main 
 
