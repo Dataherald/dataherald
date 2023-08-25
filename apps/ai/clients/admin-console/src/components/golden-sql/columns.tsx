@@ -70,7 +70,7 @@ export const getColumns: (actions: {
             href={`queries/${verified_query_id}`}
           >
             <span className="mr-1">{formatKey(row.getValue('source'))}</span>
-            <ExternalLink size={14} strokeWidth={1.5} />
+            <ExternalLink size={14} strokeWidth={2.5} />
           </Link>
         ) : (
           <Badge variant="sky">{formatKey(row.getValue('source'))}</Badge>
