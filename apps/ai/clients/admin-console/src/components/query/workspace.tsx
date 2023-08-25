@@ -99,7 +99,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
         query_status: verifiedStatus,
         sql_query: currentSqlQuery,
       })
-      if (isVerified(status)) {
+      if (isVerified(verifiedStatus)) {
         toast({
           variant: 'success',
           title: 'Saved and Verified',

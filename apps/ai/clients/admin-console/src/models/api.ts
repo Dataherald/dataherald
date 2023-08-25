@@ -64,11 +64,11 @@ export interface Query {
 export type Queries = Query[]
 
 export enum EGoldenSqlSource {
-  USER_UPLOAD = 'user_upload',
-  VERIFIED_QUERY = 'verified_query',
+  USER_UPLOAD = 'USER_UPLOAD',
+  VERIFIED_QUERY = 'VERIFIED_QUERY',
 }
 
-export type GoldenSqlSource = 'user_upload' | 'verified_query'
+export type GoldenSqlSource = 'USER_UPLOAD' | 'VERIFIED_QUERY'
 
 export interface GoldenSqlListItem {
   id: string
