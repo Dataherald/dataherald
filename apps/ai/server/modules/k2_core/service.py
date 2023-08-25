@@ -22,8 +22,18 @@ class K2Service:
         self, question_request: QuestionRequest, organization: Organization
     ) -> NLQueryResponse:
         path = "/question"
-        slack_mention_pattern = r"<@(.*?)>"
-        question_string = re.sub(slack_mention_pattern, "", question_request.question)
+        slack_user_mention_pattern = r"<@(.*?)>"
+        slack_team_mention_pattern = r"<!(.*?)>"
+        slack_channel_mention_pattern = r"<#(.*?)>"
+        question_string = re.sub(
+            slack_channel_mention_pattern,
+            "",
+            re.sub(
+                slack_team_mention_pattern,
+                "",
+                re.sub(slack_user_mention_pattern, "", question_request.question),
+            ),
+        )
 
         data = {"question": question_string, "db_alias": organization.db_alias}
 
