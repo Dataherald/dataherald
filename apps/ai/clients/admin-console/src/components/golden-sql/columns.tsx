@@ -14,7 +14,7 @@ import { formatKey } from '@/lib/utils'
 import { EGoldenSqlSource, GoldenSqlListItem } from '@/models/api'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
-import { Trash2 } from 'lucide-react'
+import { ExternalLink, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
 export const getColumns: (actions: {
@@ -69,7 +69,8 @@ export const getColumns: (actions: {
             className={badgeVariants({ variant: 'success' })}
             href={`queries/${verified_query_id}`}
           >
-            {formatKey(row.getValue('source'))}
+            <span className="mr-1">{formatKey(row.getValue('source'))}</span>
+            <ExternalLink size={14} strokeWidth={1.5} />
           </Link>
         ) : (
           <Badge variant="sky">{formatKey(row.getValue('source'))}</Badge>
