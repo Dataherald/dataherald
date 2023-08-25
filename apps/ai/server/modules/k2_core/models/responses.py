@@ -16,6 +16,5 @@ class NLQueryResponse(BaseModel):
     exec_time: float | None = None
     total_tokens: int | None = None
     total_cost: float | None = None
-    golden_record: bool = False
     confidence_score: float | None = None
     error_message: str | None

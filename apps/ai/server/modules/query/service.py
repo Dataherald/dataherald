@@ -71,10 +71,10 @@ class QueryService:
                     nl_response=query_response_dict[qrr.query_response_id].nl_response,
                     question_date=qrr.question_date,
                     status=self._get_query_status(
+                        qrr.query_response_id,
                         query_response_dict[
                             qrr.query_response_id
                         ].sql_generation_status,
-                        query_response_dict[qrr.query_response_id].golden_record,
                     ),
                     evaluation_score=query_response_dict[
                         qrr.query_response_id
@@ -173,17 +173,18 @@ class QueryService:
             question_date=response_ref.question_date,
             last_updated=response_ref.last_updated,
             status=self._get_query_status(
-                query_response.sql_generation_status, query_response.golden_record
+                query_id, query_response.sql_generation_status
             ),
             evaluation_score=query_response.confidence_score * 100,
             sql_error_message=query_response.error_message,
         )
 
     def _get_query_status(
-        self, sql_generation_status: SQLGenerationStatus, golden_record: bool
+        self, query_id, sql_generation_status: SQLGenerationStatus
     ) -> QueryStatus:
         status = QueryStatus.NOT_VERIFIED
-        if sql_generation_status == SQLGenerationStatus.valid and golden_record:
+        golden_sql = self.golden_sql_service.get_verified_golden_sql_ref(query_id)
+        if sql_generation_status == SQLGenerationStatus.valid and golden_sql:
             status = QueryStatus.VERIFIED
         elif sql_generation_status in {
             SQLGenerationStatus.invalid,

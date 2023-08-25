@@ -37,13 +37,14 @@ class K2Service:
 
         data = {"question": question_string, "db_alias": organization.db_alias}
 
-        response: NLQueryResponse = await self._k2_post_request(path, json=data)
+        response = await self._k2_post_request(path, json=data)
         # adds document that links user info to query response
-
+        query_response = NLQueryResponse(**response)
+        query_response.id = response["id"]
         self.repo.record_response_pointer(
             response["id"], question_request.user, ObjectId(organization.id)
         )
-        return response
+        return query_response
 
     async def heartbeat(self):
         path = "/heartbeat"
