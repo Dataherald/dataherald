@@ -214,7 +214,10 @@ class FastAPI(API):
             except SQLInjectionError as e:
                 raise HTTPException(status_code=404, detail=str(e)) from e
             nl_query_response.confidence_score = confidence_score
-            generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
+            try:
+                generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
+            except SQLInjectionError as e:
+                raise HTTPException(status_code=404, detail=str(e)) from e
             nl_query_response = generates_nl_answer.execute(nl_query_response)
             nl_query_response_repository.update(nl_query_response)
         return json.loads(json_util.dumps(nl_query_response))
@@ -226,7 +229,10 @@ class FastAPI(API):
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
         nl_query_response = nl_query_response_repository.find_by_id(query_id)
         nl_query_response.sql_query = query.sql_query
-        generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
+        try:
+            generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
+        except SQLInjectionError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
         nl_query_response = generates_nl_answer.execute(nl_query_response)
         return json.loads(json_util.dumps(nl_query_response))
 
