@@ -149,6 +149,12 @@ class FastAPI(API):
     ) -> bool:
         scanner_repository = DBScannerRepository(self.storage)
         table = scanner_repository.get_table_info(db_name, table_name)
+
+        if not table:
+            raise HTTPException(
+                status_code=404, detail="Scanned database table not found"
+            )
+
         if table_description_request.description:
             table.description = table_description_request.description
         if table_description_request.columns:
