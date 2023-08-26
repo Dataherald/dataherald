@@ -1,6 +1,6 @@
 from datetime import date
 
-from dataherald.sql_database.base import SQLDatabase
+from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.types import NLQueryResponse, SQLQueryResult
 
 
@@ -14,6 +14,7 @@ def create_sql_query_status(
         response.error_message = None
     else:
         try:
+            query = db.parser_to_filter_commands(query)
             execution = db.engine.execute(query)
             columns = execution.keys()
             result = execution.fetchall()
@@ -35,6 +36,10 @@ def create_sql_query_status(
                 response.sql_query_result = SQLQueryResult(columns=columns, rows=rows)
             response.sql_generation_status = "VALID"
             response.error_message = None
+        except SQLInjectionError as e:
+            raise SQLInjectionError(
+                "Sensitive SQL keyword detected in the query."
+            ) from e
         except Exception as e:
             response.sql_generation_status = "INVALID"
             response.sql_query_result = None
