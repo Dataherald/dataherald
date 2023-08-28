@@ -288,7 +288,7 @@ Example:
 
 
 ### Adding Context
-Once you have connected to the data warehouse, you should add context to the engine to help improve the accuracy of the generated SQL. While this step is optional, it is necessary for the tool to generate accurate SQL. Context can currently be added in one of three ways:
+Once you have connected to the data warehouse, you should add context to the engine to help improve the accuracy of the generated SQL. While only the Database scan part is required to start generating SQL, adding verified SQL and string descriptions are also important for the tool to generate accurate SQL. Context can currently be added in one of three ways:
 
 1. Scanning the Database tables and columns
 2. Adding verified SQL (golden SQL)
@@ -308,6 +308,8 @@ curl -X 'POST' \
     "table_name": "table_name"
   }'
 ```
+
+Since the endpoint identifies low cardinality columns (and their values) it can take time to complete. Therefore while it is possible to trigger a scan on the entire DB by not specifying the `table_name`, we recommend against it for large databases. 
 
 #### Get a scanned db
 Once a database was scanned you can use this endpoint to retrieve the tables names and columns

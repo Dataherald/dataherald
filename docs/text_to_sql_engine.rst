@@ -1,14 +1,14 @@
 Text-to-SQL Engine
 ==========================
 
-The Text-to-SQL agent is a core component which translated the Natural Language question received through the ``question`` endpoint to SQL. The implementation can leverage business and data logic stored in the Context Store component 
+The Text-to-SQL agent is a core component which translates the Natural Language question received through the ``/question`` endpoint to SQL. The implementation can leverage business and data logic stored in the Context Store component 
 to generate accurate SQL given the DB schema. Currently the following NL-to-SQL implementations are included in the codebase:
 
 - ``Langchain SQL Agent`` - A wrapper around the `Langchain SQLAgent <https://python.langchain.com/docs/integrations/toolkits/sql_database>`_ 
 - ``Langchain SQL Chain`` - A wrapper around the `Langchain SQLChain <https://python.langchain.com/docs/integrations/tools/sqlite>`_
 - ``LlamaIndex SQL Generator`` - A wrapper around the `LlamaIndex SQL Generator <https://gpt-index.readthedocs.io/en/v0.6.16/guides/tutorials/sql_guide.html>`_
 - ``Dataherald SQL Agent`` - Our in-house Natural Language-to-SQL agent which uses uses in-context learning 
-
+ 
 
 Dataherald SQL Agent
 ---------------------------------
