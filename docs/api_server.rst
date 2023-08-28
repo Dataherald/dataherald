@@ -1,7 +1,7 @@
 API Module
 =================
 
-The API module implements the controller that orchestrates modules calls once API calls are made and also sets up the server that exposes the APIs. Currently, FastAPI is the only supported API server implementation.
+The API module implements the controller logic that orchestrates module calls once API calls are made and also sets up the server that exposes the APIs. Currently, FastAPI is the only supported API server implementation.
 
 Abstract API Class
 -------------------
