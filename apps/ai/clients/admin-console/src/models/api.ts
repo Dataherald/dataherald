@@ -80,3 +80,13 @@ export interface GoldenSqlListItem {
 }
 
 export type GoldenSqlList = GoldenSqlListItem[]
+
+export interface Database {
+  db_alias: string
+  tables: {
+    name: string
+    columns: string[]
+  }[]
+}
+
+export type Databases = Database[]
