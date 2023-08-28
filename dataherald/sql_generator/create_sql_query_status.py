@@ -1,5 +1,7 @@
 from datetime import date
 
+from sqlalchemy import text
+
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.types import NLQueryResponse, SQLQueryResult
 
@@ -15,7 +17,8 @@ def create_sql_query_status(
     else:
         try:
             query = db.parser_to_filter_commands(query)
-            execution = db.engine.execute(query)
+            with db._engine.connect() as connection:
+                execution = connection.execute(text(query))
             columns = execution.keys()
             result = execution.fetchall()
             if len(result) == 0:
