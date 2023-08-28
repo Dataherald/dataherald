@@ -2,6 +2,7 @@
 import logging
 import re
 from typing import Any, List
+from urllib.parse import unquote
 
 from langchain.sql_database import SQLDatabase as LangchainSQLDatabase
 from sqlalchemy import MetaData, create_engine, text
@@ -70,7 +71,7 @@ class SQLDatabase(LangchainSQLDatabase):
             engine = cls.from_uri_ssh(database_info)
             DBConnections.add(database_info.alias, engine)
             return engine
-        engine = cls.from_uri(fernet_encrypt.decrypt(database_info.uri))
+        engine = cls.from_uri(unquote(fernet_encrypt.decrypt(database_info.uri)))
         DBConnections.add(database_info.alias, engine)
         return engine
 
