@@ -84,6 +84,7 @@ export type GoldenSqlList = GoldenSqlListItem[]
 export interface Database {
   db_alias: string
   tables: {
+    id?: string
     name: string
     columns: string[]
   }[]

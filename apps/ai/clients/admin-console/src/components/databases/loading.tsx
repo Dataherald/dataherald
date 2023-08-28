@@ -19,7 +19,7 @@ const TreeNestedItemSkeleton: FC<{ children?: ReactNode }> = ({ children }) => (
   </div>
 )
 
-const LoadingDatabase: FC = () => (
+const LoadingDatabases: FC = () => (
   <>
     <Skeleton className="w-44 h-6" />
     <div className="space-y-5">
@@ -33,4 +33,4 @@ const LoadingDatabase: FC = () => (
   </>
 )
 
-export default LoadingDatabase
+export default LoadingDatabases

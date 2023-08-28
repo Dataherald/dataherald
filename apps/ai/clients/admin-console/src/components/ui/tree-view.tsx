@@ -8,19 +8,15 @@ export interface TreeNode {
   children?: TreeNode[]
 }
 
-type TreeProps = HTMLAttributes<HTMLDivElement> & {
+interface TreeProps {
   node: TreeNode
 }
 
-const TreeNodeComponent: FC<TreeProps> = ({
-  node,
-  className,
-  ...props
-}: TreeProps) => {
+const TreeNodeComponent: FC<TreeProps> = ({ node }: TreeProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div className={cn('pl-7', className)} {...props}>
+    <div className="pl-7">
       <button
         className="flex items-center cursor-pointer hover:bg-gray-200 p-2 rounded w-full"
         onClick={() => setIsOpen(!isOpen)}
@@ -45,14 +41,19 @@ const TreeNodeComponent: FC<TreeProps> = ({
 }
 
 interface TreeViewProps {
-  data: TreeNode
+  data: TreeNode[]
 }
 
 const TreeView: FC<TreeViewProps & HTMLAttributes<HTMLDivElement>> = ({
   data,
+  className,
   ...props
-}) => {
-  return <TreeNodeComponent node={data} {...props} />
-}
+}) => (
+  <div className={cn('flex flex-col gap-1', className)} {...props}>
+    {data.map((node, idx) => (
+      <TreeNodeComponent key={idx} node={node} />
+    ))}
+  </div>
+)
 
 export { TreeView }
