@@ -1,10 +1,10 @@
-Evaluation Component
+Evaluation Module
 ====================
 
-The Evaluation component is called as a post-processing step after SQL query generation. It assigns a confidence level between 0 and 1 to the generated SQL query. 
+The Evaluation Module is called as a post-processing step after SQL query generation. It assigns a confidence level between 0 and 1 to the generated SQL query. 
 Different methods can be used to assign this score using LLM Confidence and Uncertainty values, topics which are outside the scope of this documentation.
 
-There are currently two implementations of the Evaluation component in the repo: the ``EvaluationAgent`` and the ``SimpleEvaluator``.
+There are currently two implementations of the Evaluation Module in the repo: the ``EvaluationAgent`` and the ``SimpleEvaluator``.
 
 
 
