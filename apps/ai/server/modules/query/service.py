@@ -83,6 +83,7 @@ class QueryService:
                         qrr.query_response_id
                     ].confidence_score
                     * 100,
+                    display_id=qrr.display_id,
                 )
                 for qrr in query_response_refs
             ]
@@ -186,6 +187,7 @@ class QueryService:
             ),
             evaluation_score=query_response.confidence_score * 100,
             sql_error_message=query_response.error_message,
+            display_id=response_ref.display_id,
         )
 
     def _get_query_status(
