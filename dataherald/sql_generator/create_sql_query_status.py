@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 
 from sqlalchemy import text
 
@@ -33,6 +34,10 @@ def create_sql_query_status(
                             type(value) is date
                         ):  # Check if the value is an instance of datetime.date
                             modified_row[key] = str(value)
+                        elif (
+                            type(value) is Decimal
+                        ):  # Check if the value is an instance of decimal.Decimal
+                            modified_row[key] = float(value)
                         else:
                             modified_row[key] = value
                     rows.append(modified_row)

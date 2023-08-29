@@ -6,7 +6,6 @@ from typing import List
 from bson import json_util
 from fastapi import HTTPException
 from overrides import override
-from decimal import Decimal
 
 from dataherald.api import API
 from dataherald.api.types import Query
@@ -119,15 +118,6 @@ class FastAPI(API):
             raise HTTPException(status_code=404, detail=str(e)) from e
         generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
-
-        if hasattr(generated_answer.sql_query_result, 'columns'):
-            for col in generated_answer.sql_query_result.columns:
-                if hasattr(generated_answer.sql_query_result, 'rows'):
-                    for row in generated_answer.sql_query_result.rows:
-                        if isinstance(row[col], Decimal):
-                            # Explicitly convert to float to ensure serialization
-                            row[col] = float(row[col])
-
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
         nl_query_response = nl_query_response_repository.insert(generated_answer)
         return json.loads(json_util.dumps(nl_query_response))
