@@ -14,24 +14,28 @@ interface TreeProps {
 
 const TreeNodeComponent: FC<TreeProps> = ({ node }: TreeProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  const nodeHasChildren = !!node.children?.length
 
   return (
     <div className="pl-7">
       <button
-        className="flex items-center cursor-pointer hover:bg-gray-200 p-2 rounded w-full"
+        className={cn(
+          'flex items-center p-2 rounded w-full hover:bg-gray-100',
+          nodeHasChildren ? 'cursor-pointer' : 'cursor-default',
+        )}
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
       >
         <div className="w-4">
-          {node.children &&
+          {nodeHasChildren &&
             (isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
         </div>
-        <node.icon size={20} className="mx-2" />
+        <node.icon size={20} strokeWidth={1.5} className="mx-2" />
         <span>{node.name}</span>
       </button>
-      {isOpen && node.children && (
+      {isOpen && nodeHasChildren && (
         <div className="transition-all duration-300">
-          {node.children.map((childNode, idx) => (
+          {node.children?.map((childNode, idx) => (
             <TreeNodeComponent key={idx} node={childNode} />
           ))}
         </div>

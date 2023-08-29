@@ -18,14 +18,14 @@ const DatabasesPage: FC = () => {
       icon: DatabaseIcon,
       children: [
         {
-          name: 'tables',
+          name: 'Tables',
           icon: Table2,
           children: database.tables.map((table) => ({
             name: table.name,
             icon: Table2,
             children: [
               {
-                name: 'columns',
+                name: 'Columns',
                 icon: Columns,
                 children: table.columns.map((column) => ({
                   name: column,
