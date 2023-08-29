@@ -13,7 +13,7 @@ const QueryLastUpdated: FC<LastUpdatedProps> = ({ responsible, date }) => (
     className="flex flex-row-reverse items-center gap-1 text-gray-400 text-sm"
   >
     Last updated at {format(date, 'yyyy/dd/MM HH:mm a')}{' '}
-    {responsible && `by ${(<span className="capitalize">{responsible}</span>)}`}
+    {responsible && `by ${responsible}`}
     <RefreshCw size={14} />
   </div>
 )
