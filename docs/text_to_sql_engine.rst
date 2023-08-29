@@ -1,14 +1,14 @@
 Text-to-SQL Engine
 ==========================
 
-The Text-to-SQL agent is a core component which translated the Natural Language question received through the ``question`` endpoint to SQL. The implementation can leverage business and data logic stored in the Context Store component 
+The Text-to-SQL agent is a core module which translates the Natural Language question received through the ``/question`` endpoint to SQL. The implementation can leverage business and data logic stored in the Context Store module. 
 to generate accurate SQL given the DB schema. Currently the following NL-to-SQL implementations are included in the codebase:
 
 - ``Langchain SQL Agent`` - A wrapper around the `Langchain SQLAgent <https://python.langchain.com/docs/integrations/toolkits/sql_database>`_ 
 - ``Langchain SQL Chain`` - A wrapper around the `Langchain SQLChain <https://python.langchain.com/docs/integrations/tools/sqlite>`_
 - ``LlamaIndex SQL Generator`` - A wrapper around the `LlamaIndex SQL Generator <https://gpt-index.readthedocs.io/en/v0.6.16/guides/tutorials/sql_guide.html>`_
 - ``Dataherald SQL Agent`` - Our in-house Natural Language-to-SQL agent which uses uses in-context learning 
-
+ 
 
 Dataherald SQL Agent
 ---------------------------------
@@ -32,19 +32,44 @@ The ``dataherald_sqlagent`` is an agent that outperforms the Langchain SQL Agent
 
 
 
+Abstract SQLGenerator Class
+---------------------------
+
+Base class that all SQL generation classes inherit from.
+
 :class:`SQLGenerator`
 ^^^^^^^^^^^^^^^^^^^^^
 
-All implementations of the NL-to-SQL module must inherit and implement the abstract `SQLGenerator` class. There are only two required methods that need to be implemented:
-
+This base class defines the common structure for SQL generation classes.
 
 .. method:: create_sql_query_status(db, query, response)
+   :noindex:
 
    Creates a SQL query status using provided parameters.
 
+   :param db: The SQL database instance.
+   :type db: SQLDatabase
+   :param query: The SQL query.
+   :type query: str
+   :param response: The NLQueryResponse instance.
+   :type response: NLQueryResponse
+   :return: The updated NLQueryResponse instance with the SQL query status.
+   :rtype: NLQueryResponse
+
 .. method:: generate_response(user_question, database_connection, context=None)
+   :noindex:
 
    Generates a response to a user question based on the given user question, database connection, and optional context.
+
+   :param user_question: The user's natural language question.
+   :type user_question: NLQuery
+   :param database_connection: The database connection information.
+   :type database_connection: DatabaseConnection
+   :param context: (Optional) Additional context information.
+   :type context: List[dict], optional
+   :return: The NLQueryResponse containing the generated response.
+   :rtype: NLQueryResponse
+
 
 
 

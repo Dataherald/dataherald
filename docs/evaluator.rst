@@ -1,7 +1,13 @@
-Evaluation Component
+Evaluation Module
 ====================
 
-The Evaluation component is a critical post-processing step that follows SQL query generation. It provides insights into the confidence level of the agent regarding the generated query. This module aims to produce a confidence score within the range of 0 to 1, indicating the level of certainty associated with the generated SQL query. The component takes the response from the model and the question as its parameters.
+The Evaluation Module is called as a post-processing step after SQL query generation. It assigns a confidence level between 0 and 1 to the generated SQL query. 
+Different methods can be used to assign this score using LLM Confidence and Uncertainty values, topics which are outside the scope of this documentation.
+
+There are currently two implementations of the Evaluation Module in the repo: the ``EvaluationAgent`` and the ``SimpleEvaluator``.
+
+
+
 
 EvaluationAgent
 -------------------------
@@ -27,11 +33,13 @@ The "SimpleEvaluator" method is implemented using LLMs and is designed to be muc
 
 This method is preferred when speed is crucial, as it doesn't involve tool interactions.
 
-Both methods aim to generate evaluation scores that reflect the quality and correctness of the generated SQL queries, helping to assess the reliability of the generated responses.
 
 
-Methods
--------
+
+Abstract Evaluator Class
+-----------------------------
+All implementations of the Evaluation component must inherit from the ``Evaluator`` abstract class and implement the following methods:
+
 
 .. py:class:: Evaluation
 

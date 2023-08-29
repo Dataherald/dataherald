@@ -18,7 +18,7 @@ Dataherald is built on a modular architecture and provides standaridized, extens
 Introduction
 ------------
 
-The system is built on the following components, and you can implement your own and replace the default implementation from the ``.env`` file. In many instances the codebase already has multiple implementations which can be selected. We encourage the community to build their own modules and submit them for inclusion in the codebase.  
+The system is built on the following modules, and you can implement your own and replace the default implementation from the ``.env`` file. In many instances the codebase already has multiple implementations which can be selected. We encourage the community to build their own modules and submit them for inclusion in the codebase.  
 
 System Modules
 --------------
