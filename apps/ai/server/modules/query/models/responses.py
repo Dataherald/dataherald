@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 from modules.k2_core.models.entities import SQLQueryResult
 from modules.query.models.entities import QueryStatus
+from modules.user.models.entities import User
 
 
 class QueryResponse(BaseModel):
@@ -14,6 +15,7 @@ class QueryResponse(BaseModel):
     sql_query: str
     ai_process: list[str]
     last_updated: str
+    updated_by: User | None
     status: QueryStatus | None
     evaluation_score: float | None
     sql_error_message: str | None

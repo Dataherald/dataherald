@@ -15,6 +15,7 @@ org_service = OrganizationService()
 query_service = QueryService()
 
 test_user = User(
+    _id=ObjectId(b"lao-gan-maaa"),
     email="test@dataherald.com",
     email_verified=True,
     name="Test User",
@@ -108,11 +109,11 @@ class Authorize:
 
     def user_and_get_org_id(self, payload) -> ObjectId:
         user = self.user(payload)
-        return self._get_organization_id_with_user(user)
+        return ObjectId(self.get_organization_with_user(user).id)
 
-    def _get_organization_id_with_user(self, user: User) -> ObjectId:
+    def get_organization_with_user(self, user: User) -> Organization:
         if not auth_settings.auth_enabled:
-            return test_organization.id
+            return test_organization
 
         organization = org_service.get_organization(str(user.organization_id))
         if not organization:
@@ -120,7 +121,7 @@ class Authorize:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User does not belong to an Organization",
             )
-        return ObjectId(organization.id)
+        return organization
 
     def _item_in_organization(
         self, collection: str, id: str, org_id: str, key: str = None

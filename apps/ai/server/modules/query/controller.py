@@ -5,7 +5,7 @@ from modules.organization.service import OrganizationService
 from modules.query.models.requests import QueryEditRequest, SQLQueryRequest
 from modules.query.models.responses import QueryListResponse, QueryResponse
 from modules.query.service import QueryService
-from utils.auth import Authorize, VerifyToken, test_organization
+from utils.auth import Authorize, VerifyToken
 
 router = APIRouter(
     prefix="/query",
@@ -47,13 +47,11 @@ async def patch_query(
     query_request: QueryEditRequest,
     token: str = Depends(token_auth_scheme),
 ) -> QueryResponse:
-    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
-    authorize.query_in_organization(query_id, str(org_id))
-    if org_id == test_organization.id:
-        organization = test_organization
-    else:
-        organization = org_service.get_organization(org_id)
-    return await query_service.patch_query(query_id, query_request, organization)
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    organization = authorize.get_organization_with_user(user)
+    authorize.query_in_organization(query_id, str(organization.id))
+
+    return await query_service.patch_query(query_id, query_request, organization, user)
 
 
 @router.post("/{query_id}/execution")

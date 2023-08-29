@@ -15,6 +15,8 @@ from modules.query.models.entities import QueryRef, QueryStatus, Question
 from modules.query.models.requests import QueryEditRequest, SQLQueryRequest
 from modules.query.models.responses import QueryListResponse, QueryResponse
 from modules.query.repository import QueryRepository
+from modules.user.models.entities import User
+from modules.user.service import UserService
 
 
 class QueryService:
@@ -22,6 +24,7 @@ class QueryService:
         self.repo = QueryRepository()
         self.golden_sql_service = GoldenSQLService()
         self.org_service = OrganizationService()
+        self.user_service = UserService()
 
     def get_query(self, query_id: str):
         object_id = ObjectId(query_id)
@@ -87,13 +90,16 @@ class QueryService:
         return []
 
     async def patch_query(
-        self, query_id: str, query_request: QueryEditRequest, organization: Organization
+        self,
+        query_id: str,
+        query_request: QueryEditRequest,
+        organization: Organization,
+        user: User,
     ) -> QueryResponse:
         object_id = ObjectId(query_id)
         is_golden_record = (
             True if query_request.query_status == QueryStatus.VERIFIED else False
         )
-
         # request update query to core
         async with httpx.AsyncClient() as client:
             response = await client.patch(
@@ -128,7 +134,7 @@ class QueryService:
                         "", query_response_id=query_id
                     )
 
-            self.repo.update_last_updated(object_id)
+            self.repo.update_last_updated(object_id, user.id)
             response_ref = self.repo.get_query_response_ref(object_id)
             new_query_response = NLQueryResponse(**response.json())
             question = self.repo.get_question(new_query_response.nl_question_id)
@@ -172,6 +178,9 @@ class QueryService:
             ai_process=query_response.intermediate_steps,
             question_date=response_ref.question_date,
             last_updated=response_ref.last_updated,
+            updated_by=self.user_service.get_user(str(response_ref.updated_by))
+            if response_ref.updated_by
+            else None,
             status=self._get_query_status(
                 query_id, query_response.sql_generation_status
             ),

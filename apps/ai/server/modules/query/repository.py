@@ -16,8 +16,8 @@ class QueryRepository:
         question = MongoDB.find_by_object_id(QUESTION_COL, query_id)
         return Question(**question) if question else None
 
-    def get_questions(self, object_ids: list[ObjectId]) -> list[Question]:
-        questions = MongoDB.find_by_object_ids(QUESTION_COL, object_ids)
+    def get_questions(self, question_ids: list[ObjectId]) -> list[Question]:
+        questions = MongoDB.find_by_object_ids(QUESTION_COL, question_ids)
         return [Question(**q) for q in questions]
 
     def get_query_response(self, query_id: ObjectId) -> NLQueryResponse:
@@ -25,8 +25,8 @@ class QueryRepository:
         query_response = MongoDB.find_by_object_id(QUERY_RESPONSE_COL, query_id)
         return NLQueryResponse(**query_response) if query_response else None
 
-    def get_query_responses(self, object_ids) -> list[NLQueryResponse]:
-        response_query = {"_id": {"$in": object_ids}}
+    def get_query_responses(self, query_ids: list) -> list[NLQueryResponse]:
+        response_query = {"_id": {"$in": query_ids}}
         query_responses = MongoDB.find(QUERY_RESPONSE_COL, response_query)
         return [NLQueryResponse(**qr) for qr in query_responses]
 
@@ -46,11 +46,11 @@ class QueryRepository:
         )
         return [QueryRef(**qrr) for qrr in query_refs]
 
-    def update_last_updated(self, query_id: ObjectId) -> str:
+    def update_last_updated(self, query_id: ObjectId, user_id: ObjectId) -> str:
         object_id = get_object_id(query_id)
         current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
         return MongoDB.update_one(
             QUERY_RESPONSE_REF_COL,
             {"query_response_id": object_id},
-            {"last_updated": current_utc_time},
+            {"last_updated": current_utc_time, "updated_by": user_id},
         )
