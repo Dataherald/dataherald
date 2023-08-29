@@ -1,12 +1,11 @@
 from datetime import datetime, timezone
 
-import pymongo
 from bson.objectid import ObjectId
 
-from config import GOLDEN_SQL_COL, GOLDEN_SQL_REF_COL
-from database.mongo import MongoDB
+from config import GOLDEN_SQL_COL, GOLDEN_SQL_REF_COL, QUERY_RESPONSE_REF_COL
+from database.mongo import DESCENDING, MongoDB
 from modules.golden_sql.models.entities import GoldenSQL, GoldenSQLRef, GoldenSQLSource
-from utils.misc import get_object_id
+from utils.misc import get_next_display_id, get_object_id
 
 
 class GoldenSQLRepository:
@@ -29,7 +28,7 @@ class GoldenSQLRepository:
     ) -> list[GoldenSQLRef]:
         golden_sql_refs = (
             MongoDB.find(GOLDEN_SQL_REF_COL, {"organization_id": org_id})
-            .sort([(order, pymongo.DESCENDING)])
+            .sort([(order, DESCENDING)])
             .skip(skip)
             .limit(limit)
         )
@@ -46,6 +45,7 @@ class GoldenSQLRepository:
         golden_sql_id: ObjectId,
         org_id: ObjectId,
         source: GoldenSQLSource,
+        display_id: str,
         query_response_id: ObjectId = None,
     ) -> str:
         return MongoDB.insert_one(
@@ -56,6 +56,7 @@ class GoldenSQLRepository:
                 source=source.value,
                 query_response_id=query_response_id,
                 created_time=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+                display_id=display_id,
             ).dict(),
         )
 
@@ -66,3 +67,19 @@ class GoldenSQLRepository:
         return MongoDB.delete_one(
             GOLDEN_SQL_REF_COL, {"query_response_id": query_response_id}
         )
+
+    def get_next_display_id(self, org_id: ObjectId) -> str:
+        return get_next_display_id(GOLDEN_SQL_REF_COL, org_id, "GS")
+
+    def get_verified_query_display_id(self, query_response_id: ObjectId) -> str:
+        query_ref = MongoDB.find_one(
+            QUERY_RESPONSE_REF_COL, {"query_response_id": query_response_id}
+        )
+
+        if not query_ref:
+            return None
+
+        if "display_id" not in query_ref:
+            return "QR-00000"
+
+        return query_ref["display_id"]

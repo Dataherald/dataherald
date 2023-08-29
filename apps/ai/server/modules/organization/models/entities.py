@@ -1,10 +1,9 @@
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from modules.organization.models.requests import OrganizationRequest
 
 
-class Organization(BaseModel):
+class Organization(OrganizationRequest):
     id: Any = Field(alias="_id")
-    name: str
-    db_alias: str | None
-    slack_workspace_id: str | None

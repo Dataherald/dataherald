@@ -6,7 +6,7 @@ import QueriesError from '@/components/queries/error'
 import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
 import useQueries from '@/hooks/api/useQueries'
-import { cn } from '@/lib/utils'
+import { buildIdHref, cn } from '@/lib/utils'
 import { QueryListItem } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { RefreshCw } from 'lucide-react'
@@ -29,7 +29,7 @@ const QueriesPage: FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const handleQueryClick = (query: QueryListItem) =>
-    router.push(`/queries/${query.id}`)
+    router.push(buildIdHref('/queries', query.id, query.display_id))
 
   const handleRefresh = async () => {
     setIsRefreshing(true)

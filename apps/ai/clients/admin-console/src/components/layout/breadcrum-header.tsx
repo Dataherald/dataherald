@@ -1,17 +1,26 @@
 import { cn, formatUrl } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useRouter } from 'next/router'
 import { FC, HTMLAttributes } from 'react'
 
 export type BreadcrumbHeaderProps = HTMLAttributes<HTMLHeadingElement>
 
 const BreadcrumbHeader: FC<BreadcrumbHeaderProps> = ({ className }) => {
   const pathname = usePathname()
+  const router = useRouter()
   const pathSegments =
     pathname
       ?.split('/')
       .filter(Boolean)
       .map((segment) => segment.replace('-', ' ')) || []
+  const displayId = router.query.d_id
+
+  if (displayId) {
+    // Assumes the ID is the last segment
+    pathSegments.pop() // Remove the actual ID
+    pathSegments.push(displayId as string) // Add the display ID
+  }
 
   return (
     <header className={cn(className, 'w-full px-6 py-5')}>

@@ -1,10 +1,9 @@
 from datetime import datetime, timezone
 
-import pymongo
 from bson import ObjectId
 
 from config import QUERY_RESPONSE_COL, QUERY_RESPONSE_REF_COL, QUESTION_COL
-from database.mongo import MongoDB
+from database.mongo import DESCENDING, MongoDB
 from modules.k2_core.models.responses import NLQueryResponse
 from modules.query.models.entities import QueryRef, Question
 from utils.misc import get_object_id
@@ -40,7 +39,7 @@ class QueryRepository:
     def get_query_response_refs(self, skip, limit, order, org_id) -> list[QueryRef]:
         query_refs = (
             MongoDB.find(QUERY_RESPONSE_REF_COL, {"organization_id": org_id})
-            .sort([(order, pymongo.DESCENDING)])
+            .sort([(order, DESCENDING)])
             .skip(skip)
             .limit(limit)
         )

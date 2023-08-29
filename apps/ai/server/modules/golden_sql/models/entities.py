@@ -16,6 +16,7 @@ class GoldenSQLRef(BaseModel):
     organization_id: Any
     source: str
     created_time: str
+    display_id: str | None
 
 
 class GoldenSQL(BaseModel):

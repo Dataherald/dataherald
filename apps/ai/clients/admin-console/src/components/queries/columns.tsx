@@ -1,24 +1,18 @@
 import {
-  formatQueryStatus,
+  formatQueryStatusWithScore,
   getDomainStatus,
   getDomainStatusColor,
 } from '@/lib/domain/query-status'
 import { cn } from '@/lib/utils'
 import { QueryListItem } from '@/models/api'
-import { EDomainQueryStatus } from '@/models/domain'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 
 export const columns: ColumnDef<QueryListItem>[] = [
   {
     id: 'id',
-    header: 'Query ID',
-    accessorKey: 'id',
-    cell: ({ row }) => (
-      <div className="truncate max-w-[5rem] 2xl:max-w-none">
-        {row.getValue('id')}
-      </div>
-    ),
+    header: () => <div className="min-w-[70px]">Query ID</div>,
+    accessorKey: 'display_id',
   },
   {
     id: 'username',
@@ -62,9 +56,7 @@ export const columns: ColumnDef<QueryListItem>[] = [
     header: () => <div className="min-w-[185px]">Status</div>,
     accessorFn: ({ status, evaluation_score }) => {
       const domainStatus = getDomainStatus(status, evaluation_score)
-      return `${formatQueryStatus(domainStatus)} ${
-        status !== EDomainQueryStatus.SQL_ERROR ? `(${evaluation_score}%)` : ''
-      }`
+      return formatQueryStatusWithScore(domainStatus, evaluation_score)
     },
     cell: ({ row }) => {
       const query = row.original

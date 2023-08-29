@@ -5,22 +5,6 @@ from modules.query.models.entities import QueryStatus
 from modules.user.models.entities import User
 
 
-class QueryResponse(BaseModel):
-    id: str
-    username: str
-    question: str
-    question_date: str
-    nl_response: str | None
-    sql_query_result: SQLQueryResult | None
-    sql_query: str
-    ai_process: list[str]
-    last_updated: str
-    updated_by: User | None
-    status: QueryStatus | None
-    evaluation_score: float | None
-    sql_error_message: str | None
-
-
 class QueryListResponse(BaseModel):
     id: str
     username: str
@@ -29,3 +13,13 @@ class QueryListResponse(BaseModel):
     nl_response: str | None
     status: QueryStatus | None
     evaluation_score: float | None
+    display_id: str | None
+
+
+class QueryResponse(QueryListResponse):
+    sql_query_result: SQLQueryResult | None
+    sql_query: str
+    ai_process: list[str]
+    last_updated: str
+    updated_by: User | None
+    sql_error_message: str | None

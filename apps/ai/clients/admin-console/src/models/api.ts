@@ -34,6 +34,7 @@ export type QuerySqlResultData = { [columnKey: string]: string | number }
 
 export interface QueryListItem {
   id: string
+  display_id: string
   username: string
   question: string
   question_date: string
@@ -72,11 +73,13 @@ export type GoldenSqlSource = 'USER_UPLOAD' | 'VERIFIED_QUERY'
 
 export interface GoldenSqlListItem {
   id: string
+  display_id: string
   question: string
   sql_query: string
   created_time: string
   source: GoldenSqlSource
   verified_query_id?: string | null
+  verified_query_display_id?: string | null
 }
 
 export type GoldenSqlList = GoldenSqlListItem[]

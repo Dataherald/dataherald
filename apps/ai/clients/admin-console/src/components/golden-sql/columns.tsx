@@ -10,7 +10,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Badge, badgeVariants } from '@/components/ui/badge'
-import { formatKey } from '@/lib/utils'
+import { buildIdHref, formatKey } from '@/lib/utils'
 import { EGoldenSqlSource, GoldenSqlListItem } from '@/models/api'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
@@ -22,13 +22,8 @@ export const getColumns: (actions: {
 }) => ColumnDef<GoldenSqlListItem>[] = ({ deleteAction }) => [
   {
     id: 'id',
-    header: 'ID',
-    accessorKey: 'id',
-    cell: ({ row }) => (
-      <div className="truncate max-w-[5rem] 2xl:max-w-none">
-        {row.getValue('id')}
-      </div>
-    ),
+    header: () => <div className="min-w-[70px]">ID</div>,
+    accessorKey: 'display_id',
   },
   {
     id: 'question',
@@ -62,12 +57,17 @@ export const getColumns: (actions: {
     header: 'Source',
     accessorKey: 'source',
     cell: ({ row }) => {
-      const { source, verified_query_id } = row.original
+      const { source, verified_query_id, verified_query_display_id } =
+        row.original
       const badge =
         source === EGoldenSqlSource.VERIFIED_QUERY ? (
           <Link
             className={badgeVariants({ variant: 'success' })}
-            href={`queries/${verified_query_id}`}
+            href={buildIdHref(
+              '/queries',
+              verified_query_id as string,
+              verified_query_display_id as string,
+            )}
           >
             <span className="mr-1">{formatKey(row.getValue('source'))}</span>
             <ExternalLink size={14} strokeWidth={2.5} />

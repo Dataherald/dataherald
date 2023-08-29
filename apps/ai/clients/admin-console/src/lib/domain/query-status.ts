@@ -49,6 +49,20 @@ export const formatQueryStatus = (
   return ''
 }
 
+export const formatQueryStatusWithScore = (
+  status: DomainQueryStatus | QueryStatus | undefined,
+  evaluation_score: number,
+): string => {
+  const formattedStatus = formatQueryStatus(status)
+  const formattedScore =
+    status === EQueryStatus.VERIFIED
+      ? '(100%)'
+      : status === EQueryStatus.SQL_ERROR
+      ? ''
+      : `(${evaluation_score}%)`
+  return `${formattedStatus} ${formattedScore}`
+}
+
 export const isVerified = (status?: QueryStatus): boolean =>
   EQueryStatus.VERIFIED === status
 

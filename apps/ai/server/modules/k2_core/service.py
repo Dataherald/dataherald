@@ -9,6 +9,7 @@ from modules.k2_core.models.requests import QuestionRequest
 from modules.k2_core.models.responses import NLQueryResponse
 from modules.k2_core.repository import K2CoreRepository
 from modules.organization.models.entities import Organization
+from modules.query.service import QueryService
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 class K2Service:
     def __init__(self):
         self.repo = K2CoreRepository()
+        self.query_service = QueryService()
 
     async def answer_question(
         self, question_request: QuestionRequest, organization: Organization
@@ -37,13 +39,24 @@ class K2Service:
 
         data = {"question": question_string, "db_alias": organization.db_alias}
 
+        # ask question to k2 core
         response = await self._k2_post_request(path, json=data)
+
         # adds document that links user info to query response
         query_response = NLQueryResponse(**response)
         query_response.id = response["id"]
-        self.repo.record_response_pointer(
-            response["id"], question_request.user, ObjectId(organization.id)
-        )
+        query_id: str = response["id"]["$oid"]
+
+        # if query ref doesn't exist, create one
+        if not self.query_service.get_query_ref(query_id):
+            display_id = self.repo.get_next_display_id(ObjectId(organization.id))
+
+            self.repo.add_query_response_ref(
+                ObjectId(query_id),
+                ObjectId(organization.id),
+                question_request.user,
+                display_id,
+            )
         return query_response
 
     async def heartbeat(self):

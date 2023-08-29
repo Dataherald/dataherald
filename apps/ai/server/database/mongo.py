@@ -1,14 +1,17 @@
+import pymongo
 from bson.objectid import ObjectId
-from pymongo import MongoClient
 from pymongo.cursor import Cursor
 
 from config import db_settings
+
+ASCENDING = pymongo.ASCENDING
+DESCENDING = pymongo.DESCENDING
 
 
 class MongoDB:
     db_uri = db_settings.mongodb_uri
     db_name = db_settings.mongodb_db_name
-    _data_store = MongoClient(db_uri)[db_name]
+    _data_store = pymongo.MongoClient(db_uri)[db_name]
 
     @classmethod
     def find_one(cls, collection: str, query: dict) -> dict:

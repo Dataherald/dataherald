@@ -25,3 +25,4 @@ class QueryRef(BaseModel):
     last_updated: str
     updated_by: Any | None
     organization_id: Any
+    display_id: str | None
