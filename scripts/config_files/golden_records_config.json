@@ -1,0 +1,43 @@
+[
+  {
+    "db_alias": "hkg02p",
+    "questions": [
+      {
+        "question": "What is the daily RH Beta from 2023-07-01?",
+        "sql_query": "select processDate,sum(if(side='S',-1,1)*beta*hkg02p.t05PortfolioResponsibilities.RHExposure) as RHSensitivity from t05PortfolioResponsibilities where processDate>='2023-07-01' group by processDate"
+      },
+      {
+        "question": "What is the Daily Attribution, Alpha from Jan 1st 2023?",
+        "sql_query": "SELECT processDate, SUM(RHAttribution) AS RHAttribution, SUM(YAAttribution) AS YAAttribution, SUM(LRAttribution) AS RPAAttribution, SUM(CAAttribution) AS CAAttribution,SUM(a.RHMktAlpha) AS RHAlpha, SUM(a.YAMktAlpha) AS YAAlpha, SUM(a.LRMktAlpha) AS RPAAlpha, SUM(a.CAMktAlpha) AS CAAlpha from t05PortfolioResponsibilities a WHERE processDate >='2022-01-31' GROUP BY processDate;"
+      },
+      {
+        "question": "What is the Monthly Attribution, Alpha for 2022?",
+        "sql_query": "SELECT DATE_FORMAT(processDate, '%Y-%m') AS Date, SUM(RHAttribution) AS RHAttribution, SUM(YAAttribution) AS YAAttribution, SUM(LRAttribution) AS RPAAttribution,SUM(CAAttribution) AS CAAttribution,SUM(a.RHMktAlpha) AS RHAlpha, SUM(a.YAMktAlpha) AS YAAlpha, SUM(a.LRMktAlpha) AS RPAAlpha, SUM(a.CAMktAlpha) AS CAAlpha FROM t05PortfolioResponsibilities a GROUP BY DATE;"
+      },
+      {
+        "question": "What is the attribution of all Funds from 2017 for tickers 6135, 6381, 6502, 7516?",
+        "sql_query": "select t.strategy, t.quick, t.side, sum(t.RHAttribution) as RHAttribution, min(t.processDate) as FirstTradeDate, max(t.processDate) as LastTradeDate, count(t.processDate) as DaysPositionOpen from hkg02p.t05PortfolioResponsibilities t where t.processDate >= '2017-01-01' and t.quick in ('6135','6381','6502','7516') group by t.strategy, t.quick, t.side"
+      },
+      {
+        "question": "What is the RH Daily Gross Exposure and JP Gross Exposure from 2023-01-01?",
+        "sql_query": "select a.processDate, sum(RHExposure) as RHExposure, sum(RHAttribution) as RHAttribution,sum(if(CCY='JPY',RHExposure,0)) as RHEpxosure_JP  from t05PortfolioResponsibilities a where a.processDate >= '2023-01-01' group by a.processDate;"
+      },
+      {
+        "question": "What is the RH HitRate by position?",
+        "sql_query": "select a.quick, a.CCY, if(sum(a.RHAttribution)>0,1,0) as hitRate, a.side, if(a.side='L', a.firstTradeDateLong, a.firstTradeDateShort) as firstTradeDate, min(a.processDate), max(a.processDate), count(*) as positionDays, SUM(a.RHAttribution) AS RHAttribution, b.instrumentType from hkg02p.t05PortfolioResponsibilities a  join hkg02p.t01Instrument b on a.instrumentID = b.instrumentID  where RHExposure > 0  group by a.quick, a.side,  if(a.side='L', a.firstTradeDateLong, a.firstTradeDateShort), b.instrumentType;"
+      },
+      {
+        "question": "What is the Yearly PL vs. NAV per year?",
+        "sql_query": "SELECT  DATE_FORMAT(a.processDate, '%Y') AS YEAR, SUM(RHAttribution) AS RHAttribution, SUM(YAAttribution) AS YAAttribution, SUM(LRAttribution) AS RPAAttribution  FROM hkg02p.t05PortfolioResponsibilities a GROUP BY DATE_FORMAT(a.processDate, '%Y')"
+      },
+      {
+        "question": "What is the top 5 YA by Position Size?",
+        "sql_query": "select a.quick, a.name, max(YAExposure) as YAExposure, min(if (side ='L', firstTradeDateLong, firstTradeDateShort)) as firstTradeDate from hkg02p.t05PortfolioResponsibilities a  inner join t01Instrument b on a.instrumentID = b.instrumentID and b.instrumentType = 'EQ' and b.groupName not in ('Stock Basket') group by a.quick, a.name order by max(YAExposure) desc limit 5;"
+      },
+      {
+        "question": "What are the latest PB Comment Summaries?",
+        "sql_query": "select a.brokerVoteDate, b.firstName, b.lastName, c.objValue as region, d.objValue as PB, e.objValue as Catetgory, a.comment, a.lupdate from t08PBVoteComment a inner join t01Person b on a.personID = b.personID  inner join t10ObjectText c on a.regionIDOTID = c.objectTextID  inner join t10ObjectText d on a.PBOTID = d.objectTextID  inner join t10ObjectText e on a.categoryIDOTID = e.objectTextID where a.brokerVoteDate = (select max(brokerVoteDate) from t08PBVoteComment) order by b.firstName desc"
+      }
+    ]
+  }
+]
