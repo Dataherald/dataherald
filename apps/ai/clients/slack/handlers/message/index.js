@@ -51,11 +51,11 @@ async function handleMessage(context, say) {
             sql_query,
             exec_time,
             display_id,
-            above_confidence_threshold,
+            is_above_confidence_threshold,
         } = data
         const execTime = parseFloat(exec_time).toFixed(2)
 
-        if (above_confidence_threshold) {
+        if (is_above_confidence_threshold) {
             await say({
                 blocks: [
                     {
