@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from config import auth_settings
 from modules.k2_core.models.requests import QuestionRequest
 from modules.k2_core.models.responses import NLQuerySlackResponse
 from modules.k2_core.service import K2Service
@@ -17,10 +18,7 @@ org_service = OrganizationService()
 
 @router.post("/question")
 async def answer_question(question_request: QuestionRequest) -> NLQuerySlackResponse:
-    if (
-        question_request.slack_workspace_id
-        == test_organization.slack_installation.team.id
-    ):
+    if not auth_settings.auth_enabled:
         organization = test_organization
     else:
         organization = org_service.get_organization_by_slack_workspace_id(
