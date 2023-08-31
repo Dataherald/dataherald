@@ -12,26 +12,28 @@ class OrganizationRepository:
             for organization in MongoDB.find(ORGANIZATION_COL, {})
         ]
 
-    def get_organization(self, id: str) -> Organization:
-        organization = MongoDB.find_by_id(ORGANIZATION_COL, id)
+    def get_organization(self, org_id: ObjectId) -> Organization:
+        organization = MongoDB.find_by_id(ORGANIZATION_COL, org_id)
         return Organization(**organization) if organization else None
 
-    def get_organization_with_slack_workspace_id(
+    def get_organization_by_slack_workspace_id(
         self, slack_workspace_id: str
     ) -> Organization:
         organization = MongoDB.find_one(
-            ORGANIZATION_COL, {"slack_workspace_id": slack_workspace_id}
+            ORGANIZATION_COL, {"slack_installation.team.id": slack_workspace_id}
         )
         return Organization(**organization) if organization else None
 
-    def delete_organization(self, id: str) -> int:
-        return MongoDB.delete_one(ORGANIZATION_COL, {"_id": ObjectId(id)})
+    def delete_organization(self, org_id: ObjectId) -> int:
+        return MongoDB.delete_one(ORGANIZATION_COL, {"_id": ObjectId(org_id)})
 
-    def update_organization(self, id: str, new_org_data: dict) -> int:
-        return MongoDB.update_one(ORGANIZATION_COL, {"_id": ObjectId(id)}, new_org_data)
+    def update_organization(self, org_id: ObjectId, new_org_data: dict) -> int:
+        return MongoDB.update_one(
+            ORGANIZATION_COL, {"_id": ObjectId(org_id)}, new_org_data
+        )
 
-    def add_organization(self, new_org_data: dict) -> int:
+    def add_organization(self, new_org_data: dict) -> str:
         # each organization should have unique name
         if MongoDB.find_one(ORGANIZATION_COL, {"name": new_org_data["name"]}):
             return None
-        return MongoDB.insert_one(ORGANIZATION_COL, new_org_data)
+        return str(MongoDB.insert_one(ORGANIZATION_COL, new_org_data))

@@ -1,7 +1,5 @@
 from pydantic import BaseModel
 
-from modules.user.models.entities import SlackQuestionUser
-
 
 class EvaluationRequest(BaseModel):
     question: str
@@ -10,4 +8,7 @@ class EvaluationRequest(BaseModel):
 
 class QuestionRequest(BaseModel):
     question: str
-    user: SlackQuestionUser
+    slack_user_id: str | None
+    slack_workspace_id: str | None
+    slack_channel_id: str | None
+    slack_thread_ts: str | None

@@ -1,15 +1,18 @@
 import logging
-import re
+from datetime import datetime, timezone
 
 import httpx
 from bson import ObjectId
 
 from config import settings
 from modules.k2_core.models.requests import QuestionRequest
-from modules.k2_core.models.responses import NLQueryResponse
+from modules.k2_core.models.responses import NLQueryResponse, NLQuerySlackResponse
 from modules.k2_core.repository import K2CoreRepository
 from modules.organization.models.entities import Organization
+from modules.query.models.entities import QueryRef
 from modules.query.service import QueryService
+from modules.user.models.entities import SlackInfo
+from utils.slack import SlackWebClient, remove_slack_mentions
 
 logger = logging.getLogger(__name__)
 
@@ -22,20 +25,9 @@ class K2Service:
 
     async def answer_question(
         self, question_request: QuestionRequest, organization: Organization
-    ) -> NLQueryResponse:
+    ) -> NLQuerySlackResponse:
         path = "/question"
-        slack_user_mention_pattern = r"<@(.*?)>"
-        slack_team_mention_pattern = r"<!(.*?)>"
-        slack_channel_mention_pattern = r"<#(.*?)>"
-        question_string = re.sub(
-            slack_channel_mention_pattern,
-            "",
-            re.sub(
-                slack_team_mention_pattern,
-                "",
-                re.sub(slack_user_mention_pattern, "", question_request.question),
-            ),
-        )
+        question_string = remove_slack_mentions(question_request.question)
 
         data = {"question": question_string, "db_alias": organization.db_alias}
 
@@ -44,20 +36,46 @@ class K2Service:
 
         # adds document that links user info to query response
         query_response = NLQueryResponse(**response)
-        query_response.id = response["id"]
         query_id: str = response["id"]["$oid"]
 
         # if query ref doesn't exist, create one
         if not self.query_service.get_query_ref(query_id):
             display_id = self.repo.get_next_display_id(ObjectId(organization.id))
 
-            self.repo.add_query_response_ref(
-                ObjectId(query_id),
-                ObjectId(organization.id),
-                question_request.user,
-                display_id,
+            current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+            username = SlackWebClient(
+                organization.slack_installation.bot.token
+            ).get_user_real_name(question_request.slack_user_id)
+            query_ref = QueryRef(
+                query_response_id=ObjectId(query_id),
+                question_date=current_utc_time,
+                last_updated=current_utc_time,
+                organization_id=ObjectId(organization.id),
+                display_id=display_id,
+                slack_info=SlackInfo(
+                    user_id=question_request.slack_user_id,
+                    channel_id=question_request.slack_channel_id,
+                    thread_ts=question_request.slack_thread_ts,
+                    username=username,
+                ),
             )
-        return query_response
+
+            self.repo.add_query_response_ref(query_ref.dict(exclude={"id"}))
+
+        if (
+            organization.confidence_threshold == 1
+            or query_response.confidence_score < organization.confidence_threshold
+        ):
+            is_above_confidence_threshold = False
+        else:
+            is_above_confidence_threshold = True
+
+        return NLQuerySlackResponse(
+            id=query_id,
+            display_id=query_ref.display_id,
+            is_above_confidence_threshold=is_above_confidence_threshold,
+            **query_response.dict(exclude={"id"})
+        )
 
     async def heartbeat(self):
         path = "/heartbeat"

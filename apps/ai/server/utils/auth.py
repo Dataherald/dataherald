@@ -2,9 +2,21 @@ import jwt
 from bson import ObjectId
 from fastapi import HTTPException, status
 
-from config import GOLDEN_SQL_REF_COL, QUERY_RESPONSE_REF_COL, USER_COL, auth_settings
+from config import (
+    GOLDEN_SQL_REF_COL,
+    QUERY_RESPONSE_REF_COL,
+    USER_COL,
+    auth_settings,
+    slack_settings,
+)
 from database.mongo import MongoDB
-from modules.organization.models.entities import Organization
+from modules.organization.models.entities import (
+    Organization,
+    SlackBot,
+    SlackInstallation,
+    SlackTeam,
+    SlackUser,
+)
 from modules.organization.service import OrganizationService
 from modules.query.service import QueryService
 from modules.user.models.entities import User
@@ -23,10 +35,31 @@ test_user = User(
 )
 
 test_organization = Organization(
-    _id=ObjectId(b"foo-bar-quux"),
+    _id=ObjectId("64ee518fadb29ccf33d51739"),
     name="Test Org",
     db_alias="v2_real_estate",
+    slack_installation=SlackInstallation(
+        team=SlackTeam(id="TT1TV3MSL", name="test_org"),
+        bot=SlackBot(
+            scopes=[],
+            token=slack_settings.slack_bot_access_token,
+            user_id="test_bot_id",
+            id="test_bot_id",
+        ),
+        user=SlackUser(
+            token="test_user_token",  # noqa: S106
+            scopes="test_scopes",
+            id="test_user_id",
+        ),
+        enterprise="test_enterprise",
+        token_type="test_token_type",  # noqa: S106
+        is_enterprise_install=True,
+        app_id="test_app_id",
+        auth_version="test_auth_version",
+    ),
     slack_workspace_id="test_slack_id",
+    slack_bot_access_token=slack_settings.slack_bot_access_token,
+    confidence_threshold=0.70,
 )
 
 
@@ -109,9 +142,9 @@ class Authorize:
 
     def user_and_get_org_id(self, payload) -> ObjectId:
         user = self.user(payload)
-        return ObjectId(self.get_organization_with_user(user).id)
+        return ObjectId(self.get_organization_by_user(user).id)
 
-    def get_organization_with_user(self, user: User) -> Organization:
+    def get_organization_by_user(self, user: User) -> Organization:
         if not auth_settings.auth_enabled:
             return test_organization
 

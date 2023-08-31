@@ -23,10 +23,13 @@ docker-compose build
 docker-compose up
 ```
 
-
 ## Setting Up Ngrok
 You can use Ngrok to expose your local server to the internet so that Slack can interact with our bot when *`socket mode` is off*
 
 [Getting started guidelines](https://ngrok.com/docs/getting-started/)
 
 > You should expose the docker container port you setup
+
+## Local development
+
+Environment variables need to be filled in with the data from the Slackbot app from Slack. We recommend using DEV slackbot for development. Note that to communicate with the Slackbot the `ngrok` URL must be added to the **Request URL** list in the Event Subscriptions tab. Also for installation the Oauth redirect URL must be added.

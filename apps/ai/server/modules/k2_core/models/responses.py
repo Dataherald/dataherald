@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, confloat
 
 from modules.k2_core.models.entities import SQLGenerationStatus, SQLQueryResult
 
@@ -16,5 +16,14 @@ class NLQueryResponse(BaseModel):
     exec_time: float | None = None
     total_tokens: int | None = None
     total_cost: float | None = None
-    confidence_score: float | None = None
+    confidence_score: confloat(ge=0, le=1) | None = None
     error_message: str | None
+
+
+class NLQuerySlackResponse(BaseModel):
+    id: str
+    display_id: str
+    nl_response: str
+    sql_query: str
+    exec_time: float | None = None
+    is_above_confidence_threshold: bool = False

@@ -1,10 +1,8 @@
-from datetime import datetime, timezone
-
 from bson.objectid import ObjectId
 
 from config import GOLDEN_SQL_COL, GOLDEN_SQL_REF_COL, QUERY_RESPONSE_REF_COL
 from database.mongo import DESCENDING, MongoDB
-from modules.golden_sql.models.entities import GoldenSQL, GoldenSQLRef, GoldenSQLSource
+from modules.golden_sql.models.entities import GoldenSQL, GoldenSQLRef
 from utils.misc import get_next_display_id, get_object_id
 
 
@@ -42,22 +40,10 @@ class GoldenSQLRepository:
 
     def add_golden_sql_ref(
         self,
-        golden_sql_id: ObjectId,
-        org_id: ObjectId,
-        source: GoldenSQLSource,
-        display_id: str,
-        query_response_id: ObjectId = None,
+        golden_sql_ref_data: dict,
     ) -> str:
-        return MongoDB.insert_one(
-            GOLDEN_SQL_REF_COL,
-            GoldenSQLRef(
-                golden_sql_id=golden_sql_id,
-                organization_id=org_id,
-                source=source.value,
-                query_response_id=query_response_id,
-                created_time=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
-                display_id=display_id,
-            ).dict(),
+        return str(
+            MongoDB.insert_one(GOLDEN_SQL_REF_COL, golden_sql_ref_data),
         )
 
     def delete_golden_sql_ref(self, golden_sql_id: ObjectId) -> int:

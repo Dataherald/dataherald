@@ -4,7 +4,7 @@ services:
     build: .
     working_dir: /app
     ports:
-      - "3000:3000"
+      - "3005:3005"
     volumes:
       - .:/app
       - /app/node_modules

@@ -23,7 +23,7 @@ class UserRepository:
     def update_user(self, id: str, new_user_data: dict) -> int:
         return MongoDB.update_one(USER_COL, {"_id": ObjectId(id)}, new_user_data)
 
-    def add_user(self, new_user_data: dict) -> int:
+    def add_user(self, new_user_data: dict) -> str:
         if MongoDB.find_one(USER_COL, {"email": new_user_data["email"]}):
             return None
-        return MongoDB.insert_one(USER_COL, new_user_data)
+        return str(MongoDB.insert_one(USER_COL, new_user_data))

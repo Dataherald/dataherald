@@ -48,7 +48,7 @@ async def patch_query(
     token: str = Depends(token_auth_scheme),
 ) -> QueryResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_with_user(user)
+    organization = authorize.get_organization_by_user(user)
     authorize.query_in_organization(query_id, str(organization.id))
 
     return await query_service.patch_query(query_id, query_request, organization, user)

@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Any, Dict
 
 import httpx
@@ -17,6 +18,7 @@ from modules.query.models.responses import QueryListResponse, QueryResponse
 from modules.query.repository import QueryRepository
 from modules.user.models.entities import User
 from modules.user.service import UserService
+from utils.slack import SlackWebClient
 
 
 class QueryService:
@@ -67,7 +69,7 @@ class QueryService:
             return [
                 QueryListResponse(
                     id=str(qrr.query_response_id),
-                    username=qrr.user.username or "unknown",
+                    username=qrr.slack_info.username or "unknown",
                     question=question_dict[
                         query_response_dict[qrr.query_response_id].nl_question_id
                     ],
@@ -135,12 +137,28 @@ class QueryService:
                         "", query_response_id=query_id
                     )
 
-            self.repo.update_last_updated(object_id, user.id)
-            response_ref = self.repo.get_query_response_ref(object_id)
+            current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+            updated_query_response_ref = {
+                "last_updated": current_utc_time,
+                "updated_by": user.id,
+            }
+            self.repo.update_last_updated(object_id, updated_query_response_ref)
+            new_response_ref = self.repo.get_query_response_ref(object_id)
             new_query_response = NLQueryResponse(**response.json())
             question = self.repo.get_question(new_query_response.nl_question_id)
+
+            # send user verified query on slack
+            if is_golden_record:
+                SlackWebClient(
+                    organization.slack_installation.bot.token
+                ).send_verified_query_message(
+                    new_response_ref,
+                    new_query_response,
+                    question.question,
+                )
+
             return self._get_mapped_query_response(
-                query_id, response_ref, question, new_query_response
+                query_id, new_response_ref, question, new_query_response
             )
 
     async def run_query(self, query_id: str, query_request: SQLQueryRequest):
@@ -171,7 +189,7 @@ class QueryService:
     ) -> QueryResponse:
         return QueryResponse(
             id=query_id,
-            username=response_ref.user.username or "unknown",
+            username=response_ref.slack_info.username or "unknown",
             question=question.question,
             nl_response=query_response.nl_response,
             sql_query=query_response.sql_query,

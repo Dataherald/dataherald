@@ -1,5 +1,3 @@
-from datetime import datetime, timezone
-
 from bson import ObjectId
 
 from config import QUERY_RESPONSE_COL, QUERY_RESPONSE_REF_COL, QUESTION_COL
@@ -45,11 +43,12 @@ class QueryRepository:
         )
         return [QueryRef(**qrr) for qrr in query_refs]
 
-    def update_last_updated(self, query_id: ObjectId, user_id: ObjectId) -> str:
+    def update_last_updated(
+        self, query_id: ObjectId, updated_query_response_ref: dict
+    ) -> str:
         object_id = get_object_id(query_id)
-        current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
         return MongoDB.update_one(
             QUERY_RESPONSE_REF_COL,
             {"query_response_id": object_id},
-            {"last_updated": current_utc_time, "updated_by": user_id},
+            updated_query_response_ref,
         )

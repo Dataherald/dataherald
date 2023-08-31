@@ -245,10 +245,10 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
           <div className="flex flex-col gap-3">
             <div
               id="query_results"
-              className="min-h-[12rem] max-h-80 flex flex-col border bg-white"
+              className="min-h-[10rem] max-h-80 flex flex-col border bg-white"
             >
               {sql_query_result === null ? (
-                <div className="w-full h-60 flex items-center justify-center bg-gray-100">
+                <div className="w-full h-44 flex items-center justify-center bg-gray-100">
                   <div className="text-gray-600">No Results</div>
                 </div>
               ) : (
@@ -264,7 +264,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                 />
               )}
             </div>
-            {sql_query_result && (
+            {nl_response && (
               <div id="nl_response">
                 <span className="font-bold mr-1">Answer:</span>
                 {nl_response}

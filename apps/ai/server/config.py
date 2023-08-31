@@ -11,6 +11,7 @@ QUERY_RESPONSE_REF_COL = "nl_query_response_ref"
 
 USER_COL = "user"
 ORGANIZATION_COL = "organization"
+SLACK_INSTALLATION_COL = "slack_installation"
 GOLDEN_SQL_COL = "golden_records"
 GOLDEN_SQL_REF_COL = "golden_sql_ref"
 
@@ -48,6 +49,16 @@ class AuthSettings(BaseSettings):
         return getattr(self, key)
 
 
+class SlackSettings(BaseSettings):
+    load_dotenv()
+
+    slack_bot_access_token: str = os.environ.get("SLACK_BOT_ACCESS_TOKEN", None)
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
+
+
 settings = Settings()
 db_settings = DBSettings()
 auth_settings = AuthSettings()
+slack_settings = SlackSettings()

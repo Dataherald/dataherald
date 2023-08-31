@@ -1,13 +1,28 @@
 const { App } = require('@slack/bolt')
-const { log } = require('console')
+const { log, error } = require('console')
 const handleMessage = require('../handlers/message')
 require('dotenv').config()
 
+const API_URL = process.env.API_URL
+
 const app = new App({
-    token: process.env.SLACK_BOT_ACCESS_TOKEN,
     signingSecret: process.env.SLACK_SIGNING_SECRET,
-    socketMode: process.env.SLACK_SOCKET_MODE === 'true', // default is false
-    appToken: process.env.SLACK_APP_TOKEN,
+    clientId: process.env.SLACK_CLIENT_ID,
+    clientSecret: process.env.SLACK_CLIENT_SECRET,
+    stateSecret: process.env.SLACK_STATE_SECRET,
+    scopes: [
+        'app_mentions:read',
+        'channels:history',
+        'channels:read',
+        'chat:write',
+        'groups:history',
+        'groups:read',
+        'im:history',
+        'im:read',
+        'im:write',
+        'mpim:history',
+        'users:read',
+    ],
     customRoutes: [
         {
             path: '/health-check',
@@ -18,23 +33,55 @@ const app = new App({
             },
         },
     ],
+    installerOptions: {
+        directInstall: true,
+    },
+    installationStore: {
+        storeInstallation: async (installation) => {
+            log('Installing app: ', installation)
+            if (installation.team !== undefined) {
+                // single team app installation
+                return await fetch(`${API_URL}/organization/slack/installation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(installation),
+                })
+            }
+            throw new Error('Failed saving organization token')
+        },
+        fetchInstallation: async (installQuery) => {
+            log('Fetching app installation: ', installQuery)
+            try {
+                const response = await fetch(
+                    `${API_URL}/organization/slack/installation?workspace_id=${installQuery.teamId}`
+                )
+                return await response.json()
+            } catch (error) {
+                error('Failed fetching organization token: ', error)
+            }
+        },
+        deleteInstallation: async () => {},
+    },
 })
 
 // Listens to incoming messages in direct messages with the bot
-app.message(({ message, say }) => 
-    handleMessage(message, say, app.client.users.info)
-)
+app.message(({ message, say }) => handleMessage(message, say))
 
 // Listens to incoming messages that mention the bot user
-app.event('app_mention', ({ event, say }) =>
-    handleMessage(event, say, app.client.users.info)
-)
+app.event('app_mention', ({ event, say }) => handleMessage(event, say))
 
 async function startServer() {
     const appPort = process.env.PORT || 3000
     await app.start(appPort)
 
-    log(`Dataherald AI Slack client is running on port ${appPort}`)
+    try {
+        await fetch(`${process.env.API_URL}/heartbeat`)
+        log(`Dataherald AI Slack client is running on port ${appPort}`)
+    } catch {
+        error(`Couldn't connect to ${process.env.API_URL}`)
+    }
 }
 
 startServer()

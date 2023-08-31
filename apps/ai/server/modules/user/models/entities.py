@@ -13,7 +13,8 @@ class User(BaseModel):
     organization_id: Any
 
 
-class SlackQuestionUser(BaseModel):
-    slack_id: str | None
+class SlackInfo(BaseModel):
+    user_id: str | None
+    channel_id: str | None
+    thread_ts: str | None
     username: str | None
-    slack_workspace_id: str | None
