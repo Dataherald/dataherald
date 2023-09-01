@@ -11,6 +11,7 @@ from sshtunnel import SSHTunnelForwarder
 
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.utils.encrypt import FernetEncrypt
+from dataherald.utils.s3 import S3
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,16 @@ class SQLDatabase(LangchainSQLDatabase):
             engine = cls.from_uri_ssh(database_info)
             DBConnections.add(database_info.alias, engine)
             return engine
-        engine = cls.from_uri(unquote(fernet_encrypt.decrypt(database_info.uri)))
+        db_uri = unquote(fernet_encrypt.decrypt(database_info.uri))
+        if db_uri.lower().startswith("bigquery"):
+            file_path = database_info.path_to_credentials_file
+            if file_path.lower().startswith("s3"):
+                s3 = S3()
+                file_path = s3.download(file_path)
+
+            db_uri = db_uri + f"?credentials_path={file_path}"
+
+        engine = cls.from_uri(db_uri)
         DBConnections.add(database_info.alias, engine)
         return engine
 

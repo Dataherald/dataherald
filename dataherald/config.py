@@ -48,6 +48,8 @@ class Settings(BaseSettings):
     db_uri: str | None = os.environ.get("MONGODB_URI")
     openai_api_key: str | None = os.environ.get("OPENAI_API_KEY")
     encrypt_key: str = os.environ.get("ENCRYPT_KEY")
+    s3_aws_access_key_id: str | None = os.environ.get("S3_AWS_ACCESS_KEY_ID")
+    s3_aws_secret_access_key: str | None = os.environ.get("S3_AWS_SECRET_ACCESS_KEY")
 
     def require(self, key: str) -> Any:
         val = self[key]
