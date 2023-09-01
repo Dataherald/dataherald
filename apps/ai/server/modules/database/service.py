@@ -1,5 +1,5 @@
 import httpx
-from fastapi import HTTPException, status
+from fastapi import HTTPException, UploadFile, status
 
 from config import settings
 from modules.database.models.requests import (
@@ -10,6 +10,7 @@ from modules.database.models.requests import (
 from modules.database.models.responses import ScannedDBResponse
 from modules.organization.models.entities import Organization
 from modules.organization.service import OrganizationService
+from utils.s3 import S3
 
 
 class DatabaseService:
@@ -62,7 +63,12 @@ class DatabaseService:
         self,
         database_connection_request: DatabaseConnectionRequest,
         organizaiton: Organization,
+        file: UploadFile = None,
     ) -> bool:
+        if file:
+            s3 = S3()
+            database_connection_request.path_to_credentials_file = s3.upload(file)
+
         if organizaiton.db_alias:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -74,6 +80,7 @@ class DatabaseService:
                 settings.k2_core_url + "/database",
                 json=database_connection_request.dict(),
             )
+
             if response.status_code != status.HTTP_200_OK:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST, detail=response.json()

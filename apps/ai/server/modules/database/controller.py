@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Form, UploadFile, status
 from fastapi.security import HTTPBearer
+from pydantic import Json
 
 from modules.database.models.requests import (
     DatabaseConnectionRequest,
@@ -52,11 +53,15 @@ async def scan_database(
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def add_database_connection(
-    database_connection_request: DatabaseConnectionRequest,
+    database_connection_request: Json = Form(),
+    file: UploadFile = None,
     token: str = Depends(token_auth_scheme),
 ) -> bool:
+    database_connection_request = DatabaseConnectionRequest(
+        **database_connection_request
+    )
     user = authorize.user(VerifyToken(token.credentials).verify())
     organization = authorize.get_organization_by_user(user)
     return await database_service.add_database_connection(
-        database_connection_request, organization
+        database_connection_request, organization, file
     )

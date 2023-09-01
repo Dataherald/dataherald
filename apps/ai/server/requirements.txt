@@ -29,3 +29,6 @@ chromadb==0.3.26
 pytest-dotenv==0.5.2
 pinecone-client==2.2.2
 cryptography==40.0.2
+python-multipart==0.0.6
+boto3==1.28.38
+botocore==1.31.38

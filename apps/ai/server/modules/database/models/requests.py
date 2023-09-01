@@ -35,5 +35,5 @@ class DatabaseConnectionRequest(BaseModel):
     db_alias: str
     use_ssh: bool = False
     connection_uri: str | None
-    file_path: str | None
+    path_to_credentials_file: str | None
     ssh_settings: SSHSettings | None

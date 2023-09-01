@@ -36,6 +36,16 @@ class DBSettings(BaseSettings):
         return getattr(self, key)
 
 
+class AWSS3Settings(BaseSettings):
+    load_dotenv()
+
+    s3_aws_access_key_id: str = os.environ.get("S3_AWS_ACCESS_KEY_ID")
+    s3_aws_secret_access_key: str = os.environ.get("S3_AWS_SECRET_ACCESS_KEY")
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
+
+
 class AuthSettings(BaseSettings):
     load_dotenv()
 
@@ -62,3 +72,4 @@ settings = Settings()
 db_settings = DBSettings()
 auth_settings = AuthSettings()
 slack_settings = SlackSettings()
+aws_s3_settings = AWSS3Settings()
