@@ -164,7 +164,8 @@ curl -X 'POST' \
   -d '{
   "db_alias": "my_db_alias_identifier",
   "use_ssh": false,
-  "connection_uri": "sqlite:///mydb.db"
+  "connection_uri": "sqlite:///mydb.db",
+  "path_to_credentials_file": "my-folder/my-secret.json" # Required for bigquery
 }'
 ```
 
@@ -235,13 +236,18 @@ follow this [tutorial](https://www.privacydynamics.io/docs/connections/bigquery.
 Once you have your credential json file you can store it inside this project for example I created the folder 
 `private_credentials` and inside I stored my credential file `my-db-123456acbd.json`
 
+You should set in the endpoint param `path_to_credentials_file` the path, for example:
+```
+"path_to_credentials_file": "private_credentials/my-db-123456acbd.json"
+```
+
 Uri structure:
 ```
-"connection_uri": bigquery://<project>/<database>?credentials_path=<path-to-your-credential-file>
+"connection_uri": bigquery://<project>/<database>
 ```
 Example:
 ```
-"connection_uri": bigquery://v2-real-estate/K2?credentials_path=./private_credentials/my-db-123456acbd.json
+"connection_uri": bigquery://v2-real-estate/K2
 ```
 
 
