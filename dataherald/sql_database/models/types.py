@@ -37,6 +37,7 @@ class DatabaseConnection(BaseModel):
     alias: str
     use_ssh: bool = False
     uri: str | None
+    file_path: str | None
     ssh_settings: SSHSettings | None = None
 
     @validator("uri", pre=True, always=True)

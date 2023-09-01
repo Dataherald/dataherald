@@ -94,6 +94,7 @@ class DatabaseConnectionRequest(BaseModel):
     db_alias: str
     use_ssh: bool = False
     connection_uri: str | None
+    file_path: str | None
     ssh_settings: SSHSettings | None
 
 

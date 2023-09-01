@@ -129,6 +129,7 @@ class FastAPI(API):
         try:
             db_connection = DatabaseConnection(
                 uri=database_connection_request.connection_uri,
+                file_path=database_connection_request.file_path,
                 alias=database_connection_request.db_alias,
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
