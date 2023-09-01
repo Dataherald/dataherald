@@ -125,23 +125,26 @@ class FastAPI(API):
     @override
     def connect_database(
         self, database_connection_request: DatabaseConnectionRequest
-    ) -> bool:
+    ) -> DatabaseConnection:
         try:
             db_connection = DatabaseConnection(
                 uri=database_connection_request.connection_uri,
-                file_path=database_connection_request.file_path,
+                path_to_credentials_file=database_connection_request.path_to_credentials_file,
                 alias=database_connection_request.db_alias,
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
             )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))  # noqa: B904
-        self.storage.update_or_create(
-            "database_connection",
-            {"alias": database_connection_request.db_alias},
-            db_connection.dict(),
+        db_connection.id = str(
+            self.storage.update_or_create(
+                "database_connection",
+                {"alias": database_connection_request.db_alias},
+                db_connection.dict(),
+            )
         )
-        return True
+
+        return db_connection
 
     @override
     def add_description(

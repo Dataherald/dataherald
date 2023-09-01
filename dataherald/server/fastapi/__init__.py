@@ -115,7 +115,7 @@ class FastAPI(dataherald.server.Server):
 
     def connect_database(
         self, database_connection_request: DatabaseConnectionRequest
-    ) -> bool:
+    ) -> DatabaseConnection:
         """Connects a database to the Dataherald service"""
         return self._api.connect_database(database_connection_request)
 

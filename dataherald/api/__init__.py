@@ -4,7 +4,7 @@ from typing import Any, List
 from dataherald.api.types import Query
 from dataherald.config import Component
 from dataherald.eval import Evaluation
-from dataherald.sql_database.models.types import SSHSettings
+from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
     DatabaseConnectionRequest,
     ExecuteTempQueryRequest,
@@ -36,7 +36,7 @@ class API(Component, ABC):
     @abstractmethod
     def connect_database(
         self, database_connection_request: DatabaseConnectionRequest
-    ) -> bool:
+    ) -> DatabaseConnection:
         pass
 
     @abstractmethod

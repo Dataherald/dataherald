@@ -27,7 +27,8 @@ class MongoDB(DB):
     def update_or_create(self, collection: str, query: dict, obj: dict) -> int:
         row = self.find_one(collection, query)
         if row:
-            return self._data_store[collection].update_one(query, {"$set": obj})
+            self._data_store[collection].update_one(query, {"$set": obj})
+            return row["_id"]
         return self.insert_one(collection, obj)
 
     @override

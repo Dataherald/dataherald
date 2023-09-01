@@ -74,10 +74,10 @@ class SQLDatabase(LangchainSQLDatabase):
             return engine
         db_uri = unquote(fernet_encrypt.decrypt(database_info.uri))
         if db_uri.lower().startswith("bigquery"):
-            file_path = database_info.file_path
-            if database_info.lower().file_path.startswith("s3"):
+            file_path = database_info.path_to_credentials_file
+            if file_path.lower().startswith("s3"):
                 s3 = S3()
-                file_path = s3.download(database_info.file_path)
+                file_path = s3.download(file_path)
 
             db_uri = db_uri + f"?credentials_path={file_path}"
 
