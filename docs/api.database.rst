@@ -21,6 +21,7 @@ You can find additional details on how to connect to each of the supported data 
       "db_alias": "string",
       "use_ssh": true,
       "connection_uri": "string",
+      "path_to_credentials_file": "string",
       "ssh_settings": {
         "db_name": "string",
         "host": "string",
@@ -41,7 +42,25 @@ HTTP 200 code response
 
 .. code-block:: rst
 
-    true
+    {
+      "id": "64f251ce9614e0e94b0520bc",
+      "alias": "string_999",
+      "use_ssh": false,
+      "uri": "gAAAAABk8lHQNAUn5XARb94Q8H1OfHpVzOtzP3b2LCpwxUsNCe7LGkwkN8FX-IF3t65oI5mTzgDMR0BY2lzvx55gO0rxlQxRDA==",
+      "path_to_credentials_file": "string",
+      "ssh_settings": {
+        "db_name": "string",
+        "host": "string",
+        "username": "string",
+        "password": "gAAAAABk8lHQAaaSuoUKxddkMHw7jerwFmUeiE3hL6si06geRt8CV-r43fbckZjI6LbIULWPZ4HlQUF9_YpfaYfM6FarQbhDUQ==",
+        "remote_host": "string",
+        "remote_db_name": "string",
+        "remote_db_password": "gAAAAABk8lHQpZyZ6ow8EuYPWe5haP-roQbBWkZn3trLgdO632IDoKcXAW-8yjzDDQ4uH03iWFzEgJq8HRxkJTC6Ht7Qrlz2PQ==",
+        "private_key_path": "string",
+        "private_key_password": "gAAAAABk8lHQWilFpIbCADvunHGYFMqgoPKIml_WRXf5Yuowqng28DVsq6-sChl695y5D_mWrr1I3hcJCZqkmhDqpma6iz3PKA==",
+        "db_driver": "string"
+      }
+    }
 
 **Example 1**
 
@@ -136,14 +155,19 @@ To connect to BigQuery you should create a json credential file. You can
 follow this `tutorial <https://www.privacydynamics.io/docs/connections/bigquery.html>`_ to generate it.
 
 Once you have your credential json file you can store it inside the project. For example given the credential file `my-db-123456acbd.json` 
-in the folder `private_credentials` the ``connection_uri`` will be:
+in the folder `private_credentials`  you should set in the endpoint param `path_to_credentials_file` the path, for example::
+
+    "path_to_credentials_file": "private_credentials/my-db-123456acbd.json"
+
+
+and the ``connection_uri`` will be:
 
 Uri structure::
 
-"connection_uri": bigquery://<project>/<database>?credentials_path=<path-to-your-credential-file>
+"connection_uri": bigquery://<project>/<database>
 
 Example::
 
-"connection_uri": bigquery://v2-real-estate/K2?credentials_path=./private_credentials/my-db-123456acbd.json
+"connection_uri": bigquery://v2-real-estate/K2
 
 
