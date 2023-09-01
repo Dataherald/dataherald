@@ -3,7 +3,6 @@ from fastapi import HTTPException, status
 from modules.auth.models.requests import AuthUserRequest
 from modules.auth.models.responses import AuthUserResponse
 from modules.organization.service import OrganizationService
-from modules.user.models.entities import User
 from modules.user.service import UserService
 
 
@@ -13,18 +12,17 @@ class AuthService:
         self.org_service = OrganizationService()
 
     def login(self, user_request: AuthUserRequest) -> AuthUserResponse:
-        login_user = User(**user_request.dict())
         # check if user exists or not
-        user = self.user_service.get_user_by_email(login_user.email)
+        user = self.user_service.get_user_by_email(user_request.email)
         if user:
-            self.user_service.update_user(str(user.id), login_user.dict())
+            self.user_service.update_user(str(user.id), user_request.dict())
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized User"
             )
 
         # return updated user
-        new_user = self.user_service.get_user_by_email(login_user.email)
+        new_user = self.user_service.get_user_by_email(user_request.email)
         new_user_id = new_user.id
         # the id does not get transformed into the new pydantic object
         new_user = AuthUserResponse(**new_user.dict())
