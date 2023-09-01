@@ -17,11 +17,7 @@ class AuthService:
         # check if user exists or not
         user = self.user_service.get_user_by_email(login_user.email)
         if user:
-            self.user_service.update_user(
-                str(user.id),
-                login_user.dict(),
-                exclude={"id", "email", "organization_id"},
-            )
+            self.user_service.update_user(str(user.id), login_user.dict())
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized User"

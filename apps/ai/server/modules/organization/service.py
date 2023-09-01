@@ -43,13 +43,9 @@ class OrganizationService:
         )
 
     def update_organization(self, org_id: str, org_request: dict) -> Organization:
-        new_org_data = Organization(**org_request)
-        if (
-            self.repo.update_organization(
-                ObjectId(org_id), new_org_data.dict(exclude={"id"})
-            )
-            == 1
-        ):
+        if "_id" in org_request:
+            org_request.pop("_id")
+        if self.repo.update_organization(ObjectId(org_id), org_request) == 1:
             new_org = self.repo.get_organization(ObjectId(org_id))
             new_org.id = str(new_org.id)
             return new_org

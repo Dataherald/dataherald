@@ -42,7 +42,7 @@ async def update_user(
 ) -> UserResponse:
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
     authorize.user_in_organization(id, org_id)
-    return user_service.update_user(id, user_request, exclude={"id", "organization_id"})
+    return user_service.update_user(id, user_request)
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)

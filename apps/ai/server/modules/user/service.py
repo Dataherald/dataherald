@@ -38,10 +38,10 @@ class UserService:
             status_code=400, detail="User not found or cannot be deleted"
         )
 
-    def update_user(self, id: str, user_data: dict, exclude: set = None) -> User:
-        new_user_data = User(**user_data)
-        self._ids_to_str(new_user_data)
-        if self.repo.update_user(id, new_user_data.dict(exclude=exclude)) == 1:
+    def update_user(self, id: str, user_request: dict) -> User:
+        if "_id" in user_request:
+            user_request.pop("_id")
+        if self.repo.update_user(id, user_request) == 1:
             new_user = self.repo.get_user(id)
             self._ids_to_str(new_user)
             return new_user
@@ -50,8 +50,8 @@ class UserService:
             status_code=400, detail="User not found or cannot be updated"
         )
 
-    def add_user(self, user_data: dict, org_id: ObjectId) -> User:
-        new_user_data = User(**user_data)
+    def add_user(self, user_request: dict, org_id: ObjectId) -> User:
+        new_user_data = User(**user_request)
         new_user_data.organization_id = org_id
         new_id = self.repo.add_user(new_user_data.dict(exclude={"id"}))
         if new_id:
