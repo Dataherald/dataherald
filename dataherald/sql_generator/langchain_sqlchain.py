@@ -70,9 +70,9 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         with get_openai_callback() as cb:
             result = db_chain(prompt)
 
-        intermediate_steps = []
-        for step in result["intermediate_steps"]:
-            intermediate_steps.append(str(step))
+        intermediate_steps = self.format_intermediate_representations(
+                    result["intermediate_steps"]
+                )
         exec_time = time.time() - start_time
         logger.info(
             f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
