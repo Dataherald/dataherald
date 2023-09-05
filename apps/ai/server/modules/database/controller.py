@@ -31,7 +31,7 @@ async def get_scanned_databases(
     return await database_service.get_scanned_databases(organization_id)
 
 
-@router.patch("{db_alias}/description", status_code=status.HTTP_200_OK)
+@router.patch("/{db_alias}/description", status_code=status.HTTP_200_OK)
 async def add_scanned_databases_description(
     db_alias: str,
     table_description_request: TableDescriptionRequest,
