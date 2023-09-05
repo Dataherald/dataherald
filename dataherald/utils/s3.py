@@ -11,8 +11,8 @@ class S3:
         path = path.split("/")
         s3_client = boto3.client(
             "s3",
-            aws_access_key_id=self.settings.require("s3_aws_access_key_id"),
-            aws_secret_access_key=self.settings.require("s3_aws_secret_access_key"),
+            aws_access_key_id=self.settings.s3_aws_access_key_id,
+            aws_secret_access_key=self.settings.s3_aws_secret_access_key,
         )
 
         s3_client.download_file(
