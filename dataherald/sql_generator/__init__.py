@@ -28,7 +28,9 @@ class SQLGenerator(Component, ABC):
     ) -> NLQueryResponse:
         return create_sql_query_status(db, query, response)
 
-    def format_intermediate_representations(self, intermediate_representation: List[Tuple[AgentAction, str]]) -> List[str]:
+    def format_intermediate_representations(
+        self, intermediate_representation: List[Tuple[AgentAction, str]]
+    ) -> List[str]:
         """Formats the intermediate representation into a string."""
         formatted_intermediate_representation = []
         for item in intermediate_representation:

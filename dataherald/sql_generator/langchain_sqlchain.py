@@ -71,8 +71,8 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
             result = db_chain(prompt)
 
         intermediate_steps = self.format_intermediate_representations(
-                    result["intermediate_steps"]
-                )
+            result["intermediate_steps"]
+        )
         exec_time = time.time() - start_time
         logger.info(
             f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
