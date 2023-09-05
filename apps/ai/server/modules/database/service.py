@@ -69,12 +69,6 @@ class DatabaseService:
             s3 = S3()
             database_connection_request.path_to_credentials_file = s3.upload(file)
 
-        if organizaiton.db_alias:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Organization's database connection already exists",
-            )
-
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.k2_core_url + "/database",
@@ -90,4 +84,4 @@ class DatabaseService:
                 str(organizaiton.id), {"db_alias": database_connection_request.db_alias}
             )
 
-            return response.json()
+            return True
