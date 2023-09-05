@@ -2,6 +2,7 @@ import datetime
 import difflib
 import logging
 import time
+from functools import wraps
 from typing import Any, Callable, Dict, List
 
 import numpy as np
@@ -82,32 +83,44 @@ Question: {input}
 Thought: I should Collect examples of Question/SQL pairs to identify possibly relevant tables, columns, and SQL query styles. If there is a similar question among the examples, I can use the SQL query from the example and modify it to fit the given question.
 {agent_scratchpad}"""  # noqa: E501
 
+MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL = 5
 
-def catch_exceptions(fn: Callable[[str], str]) -> Callable[[str], str]:
-    def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: PLR0911
-        try:
-            return fn(*args, **kwargs)
-        except openai.error.APIError as e:
-            # Handle API error here, e.g. retry or log
-            return f"OpenAI API returned an API Error: {e}"
-        except openai.error.APIConnectionError as e:
-            # Handle connection error here
-            return f"Failed to connect to OpenAI API: {e}"
-        except openai.error.RateLimitError as e:
-            # Handle rate limit error (we recommend using exponential backoff)
-            return f"OpenAI API request exceeded rate limit: {e}"
-        except openai.error.Timeout as e:
-            # Handle timeout error (we recommend using exponential backoff)
-            return f"OpenAI API request timed out: {e}"
-        except openai.error.ServiceUnavailableError as e:
-            # Handle service unavailable error (we recommend using exponential backoff)
-            return f"OpenAI API service unavailable: {e}"
-        except openai.error.InvalidRequestError as e:
-            return f"OpenAI API request was invalid: {e}"
-        except SQLAlchemyError as e:
-            return f"An unknown error occurred: {e}"
 
-    return wrapper
+def catch_exceptions(max_handling_list):  # noqa: C901
+    def decorator(fn: Callable[[str], str]) -> Callable[[str], str]:
+        @wraps(fn)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: PLR0911
+            nonlocal max_handling_list
+            max_handling = max_handling_list[0]
+            max_handling -= 1
+            max_handling_list[0] = max_handling
+            if max_handling < 0:
+                return fn(*args, **kwargs)
+            else:  # noqa: RET505
+                try:
+                    return fn(*args, **kwargs)
+                except openai.error.APIError as e:
+                    # Handle API error here, e.g. retry or log
+                    return f"OpenAI API returned an API Error: {e}"
+                except openai.error.APIConnectionError as e:
+                    # Handle connection error here
+                    return f"Failed to connect to OpenAI API: {e}"
+                except openai.error.RateLimitError as e:
+                    # Handle rate limit error (we recommend using exponential backoff)
+                    return f"OpenAI API request exceeded rate limit: {e}"
+                except openai.error.Timeout as e:
+                    # Handle timeout error (we recommend using exponential backoff)
+                    return f"OpenAI API request timed out: {e}"
+                except openai.error.ServiceUnavailableError as e:
+                    # Handle service unavailable error (we recommend using exponential backoff)
+                    return f"OpenAI API service unavailable: {e}"
+                except openai.error.InvalidRequestError as e:
+                    return f"OpenAI API request was invalid: {e}"
+                except SQLAlchemyError as e:
+                    return f"Error: {e}"
+
+        return wrapper
+    return decorator
 
 
 # Classes needed for tools
@@ -132,8 +145,9 @@ class GetCurrentTimeTool(BaseSQLDatabaseTool, BaseTool):
     Input is an empty string, output is the current data and time.
     Always use this tool before generating a query if there is any time or date in the given question.
     """
+    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
-    @catch_exceptions
+    @catch_exceptions(max_handling)
     def _run(
         self,
         tool_input: str = "",  # noqa: ARG002
@@ -161,20 +175,16 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     If an error occurs, rewrite the query and retry.
     Use this tool to execute SQL queries.
     """
+    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
-    @catch_exceptions
+    @catch_exceptions(max_handling)
     def _run(
         self,
         query: str,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Execute the query, return the results or an error message."""
-        try:
-            run_result = self.db.run_sql(query)[0]
-        except SQLAlchemyError as e:
-            """Format the error message"""
-            run_result = f"Error: {e}"
-        return run_result
+        return self.db.run_sql(query)[0]
 
     async def _arun(
         self,
@@ -194,6 +204,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     Use this tool to identify the relevant tables for the given question.
     """
     db_scan: List[TableSchemaDetail]
+    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
     def get_embedding(
         self, text: str, model: str = "text-embedding-ada-002"
@@ -206,7 +217,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     def cosine_similarity(self, a: List[float], b: List[float]) -> float:
         return round(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), 4)
 
-    @catch_exceptions
+    @catch_exceptions(max_handling)
     def _run(
         self,
         user_question: str,
@@ -258,6 +269,7 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
 
     Example Input: table1 -> column2, entity
     """
+    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
     def find_similar_strings(
         self, input_list: List[tuple], target_string: str, threshold=0.6
@@ -272,7 +284,7 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
         similar_strings.sort(key=lambda x: x[1], reverse=True)
         return similar_strings[:25]
 
-    @catch_exceptions
+    @catch_exceptions(max_handling)
     def _run(
         self,
         tool_input: str,
@@ -308,8 +320,9 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     Example Input: table1, table2, table3
     """
     db_scan: List[TableSchemaDetail]
+    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
-    @catch_exceptions
+    @catch_exceptions(max_handling)
     def _run(
         self,
         table_names: str,
@@ -345,8 +358,9 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
     Example Input: table1 -> column1, table1 -> column2, table2 -> column1
     """
     db_scan: List[TableSchemaDetail]
+    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
-    @catch_exceptions
+    @catch_exceptions(max_handling)
     def _run(
         self,
         column_names: str,
@@ -398,8 +412,9 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
     Always use this tool first and before any other tool!
     """  # noqa: E501
     few_shot_examples: List[dict]
+    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
-    @catch_exceptions
+    @catch_exceptions(max_handling)
     def _run(
         self,
         number_of_samples: str,
@@ -500,7 +515,7 @@ class DataheraldSQLAgent(SQLGenerator):
         input_variables: List[str] | None = None,
         max_examples: int = 20,
         top_k: int = 13,
-        max_iterations: int | None = 15,
+        max_iterations: int | None = 20,
         max_execution_time: float | None = None,
         early_stopping_method: str = "force",
         verbose: bool = False,
