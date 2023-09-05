@@ -1,5 +1,6 @@
 require('dotenv').config()
 const { log } = require('console')
+const getApiAuthToken = require('../../auth')
 
 const API_URL = process.env.API_URL
 
@@ -14,22 +15,23 @@ async function handleMessage(context, say) {
     log(
         `Slack message "${message}" received from ${userId} in channel ${channel_id} (thread: ${thread_ts}) that belongs to ${teamId} workspace`
     )
-
+    const welcomeMessage = `Hello, <@${userId}>. Please, give me a few moments and I'll be back with your answer.`
     await say({
         blocks: [
             {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `:wave: Hello, <@${userId}>. I will look up in your database for an answer to your inquiry. Please, give me a few moments and I'll get back to you.`,
+                    text: `:wave: ${welcomeMessage}`,
                 },
             },
         ],
-        text: 'Fallback text for notifications',
+        text: welcomeMessage,
         thread_ts,
     })
 
     try {
+        const apiToken = await getApiAuthToken()
         const endpointUrl = `${API_URL}/k2/question`
         const payload = {
             question: message,
@@ -42,79 +44,103 @@ async function handleMessage(context, say) {
         log('Request payload:', payload)
         const response = await fetch(endpointUrl, {
             method: 'POST',
-            headers: { 'Content-type': 'application/json' },
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${apiToken}`,
+            },
             body: JSON.stringify(payload),
         })
-        const data = await response.json()
-        const {
-            nl_response,
-            sql_query,
-            exec_time,
-            display_id,
-            is_above_confidence_threshold,
-        } = data
-        const execTime = parseFloat(exec_time).toFixed(2)
-
-        if (is_above_confidence_threshold) {
+        if (!response.ok) {
+            const error = response.text()
+            log('API Response not ok: ', error)
+            const responseMessage = `Sorry, something went wrong when I was processing your request. Please try again later.`
             await say({
                 blocks: [
                     {
                         type: 'section',
                         text: {
                             type: 'mrkdwn',
-                            text: `:mag: *Response*: ${nl_response}`,
+                            text: `:exclamation: ${responseMessage}`,
                         },
                     },
-                    ...(sql_query
-                        ? [
-                              {
-                                  type: 'section',
-                                  text: {
-                                      type: 'mrkdwn',
-                                      text: `:memo: *Generated SQL Query*: \n \`\`\`${sql_query}\`\`\``,
-                                  },
-                              },
-                              {
-                                  type: 'section',
-                                  text: {
-                                      type: 'mrkdwn',
-                                      text: `:stopwatch: *Execution Time*: ${execTime}s`,
-                                  },
-                              },
-                          ]
-                        : []),
                 ],
-                text: 'Fallback text for notifications',
+                text: responseMessage,
                 thread_ts,
             })
         } else {
-            await say({
-                blocks: [
-                    {
-                        type: 'section',
-                        text: {
-                            type: 'mrkdwn',
-                            text: `Sorry, the generated response ${display_id} did not exceed the confidence threshold. We will return the response once it has been verified by the data-team admin.`,
+            const data = await response.json()
+            const {
+                nl_response,
+                sql_query,
+                exec_time,
+                display_id,
+                is_above_confidence_threshold,
+            } = data
+            const execTime = parseFloat(exec_time).toFixed(2)
+
+            if (is_above_confidence_threshold) {
+                await say({
+                    blocks: [
+                        {
+                            type: 'section',
+                            text: {
+                                type: 'mrkdwn',
+                                text: `:mag: *Response*: ${nl_response}`,
+                            },
                         },
-                    },
-                ],
-                text: 'Fallback text for notifications',
-                thread_ts,
-            })
+                        ...(sql_query
+                            ? [
+                                  {
+                                      type: 'section',
+                                      text: {
+                                          type: 'mrkdwn',
+                                          text: `:memo: *Generated SQL Query*: \n \`\`\`${sql_query}\`\`\``,
+                                      },
+                                  },
+                                  {
+                                      type: 'section',
+                                      text: {
+                                          type: 'mrkdwn',
+                                          text: `:stopwatch: *Execution Time*: ${execTime}s`,
+                                      },
+                                  },
+                              ]
+                            : []),
+                    ],
+                    text: nl_response,
+                    thread_ts,
+                })
+            } else {
+                const responseMessage = `The generated response ${display_id} is queued for human verification because it did not exceed the confidence threshold. We'll get back to you once it's been reviewed by the data-team admins`
+                await say({
+                    blocks: [
+                        {
+                            type: 'section',
+                            text: {
+                                type: 'mrkdwn',
+                                text: `:mag: :bust_in_silhouette: ${responseMessage} :hourglass_flowing_sand:`,
+                            },
+                        },
+                    ],
+                    text: responseMessage,
+                    thread_ts,
+                })
+            }
         }
     } catch (e) {
         log('Something went wrong: ', e)
+        const responseMessage = `Sorry, something went wrong when I was processing your request. Please try again later.`
         await say({
             blocks: [
                 {
                     type: 'section',
                     text: {
                         type: 'mrkdwn',
-                        text: ':exclamation: Sorry, something went wrong when I was processing your request. Please try again later.',
+                        text: `:exclamation: ${responseMessage}`,
                     },
                 },
             ],
-            text: 'An error occurred',
+            text: responseMessage,
             thread_ts,
         })
     }

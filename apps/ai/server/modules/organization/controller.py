@@ -60,12 +60,16 @@ async def add_organization(
 @router.post("/slack/installation", status_code=status.HTTP_201_CREATED)
 async def add_organization_by_slack_installation(
     slack_installation: SlackInstallationRequest,
+    token: str = Depends(token_auth_scheme),
 ):
+    VerifyToken(token.credentials)
     return org_service.add_organization_by_slack_installation(slack_installation)
 
 
 @router.get("/slack/installation", status_code=status.HTTP_200_OK)
 async def get_slack_installation_by_slack_workspace_id(
     workspace_id: str,
+    token: str = Depends(token_auth_scheme),
 ) -> SlackInstallation:
+    VerifyToken(token.credentials)
     return org_service.get_slack_installation_by_slack_workspace_id(workspace_id)
