@@ -1,17 +1,24 @@
-# run all the setup python scripts in the current directory in the following order
-# 0. remove all the existing tables in the database
-# 1. setup_database.py
-# 2. setup_scanner.py
-# 3. setup_golden_records.py
+@REM # run all the setup python scripts in the current directory in the following order
+@REM # 0. remove all the existing tables in the database
+@REM # 1. setup_database.py
+@REM # 2. setup_scanner.py
+@REM # 3. setup_golden_records.py
 
-# delete all the data under the dbdata folder
-del /Q dbdata\*
+@REM # delete all the data under the dbdata folder
+python inialize_db_folder.py
 
-# 1. setup_database.py
+@REM # 0. remove all the existing tables in the database
+echo "Removing all the existing tables in the database"
+python remove_tables.py
+
+@REM # 1. setup_database.py
+echo "Setting up the database"
 python setup_database.py
 
-# 2. setup_scanner.py
+@REM # 2. setup_scanner.py
+echo "Setting up the scanner. Tables and meta data"
 python setup_scanner.py
 
-# 3. setup_golden_records.py
+@REM # 3. setup_golden_records.py
+echo "Setting up the golden records"
 python setup_golden_records.py
