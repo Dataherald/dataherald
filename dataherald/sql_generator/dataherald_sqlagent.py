@@ -120,6 +120,7 @@ def catch_exceptions(max_handling_list):  # noqa: C901
                     return f"Error: {e}"
 
         return wrapper
+
     return decorator
 
 
@@ -145,7 +146,7 @@ class GetCurrentTimeTool(BaseSQLDatabaseTool, BaseTool):
     Input is an empty string, output is the current data and time.
     Always use this tool before generating a query if there is any time or date in the given question.
     """
-    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
+    max_handling: list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
     @catch_exceptions(max_handling)
     def _run(
@@ -175,7 +176,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     If an error occurs, rewrite the query and retry.
     Use this tool to execute SQL queries.
     """
-    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
+    max_handling: list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
     @catch_exceptions(max_handling)
     def _run(
@@ -204,7 +205,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     Use this tool to identify the relevant tables for the given question.
     """
     db_scan: List[TableSchemaDetail]
-    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
+    max_handling: list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
     def get_embedding(
         self, text: str, model: str = "text-embedding-ada-002"
@@ -269,7 +270,7 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
 
     Example Input: table1 -> column2, entity
     """
-    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
+    max_handling: list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
     def find_similar_strings(
         self, input_list: List[tuple], target_string: str, threshold=0.6
@@ -320,7 +321,7 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     Example Input: table1, table2, table3
     """
     db_scan: List[TableSchemaDetail]
-    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
+    max_handling: list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
     @catch_exceptions(max_handling)
     def _run(
@@ -358,7 +359,7 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
     Example Input: table1 -> column1, table1 -> column2, table2 -> column1
     """
     db_scan: List[TableSchemaDetail]
-    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
+    max_handling: list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
     @catch_exceptions(max_handling)
     def _run(
@@ -412,7 +413,7 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
     Always use this tool first and before any other tool!
     """  # noqa: E501
     few_shot_examples: List[dict]
-    max_handling : list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
+    max_handling: list = [MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL]
 
     @catch_exceptions(max_handling)
     def _run(
