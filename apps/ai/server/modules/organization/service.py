@@ -1,4 +1,3 @@
-from bson import ObjectId
 from fastapi import HTTPException, status
 
 from modules.organization.models.entities import Organization, SlackInstallation
@@ -17,7 +16,7 @@ class OrganizationService:
         return organizations
 
     def get_organization(self, org_id: str) -> Organization:
-        organization = self.repo.get_organization(ObjectId(org_id))
+        organization = self.repo.get_organization(org_id)
         if organization:
             organization.id = str(organization.id)
             return organization
@@ -34,7 +33,7 @@ class OrganizationService:
         )
 
     def delete_organization(self, org_id: str):
-        if self.repo.delete_organization(ObjectId(org_id)) == 1:
+        if self.repo.delete_organization(org_id) == 1:
             return {"id": org_id}
 
         raise HTTPException(
@@ -45,8 +44,8 @@ class OrganizationService:
     def update_organization(self, org_id: str, org_request: dict) -> Organization:
         if "_id" in org_request:
             org_request.pop("_id")
-        if self.repo.update_organization(ObjectId(org_id), org_request) == 1:
-            new_org = self.repo.get_organization(ObjectId(org_id))
+        if self.repo.update_organization(org_id, org_request) == 1:
+            new_org = self.repo.get_organization(org_id)
             new_org.id = str(new_org.id)
             return new_org
 
@@ -59,7 +58,7 @@ class OrganizationService:
         new_org_data = Organization(**org_request.dict())
         new_id = self.repo.add_organization(new_org_data.dict(exclude={"id"}))
         if new_id:
-            new_org = self.repo.get_organization(ObjectId(new_id))
+            new_org = self.repo.get_organization(new_id)
             new_org.id = str(new_org.id)
             return new_org
 
@@ -78,7 +77,7 @@ class OrganizationService:
 
         new_id = self.repo.add_organization(new_org_data.dict(exclude={"id"}))
         if new_id:
-            new_org = self.repo.get_organization(ObjectId(new_id))
+            new_org = self.repo.get_organization(new_id)
             new_org.id = str(new_org.id)
             return new_org
 

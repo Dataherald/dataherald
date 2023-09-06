@@ -25,10 +25,9 @@ database_service = DatabaseService()
 async def get_scanned_databases(
     token: str = Depends(token_auth_scheme),
 ) -> list[ScannedDBResponse]:
-    organization_id = authorize.user_and_get_org_id(
-        VerifyToken(token.credentials).verify()
-    )
-    return await database_service.get_scanned_databases(organization_id)
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    organization = authorize.get_organization_by_user(user)
+    return await database_service.get_scanned_databases(organization)
 
 
 @router.patch("/{db_alias}/description", status_code=status.HTTP_200_OK)
@@ -60,8 +59,7 @@ async def add_database_connection(
     database_connection_request = DatabaseConnectionRequest(
         **database_connection_request
     )
-    user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_by_user(user)
+    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
     return await database_service.add_database_connection(
-        database_connection_request, organization, file
+        database_connection_request, org_id, file
     )

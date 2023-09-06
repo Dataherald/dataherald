@@ -18,10 +18,8 @@ class DatabaseService:
         self.org_service = OrganizationService()
 
     async def get_scanned_databases(
-        self, organization_id: str
+        self, organization: Organization
     ) -> list[ScannedDBResponse]:
-        organization = self.org_service.get_organization(organization_id)
-
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 settings.k2_core_url
@@ -62,7 +60,7 @@ class DatabaseService:
     async def add_database_connection(
         self,
         database_connection_request: DatabaseConnectionRequest,
-        organizaiton: Organization,
+        org_id: str,
         file: UploadFile = None,
     ) -> bool:
         if file:
@@ -81,7 +79,7 @@ class DatabaseService:
                 )
 
             self.org_service.update_organization(
-                str(organizaiton.id), {"db_alias": database_connection_request.db_alias}
+                org_id, {"db_alias": database_connection_request.db_alias}
             )
 
             return True

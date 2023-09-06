@@ -16,10 +16,9 @@ class GoldenSQLService:
     def __init__(self):
         self.repo = GoldenSQLRepository()
 
-    def get_golden_sql(self, id: str) -> GoldenSQL:
-        object_id = ObjectId(id)
-        golden_sql_ref = self.repo.get_golden_sql_ref(object_id)
-        golden_sql = self.repo.get_golden_sql(golden_sql_ref.golden_sql_id)
+    def get_golden_sql(self, golden_id: str) -> GoldenSQL:
+        golden_sql_ref = self.repo.get_golden_sql_ref(golden_id)
+        golden_sql = self.repo.get_golden_sql(str(golden_sql_ref.golden_sql_id))
         if golden_sql:
             return self._get_mapped_golden_sql_response(golden_sql, golden_sql_ref)
 
@@ -34,12 +33,12 @@ class GoldenSQLService:
         org_id: str,
     ) -> list[GoldenSQL]:
         golden_sql_refs = self.repo.get_golden_sql_refs(
-            skip=page * page_size, limit=page_size, order=order, org_id=ObjectId(org_id)
+            skip=page * page_size, limit=page_size, order=order, org_id=org_id
         )
 
-        object_ids = [gsr.golden_sql_id for gsr in golden_sql_refs]
+        golden_ids = [str(gsr.golden_sql_id) for gsr in golden_sql_refs]
 
-        golden_sqls = self.repo.get_golden_sqls(object_ids)
+        golden_sqls = self.repo.get_golden_sqls(golden_ids)
         golden_sqls_dict: Dict[ObjectId, GoldenSQL] = {}
         for gs in golden_sqls:
             golden_sqls_dict[gs.id] = gs
@@ -51,7 +50,7 @@ class GoldenSQLService:
         ]
 
     def get_verified_golden_sql_ref(self, query_response_id: str) -> GoldenSQLRef:
-        return self.repo.get_verified_golden_sql_ref(ObjectId(query_response_id))
+        return self.repo.get_verified_golden_sql_ref(query_response_id)
 
     async def add_golden_sql(
         self,
@@ -63,7 +62,7 @@ class GoldenSQLService:
         async with httpx.AsyncClient() as client:
             if query_response_id:
                 golden_sql_ref = self.repo.get_verified_golden_sql_ref(
-                    ObjectId(query_response_id)
+                    query_response_id
                 )
                 # if already exist, delete golden_sql_ref and call delete /golden-records
                 if golden_sql_ref:
@@ -81,7 +80,7 @@ class GoldenSQLService:
             golden_sql = GoldenSQL(**response_json)
             golden_sql.id = response_json["id"]
 
-            display_id = self.repo.get_next_display_id(ObjectId(org_id))
+            display_id = self.repo.get_next_display_id(org_id)
 
             golden_sql_ref_data = GoldenSQLRef(
                 golden_sql_id=ObjectId(golden_sql.id),
@@ -94,30 +93,28 @@ class GoldenSQLService:
 
             # add golden_sql_ref
             self.repo.add_golden_sql_ref(golden_sql_ref_data.dict(exclude={"id"}))
-            golden_sql_ref = self.repo.get_golden_sql_ref(ObjectId(golden_sql.id))
+            golden_sql_ref = self.repo.get_golden_sql_ref(str(golden_sql.id))
             return self._get_mapped_golden_sql_response(golden_sql, golden_sql_ref)
 
-    async def delete_golden_sql(self, id: str, query_response_id: str = None):
+    async def delete_golden_sql(self, golden_id: str, query_response_id: str = None):
         if query_response_id:
-            golden_sql_ref = self.repo.get_verified_golden_sql_ref(
-                ObjectId(query_response_id)
-            )
-            id = golden_sql_ref.golden_sql_id
+            golden_sql_ref = self.repo.get_verified_golden_sql_ref(query_response_id)
+            golden_id = golden_sql_ref.golden_sql_id
         async with httpx.AsyncClient() as client:
             response = await client.delete(
-                settings.k2_core_url + f"/golden-records/{id}",
+                settings.k2_core_url + f"/golden-records/{golden_id}",
                 timeout=settings.default_k2_core_timeout,
             )
             response.raise_for_status()
             if response.json()["status"]:
                 if query_response_id:
                     matched_count = self.repo.delete_verified_golden_sql_ref(
-                        ObjectId(query_response_id)
+                        query_response_id
                     )
                 else:
-                    matched_count = self.repo.delete_golden_sql_ref(ObjectId(id))
+                    matched_count = self.repo.delete_golden_sql_ref(golden_id)
                 if matched_count == 1:
-                    return {"id": id}
+                    return {"id": golden_id}
 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
@@ -137,7 +134,7 @@ class GoldenSQLService:
             verified_query_id=str(golden_sql_ref.query_response_id),
             display_id=golden_sql_ref.display_id,
             verified_query_display_id=self.repo.get_verified_query_display_id(
-                golden_sql_ref.query_response_id
+                str(golden_sql_ref.query_response_id)
             )
             if golden_sql_ref.query_response_id
             else None,

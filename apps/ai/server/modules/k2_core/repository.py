@@ -12,5 +12,5 @@ class K2CoreRepository:
     ) -> str:
         str(MongoDB.insert_one(QUERY_RESPONSE_REF_COL, query_response_ref_data))
 
-    def get_next_display_id(self, org_id: ObjectId) -> str:
-        return get_next_display_id(QUERY_RESPONSE_REF_COL, org_id, "QR")
+    def get_next_display_id(self, org_id: str) -> str:
+        return get_next_display_id(QUERY_RESPONSE_REF_COL, ObjectId(org_id), "QR")

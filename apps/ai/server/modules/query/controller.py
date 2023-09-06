@@ -32,34 +32,32 @@ async def get_queries(
     )
 
 
-@router.get("/{query_id}")
-async def get_query(
-    query_id: str, token: str = Depends(token_auth_scheme)
-) -> QueryResponse:
+@router.get("/{id}")
+async def get_query(id: str, token: str = Depends(token_auth_scheme)) -> QueryResponse:
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
-    authorize.query_in_organization(query_id, str(org_id))
-    return query_service.get_query(query_id)
+    authorize.query_in_organization(id, org_id)
+    return query_service.get_query(id)
 
 
-@router.patch("/{query_id}")
+@router.patch("/{id}")
 async def patch_query(
-    query_id: str,
+    id: str,
     query_request: QueryEditRequest,
     token: str = Depends(token_auth_scheme),
 ) -> QueryResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     organization = authorize.get_organization_by_user(user)
-    authorize.query_in_organization(query_id, str(organization.id))
+    authorize.query_in_organization(id, str(organization.id))
 
-    return await query_service.patch_query(query_id, query_request, organization, user)
+    return await query_service.patch_query(id, query_request, organization, user)
 
 
-@router.post("/{query_id}/execution")
+@router.post("/{id}/execution")
 async def run_query(
-    query_id: str,
+    id: str,
     query_request: SQLQueryRequest,
     token: str = Depends(token_auth_scheme),
 ) -> QueryResponse:
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
-    authorize.query_in_organization(query_id, str(org_id))
-    return await query_service.run_query(query_id, query_request)
+    authorize.query_in_organization(id, org_id)
+    return await query_service.run_query(id, query_request)

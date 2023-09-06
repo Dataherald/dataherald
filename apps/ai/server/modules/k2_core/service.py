@@ -40,7 +40,7 @@ class K2Service:
 
         # if query ref doesn't exist, create one
         if not self.query_service.get_query_ref(query_id):
-            display_id = self.repo.get_next_display_id(ObjectId(organization.id))
+            display_id = self.repo.get_next_display_id(str(organization.id))
 
             current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
             username = SlackWebClient(

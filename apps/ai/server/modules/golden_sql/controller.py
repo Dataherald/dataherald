@@ -28,7 +28,7 @@ async def get_golden_sqls(
 ) -> list[GoldenSQLResponse]:
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
     return golden_sql_service.get_golden_sqls(
-        page=page, page_size=page_size, order=order, ascend=ascend, org_id=str(org_id)
+        page=page, page_size=page_size, order=order, ascend=ascend, org_id=org_id
     )
 
 
@@ -37,14 +37,14 @@ async def get_golden_sql(
     id: str, token: str = Depends(token_auth_scheme)
 ) -> GoldenSQLResponse:
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
-    authorize.golden_sql_in_organization(id, str(org_id))
+    authorize.golden_sql_in_organization(id, org_id)
     return golden_sql_service.get_golden_sql(id)
 
 
 @router.delete("/{id}")
 async def delete_golden_sql(id: str, token: str = Depends(token_auth_scheme)):
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
-    authorize.golden_sql_in_organization(id, str(org_id))
+    authorize.golden_sql_in_organization(id, org_id)
     return await golden_sql_service.delete_golden_sql(id)
 
 
@@ -54,5 +54,5 @@ async def add_golden_sql(
 ) -> GoldenSQLResponse:
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
     return await golden_sql_service.add_golden_sql(
-        golden_sql_request, str(org_id), GoldenSQLSource.user_upload
+        golden_sql_request, org_id, GoldenSQLSource.user_upload
     )

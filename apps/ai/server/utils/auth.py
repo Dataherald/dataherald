@@ -140,9 +140,9 @@ class Authorize:
     def user_in_organization(self, user_id: str, org_id: str):
         self._item_in_organization(USER_COL, user_id, org_id)
 
-    def user_and_get_org_id(self, payload) -> ObjectId:
+    def user_and_get_org_id(self, payload) -> str:
         user = self.user(payload)
-        return ObjectId(self.get_organization_by_user(user).id)
+        return str(self.get_organization_by_user(user).id)
 
     def get_organization_by_user(self, user: User) -> Organization:
         if not auth_settings.auth_enabled:
@@ -154,6 +154,7 @@ class Authorize:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User does not belong to an Organization",
             )
+        organization.id = ObjectId(organization.id)
         return organization
 
     def _item_in_organization(
