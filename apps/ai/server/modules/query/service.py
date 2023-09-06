@@ -112,7 +112,7 @@ class QueryService:
             response.raise_for_status()
 
             query_response = self.repo.get_query_response(query_id)
-            question = self.repo.get_question(str(query_response.nl_question_id))
+            question = self.repo.get_question(query_response.nl_question_id["$oid"])
 
             # add/delete golden_record
             if is_golden_record:
@@ -144,7 +144,7 @@ class QueryService:
             self.repo.update_last_updated(query_id, updated_query_response_ref)
             new_response_ref = self.repo.get_query_response_ref(query_id)
             new_query_response = NLQueryResponse(**response.json())
-            question = self.repo.get_question(str(new_query_response.nl_question_id))
+            question = self.repo.get_question(new_query_response.nl_question_id["$oid"])
 
             # send user verified query on slack
             if is_golden_record:
