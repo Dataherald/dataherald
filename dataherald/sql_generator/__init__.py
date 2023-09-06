@@ -34,16 +34,11 @@ class SQLGenerator(Component, ABC):
         """Formats the intermediate representation into a string."""
         formatted_intermediate_representation = []
         for item in intermediate_representation:
-            tool = item[0].tool
-            tool_input = item[0].tool_input
-            log = item[0].log
-            thought = log.split("Action:")[0]
-            observation = item[1]
             formatted_intermediate_representation.append(
-                f"Thought: '{thought}'\n"
-                f"Action: '{tool}'\n"
-                f"Action Input: '{tool_input}'\n"
-                f"Observation: '{observation}'"
+                f"Thought: '{str(item[0].log).split('Action:')[0]}'\n"
+                f"Action: '{item[0].tool}'\n"
+                f"Action Input: '{item[0].tool_input}'\n"
+                f"Observation: '{item[1]}'"
             )
         return formatted_intermediate_representation
 
