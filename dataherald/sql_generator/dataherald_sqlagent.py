@@ -593,14 +593,14 @@ class DataheraldSQLAgent(SQLGenerator):
         agent_executor.handle_parsing_errors = True
         with get_openai_callback() as cb:
             result = agent_executor({"input": user_question.question})
-        intermediate_steps = []
         sql_query_list = []
         for step in result["intermediate_steps"]:
             action = step[0]
             if type(action) == AgentAction and action.tool == "sql_db_query":
                 sql_query_list.append(action.tool_input)
-
-            intermediate_steps.append(str(step))
+        intermediate_steps = self.format_intermediate_representations(
+            result["intermediate_steps"]
+        )
         exec_time = time.time() - start_time
         logger.info(
             f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"

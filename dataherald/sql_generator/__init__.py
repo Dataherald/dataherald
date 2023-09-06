@@ -2,7 +2,9 @@
 import re
 from abc import ABC, abstractmethod
 from datetime import date, datetime
-from typing import Any, List
+from typing import Any, List, Tuple
+
+from langchain.schema import AgentAction
 
 from dataherald.config import Component, System
 from dataherald.model.chat_model import ChatModel
@@ -25,6 +27,20 @@ class SQLGenerator(Component, ABC):
         self, db: SQLDatabase, query: str, response: NLQueryResponse
     ) -> NLQueryResponse:
         return create_sql_query_status(db, query, response)
+
+    def format_intermediate_representations(
+        self, intermediate_representation: List[Tuple[AgentAction, str]]
+    ) -> List[str]:
+        """Formats the intermediate representation into a string."""
+        formatted_intermediate_representation = []
+        for item in intermediate_representation:
+            formatted_intermediate_representation.append(
+                f"Thought: '{str(item[0].log).split('Action:')[0]}'\n"
+                f"Action: '{item[0].tool}'\n"
+                f"Action Input: '{item[0].tool_input}'\n"
+                f"Observation: '{item[1]}'"
+            )
+        return formatted_intermediate_representation
 
     @abstractmethod
     def generate_response(
