@@ -1,13 +1,16 @@
 import httpx
+from bson import ObjectId
 from fastapi import HTTPException, UploadFile, status
 
 from config import settings
+from modules.database.models.entities import DatabaseConnection, DatabaseConnectionRef
 from modules.database.models.requests import (
     DatabaseConnectionRequest,
     ScanRequest,
     TableDescriptionRequest,
 )
 from modules.database.models.responses import ScannedDBResponse
+from modules.database.repository import DatabaseRepository
 from modules.organization.models.entities import Organization
 from modules.organization.service import OrganizationService
 from utils.s3 import S3
@@ -15,6 +18,7 @@ from utils.s3 import S3
 
 class DatabaseService:
     def __init__(self):
+        self.repo = DatabaseRepository()
         self.org_service = OrganizationService()
 
     async def get_scanned_databases(
@@ -77,6 +81,17 @@ class DatabaseService:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST, detail=response.json()
                 )
+
+            response_json = response.json()
+            db_connection = DatabaseConnection(**response_json)
+            db_connection.id = ObjectId(response_json["id"])
+            self.repo.add_database_connection_ref(
+                DatabaseConnectionRef(
+                    db_alias=database_connection_request.db_alias,
+                    db_connection_id=ObjectId(db_connection.id),
+                    organization_id=ObjectId(org_id),
+                ).dict(exclude={"id"})
+            )
 
             self.org_service.update_organization(
                 org_id, {"db_alias": database_connection_request.db_alias}

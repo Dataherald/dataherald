@@ -78,12 +78,12 @@ class GoldenSQLService:
             response.raise_for_status()
             response_json = response.json()[0]
             golden_sql = GoldenSQL(**response_json)
-            golden_sql.id = response_json["id"]
+            golden_sql.id = ObjectId(response_json["id"])
 
             display_id = self.repo.get_next_display_id(org_id)
 
             golden_sql_ref_data = GoldenSQLRef(
-                golden_sql_id=ObjectId(golden_sql.id),
+                golden_sql_id=golden_sql.id,
                 organization_id=ObjectId(org_id),
                 source=source.value,
                 query_response_id=ObjectId(query_response_id),

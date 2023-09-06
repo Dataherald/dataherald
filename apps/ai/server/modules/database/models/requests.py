@@ -32,7 +32,7 @@ class SSHSettings(BaseModel):
 
 
 class DatabaseConnectionRequest(BaseModel):
-    db_alias: str
+    db_alias: str | None
     use_ssh: bool = False
     connection_uri: str | None
     path_to_credentials_file: str | None

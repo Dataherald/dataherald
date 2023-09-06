@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from pydantic import BaseSettings
 
 DATABASE_CONNECTION_COL = "database_connection"
+DATABASE_CONNECTION_REF_COL = "database_connection_ref"
 QUESTION_COL = "nl_question"
 QUERY_RESPONSE_COL = "nl_query_response"
 QUERY_RESPONSE_REF_COL = "nl_query_response_ref"
