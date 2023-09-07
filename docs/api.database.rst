@@ -151,8 +151,11 @@ Example::
 BigQuery
 ^^^^^^^^^^^^
 
-To connect to BigQuery you should create a json credential file. You can
-follow this `tutorial <https://www.privacydynamics.io/docs/connections/bigquery.html>`_ to generate it.
+To connect to BigQuery you should create a json credential file. Please follow Steps 1-3 under "Configure BigQuery
+Authentication in Google Cloud Platform" in
+this `tutorial <https://www.privacydynamics.io/docs/connections/bigquery.html>`_.
+
+    Please ensure the service account only has **"Viewer"** permissions.
 
 Once you have your credential json file you can store it inside the project. For example given the credential file `my-db-123456acbd.json` 
 in the folder `private_credentials`  you should set in the endpoint param `path_to_credentials_file` the path, for example::
