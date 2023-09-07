@@ -20,8 +20,8 @@ def create_sql_query_status(
             query = db.parser_to_filter_commands(query)
             with db._engine.connect() as connection:
                 execution = connection.execute(text(query))
-            columns = execution.keys()
-            result = execution.fetchall()
+                columns = execution.keys()
+                result = execution.fetchall()
             if len(result) == 0:
                 response.sql_query_result = None
             else:
