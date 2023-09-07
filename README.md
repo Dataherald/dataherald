@@ -215,8 +215,11 @@ You can generate the `connection_uri` parameter in the API call for each of the 
 ```
 
 **BigQuery**
-To connect to BigQuery you should create a credential file, this is a json file, you can
-follow this [tutorial](https://www.privacydynamics.io/docs/connections/bigquery.html) to generate it.
+To connect to BigQuery you should create a json credential file. Please follow Steps 1-3 under "Configure 
+BigQuery Authentication in Google Cloud Platform" in 
+this [tutorial](https://www.privacydynamics.io/docs/connections/bigquery.html). 
+
+> IMPORTANT: Please ensure the service account only has **"Viewer"** permissions.
 
 Once you have your credential json file you can store it inside this project for example I created the folder 
 `private_credentials` and inside I stored my credential file `my-db-123456acbd.json`
