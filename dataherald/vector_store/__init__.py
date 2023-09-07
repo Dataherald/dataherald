@@ -13,7 +13,11 @@ class VectorStore(Component, ABC):
 
     @abstractmethod
     def query(
-        self, query_texts: List[str], db_alias: str, collection: str, num_results: int
+        self,
+        query_texts: List[str],
+        db_connection_id: str,
+        collection: str,
+        num_results: int,
     ) -> list:
         pass
 

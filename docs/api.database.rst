@@ -18,7 +18,7 @@ You can find additional details on how to connect to each of the supported data 
 .. code-block:: rst
 
    {
-      "db_alias": "string",
+      "alias": "string",
       "use_ssh": true,
       "connection_uri": "string",
       "path_to_credentials_file": "string",
@@ -73,7 +73,7 @@ Without a SSH connection
       -H 'accept: application/json' \
       -H 'Content-Type: application/json' \
       -d '{
-      "db_alias": "my_db_alias_identifier",
+      "alias": "my_db_alias_identifier",
       "use_ssh": false,
       "connection_uri": "sqlite:///mydb.db"
     }'
@@ -89,7 +89,7 @@ With a SSH connection
       -H 'accept: application/json' \
       -H 'Content-Type: application/json' \
       -d '{
-      "db_alias": "my_db_alias_identifier",
+      "alias": "my_db_alias",
       "use_ssh": true,
       "ssh_settings": {
         "db_name": "db_name",

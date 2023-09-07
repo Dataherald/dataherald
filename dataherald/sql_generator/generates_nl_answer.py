@@ -36,10 +36,11 @@ class GeneratesNlAnswer:
             nl_query_response.nl_question_id
         )
 
-        db_connection = self.storage.find_one(
-            "database_connection", {"alias": nl_question.db_alias}
+        db_connection = self.storage.find_by_id(
+            "database_connection", nl_question.db_connection_id
         )
         database_connection = DatabaseConnection(**db_connection)
+        database_connection.id = nl_question.db_connection_id
         database = SQLDatabase.get_sql_engine(database_connection)
         nl_query_response = create_sql_query_status(
             database, nl_query_response.sql_query, nl_query_response

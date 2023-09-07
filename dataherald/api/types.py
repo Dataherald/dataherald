@@ -1,6 +1,5 @@
-from pydantic import BaseModel
+from dataherald.types import DBConnectionValidation
 
 
-class Query(BaseModel):
+class Query(DBConnectionValidation):
     sql_statement: str
-    db_alias: str

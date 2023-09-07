@@ -14,7 +14,7 @@ Request this ``GET`` endpoint::
    :header: "Name", "Type", "Description"
    :widths: 20, 20, 60
 
-   "db_alias", "string", "DB alias, ``Required``"
+   "db_connection_id", "string", "DB connection id, ``Required``"
 
 **Responses**
 
@@ -23,7 +23,7 @@ HTTP 200 code response
 .. code-block:: rst
 
     {
-      "db_alias": "string",
+      "db_connection_id": "string",
       "tables": [
         {
           "id": "string",
@@ -40,7 +40,7 @@ HTTP 200 code response
 .. code-block:: rst
 
    curl -X 'GET' \
-  '<host>/api/v1/scanned-databases?db_alias=databricks' \
+  '<host>/api/v1/scanned-databases?db_connection_id=64dfa0e103f5134086f7090c' \
   -H 'accept: application/json'
 
 **Response example**
@@ -48,7 +48,7 @@ HTTP 200 code response
 .. code-block:: rst
 
     {
-      "db_alias": "databricks",
+      "db_connection_id": "64dfa0e103f5134086f7090c",
       "tables": [
         {
           "id": "64dfa18c03f5134086f7090d",

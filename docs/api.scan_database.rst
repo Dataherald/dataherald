@@ -17,7 +17,7 @@ Request this ``POST`` endpoint::
 .. code-block:: rst
 
    {
-      "db_alias": "string",
+      "db_connection_id": "string",
       "table_name": "string" # Optional
     }
 
@@ -40,5 +40,5 @@ To scan all the tables in a db don't specify a `table_name`
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
       -d '{
-      "db_alias": "db_alias"
+      "db_connection_id": "db_connection_id"
     }'

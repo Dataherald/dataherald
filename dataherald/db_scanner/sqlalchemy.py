@@ -117,7 +117,7 @@ class SqlAlchemyScanner(Scanner):
         meta: MetaData,
         table: str,
         db_engine: SQLDatabase,
-        db_alias: str,
+        db_connection_id: str,
         repository: DBScannerRepository,
     ) -> TableSchemaDetail:
         print(f"Scanning table: {table}")
@@ -135,7 +135,7 @@ class SqlAlchemyScanner(Scanner):
             )
 
         object = TableSchemaDetail(
-            db_alias=db_alias,
+            db_connection_id=db_connection_id,
             table_name=table,
             columns=table_columns,
             table_schema=self.get_table_schema(
@@ -153,7 +153,7 @@ class SqlAlchemyScanner(Scanner):
     def scan(
         self,
         db_engine: SQLDatabase,
-        db_alias: str,
+        db_connection_id: str,
         table_name: str | None,
         repository: DBScannerRepository,
     ) -> None:
@@ -175,7 +175,7 @@ class SqlAlchemyScanner(Scanner):
                 meta=meta,
                 table=table,
                 db_engine=db_engine,
-                db_alias=db_alias,
+                db_connection_id=db_connection_id,
                 repository=repository,
             )
             result.append(obj)

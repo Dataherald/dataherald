@@ -12,7 +12,7 @@ class Scanner(Component, ABC):
     def scan(
         self,
         db_engine: SQLDatabase,
-        db_alias: str,
+        db_connection_id: str,
         table_name: str | None,
         repository: DBScannerRepository,
     ) -> None:

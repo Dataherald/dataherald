@@ -121,25 +121,27 @@ class FastAPI(dataherald.server.Server):
 
     def add_description(
         self,
-        db_name: str,
+        db_connection_id: str,
         table_name: str,
         table_description_request: TableDescriptionRequest,
     ) -> bool:
         """Add descriptions for tables and columns"""
-        return self._api.add_description(db_name, table_name, table_description_request)
+        return self._api.add_description(
+            db_connection_id, table_name, table_description_request
+        )
 
     def execute_query(self, query: Query) -> tuple[str, dict]:
-        """Executes a query on the given db_alias"""
+        """Executes a query on the given db_connection_id"""
         return self._api.execute_query(query)
 
     def update_query(self, query_id: str, query: UpdateQueryRequest) -> NLQueryResponse:
-        """Executes a query on the given db_alias"""
+        """Executes a query on the given db_connection_id"""
         return self._api.update_query(query_id, query)
 
     def execute_temp_query(
         self, query_id: str, query: ExecuteTempQueryRequest
     ) -> NLQueryResponse:
-        """Executes a query on the given db_alias"""
+        """Executes a query on the given db_connection_id"""
         return self._api.execute_temp_query(query_id, query)
 
     def delete_golden_record(self, golden_record_id: str) -> dict:
@@ -162,6 +164,6 @@ class FastAPI(dataherald.server.Server):
         """Gets golden records"""
         return self._api.get_golden_records(page, limit)
 
-    def get_scanned_databases(self, db_alias: str) -> ScannedDBResponse:
+    def get_scanned_databases(self, db_connection_id: str) -> ScannedDBResponse:
         """Gets golden records"""
-        return self._api.get_scanned_databases(db_alias)
+        return self._api.get_scanned_databases(db_connection_id)

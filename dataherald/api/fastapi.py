@@ -53,26 +53,27 @@ class FastAPI(API):
 
     @override
     def scan_db(self, scanner_request: ScannerRequest) -> bool:
-        """Takes a db_alias and scan all the tables columns"""
-        db_connection = self.storage.find_one(
-            "database_connection", {"alias": scanner_request.db_alias}
+        """Takes a db_connection_id and scan all the tables columns"""
+        db_connection = self.storage.find_by_id(
+            "database_connection", scanner_request.db_connection_id
         )
         if not db_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
         database_connection = DatabaseConnection(**db_connection)
+        database_connection.id = scanner_request.db_connection_id
         try:
             database = SQLDatabase.get_sql_engine(database_connection)
         except Exception as e:
             raise HTTPException(  # noqa: B904
                 status_code=400,
-                detail=f"Unable to connect to db: {scanner_request.db_alias}, {e}",
+                detail=f"Unable to connect to db: {scanner_request.db_connection_id}, {e}",
             )
 
         scanner = self.system.instance(Scanner)
         try:
             scanner.scan(
                 database,
-                scanner_request.db_alias,
+                scanner_request.db_connection_id,
                 scanner_request.table_name,
                 DBScannerRepository(self.storage),
             )
@@ -89,19 +90,20 @@ class FastAPI(API):
         context_store = self.system.instance(ContextStore)
 
         user_question = NLQuery(
-            question=question_request.question, db_alias=question_request.db_alias
+            question=question_request.question,
+            db_connection_id=question_request.db_connection_id,
         )
 
         nl_question_repository = NLQuestionRepository(self.storage)
         user_question = nl_question_repository.insert(user_question)
 
-        db_connection = self.storage.find_one(
-            "database_connection", {"alias": question_request.db_alias}
+        db_connection = self.storage.find_by_id(
+            "database_connection", question_request.db_connection_id
         )
         if not db_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
         database_connection = DatabaseConnection(**db_connection)
-
+        database_connection.id = question_request.db_connection_id
         context = context_store.retrieve_context_for_question(user_question)
         start_generated_answer = time.time()
         try:
@@ -128,18 +130,17 @@ class FastAPI(API):
     ) -> DatabaseConnection:
         try:
             db_connection = DatabaseConnection(
+                alias=database_connection_request.alias,
                 uri=database_connection_request.connection_uri,
                 path_to_credentials_file=database_connection_request.path_to_credentials_file,
-                alias=database_connection_request.db_alias,
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
             )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))  # noqa: B904
         db_connection.id = str(
-            self.storage.update_or_create(
+            self.storage.insert_one(
                 "database_connection",
-                {"alias": database_connection_request.db_alias},
                 db_connection.dict(),
             )
         )
@@ -149,12 +150,12 @@ class FastAPI(API):
     @override
     def add_description(
         self,
-        db_name: str,
+        db_connection_id: str,
         table_name: str,
         table_description_request: TableDescriptionRequest,
     ) -> bool:
         scanner_repository = DBScannerRepository(self.storage)
-        table = scanner_repository.get_table_info(db_name, table_name)
+        table = scanner_repository.get_table_info(db_connection_id, table_name)
 
         if not table:
             raise HTTPException(
@@ -183,12 +184,13 @@ class FastAPI(API):
     @override
     def execute_query(self, query: Query) -> tuple[str, dict]:
         """Executes a SQL query against the database and returns the results"""
-        db_connection = self.storage.find_one(
-            "database_connection", {"alias": query.db_alias}
+        db_connection = self.storage.find_by_id(
+            "database_connection", query.db_connection_id
         )
         if not db_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
         database_connection = DatabaseConnection(**db_connection)
+        database_connection.id = query.db_connection_id
         database = SQLDatabase.get_sql_engine(database_connection)
         try:
             result = database.run_sql(query.sql_statement)
@@ -209,14 +211,15 @@ class FastAPI(API):
         if nl_query_response.sql_query.strip() != query.sql_query.strip():
             nl_query_response.sql_query = query.sql_query
             evaluator = self.system.instance(Evaluator)
-            db_connection = self.storage.find_one(
-                "database_connection", {"alias": nl_question.db_alias}
+            db_connection = self.storage.find_by_id(
+                "database_connection", nl_question.db_connection_id
             )
             if not db_connection:
                 raise HTTPException(
                     status_code=404, detail="Database connection not found"
                 )
             database_connection = DatabaseConnection(**db_connection)
+            database_connection.id = nl_question.db_connection_id
             try:
                 confidence_score = evaluator.get_confidence_score(
                     nl_question, nl_query_response, database_connection
@@ -244,9 +247,9 @@ class FastAPI(API):
         return json.loads(json_util.dumps(nl_query_response))
 
     @override
-    def get_scanned_databases(self, db_alias: str) -> ScannedDBResponse:
+    def get_scanned_databases(self, db_connection_id: str) -> ScannedDBResponse:
         scanner_repository = DBScannerRepository(self.storage)
-        tables = scanner_repository.get_all_tables_by_db(db_alias)
+        tables = scanner_repository.get_all_tables_by_db(db_connection_id)
         process_tables = []
         for table in tables:
             process_tables.append(
@@ -257,7 +260,7 @@ class FastAPI(API):
                 )
             )
         scanned_db_response = ScannedDBResponse(
-            db_alias=db_alias, tables=process_tables
+            db_connection_id=db_connection_id, tables=process_tables
         )
         return json.loads(json_util.dumps(scanned_db_response))
 

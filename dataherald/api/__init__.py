@@ -42,7 +42,7 @@ class API(Component, ABC):
     @abstractmethod
     def add_description(
         self,
-        db_name: str,
+        db_connection_id: str,
         table_name: str,
         table_description_request: TableDescriptionRequest,
     ) -> bool:
@@ -69,7 +69,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def get_scanned_databases(self, db_alias: str) -> ScannedDBResponse:
+    def get_scanned_databases(self, db_connection_id: str) -> ScannedDBResponse:
         pass
 
     @abstractmethod

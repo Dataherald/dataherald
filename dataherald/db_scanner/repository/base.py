@@ -12,18 +12,19 @@ class DBScannerRepository:
         self.storage = storage
 
     def get_table_info(
-        self, db_alias: str, table_name: str
+        self, db_connection_id: str, table_name: str
     ) -> TableSchemaDetail | None:
         row = self.storage.find_one(
-            DB_COLLECTION, {"db_alias": db_alias, "table_name": table_name}
+            DB_COLLECTION,
+            {"db_connection_id": db_connection_id, "table_name": table_name},
         )
         if row:
             row["id"] = row["_id"]
             return TableSchemaDetail(**row)
         return None
 
-    def get_all_tables_by_db(self, db_alias: str) -> List[TableSchemaDetail]:
-        rows = self.storage.find(DB_COLLECTION, {"db_alias": db_alias})
+    def get_all_tables_by_db(self, db_connection_id: str) -> List[TableSchemaDetail]:
+        rows = self.storage.find(DB_COLLECTION, {"db_connection_id": db_connection_id})
         tables = []
         for row in rows:
             row["id"] = row["_id"]
@@ -33,7 +34,10 @@ class DBScannerRepository:
     def save_table_info(self, table_info: TableSchemaDetail) -> None:
         self.storage.update_or_create(
             DB_COLLECTION,
-            {"db_alias": table_info.db_alias, "table_name": table_info.table_name},
+            {
+                "db_connection_id": table_info.db_connection_id,
+                "table_name": table_info.table_name,
+            },
             table_info.dict(),
         )
 
