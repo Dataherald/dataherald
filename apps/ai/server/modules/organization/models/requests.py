@@ -33,5 +33,5 @@ class SlackInstallationRequest(BaseModel):
 class OrganizationRequest(BaseModel):
     name: str
     db_alias: str | None
-    confidence_threshold: confloat(ge=0, le=1) = 0.80
+    confidence_threshold: confloat(ge=0, le=1) = 1.0
     slack_installation: SlackInstallationRequest | None

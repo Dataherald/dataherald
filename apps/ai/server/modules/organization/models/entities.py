@@ -36,5 +36,5 @@ class Organization(BaseModel):
     id: Any = Field(alias="_id")
     name: str
     db_alias: str | None
-    confidence_threshold: confloat(ge=0, le=1) = 0.80
+    confidence_threshold: confloat(ge=0, le=1) = 1.0
     slack_installation: SlackInstallation | None
