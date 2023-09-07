@@ -200,33 +200,18 @@ By default, DB credentials are stored in `database_connection` collection in Mon
 You can generate the `connection_uri` parameter in the API call for each of the supported warehouses by using the steps outlined below.
 
 **Postgres**
-Uri structure:
 ```
 "connection_uri": postgresql+psycopg2://<user>:<password>@<host>:<port>/<db-name>
 ```
-Example:
-```
-"connection_uri": postgresql+psycopg2://admin:123456@foo.rds.amazonaws.com:5432/my-database
-```
 
 **Databricks**
-Uri structure:
 ```
 "connection_uri": databricks://token:<token>@<host>?http_path=<http-path>&catalog=<catalog>&schema=<schema-name>
 ```
-Example:
-```
-"connection_uri": databricks://token:abcd1234abcd1234abcd1234abcd1234@foo-bar.cloud.databricks.com?http_path=sql/protocolv1/o/123456/123-1234-abcdabcd&catalog=foobar&schema=default
-```
 
 **Snowflake**
-Uri structure:
 ```
 "connection_uri": snowflake://<user>:<password>@<organization>-<account-name>/<database>/<schema>
-```
-Example:
-```
-"connection_uri": snowflake://jon:123456@foo-bar/my-database/public
 ```
 
 **BigQuery**
@@ -241,23 +226,20 @@ You should set in the endpoint param `path_to_credentials_file` the path, for ex
 "path_to_credentials_file": "private_credentials/my-db-123456acbd.json"
 ```
 
-Uri structure:
 ```
 "connection_uri": bigquery://<project>/<database>
-```
-Example:
-```
-"connection_uri": bigquery://v2-real-estate/K2
 ```
 
 
 
 ### Adding Context
-Once you have connected to the data warehouse, you should add context to the engine to help improve the accuracy of the generated SQL. While only the Database scan part is required to start generating SQL, adding verified SQL and string descriptions are also important for the tool to generate accurate SQL. Context can currently be added in one of three ways:
+Once you have connected to the data warehouse, you should add context to the engine to help improve the accuracy of the generated SQL. Context can currently be added in one of three ways:
 
 1. Scanning the Database tables and columns
 2. Adding verified SQL (golden SQL)
 3. Adding string descriptions of the tables and columns
+
+While only the Database scan part is required to start generating SQL, adding verified SQL and string descriptions are also important for the tool to generate accurate SQL. 
 
 #### Scanning the Database
 The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM. You can trigger a scan of a database from the `POST /api/v1/scanner` endpoint. Example below
@@ -336,7 +318,7 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-        "question": "what was the most expensive zip code to rent in Los Angeles county in May 2022?"",
+        "question": "Your question in natural language",
         "db_alias": "db_name"
     }'
 ```
