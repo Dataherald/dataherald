@@ -32,4 +32,20 @@ You can use Ngrok to expose your local server to the internet so that Slack can 
 
 ## Local development
 
-Environment variables need to be filled in with the data from the Slackbot app from Slack. We recommend using DEV slackbot for development. Note that to communicate with the Slackbot the `ngrok` URL must be added to the **Request URL** list in the Event Subscriptions tab. Also for installation the Oauth redirect URL must be added.
+The proper environment variables need to be set in order to develop locally. We recommend using **Dataherald AI [DEV]** slackbot for development and not the **Dataherald AI [STAGE]**. 
+
+There are two ways to develop:
+1. Socket mode
+2. Oauth mode 
+
+### Socket Mode
+This is the **default** for **Dataherald AI [DEV]** Slackbot. It makes a direct connection with our Dataherald workspace to start asking questions. It doesn't support working with other workspaces nor Organizations.
+
+### Oauth Mode
+This is the production-like mode in which we're able to install the slackbot in several workspaces and work dynamically with all of them. To be able to use this mode for development its required to:
+1. Disable the socket mode on **Dataherald AI [DEV]** 
+2. Setup ngork to expose your local server to the internet with SSL certificate.
+3. Add the https to the **Redirect URL** list in the **Oauth & permissions** tab
+4. Set the https **Request URL** in the **Event Subscriptions** tab. 
+
+> It can't be more than one developer working with the bot

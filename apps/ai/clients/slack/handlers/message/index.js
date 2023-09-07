@@ -1,5 +1,5 @@
 require('dotenv').config()
-const { log } = require('console')
+const { log, error } = require('console')
 const getApiAuthToken = require('../../auth')
 
 const API_URL = process.env.API_URL
@@ -51,22 +51,35 @@ async function handleMessage(context, say) {
             body: JSON.stringify(payload),
         })
         if (!response.ok) {
-            const error = response.text()
-            log('API Response not ok: ', error)
-            const responseMessage = `Sorry, something went wrong when I was processing your request. Please try again later.`
-            await say({
-                blocks: [
-                    {
-                        type: 'section',
-                        text: {
-                            type: 'mrkdwn',
-                            text: `:exclamation: ${responseMessage}`,
+            try {
+                error(
+                    'API Response not ok: ',
+                    response.status,
+                    response.statusText,
+                    await response.json()
+                )
+            } catch (e) {
+                error(
+                    'API Response not ok: ',
+                    response.status,
+                    response.statusText
+                )
+            } finally {
+                const responseMessage = `Sorry, something went wrong when I was processing your request. Please try again later.`
+                await say({
+                    blocks: [
+                        {
+                            type: 'section',
+                            text: {
+                                type: 'mrkdwn',
+                                text: `:exclamation: ${responseMessage}`,
+                            },
                         },
-                    },
-                ],
-                text: responseMessage,
-                thread_ts,
-            })
+                    ],
+                    text: responseMessage,
+                    thread_ts,
+                })
+            }
         } else {
             const data = await response.json()
             const {
