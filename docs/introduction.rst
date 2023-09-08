@@ -12,8 +12,8 @@ You can use Dataherald to:
 
 Dataherald is built to:
 
-* Be modular, allowing different implementations of core modules to be plugged-in
-* Come batteries included: Have best-in-class implementations for modules like text to SQL, evaluation   
-* Be easy to set-up and use with major data warehouses
-* Allow for Active Learning, allowing you to improve the performance with usage
-* Be fast
+* 🔌 Be modular, allowing different implementations of core modules to be plugged-in
+* 🔋 Come batteries included: Have best-in-class implementations for modules like text to SQL, evaluation   
+* 📀 Be easy to set-up and use with major data warehouses 
+* 👨‍🏫 Allow for Active Learning, allowing you to improve the performance with usage 
+* 🏎️ Be fast 

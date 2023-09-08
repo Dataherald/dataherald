@@ -1,0 +1,33 @@
+Environment Variables
+=======================
+
+
+# Openai info. All these fields are required for the engine to work.
+OPENAI_API_KEY = #This field is required for the engine to work.
+ORG_ID =
+LLM_MODEL = 'gpt-4-32k' #the openAI llm model that you want to use. possible values: gpt-4-32k, gpt-4, gpt-3.5-turbo, gpt-3.5-turbo-16k
+
+
+GOLDEN_RECORD_COLLECTION = 'my-golden-records'
+#Pinecone info. These fields are required if the vector store used is Pinecone
+PINECONE_API_KEY =
+PINECONE_ENVIRONMENT =
+
+# Module implementations to be used names for each required component. You can use the default ones or create your own
+API_SERVER = "dataherald.api.fastapi.FastAPI"
+SQL_GENERATOR = "dataherald.sql_generator.dataherald_sqlagent.DataheraldSQLAgent"
+EVALUATOR = "dataherald.eval.simple_evaluator.SimpleEvaluator"
+DB = "dataherald.db.mongo.MongoDB"
+VECTOR_STORE = 'dataherald.vector_store.chroma.Chroma' 
+CONTEXT_STORE = 'dataherald.context_store.default.DefaultContextStore' # Set a context store class, the default one is DefaultContextStore
+DB_SCANNER = 'dataherald.db_scanner.sqlalchemy.SqlAlchemyScanner'
+
+# mongo database information
+MONGODB_URI = "mongodb://admin:admin@mongodb:27017"
+MONGODB_DB_NAME = 'dataherald'
+MONGODB_DB_USERNAME = 'admin'
+MONGODB_DB_PASSWORD = 'admin'
+
+
+# The enncryption key is used to encrypt database connection info before storing in Mongo. Please refer to the README on how to set it.
+ENCRYPT_KEY = 
