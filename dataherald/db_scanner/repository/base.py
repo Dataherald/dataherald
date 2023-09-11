@@ -65,3 +65,13 @@ class DBScannerRepository:
             obj.id = str(row["_id"])
             result.append(obj)
         return result
+
+    def find_by(self, query: dict) -> list[TableSchemaDetail]:
+        query = {k: v for k, v in query.items() if v}
+        rows = self.storage.find(DB_COLLECTION, query)
+        result = []
+        for row in rows:
+            obj = TableSchemaDetail(**row)
+            obj.id = str(row["_id"])
+            result.append(obj)
+        return result

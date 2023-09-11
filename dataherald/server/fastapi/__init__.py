@@ -185,9 +185,11 @@ class FastAPI(dataherald.server.Server):
             table_description_id, table_description_request
         )
 
-    def list_table_descriptions(self) -> list[TableSchemaDetail]:
+    def list_table_descriptions(
+        self, db_connection_id: str | None = None, table_name: str | None = None
+    ) -> list[TableSchemaDetail]:
         """List table descriptions"""
-        return self._api.list_table_descriptions()
+        return self._api.list_table_descriptions(db_connection_id, table_name)
 
     def execute_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""

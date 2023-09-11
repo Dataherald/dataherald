@@ -192,9 +192,13 @@ class FastAPI(API):
         return scanner_repository.update(table)
 
     @override
-    def list_table_descriptions(self) -> list[TableSchemaDetail]:
+    def list_table_descriptions(
+        self, db_connection_id: str | None = None, table_name: str | None = None
+    ) -> list[TableSchemaDetail]:
         scanner_repository = DBScannerRepository(self.storage)
-        return scanner_repository.find_all()
+        return scanner_repository.find_by(
+            {"db_connection_id": db_connection_id, "table_name": table_name}
+        )
 
     @override
     def add_golden_records(

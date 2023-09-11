@@ -60,7 +60,9 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def list_table_descriptions(self) -> list[TableSchemaDetail]:
+    def list_table_descriptions(
+        self, db_connection_id: str | None = None, table_name: str | None = None
+    ) -> list[TableSchemaDetail]:
         pass
 
     @abstractmethod
