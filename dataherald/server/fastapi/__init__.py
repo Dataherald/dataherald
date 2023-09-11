@@ -20,7 +20,6 @@ from dataherald.types import (
     GoldenRecordRequest,
     NLQueryResponse,
     QuestionRequest,
-    ScannedDBResponse,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateQueryRequest,
@@ -89,44 +88,53 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/question",
-            self.answer_question,
-            methods=["POST"],
-            tags=["Question"],
-        )
-
-        self.router.add_api_route("/api/v1/heartbeat", self.heartbeat, methods=["GET"])
-
-        self.router.add_api_route("/api/v1/query", self.execute_query, methods=["POST"])
-
-        self.router.add_api_route(
-            "/api/v1/query/{query_id}", self.update_query, methods=["PATCH"]
-        )
-
-        self.router.add_api_route(
-            "/api/v1/query/{query_id}/execution",
-            self.execute_temp_query,
-            methods=["POST"],
-        )
-
-        self.router.add_api_route(
             "/api/v1/golden-records/{golden_record_id}",
             self.delete_golden_record,
             methods=["DELETE"],
+            tags=["Golden records"],
         )
 
         self.router.add_api_route(
             "/api/v1/golden-records",
             self.add_golden_records,
             methods=["POST"],
+            tags=["Golden records"],
         )
 
         self.router.add_api_route(
-            "/api/v1/golden-records", self.get_golden_records, methods=["GET"]
+            "/api/v1/golden-records",
+            self.get_golden_records,
+            methods=["GET"],
+            tags=["Golden records"],
         )
 
         self.router.add_api_route(
-            "/api/v1/scanned-databases", self.get_scanned_databases, methods=["GET"]
+            "/api/v1/question",
+            self.answer_question,
+            methods=["POST"],
+            tags=["Question"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/queries", self.execute_query, methods=["POST"], tags=["Queries"]
+        )
+
+        self.router.add_api_route(
+            "/api/v1/query-responses/{query_id}",
+            self.execute_temp_query,
+            methods=["GET"],
+            tags=["Query responses"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/query-responses/{query_id}",
+            self.update_query,
+            methods=["PATCH"],
+            tags=["Query responses"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/heartbeat", self.heartbeat, methods=["GET"], tags=["System"]
         )
 
         self._app.include_router(self.router)
@@ -214,7 +222,3 @@ class FastAPI(dataherald.server.Server):
     def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
         """Gets golden records"""
         return self._api.get_golden_records(page, limit)
-
-    def get_scanned_databases(self, db_connection_id: str) -> ScannedDBResponse:
-        """Gets golden records"""
-        return self._api.get_scanned_databases(db_connection_id)
