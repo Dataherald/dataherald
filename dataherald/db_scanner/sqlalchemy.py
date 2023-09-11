@@ -150,7 +150,11 @@ class SqlAlchemyScanner(Scanner):
         MetaData.reflect(meta)
         tables = inspector.get_table_names()
         if table_name:
-            tables = [table for table in tables if table.lower() == table_name.lower()]
+            tables = [
+                table
+                for table in tables
+                if table and table.lower() == table_name.lower()
+            ]
         if len(tables) == 0:
             raise ValueError("No table found")
         result = []
