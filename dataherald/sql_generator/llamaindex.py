@@ -99,6 +99,6 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             total_tokens=token_counter.total_llm_token_count,
             total_cost=total_cost,
             intermediate_steps=[str(result.metadata)],
-            sql_query=result.metadata["sql_query"],
+            sql_query=self.format_sql_query(result.metadata["sql_query"]),
         )
         return self.create_sql_query_status(self.database, response.sql_query, response)

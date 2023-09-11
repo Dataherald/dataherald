@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import date, datetime
 from typing import Any, List, Tuple
 
+import sqlparse
 from langchain.schema import AgentAction
 
 from dataherald.config import Component, System
@@ -41,6 +42,21 @@ class SQLGenerator(Component, ABC):
                 f"Observation: '{item[1]}'"
             )
         return formatted_intermediate_representation
+
+    def format_sql_query(self, sql_query: str) -> str:
+        comments = [
+            match.group() for match in re.finditer(r"--.*$", sql_query, re.MULTILINE)
+        ]
+        sql_query_without_comments = re.sub(r"--.*$", "", sql_query, flags=re.MULTILINE)
+
+        # Check if the query contains line breaks
+        if "\n" in sql_query_without_comments.strip():
+            return sql_query  # Return as is if already well-formatted
+
+        # Parse the SQL query into a list of tokens and get the formatted version
+        parsed = sqlparse.format(sql_query_without_comments, reindent=True)
+
+        return parsed + "\n" + "\n".join(comments)
 
     @abstractmethod
     def generate_response(
