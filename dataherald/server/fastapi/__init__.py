@@ -46,16 +46,36 @@ class FastAPI(dataherald.server.Server):
         self.router = fastapi.APIRouter()
 
         self.router.add_api_route(
-            "/api/v1/question", self.answer_question, methods=["POST"]
+            "/api/v1/database-connections",
+            self.create_database_connection,
+            methods=["POST"],
+            tags=["Database connections"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/database-connections",
+            self.list_database_connections,
+            methods=["GET"],
+            tags=["Database connections"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/database-connections/{db_connection_id}",
+            self.update_database_connection,
+            methods=["PUT"],
+            tags=["Database connections"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/question",
+            self.answer_question,
+            methods=["POST"],
+            tags=["Question"],
         )
 
         self.router.add_api_route("/api/v1/scanner", self.scan_db, methods=["POST"])
 
         self.router.add_api_route("/api/v1/heartbeat", self.heartbeat, methods=["GET"])
-
-        self.router.add_api_route(
-            "/api/v1/database", self.connect_database, methods=["POST"]
-        )
 
         self.router.add_api_route(
             "/api/v1/scanned-db/{db_name}/{table_name}",
@@ -113,11 +133,25 @@ class FastAPI(dataherald.server.Server):
     def heartbeat(self) -> dict[str, int]:
         return self.root()
 
-    def connect_database(
+    def create_database_connection(
         self, database_connection_request: DatabaseConnectionRequest
     ) -> DatabaseConnection:
-        """Connects a database to the Dataherald service"""
-        return self._api.connect_database(database_connection_request)
+        """Creates a database connection"""
+        return self._api.create_database_connection(database_connection_request)
+
+    def list_database_connections(self) -> list[DatabaseConnection]:
+        """List all database connections"""
+        return self._api.list_database_connections()
+
+    def update_database_connection(
+        self,
+        db_connection_id: str,
+        database_connection_request: DatabaseConnectionRequest,
+    ) -> DatabaseConnection:
+        """Creates a database connection"""
+        return self._api.update_database_connection(
+            db_connection_id, database_connection_request
+        )
 
     def add_description(
         self,

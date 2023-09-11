@@ -34,8 +34,20 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def connect_database(
+    def create_database_connection(
         self, database_connection_request: DatabaseConnectionRequest
+    ) -> DatabaseConnection:
+        pass
+
+    @abstractmethod
+    def list_database_connections(self) -> list[DatabaseConnection]:
+        pass
+
+    @abstractmethod
+    def update_database_connection(
+        self,
+        db_connection_id: str,
+        database_connection_request: DatabaseConnectionRequest,
     ) -> DatabaseConnection:
         pass
 

@@ -16,6 +16,7 @@ from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.eval import Evaluator
 from dataherald.repositories.base import NLQueryResponseRepository
+from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.golden_records import GoldenRecordRepository
 from dataherald.repositories.nl_question import NLQuestionRepository
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
@@ -125,7 +126,7 @@ class FastAPI(API):
         return json.loads(json_util.dumps(nl_query_response))
 
     @override
-    def connect_database(
+    def create_database_connection(
         self, database_connection_request: DatabaseConnectionRequest
     ) -> DatabaseConnection:
         try:
@@ -138,14 +139,33 @@ class FastAPI(API):
             )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))  # noqa: B904
-        db_connection.id = str(
-            self.storage.insert_one(
-                "database_connection",
-                db_connection.dict(),
-            )
-        )
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        return db_connection_repository.insert(db_connection)
 
-        return db_connection
+    @override
+    def list_database_connections(self) -> list[DatabaseConnection]:
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        return db_connection_repository.find_all()
+
+    @override
+    def update_database_connection(
+        self,
+        db_connection_id: str,
+        database_connection_request: DatabaseConnectionRequest,
+    ) -> DatabaseConnection:
+        try:
+            db_connection = DatabaseConnection(
+                id=db_connection_id,
+                alias=database_connection_request.alias,
+                uri=database_connection_request.connection_uri,
+                path_to_credentials_file=database_connection_request.path_to_credentials_file,
+                use_ssh=database_connection_request.use_ssh,
+                ssh_settings=database_connection_request.ssh_settings,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))  # noqa: B904
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        return db_connection_repository.update(db_connection)
 
     @override
     def add_description(

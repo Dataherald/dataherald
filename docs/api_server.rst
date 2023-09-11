@@ -41,7 +41,7 @@ All implementations of the API module must inherit and implement the abstract :c
    :return: The NLQueryResponse containing the response to the user's question.
    :rtype: NLQueryResponse
 
-.. method:: connect_database(self, database_connection_request: DatabaseConnectionRequest) -> bool
+.. method:: create_database_connection(self, database_connection_request: DatabaseConnectionRequest) -> bool
    :noindex:
 
    Establishes a connection to a database using the provided connection request.
