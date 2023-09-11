@@ -13,7 +13,7 @@ class Scanner(Component, ABC):
         self,
         db_engine: SQLDatabase,
         db_connection_id: str,
-        table_name: str | None,
+        table_names: list[str] | None,
         repository: DBScannerRepository,
     ) -> None:
         """ "Scan a db"""

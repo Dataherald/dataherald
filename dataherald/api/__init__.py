@@ -3,6 +3,7 @@ from typing import Any, List
 
 from dataherald.api.types import Query
 from dataherald.config import Component
+from dataherald.db_scanner.models.types import TableSchemaDetail
 from dataherald.eval import Evaluation
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
@@ -52,12 +53,15 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def add_description(
+    def update_table_description(
         self,
-        db_connection_id: str,
-        table_name: str,
+        table_description_id: str,
         table_description_request: TableDescriptionRequest,
-    ) -> bool:
+    ) -> TableSchemaDetail:
+        pass
+
+    @abstractmethod
+    def list_table_descriptions(self) -> list[TableSchemaDetail]:
         pass
 
     @abstractmethod

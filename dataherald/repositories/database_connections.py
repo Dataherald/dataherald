@@ -35,7 +35,9 @@ class DatabaseConnectionRepository:
         row = self.storage.find_one(DB_COLLECTION, {"_id": ObjectId(id)})
         if not row:
             return None
-        return DatabaseConnection(**row)
+        obj = DatabaseConnection(**row)
+        obj.id = str(row["_id"])
+        return obj
 
     def find_all(self) -> list[DatabaseConnection]:
         rows = self.storage.find_all(DB_COLLECTION)

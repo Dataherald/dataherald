@@ -11,6 +11,14 @@ class DBScannerRepository:
     def __init__(self, storage):
         self.storage = storage
 
+    def find_by_id(self, id: str) -> TableSchemaDetail | None:
+        row = self.storage.find_one(DB_COLLECTION, {"_id": ObjectId(id)})
+        if not row:
+            return None
+        obj = TableSchemaDetail(**row)
+        obj.id = str(row["_id"])
+        return obj
+
     def get_table_info(
         self, db_connection_id: str, table_name: str
     ) -> TableSchemaDetail | None:
@@ -48,3 +56,12 @@ class DBScannerRepository:
             table_info.dict(exclude={"id"}),
         )
         return table_info
+
+    def find_all(self) -> list[TableSchemaDetail]:
+        rows = self.storage.find_all(DB_COLLECTION)
+        result = []
+        for row in rows:
+            obj = TableSchemaDetail(**row)
+            obj.id = str(row["_id"])
+            result.append(obj)
+        return result

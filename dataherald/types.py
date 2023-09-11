@@ -98,7 +98,7 @@ class QuestionRequest(DBConnectionValidation):
 
 
 class ScannerRequest(DBConnectionValidation):
-    table_name: str | None
+    table_names: list[str] | None
 
 
 class DatabaseConnectionRequest(BaseModel):

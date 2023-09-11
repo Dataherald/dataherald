@@ -13,6 +13,7 @@ from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.db_scanner import Scanner
+from dataherald.db_scanner.models.types import TableSchemaDetail
 from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.eval import Evaluator
 from dataherald.repositories.base import NLQueryResponseRepository
@@ -55,15 +56,16 @@ class FastAPI(API):
     @override
     def scan_db(self, scanner_request: ScannerRequest) -> bool:
         """Takes a db_connection_id and scan all the tables columns"""
-        db_connection = self.storage.find_by_id(
-            "database_connection", scanner_request.db_connection_id
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+
+        db_connection = db_connection_repository.find_by_id(
+            scanner_request.db_connection_id
         )
         if not db_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
-        database_connection = DatabaseConnection(**db_connection)
-        database_connection.id = scanner_request.db_connection_id
+
         try:
-            database = SQLDatabase.get_sql_engine(database_connection)
+            database = SQLDatabase.get_sql_engine(db_connection)
         except Exception as e:
             raise HTTPException(  # noqa: B904
                 status_code=400,
@@ -75,7 +77,7 @@ class FastAPI(API):
             scanner.scan(
                 database,
                 scanner_request.db_connection_id,
-                scanner_request.table_name,
+                scanner_request.table_names,
                 DBScannerRepository(self.storage),
             )
         except ValueError as e:
@@ -168,14 +170,13 @@ class FastAPI(API):
         return db_connection_repository.update(db_connection)
 
     @override
-    def add_description(
+    def update_table_description(
         self,
-        db_connection_id: str,
-        table_name: str,
+        table_description_id: str,
         table_description_request: TableDescriptionRequest,
-    ) -> bool:
+    ) -> TableSchemaDetail:
         scanner_repository = DBScannerRepository(self.storage)
-        table = scanner_repository.get_table_info(db_connection_id, table_name)
+        table = scanner_repository.find_by_id(table_description_id)
 
         if not table:
             raise HTTPException(
@@ -190,8 +191,12 @@ class FastAPI(API):
                     if column_request.name == column.name:
                         column.description = column_request.description
 
-        scanner_repository.update(table)
-        return True
+        return scanner_repository.update(table)
+
+    @override
+    def list_table_descriptions(self) -> list[TableSchemaDetail]:
+        scanner_repository = DBScannerRepository(self.storage)
+        return scanner_repository.find_all()
 
     @override
     def add_golden_records(

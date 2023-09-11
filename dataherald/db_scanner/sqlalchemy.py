@@ -154,19 +154,16 @@ class SqlAlchemyScanner(Scanner):
         self,
         db_engine: SQLDatabase,
         db_connection_id: str,
-        table_name: str | None,
+        table_names: list[str] | None,
         repository: DBScannerRepository,
     ) -> None:
         inspector = inspect(db_engine.engine)
         meta = MetaData(bind=db_engine.engine)
         MetaData.reflect(meta, views=True)
         tables = inspector.get_table_names() + inspector.get_view_names()
-        if table_name:
-            tables = [
-                table
-                for table in tables
-                if table and table.lower() == table_name.lower()
-            ]
+        if table_names:
+            table_names = [table.lower() for table in table_names]
+            tables = [table for table in tables if table and table.lower() in table_names]
         if len(tables) == 0:
             raise ValueError("No table found")
         result = []

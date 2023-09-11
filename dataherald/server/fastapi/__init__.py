@@ -10,6 +10,7 @@ from fastapi.routing import APIRoute
 import dataherald
 from dataherald.api.types import Query
 from dataherald.config import Settings
+from dataherald.db_scanner.models.types import TableSchemaDetail
 from dataherald.eval import Evaluation
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
@@ -67,21 +68,34 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/table-descriptions/scan",
+            self.scan_db,
+            methods=["POST"],
+            tags=["Table descriptions"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/table-descriptions/{table_description_id}",
+            self.update_table_description,
+            methods=["PATCH"],
+            tags=["Table descriptions"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/table-descriptions",
+            self.list_table_descriptions,
+            methods=["GET"],
+            tags=["Table descriptions"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/question",
             self.answer_question,
             methods=["POST"],
             tags=["Question"],
         )
 
-        self.router.add_api_route("/api/v1/scanner", self.scan_db, methods=["POST"])
-
         self.router.add_api_route("/api/v1/heartbeat", self.heartbeat, methods=["GET"])
-
-        self.router.add_api_route(
-            "/api/v1/scanned-db/{db_name}/{table_name}",
-            self.add_description,
-            methods=["PATCH"],
-        )
 
         self.router.add_api_route("/api/v1/query", self.execute_query, methods=["POST"])
 
@@ -153,16 +167,19 @@ class FastAPI(dataherald.server.Server):
             db_connection_id, database_connection_request
         )
 
-    def add_description(
+    def update_table_description(
         self,
-        db_connection_id: str,
-        table_name: str,
+        table_description_id: str,
         table_description_request: TableDescriptionRequest,
-    ) -> bool:
+    ) -> TableSchemaDetail:
         """Add descriptions for tables and columns"""
-        return self._api.add_description(
-            db_connection_id, table_name, table_description_request
+        return self._api.update_table_description(
+            table_description_id, table_description_request
         )
+
+    def list_table_descriptions(self) -> list[TableSchemaDetail]:
+        """List table descriptions"""
+        return self._api.list_table_descriptions()
 
     def execute_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""
