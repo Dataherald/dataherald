@@ -163,7 +163,9 @@ class SqlAlchemyScanner(Scanner):
         tables = inspector.get_table_names() + inspector.get_view_names()
         if table_names:
             table_names = [table.lower() for table in table_names]
-            tables = [table for table in tables if table and table.lower() in table_names]
+            tables = [
+                table for table in tables if table and table.lower() in table_names
+            ]
         if len(tables) == 0:
             raise ValueError("No table found")
         result = []

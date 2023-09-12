@@ -209,7 +209,7 @@ class FastAPI(API):
         return context_store.add_golden_records(golden_records)
 
     @override
-    def execute_query(self, query: Query) -> tuple[str, dict]:
+    def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         """Executes a SQL query against the database and returns the results"""
         db_connection = self.storage.find_by_id(
             "database_connection", query.db_connection_id
@@ -226,7 +226,7 @@ class FastAPI(API):
         return result
 
     @override
-    def update_query(
+    def update_nl_query_response(
         self, query_id: str, query: UpdateQueryRequest  # noqa: ARG002
     ) -> NLQueryResponse:
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
@@ -260,7 +260,7 @@ class FastAPI(API):
         return json.loads(json_util.dumps(nl_query_response))
 
     @override
-    def execute_temp_query(
+    def get_nl_query_response(
         self, query_id: str, query: ExecuteTempQueryRequest  # noqa: ARG002
     ) -> NLQueryResponse:
         nl_query_response_repository = NLQueryResponseRepository(self.storage)

@@ -72,15 +72,17 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def execute_query(self, query: Query) -> tuple[str, dict]:
+    def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         pass
 
     @abstractmethod
-    def update_query(self, query_id: str, query: UpdateQueryRequest) -> NLQueryResponse:
+    def update_nl_query_response(
+        self, query_id: str, query: UpdateQueryRequest
+    ) -> NLQueryResponse:
         pass
 
     @abstractmethod
-    def execute_temp_query(
+    def get_nl_query_response(
         self, query_id: str, query: ExecuteTempQueryRequest
     ) -> NLQueryResponse:
         pass
