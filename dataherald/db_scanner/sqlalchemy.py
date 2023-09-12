@@ -20,10 +20,20 @@ class SqlAlchemyScanner(Scanner):
     def get_table_examples(
         self, meta: MetaData, db_engine: SQLDatabase, table: str, rows_number: int = 3
     ) -> List[Any]:
-        examples_query = sqlalchemy.select(meta.tables[table]).limit(rows_number)
+        print(f"Create examples: {table}")
+        examples_query = (
+            sqlalchemy.select(meta.tables[table])
+            .with_only_columns(
+                [
+                    column
+                    for column in meta.tables[table].columns
+                    if column.name.find(".") < 0
+                ]
+            )
+            .limit(rows_number)
+        )
         examples = db_engine.engine.execute(examples_query).fetchall()
         examples_dict = []
-        print(f"Create examples: {table}")
         columns = [column["name"] for column in examples_query.column_descriptions]
         for example in examples:
             temp_dict = {}
@@ -114,6 +124,8 @@ class SqlAlchemyScanner(Scanner):
         inspector = inspect(db_engine.engine)
         table_columns = []
         columns = inspector.get_columns(table_name=table)
+        columns = [column for column in columns if column["name"].find(".") < 0]
+
         for column in columns:
             print(f"Scanning column: {column['name']}")
             table_columns.append(
@@ -147,8 +159,8 @@ class SqlAlchemyScanner(Scanner):
     ) -> None:
         inspector = inspect(db_engine.engine)
         meta = MetaData(bind=db_engine.engine)
-        MetaData.reflect(meta)
-        tables = inspector.get_table_names()
+        MetaData.reflect(meta, views=True)
+        tables = inspector.get_table_names() + inspector.get_view_names()
         if table_name:
             tables = [
                 table
