@@ -1,4 +1,3 @@
-# from datetime import datetime add this later
 from enum import Enum
 from typing import Any
 
@@ -26,6 +25,7 @@ class UpdateQueryRequest(BaseModel):
 
 
 class ExecuteTempQueryRequest(BaseModel):
+    query_id: str
     sql_query: str
 
 

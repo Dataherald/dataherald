@@ -258,11 +258,13 @@ class FastAPI(API):
 
     @override
     def get_nl_query_response(
-        self, query_id: str, query: ExecuteTempQueryRequest  # noqa: ARG002
+        self, query_request: ExecuteTempQueryRequest  # noqa: ARG002
     ) -> NLQueryResponse:
         nl_query_response_repository = NLQueryResponseRepository(self.storage)
-        nl_query_response = nl_query_response_repository.find_by_id(query_id)
-        nl_query_response.sql_query = query.sql_query
+        nl_query_response = nl_query_response_repository.find_by_id(
+            query_request.query_id
+        )
+        nl_query_response.sql_query = query_request.sql_query
         try:
             generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
             nl_query_response = generates_nl_answer.execute(nl_query_response)

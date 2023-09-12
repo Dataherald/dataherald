@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import List
 
 from dataherald.api.types import Query
 from dataherald.config import Component
 from dataherald.db_scanner.models.types import TableSchemaDetail
-from dataherald.eval import Evaluation
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
     DatabaseConnectionRequest,
@@ -83,7 +82,7 @@ class API(Component, ABC):
 
     @abstractmethod
     def get_nl_query_response(
-        self, query_id: str, query: ExecuteTempQueryRequest
+        self, query_request: ExecuteTempQueryRequest
     ) -> NLQueryResponse:
         pass
 

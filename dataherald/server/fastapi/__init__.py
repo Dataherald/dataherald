@@ -1,9 +1,8 @@
-from typing import Any, List, Union
+from typing import Any, List
 
 import fastapi
 from fastapi import FastAPI as _FastAPI
 from fastapi import status
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 
@@ -11,7 +10,6 @@ import dataherald
 from dataherald.api.types import Query
 from dataherald.config import Settings
 from dataherald.db_scanner.models.types import TableSchemaDetail
-from dataherald.eval import Evaluation
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
     DatabaseConnectionRequest,
@@ -116,9 +114,9 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/nl-query-responses/{query_id}",
+            "/api/v1/nl-query-responses",
             self.get_nl_query_response,
-            methods=["GET"],
+            methods=["POST"],
             tags=["NL query responses"],
         )
 
@@ -205,10 +203,10 @@ class FastAPI(dataherald.server.Server):
         return self._api.update_nl_query_response(query_id, query)
 
     def get_nl_query_response(
-        self, query_id: str, query: ExecuteTempQueryRequest
+        self, query_request: ExecuteTempQueryRequest
     ) -> NLQueryResponse:
         """Executes a query on the given db_connection_id"""
-        return self._api.get_nl_query_response(query_id, query)
+        return self._api.get_nl_query_response(query_request)
 
     def delete_golden_record(self, golden_record_id: str) -> dict:
         """Deletes a golden record"""
