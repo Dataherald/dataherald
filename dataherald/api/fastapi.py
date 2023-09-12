@@ -98,13 +98,12 @@ class FastAPI(API):
         nl_question_repository = NLQuestionRepository(self.storage)
         user_question = nl_question_repository.insert(user_question)
 
-        db_connection = self.storage.find_by_id(
-            "database_connection", question_request.db_connection_id
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        database_connection = db_connection_repository.find_by_id(
+            question_request.db_connection_id
         )
-        if not db_connection:
+        if not database_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
-        database_connection = DatabaseConnection(**db_connection)
-        database_connection.id = question_request.db_connection_id
         context = context_store.retrieve_context_for_question(user_question)
         start_generated_answer = time.time()
         try:
@@ -211,13 +210,12 @@ class FastAPI(API):
     @override
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         """Executes a SQL query against the database and returns the results"""
-        db_connection = self.storage.find_by_id(
-            "database_connection", query.db_connection_id
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        database_connection = db_connection_repository.find_by_id(
+            query.db_connection_id
         )
-        if not db_connection:
+        if not database_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
-        database_connection = DatabaseConnection(**db_connection)
-        database_connection.id = query.db_connection_id
         database = SQLDatabase.get_sql_engine(database_connection)
         try:
             result = database.run_sql(query.sql_query)
@@ -238,15 +236,14 @@ class FastAPI(API):
         if nl_query_response.sql_query.strip() != query.sql_query.strip():
             nl_query_response.sql_query = query.sql_query
             evaluator = self.system.instance(Evaluator)
-            db_connection = self.storage.find_by_id(
-                "database_connection", nl_question.db_connection_id
+            db_connection_repository = DatabaseConnectionRepository(self.storage)
+            database_connection = db_connection_repository.find_by_id(
+                nl_question.db_connection_id
             )
-            if not db_connection:
+            if not database_connection:
                 raise HTTPException(
                     status_code=404, detail="Database connection not found"
                 )
-            database_connection = DatabaseConnection(**db_connection)
-            database_connection.id = nl_question.db_connection_id
             try:
                 confidence_score = evaluator.get_confidence_score(
                     nl_question, nl_query_response, database_connection
