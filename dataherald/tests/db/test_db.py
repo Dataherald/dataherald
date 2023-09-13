@@ -47,7 +47,7 @@ class TestDB(DB):
         return None
 
     @override
-    def find(self, collection: str, query: dict) -> list:
+    def find(self, collection: str, query: dict, sort=None) -> list:
         return []
 
     @override

@@ -1,6 +1,7 @@
 from typing import List
 
 from bson.objectid import ObjectId
+from pymongo import ASCENDING
 
 from dataherald.db_scanner.models.types import TableSchemaDetail
 
@@ -23,10 +24,13 @@ class DBScannerRepository:
         return None
 
     def get_all_tables_by_db(self, db_alias: str) -> List[TableSchemaDetail]:
-        rows = self.storage.find(DB_COLLECTION, {"db_alias": db_alias})
+        rows = self.storage.find(
+            DB_COLLECTION, {"db_alias": db_alias}, sort=[("table_name", ASCENDING)]
+        )
         tables = []
         for row in rows:
             row["id"] = row["_id"]
+            row["columns"] = sorted(row["columns"], key=lambda x: x["name"])
             tables.append(TableSchemaDetail(**row))
         return tables
 
