@@ -1,11 +1,11 @@
-Update a query
+Update a NL query response
 =======================
 
-You can give feedback to improve the queries, and set a query response as a golden query
+Once you made a question, you can give feedback to improve the queries
 
 Request this ``PATCH`` endpoint::
 
-   /api/v1/query/{query_id}
+   /api/v1/nl-query-responses/{query_id}
 
 **Parameters**
 
@@ -20,8 +20,7 @@ Request this ``PATCH`` endpoint::
 .. code-block:: rst
 
    {
-      "sql_query": "string", # optional
-      "golden_record": true # boolean and optional
+      "sql_query": "string", # required
     }
 
 **Responses**
@@ -30,7 +29,29 @@ HTTP 200 code response
 
 .. code-block:: rst
 
-    true
+    {
+      "id": "string",
+      "nl_question_id": "string",
+      "nl_response": "string",
+      "intermediate_steps": [
+        "string"
+      ],
+      "sql_query": "string",
+      "sql_query_result": {
+        "columns": [
+          "string"
+        ],
+        "rows": [
+          {}
+        ]
+      },
+      "sql_generation_status": "NONE",
+      "error_message": "string",
+      "exec_time": 0,
+      "total_tokens": 0,
+      "total_cost": 0,
+      "confidence_score": 0
+    }
 
 **Request example**
 
@@ -38,7 +59,7 @@ HTTP 200 code response
 .. code-block:: rst
 
    curl -X 'POST' \
-  '<localhost>/api/v1/query/64c424fa3f4036441e882352' \
+  '<localhost>/api/v1/nl-query-responses/64c424fa3f4036441e882352' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -47,8 +68,7 @@ HTTP 200 code response
         WHERE "dh_county_name" = 'Los Angeles' AND "period_start" = '2022-05-01' AND "period_end" = '2022-05-31'
         GROUP BY "zip_code"
         ORDER BY max_rent DESC
-        LIMIT 1;",
-      "golden_record": true
+        LIMIT 1;"
     }'
 
 **Response example**
@@ -88,7 +108,6 @@ HTTP 200 code response
       "error_message": null,
       "exec_time": 37.183526277542114,
       "total_tokens": 17816,
-      "total_cost": 1.1087399999999998,
-      "golden_record": true,
+      "total_cost": 1.1087399999999998
       "confidence_score": 0.95
     }

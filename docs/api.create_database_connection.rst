@@ -11,7 +11,7 @@ You can find additional details on how to connect to each of the supported data 
 
 **Request this POST endpoint**::
 
-   /api/v1/database
+   /api/v1/database-connections
 
 **Request body**
 
@@ -69,7 +69,7 @@ Without a SSH connection
 .. code-block:: rst
 
    curl -X 'POST' \
-      '<host>/api/v1/database' \
+      '<host>/api/v1/database-connections' \
       -H 'accept: application/json' \
       -H 'Content-Type: application/json' \
       -d '{
@@ -85,7 +85,7 @@ With a SSH connection
 .. code-block:: rst
 
     curl -X 'POST' \
-      'http://localhost/api/v1/database' \
+      '<host>/api/v1/database-connections' \
       -H 'accept: application/json' \
       -H 'Content-Type: application/json' \
       -d '{

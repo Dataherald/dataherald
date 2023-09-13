@@ -7,7 +7,7 @@ To return an accurate response set descriptions per table and column.
 
 Request this ``PATCH`` endpoint::
 
-   /api/v1/scanned-db/{db_name}/{table_name}
+   /api/v1/table-descriptions/{table_description_id}
 
 
 **Parameters**
@@ -16,8 +16,7 @@ Request this ``PATCH`` endpoint::
    :header: "Name", "Type", "Description"
    :widths: 20, 20, 60
 
-   "db_name", "String", "Database name, ``Required``"
-   "table_name", "String", "Table name, ``Required``"
+   "table_description_id", "String", "Table description id, ``Required``"
 
 **Request body**
 
@@ -39,7 +38,30 @@ HTTP 200 code response
 
 .. code-block:: rst
 
-    true
+    {
+      "id": "string",
+      "db_connection_id": "string",
+      "table_name": "string",
+      "description": "string",
+      "table_schema": "string",
+      "columns": [
+        {
+          "name": "string",
+          "is_primary_key": false,
+          "data_type": "str",
+          "description": "string",
+          "low_cardinality": false,
+          "categories": [
+            "string"
+          ],
+          "foreign_key": {
+            "field_name": "string",
+            "reference_table": "string"
+          }
+        }
+      ],
+      "examples": []
+    }
 
 **Example 1**
 
@@ -48,7 +70,7 @@ Only set a table description
 .. code-block:: rst
 
    curl -X 'PATCH' \
-  '<host>/api/v1/scanned-db/foo_db/foo_table' \
+  '<host>/api/v1/table-descriptions/64fa09446cec0b4ff60d3ae3' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -62,7 +84,7 @@ Only set columns descriptions
 .. code-block:: rst
 
    curl -X 'PATCH' \
-  '<host>/api/v1/scanned-db/foo_db/foo_table' \
+  '<host>/api/v1/table-descriptions/64fa09446cec0b4ff60d3ae3' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
