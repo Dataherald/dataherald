@@ -13,6 +13,7 @@ from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator.create_sql_query_status import create_sql_query_status
 from dataherald.types import NLQuery, NLQueryResponse, SQLQueryResult
+from dataherald.utils.strings import contains_line_breaks
 
 
 class SQLGenerator(Component, ABC):
@@ -49,11 +50,9 @@ class SQLGenerator(Component, ABC):
         ]
         sql_query_without_comments = re.sub(r"--.*$", "", sql_query, flags=re.MULTILINE)
 
-        # Check if the query contains line breaks
-        if "\n" in sql_query_without_comments.strip():
-            return sql_query  # Return as is if already well-formatted
+        if contains_line_breaks(sql_query_without_comments.strip()):
+            return sql_query
 
-        # Parse the SQL query into a list of tokens and get the formatted version
         parsed = sqlparse.format(sql_query_without_comments, reindent=True)
 
         return parsed + "\n" + "\n".join(comments)
