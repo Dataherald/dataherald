@@ -60,7 +60,7 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
         for step in result["intermediate_steps"]:
             action = step[0]
             if type(action) == AgentAction and action.tool == "sql_db_query":
-                sql_query_list.append(action.tool_input)
+                sql_query_list.append(self.format_sql_query(action.tool_input))
         intermediate_steps = self.format_intermediate_representations(
             result["intermediate_steps"]
         )
