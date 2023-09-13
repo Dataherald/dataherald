@@ -2,7 +2,7 @@ from bson.objectid import ObjectId
 
 from dataherald.sql_database.models.types import DatabaseConnection
 
-DB_COLLECTION = "database_connection"
+DB_COLLECTION = "database_connections"
 
 
 class DatabaseConnectionRepository:

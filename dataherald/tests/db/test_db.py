@@ -10,7 +10,7 @@ class TestDB(DB):
     def __init__(self, system: System):
         super().__init__(system)
         self.memory = {}
-        self.memory["database_connection"] = [
+        self.memory["database_connections"] = [
             {
                 "_id": "64dfa0e103f5134086f7090c",
                 "alias": "alias",
@@ -71,3 +71,7 @@ class TestDB(DB):
                 del collection[i]
                 return 1
         return 0
+
+    @override
+    def rename(self, old_collection_name: str, new_collection_name) -> None:
+        pass

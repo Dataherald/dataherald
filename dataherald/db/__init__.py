@@ -13,6 +13,10 @@ class DB(Component, ABC):
         pass
 
     @abstractmethod
+    def rename(self, old_collection_name: str, new_collection_name) -> None:
+        pass
+
+    @abstractmethod
     def update_or_create(self, collection: str, query: dict, obj: dict) -> int:
         pass
 

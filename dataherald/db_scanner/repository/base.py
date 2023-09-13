@@ -4,7 +4,7 @@ from bson.objectid import ObjectId
 
 from dataherald.db_scanner.models.types import TableSchemaDetail
 
-DB_COLLECTION = "table_schema_detail"
+DB_COLLECTION = "table_descriptions"
 
 
 class DBScannerRepository:

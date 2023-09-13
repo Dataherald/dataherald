@@ -24,6 +24,10 @@ class MongoDB(DB):
         return self._data_store[collection].insert_one(obj).inserted_id
 
     @override
+    def rename(self, old_collection_name: str, new_collection_name) -> None:
+        self._data_store[old_collection_name].rename(new_collection_name)
+
+    @override
     def update_or_create(self, collection: str, query: dict, obj: dict) -> int:
         row = self.find_one(collection, query)
         if row:
