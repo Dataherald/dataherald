@@ -12,7 +12,10 @@ class SlackWebClient:
         self.client = WebClient(token=slack_bot_access_token)
 
     def get_user_real_name(self, user_id: str) -> str:
-        return self.client.users_info(user=user_id).get("user")["real_name"]
+        user = self.client.users_info(user=user_id).get("user")
+        if user and "real_name" in user:
+            return user["real_name"]
+        return "unknown_user"
 
     def send_message(self, channel_id: str, thread_ts: str, message: str):
         self.client.chat_postMessage(
