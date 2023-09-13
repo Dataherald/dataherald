@@ -18,6 +18,7 @@ services:
   mongodb:
     image: mongo:latest
     restart: always
+    user: "999:999"
     ports:
       - 27017:27017
     volumes:
