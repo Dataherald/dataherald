@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, List
 import numpy as np
 import openai
 import pandas as pd
+from google.api_core.exceptions import GoogleAPIError
 from langchain.agents.agent import AgentExecutor
 from langchain.agents.agent_toolkits.base import BaseToolkit
 from langchain.agents.mrkl.base import ZeroShotAgent
@@ -87,7 +88,7 @@ MAX_HANDLING_EXCEPTIONS_FOR_EACH_TOOL = 5
 
 
 def catch_exceptions(max_handling_list):  # noqa: C901
-    def decorator(fn: Callable[[str], str]) -> Callable[[str], str]:
+    def decorator(fn: Callable[[str], str]) -> Callable[[str], str]:  # noqa: C901
         @wraps(fn)
         def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: PLR0911
             nonlocal max_handling_list
@@ -116,6 +117,8 @@ def catch_exceptions(max_handling_list):  # noqa: C901
                     return f"OpenAI API service unavailable: {e}"
                 except openai.error.InvalidRequestError as e:
                     return f"OpenAI API request was invalid: {e}"
+                except GoogleAPIError as e:
+                    return f"Google API returned an error: {e}"
                 except SQLAlchemyError as e:
                     return f"Error: {e}"
 
