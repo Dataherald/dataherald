@@ -1,7 +1,7 @@
 Update a NL query response
-=======================
+============================
 
-Once you made a question, you can give feedback to improve the queries
+Once you ask a question, you can give feedback to improve the queries
 
 Request this ``PATCH`` endpoint::
 

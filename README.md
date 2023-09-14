@@ -33,6 +33,8 @@ Dataherald is a natural language-to-SQL engine built for enterprise-level questi
 
 This project is undergoing swift development, and as such, the API may be subject to change at any time.
 
+If you would like to learn more, you can join the <a href="https://discord.gg/A59Uxyy2k9" target="_blank">Discord</a> or <a href="https://dataherald.readthedocs.io/" target="_blank">read the docs</a>.
+
 ## Overview
 
 ### Background
