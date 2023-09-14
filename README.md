@@ -151,7 +151,7 @@ Once the engine is running, you will want to use it by:
 3. Querying the data in natural language
 
 ### Connecting to your data warehouses
-We currently support connections to Postgres, BigQuery, Databricks and Snowflake. You can create connections to these warehouses through the API or at application start-up using the envars.
+We currently support connections to Postgres, BigQuery, Databricks, Snowflake and AWS Athena. You can create connections to these warehouses through the API or at application start-up using the envars.
 
 #### Connecting through the API
 
@@ -214,6 +214,11 @@ You can generate the `connection_uri` parameter in the API call for each of the 
 **Snowflake**
 ```
 "connection_uri": snowflake://<user>:<password>@<organization>-<account-name>/<database>/<schema>
+```
+
+**AWS Athena**
+```
+"connection_uri": awsathena+rest://<aws_access_key_id>:<aws_secret_access_key>@athena.<region_name>.amazonaws.com:443/<schema_name>?s3_staging_dir=<s3_staging_dir>&work_group=primary
 ```
 
 **BigQuery**
