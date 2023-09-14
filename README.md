@@ -39,6 +39,7 @@ Release is done through git tags. When a new tag is created, it triggers the pip
 ### Local Development
 
 When developing locally, the strategy is to `rebase` from `main` to keep your feature branch up to date. After your feature has been developed and tested, you can open a Pull Request against the `main` branch. Merge to `main` can be done with a merge commit.
+<<<<<<< HEAD
 =======
 # dataherald
 =======
@@ -92,3 +93,27 @@ For more details about each individual project, please check the their `README.m
 As an open-source project in a rapidly developing field, we are open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.
 
 For detailed information on how to contribute, see [here](CONTRIBUTING.md).
+=======
+
+### Update a submodule
+To update all the submodules run the next command
+```
+git submodule update --recursive --remote
+```
+or just for a specific submodule
+```
+git submodule update  --remote apps/ai/server/dataherald
+```
+
+This should take all submodule changes, and if you check the changes `git status` you should see something like this:
+```
+modified:   apps/ai/server/dataherald (new commits)
+modified:   apps/bariloche/app-server (new commits)
+```
+If you only want to update one module change then instead of using `git add .` in root, you can move at the project location or 
+just specifying the project change like this:
+```
+git add apps/ai/server/dataherald
+```
+Then you can commit, push and finally merge.
+>>>>>>> 8d95a857 (DH-4587 Document how to update monorepo submodules (#149))
