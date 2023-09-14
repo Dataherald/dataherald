@@ -201,7 +201,7 @@ You can define a DB connection through a call to the following API endpoint `/ap
 Example 1. Without a SSH connection
 ```
 curl -X 'POST' \
-  '<host>/api/v1/database' \
+  '<host>/api/v1/database-connections' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -215,7 +215,7 @@ curl -X 'POST' \
 Example 2. With a SSH connection
 ```
 curl -X 'POST' \
-  'http://localhost/api/v1/database' \
+  '<host>/api/v1/database-connections' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -288,21 +288,21 @@ Once you have connected to the data warehouse, you should add context to the eng
 While only the Database scan part is required to start generating SQL, adding verified SQL and string descriptions are also important for the tool to generate accurate SQL. 
 
 #### Scanning the Database
-The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM. You can trigger a scan of a database from the `POST /api/v1/scanner` endpoint. Example below
+The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM. You can trigger a scan of a database from the `POST /api/v1/table-descriptions/scan` endpoint. Example below
 
 
 ```
 curl -X 'POST' \
-  '<host>/api/v1/scanner' \
+  '<host>/api/v1/table-descriptions/scan' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
     "db_connection_id": "db_connection_id",
-    "table_name": "table_name"
+    "table_names": ["table_name"]
   }'
 ```
 
-Since the endpoint identifies low cardinality columns (and their values) it can take time to complete. Therefore while it is possible to trigger a scan on the entire DB by not specifying the `table_name`, we recommend against it for large databases. 
+Since the endpoint identifies low cardinality columns (and their values) it can take time to complete. Therefore while it is possible to trigger a scan on the entire DB by not specifying the `table_names`, we recommend against it for large databases. 
 
 #### Get a scanned db
 Once a database was scanned you can use this endpoint to retrieve the tables names and columns
@@ -310,16 +310,16 @@ Once a database was scanned you can use this endpoint to retrieve the tables nam
 
 ```
 curl -X 'GET' \
-    '<host>/api/v1/scanned-databases?db_connection_id=64dfa0e103f5134086f7090c' \
-    -H 'accept: application/json'
+  '<host>/api/v1/table-descriptions?db_connection_id=64dfa0e103f5134086f7090c&table_name=foo' \
+  -H 'accept: application/json'
 ```
 
 #### Adding verified SQL
-Sample NL<>SQL pairs (golden SQL) can be stored in the context store and used for few-shot in context learning. In the default context store and NL 2 SQL engine, these samples are stored in a vector store and the closest samples are retrieved for few shot learning. You can add golden SQL to the context store from the `POST /api/v1/golden-record` endpoint
+Sample NL<>SQL pairs (golden SQL) can be stored in the context store and used for few-shot in context learning. In the default context store and NL 2 SQL engine, these samples are stored in a vector store and the closest samples are retrieved for few shot learning. You can add golden SQL to the context store from the `POST /api/v1/golden-records` endpoint
 
 ```
 curl -X 'POST' \
-  '<host>/api/v1/golden-record' \
+  '<host>/api/v1/golden-records' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '[
@@ -332,11 +332,11 @@ curl -X 'POST' \
 ```
 
 #### Adding string descriptions
-In addition to database table_info and golden_sql, you can add strings describing tables and/or columns to the context store manually from the `PATCH /api/v1/scanned-db/{db_connection_id}/{table_name}` endpoint
+In addition to database table_info and golden_sql, you can add strings describing tables and/or columns to the context store manually from the `PATCH /api/v1/table-descriptions/{table_description_id}` endpoint
 
 ```
 curl -X 'PATCH' \
-  '<host>/api/v1/scanned-db/db_connection_id/table_name' \
+  '<host>/api/v1/table-descriptions/64dfa0e103f5134086f7090c' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
