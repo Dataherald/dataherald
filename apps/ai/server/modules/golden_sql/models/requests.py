@@ -1,7 +1,5 @@
-from pydantic import BaseModel
+from modules.golden_sql.models.entities import BaseGoldenSQL
 
 
-class GoldenSQLRequest(BaseModel):
-    question: str
-    sql_query: str
-    db_alias: str
+class GoldenSQLRequest(BaseGoldenSQL):
+    db_connection_id: str

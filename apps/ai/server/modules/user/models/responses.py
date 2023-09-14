@@ -1,5 +1,8 @@
-from modules.user.models.entities import User
+from pydantic import Field
+
+from modules.user.models.entities import BaseUser
 
 
-class UserResponse(User):
-    pass
+class UserResponse(BaseUser):
+    id: str = Field(alias="_id")
+    organization_id: str

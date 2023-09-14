@@ -30,7 +30,7 @@ async def get_user(id: str, token: str = Depends(token_auth_scheme)) -> UserResp
 
 
 @router.delete("/{id}")
-async def delete_user(id: str, token: str = Depends(token_auth_scheme)):
+async def delete_user(id: str, token: str = Depends(token_auth_scheme)) -> dict:
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
     authorize.user_in_organization(id, org_id)
     return user_service.delete_user(id)
@@ -38,14 +38,14 @@ async def delete_user(id: str, token: str = Depends(token_auth_scheme)):
 
 @router.put("/{id}")
 async def update_user(
-    id: str, user_request: dict, token: str = Depends(token_auth_scheme)
+    id: str, user_request: UserRequest, token: str = Depends(token_auth_scheme)
 ) -> UserResponse:
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
     authorize.user_in_organization(id, org_id)
     return user_service.update_user(id, user_request)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def add_user(
     user_request: UserRequest, token: str = Depends(token_auth_scheme)
 ) -> UserResponse:

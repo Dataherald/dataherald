@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from config import (
     GOLDEN_SQL_REF_COL,
     QUERY_RESPONSE_REF_COL,
+    TABLE_DESCRIPTION_COL,
     USER_COL,
     auth_settings,
     slack_settings,
@@ -144,6 +145,22 @@ class Authorize:
         user = self.user(payload)
         return str(self.get_organization_by_user(user).id)
 
+    def table_description_in_organization(self, table_description_id: str, org_id: str):
+        organization = org_service.get_organization(org_id)
+        print(organization.db_connection_id)
+        print(table_description_id)
+        table_description = MongoDB.find_one(
+            TABLE_DESCRIPTION_COL,
+            {
+                "_id": ObjectId(table_description_id),
+                "db_connection_id": organization.db_connection_id,
+            },
+        )
+        if not table_description:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+            )
+
     def get_organization_by_user(self, user: User) -> Organization:
         if not auth_settings.auth_enabled:
             return test_organization
@@ -164,12 +181,15 @@ class Authorize:
             return
 
         if key:
-            item = MongoDB.find_one(collection, {key: ObjectId(id)})
+            item = MongoDB.find_one(
+                collection, {key: ObjectId(id), "organization_id": ObjectId(org_id)}
+            )
         else:
-            item = MongoDB.find_by_object_id(collection, ObjectId(id))
+            item = MongoDB.find_one(
+                collection, {"_id": ObjectId(id), "organization_id": ObjectId(org_id)}
+            )
+
         if not item:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
             )
-        if org_id != str(item["organization_id"]):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)

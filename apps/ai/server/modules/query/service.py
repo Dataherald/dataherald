@@ -2,22 +2,36 @@ from datetime import datetime, timezone
 from typing import Any, Dict
 
 import httpx
+from bson import ObjectId
 
 from config import settings
 from modules.golden_sql.models.entities import GoldenSQLSource
 from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.service import GoldenSQLService
-from modules.k2_core.models.entities import SQLGenerationStatus
-from modules.k2_core.models.responses import NLQueryResponse
 from modules.organization.models.entities import Organization
 from modules.organization.service import OrganizationService
-from modules.query.models.entities import QueryRef, QueryStatus, Question
-from modules.query.models.requests import QueryEditRequest, SQLQueryRequest
-from modules.query.models.responses import QueryListResponse, QueryResponse
+from modules.query.models.entities import (
+    QueryRef,
+    QueryStatus,
+    Question,
+    SQLGenerationStatus,
+)
+from modules.query.models.requests import (
+    QueryExecutionRequest,
+    QueryUpdateRequest,
+    QuestionRequest,
+)
+from modules.query.models.responses import (
+    CoreQueryResponse,
+    QueryListResponse,
+    QueryResponse,
+    QuerySlackResponse,
+)
 from modules.query.repository import QueryRepository
-from modules.user.models.entities import User
+from modules.user.models.entities import SlackInfo, User
 from modules.user.service import UserService
-from utils.slack import SlackWebClient
+from utils.exception import raise_for_status
+from utils.slack import SlackWebClient, remove_slack_mentions
 
 
 class QueryService:
@@ -26,6 +40,67 @@ class QueryService:
         self.golden_sql_service = GoldenSQLService()
         self.org_service = OrganizationService()
         self.user_service = UserService()
+
+    async def answer_question(
+        self, question_request: QuestionRequest, organization: Organization
+    ) -> QuerySlackResponse:
+        question_string = remove_slack_mentions(question_request.question)
+
+        # ask question to k2 core
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                settings.k2_core_url + "/question",
+                json={
+                    "question": question_string,
+                    "db_connection_id": str(organization.db_connection_id),
+                },
+                timeout=settings.default_k2_core_timeout,
+            )
+
+            raise_for_status(response.status_code, response.json())
+
+        # adds document that links user info to query response
+        query_response = CoreQueryResponse(**response.json())
+        query_id: str = response.json()["id"]["$oid"]
+
+        # if query ref doesn't exist, create one
+        if not self.repo.get_query_response_ref(query_id):
+            display_id = self.repo.get_next_display_id(str(organization.id))
+
+            current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+            username = SlackWebClient(
+                organization.slack_installation.bot.token
+            ).get_user_real_name(question_request.slack_user_id)
+            query_ref = QueryRef(
+                query_response_id=ObjectId(query_id),
+                question_date=current_utc_time,
+                last_updated=current_utc_time,
+                organization_id=ObjectId(organization.id),
+                display_id=display_id,
+                slack_info=SlackInfo(
+                    user_id=question_request.slack_user_id,
+                    channel_id=question_request.slack_channel_id,
+                    thread_ts=question_request.slack_thread_ts,
+                    username=username,
+                ),
+            )
+
+            self.repo.add_query_response_ref(query_ref.dict(exclude={"id"}))
+
+        if (
+            organization.confidence_threshold == 1
+            or query_response.confidence_score < organization.confidence_threshold
+        ):
+            is_above_confidence_threshold = False
+        else:
+            is_above_confidence_threshold = True
+
+        return QuerySlackResponse(
+            id=query_id,
+            display_id=query_ref.display_id,
+            is_above_confidence_threshold=is_above_confidence_threshold,
+            **query_response.dict(exclude={"id"}),
+        )
 
     def get_query(self, query_id: str):
         response_ref = self.repo.get_query_response_ref(query_id)
@@ -61,7 +136,7 @@ class QueryService:
             if q_id not in question_dict:
                 question_dict[q_id] = q.question
 
-        query_response_dict: Dict[Any, NLQueryResponse] = {}
+        query_response_dict: Dict[Any, CoreQueryResponse] = {}
         for qr in query_responses:
             query_response_dict[qr.id] = qr
 
@@ -95,7 +170,7 @@ class QueryService:
     async def patch_query(
         self,
         query_id: str,
-        query_request: QueryEditRequest,
+        query_request: QueryUpdateRequest,
         organization: Organization,
         user: User,
     ) -> QueryResponse:
@@ -105,13 +180,13 @@ class QueryService:
         # request update query to core
         async with httpx.AsyncClient() as client:
             response = await client.patch(
-                settings.k2_core_url + f"/query/{query_id}",
+                settings.k2_core_url + f"/nl-query-responses/{query_id}",
                 json={"sql_query": query_request.sql_query},
                 timeout=settings.default_k2_core_timeout,
             )
-            response.raise_for_status()
+            raise_for_status(response.status_code, response.json())
 
-            new_query_response = NLQueryResponse(**response.json())
+            new_query_response = CoreQueryResponse(**response.json())
             question = self.repo.get_question(new_query_response.nl_question_id["$oid"])
             new_response_ref = self.repo.get_query_response_ref(query_id)
 
@@ -120,7 +195,7 @@ class QueryService:
                 golden_sql = GoldenSQLRequest(
                     question=question.question,
                     sql_query=query_request.sql_query,
-                    db_alias=organization.db_alias,
+                    db_connection_id=organization.db_connection_id,
                 )
                 await self.golden_sql_service.add_golden_sql(
                     golden_sql,
@@ -158,16 +233,19 @@ class QueryService:
                 query_id, new_response_ref, question, new_query_response
             )
 
-    async def run_query(self, query_id: str, query_request: SQLQueryRequest):
+    async def run_query(self, query_id: str, query_request: QueryExecutionRequest):
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                settings.k2_core_url + f"/query/{query_id}/execution",
-                json=query_request.dict(),
+                settings.k2_core_url + "/nl-query-responses",
+                json={
+                    "query_id": query_id,
+                    "sql_query": query_request.sql_query,
+                },
                 timeout=settings.default_k2_core_timeout,
             )
-            response.raise_for_status()
+            raise_for_status(response.status_code, response.json())
             response_ref = self.repo.get_query_response_ref(query_id)
-            new_query_response = NLQueryResponse(**response.json())
+            new_query_response = CoreQueryResponse(**response.json())
             question = self.repo.get_question(new_query_response.nl_question_id["$oid"])
             return self._get_mapped_query_response(
                 query_id, response_ref, question, new_query_response
@@ -181,7 +259,7 @@ class QueryService:
         query_id: str,
         response_ref: QueryRef,
         question: Question,
-        query_response: NLQueryResponse,
+        query_response: CoreQueryResponse,
     ) -> QueryResponse:
         return QueryResponse(
             id=query_id,
@@ -209,11 +287,11 @@ class QueryService:
     ) -> QueryStatus:
         status = QueryStatus.NOT_VERIFIED
         golden_sql = self.golden_sql_service.get_verified_golden_sql_ref(query_id)
-        if sql_generation_status == SQLGenerationStatus.valid and golden_sql:
+        if sql_generation_status == SQLGenerationStatus.VALID and golden_sql:
             status = QueryStatus.VERIFIED
         elif sql_generation_status in {
-            SQLGenerationStatus.invalid,
-            SQLGenerationStatus.none,
+            SQLGenerationStatus.INVALID,
+            SQLGenerationStatus.NONE,
         }:
             status = QueryStatus.SQL_ERROR
         return status

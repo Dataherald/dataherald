@@ -17,6 +17,12 @@ class QueryStatus(Enum):
     SQL_ERROR = "SQL_ERROR"
 
 
+class SQLGenerationStatus(Enum):
+    VALID = "VALID"
+    INVALID = "INVALID"
+    NONE = "NONE"
+
+
 class QueryRef(BaseModel):
     id: Any = Field(alias="_id")
     query_response_id: Any
@@ -26,3 +32,8 @@ class QueryRef(BaseModel):
     organization_id: Any
     display_id: str | None
     slack_info: SlackInfo
+
+
+class SQLQueryResult(BaseModel):
+    columns: list[str]
+    rows: list[dict]

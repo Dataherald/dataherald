@@ -2,8 +2,9 @@ from bson import ObjectId
 
 from config import QUERY_RESPONSE_COL, QUERY_RESPONSE_REF_COL, QUESTION_COL
 from database.mongo import DESCENDING, MongoDB
-from modules.k2_core.models.responses import NLQueryResponse
 from modules.query.models.entities import QueryRef, Question
+from modules.query.models.responses import CoreQueryResponse
+from utils.misc import get_next_display_id
 
 
 class QueryRepository:
@@ -16,17 +17,17 @@ class QueryRepository:
         questions = MongoDB.find_by_object_ids(QUESTION_COL, object_ids)
         return [Question(**q) for q in questions]
 
-    def get_query_response(self, query_id: str) -> NLQueryResponse:
+    def get_query_response(self, query_id: str) -> CoreQueryResponse:
         query_response = MongoDB.find_by_object_id(
             QUERY_RESPONSE_COL, ObjectId(query_id)
         )
-        return NLQueryResponse(**query_response) if query_response else None
+        return CoreQueryResponse(**query_response) if query_response else None
 
-    def get_query_responses(self, query_ids: list[str]) -> list[NLQueryResponse]:
+    def get_query_responses(self, query_ids: list[str]) -> list[CoreQueryResponse]:
         object_ids = [ObjectId(id) for id in query_ids]
         response_query = {"_id": {"$in": object_ids}}
         query_responses = MongoDB.find(QUERY_RESPONSE_COL, response_query)
-        return [NLQueryResponse(**qr) for qr in query_responses]
+        return [CoreQueryResponse(**qr) for qr in query_responses]
 
     def get_query_response_ref(self, query_id: str) -> QueryRef:
         query_ref = MongoDB.find_one(
@@ -45,6 +46,12 @@ class QueryRepository:
         )
         return [QueryRef(**qrr) for qrr in query_refs]
 
+    def add_query_response_ref(
+        self,
+        query_response_ref_data: dict,
+    ) -> str:
+        str(MongoDB.insert_one(QUERY_RESPONSE_REF_COL, query_response_ref_data))
+
     def update_last_updated(
         self, query_id: str, updated_query_response_ref: dict
     ) -> str:
@@ -53,3 +60,6 @@ class QueryRepository:
             {"query_response_id": ObjectId(query_id)},
             updated_query_response_ref,
         )
+
+    def get_next_display_id(self, org_id: str) -> str:
+        return get_next_display_id(QUERY_RESPONSE_REF_COL, ObjectId(org_id), "QR")

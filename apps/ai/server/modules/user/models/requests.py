@@ -1,11 +1,5 @@
-from pydantic import BaseModel
+from modules.user.models.entities import BaseUser
 
 
-class UserRequest(BaseModel):
-    email: str
-    email_verified: bool | None
-    name: str | None
-    nickname: str | None
-    picture: str | None
-    sub: str | None
-    updated_at: str | None
+class UserRequest(BaseUser):
+    pass

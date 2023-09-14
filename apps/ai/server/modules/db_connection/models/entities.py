@@ -1,20 +1,6 @@
-from pydantic import BaseModel
+from typing import Any
 
-
-class ColumnDescriptionRequest(BaseModel):
-    name: str
-    description: str
-
-
-class TableDescriptionRequest(BaseModel):
-    table_name: str
-    description: str | None
-    columns: list[ColumnDescriptionRequest] | None
-
-
-class ScanRequest(BaseModel):
-    db_alias: str
-    table_name: str
+from pydantic import BaseModel, Field
 
 
 class SSHSettings(BaseModel):
@@ -31,9 +17,20 @@ class SSHSettings(BaseModel):
     db_driver: str | None
 
 
-class DatabaseConnectionRequest(BaseModel):
-    db_alias: str | None
+class BaseDBConnection(BaseModel):
+    alias: str | None
     use_ssh: bool = False
     connection_uri: str | None
     path_to_credentials_file: str | None
     ssh_settings: SSHSettings | None
+
+
+class DBConnection(BaseDBConnection):
+    id: Any = Field(alias="_id")
+
+
+class DBConnectionRef(BaseModel):
+    id: Any = Field(alias="_id")
+    db_connection_id: Any
+    organization_id: Any
+    alias: str

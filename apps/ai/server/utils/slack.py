@@ -2,8 +2,8 @@ import re
 
 from slack_sdk import WebClient
 
-from modules.k2_core.models.responses import NLQueryResponse
 from modules.query.models.entities import QueryRef
+from modules.query.models.responses import CoreQueryResponse
 
 
 class SlackWebClient:
@@ -25,7 +25,7 @@ class SlackWebClient:
     def send_verified_query_message(
         self,
         query_ref: QueryRef,
-        query_response: NLQueryResponse,
+        query_response: CoreQueryResponse,
         question: str,
     ):
         message_blocks = [

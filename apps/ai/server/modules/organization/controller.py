@@ -43,7 +43,7 @@ async def delete_organization(id: str, token: str = Depends(token_auth_scheme)):
 
 @router.put("/{id}")
 async def update_organization(
-    id: str, org_request: dict, token: str = Depends(token_auth_scheme)
+    id: str, org_request: OrganizationRequest, token: str = Depends(token_auth_scheme)
 ) -> OrganizationResponse:
     VerifyToken(token.credentials)
     return org_service.update_organization(id, org_request)
@@ -61,7 +61,7 @@ async def add_organization(
 async def add_organization_by_slack_installation(
     slack_installation: SlackInstallationRequest,
     token: str = Depends(token_auth_scheme),
-):
+) -> OrganizationResponse:
     VerifyToken(token.credentials)
     return org_service.add_organization_by_slack_installation(slack_installation)
 

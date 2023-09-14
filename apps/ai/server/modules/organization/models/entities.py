@@ -32,9 +32,12 @@ class SlackInstallation(BaseModel):
     bot: SlackBot | None
 
 
-class Organization(BaseModel):
-    id: Any = Field(alias="_id")
+class BaseOrganization(BaseModel):
     name: str
-    db_alias: str | None
     confidence_threshold: confloat(ge=0, le=1) = 1.0
     slack_installation: SlackInstallation | None
+
+
+class Organization(BaseOrganization):
+    id: Any = Field(alias="_id")
+    db_connection_id: Any

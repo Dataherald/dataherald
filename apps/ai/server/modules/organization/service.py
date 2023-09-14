@@ -1,7 +1,9 @@
+from bson import ObjectId
 from fastapi import HTTPException, status
 
 from modules.organization.models.entities import Organization, SlackInstallation
 from modules.organization.models.requests import OrganizationRequest
+from modules.organization.models.responses import OrganizationResponse
 from modules.organization.repository import OrganizationRepository
 
 
@@ -9,30 +11,28 @@ class OrganizationService:
     def __init__(self):
         self.repo = OrganizationRepository()
 
-    def get_organizations(self) -> list[Organization]:
+    def get_organizations(self) -> list[OrganizationResponse]:
         organizations = self.repo.get_organizations()
-        for organization in organizations:
-            organization.id = str(organization.id)
-        return organizations
+        return [self._get_mapped_organization_response(org) for org in organizations]
 
-    def get_organization(self, org_id: str) -> Organization:
+    def get_organization(self, org_id: str) -> OrganizationResponse:
         organization = self.repo.get_organization(org_id)
         if organization:
-            organization.id = str(organization.id)
-            return organization
+            return self._get_mapped_organization_response(organization)
         return None
 
-    def get_organization_by_slack_workspace_id(self, workspace_id: str) -> Organization:
+    def get_organization_by_slack_workspace_id(
+        self, workspace_id: str
+    ) -> OrganizationResponse:
         organization = self.repo.get_organization_by_slack_workspace_id(workspace_id)
         if organization:
-            organization.id = str(organization.id)
-            return organization
+            return self._get_mapped_organization_response(organization)
 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Organization not found"
         )
 
-    def delete_organization(self, org_id: str):
+    def delete_organization(self, org_id: str) -> dict:
         if self.repo.delete_organization(org_id) == 1:
             return {"id": org_id}
 
@@ -41,26 +41,27 @@ class OrganizationService:
             detail="Organization not found or cannot be deleted",
         )
 
-    def update_organization(self, org_id: str, org_request: dict) -> Organization:
-        if "_id" in org_request:
-            org_request.pop("_id")
-        if self.repo.update_organization(org_id, org_request) == 1:
+    def update_organization(
+        self, org_id: str, org_request: OrganizationRequest
+    ) -> OrganizationResponse:
+        if self.repo.update_organization(org_id, org_request.dict()) == 1:
             new_org = self.repo.get_organization(org_id)
-            new_org.id = str(new_org.id)
-            return new_org
+            return self._get_mapped_organization_response(new_org)
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Organization not found or cannot be updated",
         )
 
-    def add_organization(self, org_request: OrganizationRequest) -> Organization:
+    def add_organization(
+        self, org_request: OrganizationRequest
+    ) -> OrganizationResponse:
         new_org_data = Organization(**org_request.dict())
+        new_org_data.db_connection_id = ObjectId(new_org_data.db_connection_id)
         new_id = self.repo.add_organization(new_org_data.dict(exclude={"id"}))
         if new_id:
             new_org = self.repo.get_organization(new_id)
-            new_org.id = str(new_org.id)
-            return new_org
+            return self._get_mapped_organization_response(new_org)
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -78,8 +79,7 @@ class OrganizationService:
         new_id = self.repo.add_organization(new_org_data.dict(exclude={"id"}))
         if new_id:
             new_org = self.repo.get_organization(new_id)
-            new_org.id = str(new_org.id)
-            return new_org
+            return self._get_mapped_organization_response(new_org)
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -98,3 +98,11 @@ class OrganizationService:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="slack installation not found"
         )
+
+    def _get_mapped_organization_response(
+        self, organization: Organization
+    ) -> OrganizationResponse:
+        org_dict = organization.dict()
+        org_dict["id"] = str(org_dict["id"])
+        org_dict["db_connection_id"] = str(org_dict["db_connection_id"])
+        return OrganizationResponse(**org_dict, _id=org_dict["id"])

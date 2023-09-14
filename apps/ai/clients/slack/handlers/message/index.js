@@ -32,7 +32,7 @@ async function handleMessage(context, say) {
 
     try {
         const apiToken = await getApiAuthToken()
-        const endpointUrl = `${API_URL}/k2/question`
+        const endpointUrl = `${API_URL}/query/answer`
         const payload = {
             question: message,
             slack_user_id: userId,

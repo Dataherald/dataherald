@@ -4,6 +4,11 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
+class BaseGoldenSQL(BaseModel):
+    question: str
+    sql_query: str
+
+
 class GoldenSQLSource(Enum):
     user_upload = "USER_UPLOAD"
     verified_query = "VERIFIED_QUERY"
@@ -19,8 +24,6 @@ class GoldenSQLRef(BaseModel):
     display_id: str | None
 
 
-class GoldenSQL(BaseModel):
+class GoldenSQL(BaseGoldenSQL):
     id: Any = Field(alias="_id")
-    question: str
-    sql_query: str
-    db_alias: str
+    db_connection_id: Any

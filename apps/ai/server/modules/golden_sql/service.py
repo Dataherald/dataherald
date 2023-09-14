@@ -10,13 +10,14 @@ from modules.golden_sql.models.entities import GoldenSQL, GoldenSQLRef, GoldenSQ
 from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.models.responses import GoldenSQLResponse
 from modules.golden_sql.repository import GoldenSQLRepository
+from utils.exception import raise_for_status
 
 
 class GoldenSQLService:
     def __init__(self):
         self.repo = GoldenSQLRepository()
 
-    def get_golden_sql(self, golden_id: str) -> GoldenSQL:
+    def get_golden_sql(self, golden_id: str) -> GoldenSQLResponse:
         golden_sql_ref = self.repo.get_golden_sql_ref(golden_id)
         golden_sql = self.repo.get_golden_sql(str(golden_sql_ref.golden_sql_id))
         if golden_sql:
@@ -31,7 +32,7 @@ class GoldenSQLService:
         order: str,
         ascend: bool,  # noqa: ARG002
         org_id: str,
-    ) -> list[GoldenSQL]:
+    ) -> list[GoldenSQLResponse]:
         golden_sql_refs = self.repo.get_golden_sql_refs(
             skip=page * page_size, limit=page_size, order=order, org_id=org_id
         )
@@ -75,7 +76,7 @@ class GoldenSQLService:
                 json=[golden_sql_request.dict()],
                 timeout=settings.default_k2_core_timeout,
             )
-            response.raise_for_status()
+            raise_for_status(response.status_code, response.json())
             response_json = response.json()[0]
             golden_sql = GoldenSQL(**response_json)
             golden_sql.id = ObjectId(response_json["id"])
@@ -96,7 +97,9 @@ class GoldenSQLService:
             golden_sql_ref = self.repo.get_golden_sql_ref(str(golden_sql.id))
             return self._get_mapped_golden_sql_response(golden_sql, golden_sql_ref)
 
-    async def delete_golden_sql(self, golden_id: str, query_response_id: str = None):
+    async def delete_golden_sql(
+        self, golden_id: str, query_response_id: str = None
+    ) -> dict:
         if query_response_id:
             golden_sql_ref = self.repo.get_verified_golden_sql_ref(query_response_id)
             golden_id = golden_sql_ref.golden_sql_id
@@ -105,7 +108,7 @@ class GoldenSQLService:
                 settings.k2_core_url + f"/golden-records/{golden_id}",
                 timeout=settings.default_k2_core_timeout,
             )
-            response.raise_for_status()
+            raise_for_status(response.status_code, response.json())
             if response.json()["status"]:
                 if query_response_id:
                     matched_count = self.repo.delete_verified_golden_sql_ref(
@@ -124,10 +127,10 @@ class GoldenSQLService:
         golden_sql_ref: GoldenSQLRef,
     ) -> GoldenSQLResponse:
         return GoldenSQLResponse(
-            id=str(golden_sql.id),
+            _id=str(golden_sql.id),
             question=golden_sql.question,
             sql_query=golden_sql.sql_query,
-            db_alias=golden_sql.db_alias,
+            db_connection_id=golden_sql.db_connection_id,
             created_time=golden_sql_ref.created_time,
             organization_id=str(golden_sql_ref.organization_id),
             source=golden_sql_ref.source,

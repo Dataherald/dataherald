@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from modules.user.models.entities import BaseUser
 
 
-class AuthUserRequest(BaseModel):
+class AuthUserRequest(BaseUser):
     email: str
     email_verified: bool | None
     name: str | None

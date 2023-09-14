@@ -4,17 +4,18 @@ from typing import Any
 from dotenv import load_dotenv
 from pydantic import BaseSettings
 
-DATABASE_CONNECTION_COL = "database_connection"
-DATABASE_CONNECTION_REF_COL = "database_connection_ref"
-QUESTION_COL = "nl_question"
-QUERY_RESPONSE_COL = "nl_query_response"
-QUERY_RESPONSE_REF_COL = "nl_query_response_ref"
-
-USER_COL = "user"
-ORGANIZATION_COL = "organization"
-SLACK_INSTALLATION_COL = "slack_installation"
+DATABASE_CONNECTION_COL = "database_connections"
+QUESTION_COL = "nl_questions"
+QUERY_RESPONSE_COL = "nl_query_responses"
 GOLDEN_SQL_COL = "golden_records"
-GOLDEN_SQL_REF_COL = "golden_sql_ref"
+TABLE_DESCRIPTION_COL = "table_descriptions"
+
+USER_COL = "users"
+ORGANIZATION_COL = "organizations"
+
+QUERY_RESPONSE_REF_COL = "nl_query_response_refs"
+DATABASE_CONNECTION_REF_COL = "database_connection_refs"
+GOLDEN_SQL_REF_COL = "golden_sql_refs"
 
 
 class Settings(BaseSettings):

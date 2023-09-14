@@ -3,6 +3,7 @@ from fastapi import HTTPException, status
 from modules.auth.models.requests import AuthUserRequest
 from modules.auth.models.responses import AuthUserResponse
 from modules.organization.service import OrganizationService
+from modules.user.models.requests import UserRequest
 from modules.user.service import UserService
 
 
@@ -15,7 +16,9 @@ class AuthService:
         # check if user exists or not
         user = self.user_service.get_user_by_email(user_request.email)
         if user:
-            self.user_service.update_user(str(user.id), user_request.dict())
+            self.user_service.update_user(
+                str(user.id), UserRequest(**user_request.dict())
+            )
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized User"
