@@ -38,6 +38,13 @@ We also have an active Discord community you can join
    tutorial.sample_database
    tutorial.finetune_sql_generator
    tutorial.chatgpt_plugin
+
+
+.. toctree::
+   :caption: Contributing
+   :hidden:
+
+   contributing.projects
    
 
 
