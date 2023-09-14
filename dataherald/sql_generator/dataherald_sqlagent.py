@@ -564,7 +564,9 @@ class DataheraldSQLAgent(SQLGenerator):
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
         repository = DBScannerRepository(storage)
-        db_scan = repository.get_all_tables_by_db(db_alias=database_connection.alias)
+        db_scan = repository.get_all_tables_by_db(
+            db_connection_id=database_connection.id
+        )
         if not db_scan:
             raise ValueError("No scanned tables found for database")
         few_shot_examples = context_store.retrieve_context_for_question(

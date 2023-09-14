@@ -33,6 +33,8 @@ Dataherald is a natural language-to-SQL engine built for enterprise-level questi
 
 This project is undergoing swift development, and as such, the API may be subject to change at any time.
 
+If you would like to learn more, you can join the <a href="https://discord.gg/A59Uxyy2k9" target="_blank">Discord</a> or <a href="https://dataherald.readthedocs.io/" target="_blank">read the docs</a>.
+
 ## Overview
 
 ### Background
@@ -162,7 +164,7 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "db_alias": "my_db_alias_identifier",
+  "alias": "my_db_alias",
   "use_ssh": false,
   "connection_uri": "sqlite:///mydb.db",
   "path_to_credentials_file": "my-folder/my-secret.json" # Required for bigquery
@@ -176,7 +178,7 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "db_alias": "my_db_alias_identifier",
+  "alias": "my_db_alias",
   "use_ssh": true,
   "ssh_settings": {
     "db_name": "db_name",
@@ -254,7 +256,7 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-    "db_alias": "db_name",
+    "db_connection_id": "db_connection_id",
     "table_name": "table_name"
   }'
 ```
@@ -267,7 +269,7 @@ Once a database was scanned you can use this endpoint to retrieve the tables nam
 
 ```
 curl -X 'GET' \
-    '<host>/api/v1/scanned-databases?db_alias=databricks' \
+    '<host>/api/v1/scanned-databases?db_connection_id=64dfa0e103f5134086f7090c' \
     -H 'accept: application/json'
 ```
 
@@ -289,11 +291,11 @@ curl -X 'POST' \
 ```
 
 #### Adding string descriptions
-In addition to database table_info and golden_sql, you can add strings describing tables and/or columns to the context store manually from the `PATCH /api/v1/scanned-db/{db_name}/{table_name}` endpoint
+In addition to database table_info and golden_sql, you can add strings describing tables and/or columns to the context store manually from the `PATCH /api/v1/scanned-db/{db_connection_id}/{table_name}` endpoint
 
 ```
 curl -X 'PATCH' \
-  '<host>/api/v1/scanned-db/db_name/table_name' \
+  '<host>/api/v1/scanned-db/db_connection_id/table_name' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -322,7 +324,7 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
         "question": "Your question in natural language",
-        "db_alias": "db_name"
+        "db_connection_id": "db_connection_id"
     }'
 ```
 

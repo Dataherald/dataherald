@@ -2,7 +2,7 @@ from bson.objectid import ObjectId
 
 from dataherald.types import NLQuery
 
-DB_COLLECTION = "nl_question"
+DB_COLLECTION = "nl_questions"
 
 
 class NLQuestionRepository:

@@ -63,14 +63,14 @@ class SQLDatabase(LangchainSQLDatabase):
 
     @classmethod
     def get_sql_engine(cls, database_info: DatabaseConnection) -> "SQLDatabase":
-        logger.info(f"Connecting db: {database_info.alias}")
-        if database_info.alias in DBConnections.db_connections:
-            return DBConnections.db_connections[database_info.alias]
+        logger.info(f"Connecting db: {database_info.id}")
+        if database_info.id in DBConnections.db_connections:
+            return DBConnections.db_connections[database_info.id]
 
         fernet_encrypt = FernetEncrypt()
         if database_info.use_ssh:
             engine = cls.from_uri_ssh(database_info)
-            DBConnections.add(database_info.alias, engine)
+            DBConnections.add(database_info.id, engine)
             return engine
         db_uri = unquote(fernet_encrypt.decrypt(database_info.uri))
         if db_uri.lower().startswith("bigquery"):
@@ -82,7 +82,7 @@ class SQLDatabase(LangchainSQLDatabase):
             db_uri = db_uri + f"?credentials_path={file_path}"
 
         engine = cls.from_uri(db_uri)
-        DBConnections.add(database_info.alias, engine)
+        DBConnections.add(database_info.id, engine)
         return engine
 
     @classmethod

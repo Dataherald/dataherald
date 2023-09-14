@@ -6,9 +6,9 @@ from langchain.prompts.chat import (
 )
 
 from dataherald.model.chat_model import ChatModel
+from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.nl_question import NLQuestionRepository
 from dataherald.sql_database.base import SQLDatabase
-from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator.create_sql_query_status import create_sql_query_status
 from dataherald.types import NLQueryResponse
 
@@ -36,10 +36,10 @@ class GeneratesNlAnswer:
             nl_query_response.nl_question_id
         )
 
-        db_connection = self.storage.find_one(
-            "database_connection", {"alias": nl_question.db_alias}
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        database_connection = db_connection_repository.find_by_id(
+            nl_question.db_connection_id
         )
-        database_connection = DatabaseConnection(**db_connection)
         database = SQLDatabase.get_sql_engine(database_connection)
         nl_query_response = create_sql_query_status(
             database, nl_query_response.sql_query, nl_query_response

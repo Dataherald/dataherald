@@ -23,7 +23,7 @@ class DefaultContextStore(ContextStore):
         logger.info(f"Getting context for {nl_question.question}")
         closest_questions = self.vector_store.query(
             query_texts=[nl_question.question],
-            db_alias=nl_question.db_alias,
+            db_connection_id=nl_question.db_connection_id,
             collection=self.golden_record_collection,
             num_results=number_of_samples,
         )
@@ -58,7 +58,7 @@ class DefaultContextStore(ContextStore):
             golden_record = GoldenRecord(
                 question=question,
                 sql_query=record.sql_query,
-                db_alias=record.db_alias,
+                db_connection_id=record.db_connection_id,
             )
             retruned_golden_records.append(golden_record)
             golden_record = golden_records_repository.insert(golden_record)
@@ -66,7 +66,10 @@ class DefaultContextStore(ContextStore):
                 documents=question,
                 collection=self.golden_record_collection,
                 metadata=[
-                    {"tables_used": tables[0], "db_alias": record.db_alias}
+                    {
+                        "tables_used": tables[0],
+                        "db_connection_id": record.db_connection_id,
+                    }
                 ],  # this should be updated for multiple tables
                 ids=[str(golden_record.id)],
             )

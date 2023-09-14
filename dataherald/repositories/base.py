@@ -2,7 +2,7 @@ from bson.objectid import ObjectId
 
 from dataherald.types import NLQueryResponse
 
-DB_COLLECTION = "nl_query_response"
+DB_COLLECTION = "nl_query_responses"
 
 
 class NLQueryResponseRepository:

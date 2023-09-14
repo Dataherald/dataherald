@@ -20,7 +20,7 @@ class ColumnDetail(BaseModel):
 
 class TableSchemaDetail(BaseModel):
     id: Any
-    db_alias: str
+    db_connection_id: str
     table_name: str
     description: str | None
     table_schema: str | None

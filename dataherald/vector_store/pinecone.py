@@ -24,7 +24,11 @@ class Pinecone(VectorStore):
 
     @override
     def query(
-        self, query_texts: List[str], db_alias: str, collection: str, num_results: int
+        self,
+        query_texts: List[str],
+        db_connection_id: str,
+        collection: str,
+        num_results: int,
     ) -> list:
         index = pinecone.Index(collection)
         xq = openai.Embedding.create(input=query_texts[0], engine=EMBEDDING_MODEL)[
@@ -33,7 +37,7 @@ class Pinecone(VectorStore):
         query_response = index.query(
             queries=[xq],
             filter={
-                "db_alias": {"$eq": db_alias},
+                "db_connection_id": {"$eq": db_connection_id},
             },
             top_k=num_results,
             include_metadata=True,

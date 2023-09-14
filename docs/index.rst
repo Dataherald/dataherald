@@ -7,14 +7,38 @@ Dataherald AI
 ========================================
 Welcome to the official documentation page of the Dataherald AI engine. This documentation is intended for developers who want to:
 
-* Use the Dataherald AI engine to set up Natural Language interfaces from structured data in their own projects.
-* Contribute to the Dataherald AI engine.
+* 🖥️ Use the Dataherald AI engine to set up Natural Language interfaces from structured data in their own projects.
+* 🏍️ Contribute to the Dataherald AI engine.
 
 These documents will cover how to get started, how to set up an API from your database that can answer questions in plain English and how to extend the core engine's functionality.
 
 .. toctree::
+   :maxdepth: 1
+   :caption: Getting Started
    :hidden:
 
-   getting_started
+   introduction
+   quickstart
+
+.. toctree::
+   :caption: References
+   :hidden:
+
    api
+   envars
    modules
+
+.. toctree::
+   :caption: Tutorials
+   :hidden:
+
+   tutorial.sample_database
+   tutorial.finetune_sql_generator
+   tutorial.chatgpt_plugin
+
+
+.. toctree::
+   :caption: Contributing
+   :hidden:
+
+   contributing.projects

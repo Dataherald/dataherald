@@ -12,8 +12,8 @@ class Scanner(Component, ABC):
     def scan(
         self,
         db_engine: SQLDatabase,
-        db_alias: str,
-        table_name: str | None,
+        db_connection_id: str,
+        table_names: list[str] | None,
         repository: DBScannerRepository,
     ) -> None:
         """ "Scan a db"""
