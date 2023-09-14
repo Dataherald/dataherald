@@ -22,15 +22,15 @@ This abstract class defines the common methods that both ChromaDB and Pinecone v
    :param system: The system object.
    :type system: System
 
-.. method:: query(self, query_texts: List[str], db_alias: str, collection: str, num_results: int) -> list
+.. method:: query(self, query_texts: List[str], db_connection_id: str, collection: str, num_results: int) -> list
    :noindex:
 
    Executes a query to retrieve similar vectors from the vector store.
 
    :param query_texts: A list of query texts.
    :type query_texts: List[str]
-   :param db_alias: The alias for the database.
-   :type db_alias: str
+   :param db_connection_id: The db connection id.
+   :type db_connection_id: str
    :param collection: The name of the collection.
    :type collection: str
    :param num_results: The number of results to retrieve.

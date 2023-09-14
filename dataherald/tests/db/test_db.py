@@ -10,9 +10,10 @@ class TestDB(DB):
     def __init__(self, system: System):
         super().__init__(system)
         self.memory = {}
-        self.memory["database_connection"] = [
+        self.memory["database_connections"] = [
             {
-                "alias": "foo",
+                "_id": "64dfa0e103f5134086f7090c",
+                "alias": "alias",
                 "use_ssh": False,
                 "uri": "gAAAAABkwD9Y9EpBxF1hRxhovjvedX1TeDNu-WaGqDebk_CJnpGjRlpXzDOl_puehMSbz9KDQ6OqPepl8XQpD0EchiV7he4j5tEXYE33eak87iORA7s8ko0=",  # noqa: E501
                 "ssh_settings": None,
@@ -70,3 +71,7 @@ class TestDB(DB):
                 del collection[i]
                 return 1
         return 0
+
+    @override
+    def rename(self, old_collection_name: str, new_collection_name) -> None:
+        pass

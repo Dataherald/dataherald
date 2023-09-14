@@ -11,14 +11,14 @@ You can find additional details on how to connect to each of the supported data 
 
 **Request this POST endpoint**::
 
-   /api/v1/database
+   /api/v1/database-connections
 
 **Request body**
 
 .. code-block:: rst
 
    {
-      "db_alias": "string",
+      "alias": "string",
       "use_ssh": true,
       "connection_uri": "string",
       "path_to_credentials_file": "string",
@@ -69,11 +69,11 @@ Without a SSH connection
 .. code-block:: rst
 
    curl -X 'POST' \
-      '<host>/api/v1/database' \
+      '<host>/api/v1/database-connections' \
       -H 'accept: application/json' \
       -H 'Content-Type: application/json' \
       -d '{
-      "db_alias": "my_db_alias_identifier",
+      "alias": "my_db_alias_identifier",
       "use_ssh": false,
       "connection_uri": "sqlite:///mydb.db"
     }'
@@ -85,11 +85,11 @@ With a SSH connection
 .. code-block:: rst
 
     curl -X 'POST' \
-      'http://localhost/api/v1/database' \
+      '<host>/api/v1/database-connections' \
       -H 'accept: application/json' \
       -H 'Content-Type: application/json' \
       -d '{
-      "db_alias": "my_db_alias_identifier",
+      "alias": "my_db_alias",
       "use_ssh": true,
       "ssh_settings": {
         "db_name": "db_name",

@@ -14,19 +14,24 @@ def test_heartbeat():
 
 
 def test_scan_all_tables():
-    response = client.post("/api/v1/scanner", json={"db_alias": "foo"})
+    response = client.post(
+        "/api/v1/table-descriptions/scan",
+        json={"db_connection_id": "64dfa0e103f5134086f7090c"},
+    )
     assert response.status_code == HTTP_200_CODE
 
 
 def test_scan_one_table():
     response = client.post(
-        "/api/v1/scanner", json={"db_alias": "foo", "table_name": "foo"}
+        "/api/v1/table-descriptions/scan",
+        json={"db_connection_id": "64dfa0e103f5134086f7090c", "table_names": ["foo"]},
     )
     assert response.status_code == HTTP_404_CODE
 
 
 def test_answer_question():
     response = client.post(
-        "/api/v1/question", json={"question": "Who am I?", "db_alias": "foo"}
+        "/api/v1/question",
+        json={"question": "Who am I?", "db_connection_id": "64dfa0e103f5134086f7090c"},
     )
     assert response.status_code == HTTP_200_CODE

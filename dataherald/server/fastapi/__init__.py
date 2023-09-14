@@ -1,16 +1,15 @@
-from typing import Any, List, Union
+from typing import Any, List
 
 import fastapi
 from fastapi import FastAPI as _FastAPI
 from fastapi import status
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 
 import dataherald
 from dataherald.api.types import Query
 from dataherald.config import Settings
-from dataherald.eval import Evaluation
+from dataherald.db_scanner.models.types import TableSchemaDetail
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
     DatabaseConnectionRequest,
@@ -19,7 +18,6 @@ from dataherald.types import (
     GoldenRecordRequest,
     NLQueryResponse,
     QuestionRequest,
-    ScannedDBResponse,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateQueryRequest,
@@ -46,53 +44,98 @@ class FastAPI(dataherald.server.Server):
         self.router = fastapi.APIRouter()
 
         self.router.add_api_route(
-            "/api/v1/question", self.answer_question, methods=["POST"]
-        )
-
-        self.router.add_api_route("/api/v1/scanner", self.scan_db, methods=["POST"])
-
-        self.router.add_api_route("/api/v1/heartbeat", self.heartbeat, methods=["GET"])
-
-        self.router.add_api_route(
-            "/api/v1/database", self.connect_database, methods=["POST"]
-        )
-
-        self.router.add_api_route(
-            "/api/v1/scanned-db/{db_name}/{table_name}",
-            self.add_description,
-            methods=["PATCH"],
-        )
-
-        self.router.add_api_route("/api/v1/query", self.execute_query, methods=["POST"])
-
-        self.router.add_api_route(
-            "/api/v1/query/{query_id}", self.update_query, methods=["PATCH"]
-        )
-
-        self.router.add_api_route(
-            "/api/v1/query/{query_id}/execution",
-            self.execute_temp_query,
+            "/api/v1/database-connections",
+            self.create_database_connection,
             methods=["POST"],
+            tags=["Database connections"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/database-connections",
+            self.list_database_connections,
+            methods=["GET"],
+            tags=["Database connections"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/database-connections/{db_connection_id}",
+            self.update_database_connection,
+            methods=["PUT"],
+            tags=["Database connections"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/table-descriptions/scan",
+            self.scan_db,
+            methods=["POST"],
+            tags=["Table descriptions"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/table-descriptions/{table_description_id}",
+            self.update_table_description,
+            methods=["PATCH"],
+            tags=["Table descriptions"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/table-descriptions",
+            self.list_table_descriptions,
+            methods=["GET"],
+            tags=["Table descriptions"],
         )
 
         self.router.add_api_route(
             "/api/v1/golden-records/{golden_record_id}",
             self.delete_golden_record,
             methods=["DELETE"],
+            tags=["Golden records"],
         )
 
         self.router.add_api_route(
             "/api/v1/golden-records",
             self.add_golden_records,
             methods=["POST"],
+            tags=["Golden records"],
         )
 
         self.router.add_api_route(
-            "/api/v1/golden-records", self.get_golden_records, methods=["GET"]
+            "/api/v1/golden-records",
+            self.get_golden_records,
+            methods=["GET"],
+            tags=["Golden records"],
         )
 
         self.router.add_api_route(
-            "/api/v1/scanned-databases", self.get_scanned_databases, methods=["GET"]
+            "/api/v1/question",
+            self.answer_question,
+            methods=["POST"],
+            tags=["Question"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/nl-query-responses",
+            self.get_nl_query_response,
+            methods=["POST"],
+            tags=["NL query responses"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/nl-query-responses/{query_id}",
+            self.update_nl_query_response,
+            methods=["PATCH"],
+            tags=["NL query responses"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/sql-query-executions",
+            self.execute_sql_query,
+            methods=["POST"],
+            tags=["SQL queries"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/heartbeat", self.heartbeat, methods=["GET"], tags=["System"]
         )
 
         self._app.include_router(self.router)
@@ -113,34 +156,57 @@ class FastAPI(dataherald.server.Server):
     def heartbeat(self) -> dict[str, int]:
         return self.root()
 
-    def connect_database(
+    def create_database_connection(
         self, database_connection_request: DatabaseConnectionRequest
     ) -> DatabaseConnection:
-        """Connects a database to the Dataherald service"""
-        return self._api.connect_database(database_connection_request)
+        """Creates a database connection"""
+        return self._api.create_database_connection(database_connection_request)
 
-    def add_description(
+    def list_database_connections(self) -> list[DatabaseConnection]:
+        """List all database connections"""
+        return self._api.list_database_connections()
+
+    def update_database_connection(
         self,
-        db_name: str,
-        table_name: str,
+        db_connection_id: str,
+        database_connection_request: DatabaseConnectionRequest,
+    ) -> DatabaseConnection:
+        """Creates a database connection"""
+        return self._api.update_database_connection(
+            db_connection_id, database_connection_request
+        )
+
+    def update_table_description(
+        self,
+        table_description_id: str,
         table_description_request: TableDescriptionRequest,
-    ) -> bool:
+    ) -> TableSchemaDetail:
         """Add descriptions for tables and columns"""
-        return self._api.add_description(db_name, table_name, table_description_request)
+        return self._api.update_table_description(
+            table_description_id, table_description_request
+        )
 
-    def execute_query(self, query: Query) -> tuple[str, dict]:
-        """Executes a query on the given db_alias"""
-        return self._api.execute_query(query)
+    def list_table_descriptions(
+        self, db_connection_id: str | None = None, table_name: str | None = None
+    ) -> list[TableSchemaDetail]:
+        """List table descriptions"""
+        return self._api.list_table_descriptions(db_connection_id, table_name)
 
-    def update_query(self, query_id: str, query: UpdateQueryRequest) -> NLQueryResponse:
-        """Executes a query on the given db_alias"""
-        return self._api.update_query(query_id, query)
+    def execute_sql_query(self, query: Query) -> tuple[str, dict]:
+        """Executes a query on the given db_connection_id"""
+        return self._api.execute_sql_query(query)
 
-    def execute_temp_query(
-        self, query_id: str, query: ExecuteTempQueryRequest
+    def update_nl_query_response(
+        self, query_id: str, query: UpdateQueryRequest
     ) -> NLQueryResponse:
-        """Executes a query on the given db_alias"""
-        return self._api.execute_temp_query(query_id, query)
+        """Executes a query on the given db_connection_id"""
+        return self._api.update_nl_query_response(query_id, query)
+
+    def get_nl_query_response(
+        self, query_request: ExecuteTempQueryRequest
+    ) -> NLQueryResponse:
+        """Executes a query on the given db_connection_id"""
+        return self._api.get_nl_query_response(query_request)
 
     def delete_golden_record(self, golden_record_id: str) -> dict:
         """Deletes a golden record"""
@@ -161,7 +227,3 @@ class FastAPI(dataherald.server.Server):
     def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
         """Gets golden records"""
         return self._api.get_golden_records(page, limit)
-
-    def get_scanned_databases(self, db_alias: str) -> ScannedDBResponse:
-        """Gets golden records"""
-        return self._api.get_scanned_databases(db_alias)

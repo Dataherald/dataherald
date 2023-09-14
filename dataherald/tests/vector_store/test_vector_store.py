@@ -14,7 +14,7 @@ class TestVectorStore(VectorStore):
     def query(
         self,
         query_texts: List[str],
-        db_alias: str,
+        db_connection_id: str,
         collection: str,
         num_results: int,  # noqa: ARG002
     ) -> list:

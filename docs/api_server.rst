@@ -41,7 +41,7 @@ All implementations of the API module must inherit and implement the abstract :c
    :return: The NLQueryResponse containing the response to the user's question.
    :rtype: NLQueryResponse
 
-.. method:: connect_database(self, database_connection_request: DatabaseConnectionRequest) -> bool
+.. method:: create_database_connection(self, database_connection_request: DatabaseConnectionRequest) -> bool
    :noindex:
 
    Establishes a connection to a database using the provided connection request.
@@ -51,13 +51,13 @@ All implementations of the API module must inherit and implement the abstract :c
    :return: True if the connection was established successfully; otherwise, False.
    :rtype: bool
 
-.. method:: add_description(self, db_name: str, table_name: str, table_description_request: TableDescriptionRequest) -> bool
+.. method:: add_description(self, db_connection_id: str, table_name: str, table_description_request: TableDescriptionRequest) -> bool
    :noindex:
 
    Adds a description to a specific table within a database based on the provided table description request.
 
-   :param db_name: The name of the database.
-   :type db_name: str
+   :param db_connection_id: The db connection id
+   :type db_connection_id: str
    :param table_name: The name of the table.
    :type table_name: str
    :param table_description_request: The table description request.
@@ -109,13 +109,13 @@ All implementations of the API module must inherit and implement the abstract :c
    :return: The NLQueryResponse containing the result of the temporary query execution.
    :rtype: NLQueryResponse
 
-.. method:: get_scanned_databases(self, db_alias: str) -> ScannedDBResponse
+.. method:: get_scanned_databases(self, db_connection_id: str) -> ScannedDBResponse
    :noindex:
 
-   Retrieves information about scanned databases based on a database alias.
+   Retrieves information about scanned databases based on a database connection id.
 
-   :param db_alias: The alias of the database.
-   :type db_alias: str
+   :param db_connection_id: The database connection id.
+   :type db_connection_id: str
    :return: The ScannedDBResponse containing information about scanned databases.
    :rtype: ScannedDBResponse
 

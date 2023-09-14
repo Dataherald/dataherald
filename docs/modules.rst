@@ -48,9 +48,3 @@ The following diagram illustrates the overall system architecture.
 
 
 
-Get Involved
-------------
-
-We encourage you to imeplemnt your own modules and engage with the Dataherald community on `Discord <https://discord.gg/A59Uxyy2k9>`_ or on `GitHub <https://github.com/Dataherald/dataherald>`_. Your input drives our ongoing development and improvement.
-
-:ref:`Back to Top <modules>`

@@ -94,7 +94,7 @@ You can define a DB connection through a call to the following API endpoint `/ap
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
         -d '{
-            "db_alias": "my_db_alias_identifier",
+            "db_connection_id": "db_connection_id",
             "use_ssh": false,
             "connection_uri": "sqlite:///mydb.db"
         }'
@@ -110,7 +110,7 @@ If you need to connect to your database through an SSH tunnel, you will need to 
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
         -d '{
-        "db_alias": "my_db_alias_identifier",
+        "db_connection_id": "db_connection_id",
         "use_ssh": true,
         "ssh_settings": {
             "db_name": "db_name",
@@ -150,7 +150,7 @@ Once you have connected the engine to your data warehouse (and preferably added 
         -H 'Content-Type: application/json' \
         -d '{
                 "question": "what was the most expensive zip code to rent in Los Angeles county in May 2022?"",
-                "db_alias": "db_name"
+                "db_connection_id": "db_connection_id"
             }'
 
 
