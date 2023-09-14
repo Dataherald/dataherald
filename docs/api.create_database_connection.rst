@@ -1,7 +1,7 @@
 Create a Database connection
 =============================
 
-We currently support connections to the following data warehouses: ``databricks``, ``postgresql``, ``snowflake``, ``bigquery``. All sensitive connection data 
+We currently support connections to the following data warehouses: ``databricks``, ``postgresql``, ``snowflake``, ``bigquery`` and ``AWS Athena``. All sensitive connection data
 is encrypted using the key you provide in your .env file before being stored to the application storage. 
 
 You can also specify the engine to connect to the Database through an SSH tunnel, as demonstrated in the second example below.
@@ -147,6 +147,16 @@ Example::
 
 "connection_uri": snowflake://jon:123456@foo-bar/my-database/public
 
+AWS Athena
+^^^^^^^^^^^^
+
+Uri structure::
+
+"connection_uri": awsathena+rest://<aws_access_key_id>:<aws_secret_access_key>@athena.<region_name>.amazonaws.com:443/<schema_name>?s3_staging_dir=<s3_staging_dir>&work_group=primary
+
+Example::
+
+"connection_uri": awsathena+rest://foobar:foobar@athena.us-east-2.amazonaws.com:443/db_test?s3_staging_dir=s3://my-bucket/output/&work_group=primary
 
 BigQuery
 ^^^^^^^^^^^^
