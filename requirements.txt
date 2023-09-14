@@ -33,3 +33,4 @@ sphinx==6.2.1
 sphinx-book-theme==1.0.1
 boto3==1.28.38
 botocore==1.31.38
+PyAthena==3.0.6
