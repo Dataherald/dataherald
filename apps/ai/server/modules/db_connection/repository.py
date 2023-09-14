@@ -5,7 +5,7 @@ from database.mongo import MongoDB
 from modules.db_connection.models.entities import DBConnection, DBConnectionRef
 
 
-class DatabaseRepository:
+class DBConnectionRepository:
     def get_db_connections(self, db_connection_ids: list[str]) -> list[DBConnection]:
         object_ids = [ObjectId(id) for id in db_connection_ids]
         db_connections = MongoDB.find_by_object_ids(DATABASE_CONNECTION_COL, object_ids)
@@ -18,9 +18,10 @@ class DatabaseRepository:
         return DBConnection(**db_connection) if db_connection else None
 
     def get_db_connection_refs(self, org_id: str) -> list[DBConnectionRef]:
-        return MongoDB.find(
+        db_connection_refs = MongoDB.find(
             DATABASE_CONNECTION_REF_COL, {"organization_id": ObjectId(org_id)}
         )
+        return [DBConnectionRef(**dbcr) for dbcr in db_connection_refs]
 
     def add_db_connection_ref(
         self,

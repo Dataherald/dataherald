@@ -13,7 +13,7 @@ interface DatabasesResponse {
 const useDatabases = (): DatabasesResponse => {
   const { token } = useAuth()
   const { data, isLoading, error } = useSWR<Databases>(
-    token ? [`${API_URL}/database/list`, token] : null,
+    token ? [`${API_URL}/table-description/database/list`, token] : null,
     ([url, token]: [string, string]) => apiFetcher<Databases>(url, { token }),
   )
   return {

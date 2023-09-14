@@ -3,6 +3,7 @@ from bson import ObjectId
 from fastapi import HTTPException, status
 
 from config import (
+    DATABASE_CONNECTION_REF_COL,
     GOLDEN_SQL_REF_COL,
     QUERY_RESPONSE_REF_COL,
     TABLE_DESCRIPTION_COL,
@@ -127,6 +128,14 @@ class Authorize:
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized User"
             )
         return user
+
+    def db_connection_in_organization(self, db_connection_id: str, org_id: str):
+        self._item_in_organization(
+            DATABASE_CONNECTION_REF_COL,
+            db_connection_id,
+            org_id,
+            key="db_connection_id",
+        )
 
     def query_in_organization(self, query_id: str, org_id: str):
         self._item_in_organization(

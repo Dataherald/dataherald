@@ -5,7 +5,10 @@ from modules.table_description.models.requests import (
     ScanRequest,
     TableDescriptionRequest,
 )
-from modules.table_description.models.responses import TableDescriptionResponse
+from modules.table_description.models.responses import (
+    DatabaseDescriptionResponse,
+    TableDescriptionResponse,
+)
 from modules.table_description.service import TableDescriptionService
 from utils.auth import Authorize, VerifyToken
 
@@ -19,7 +22,7 @@ authorize = Authorize()
 table_description_service = TableDescriptionService()
 
 
-@router.get("", status_code=status.HTTP_200_OK)
+@router.get("/list", status_code=status.HTTP_200_OK)
 async def get_table_descriptions(
     table_name: str = "",
     token: str = Depends(token_auth_scheme),
@@ -28,6 +31,17 @@ async def get_table_descriptions(
     organization = authorize.get_organization_by_user(user)
     return await table_description_service.get_table_descriptions(
         table_name, str(organization.db_connection_id)
+    )
+
+
+@router.get("/database/list", status_code=status.HTTP_200_OK)
+async def get_database_table_descriptions(
+    token: str = Depends(token_auth_scheme),
+) -> list[DatabaseDescriptionResponse]:
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    organization = authorize.get_organization_by_user(user)
+    return await table_description_service.get_database_table_descriptions(
+        str(organization.db_connection_id)
     )
 
 

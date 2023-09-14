@@ -14,7 +14,7 @@ const DatabasesPage: FC = () => {
 
   const mapDatabaseToTreeData = (databases: Databases): TreeNode[] =>
     databases.map((database) => ({
-      name: database.db_alias,
+      name: database.alias,
       icon: DatabaseIcon,
       children: [
         {

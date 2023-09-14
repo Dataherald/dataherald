@@ -6,17 +6,17 @@ from config import settings
 from modules.db_connection.models.entities import DBConnection, DBConnectionRef
 from modules.db_connection.models.requests import DBConnectionRequest
 from modules.db_connection.models.responses import DBConnectionResponse
-from modules.db_connection.repository import DatabaseRepository
+from modules.db_connection.repository import DBConnectionRepository
 from modules.organization.service import OrganizationService
 from utils.s3 import S3
 
 
-class DatabaseService:
+class DBConnectionService:
     def __init__(self):
-        self.repo = DatabaseRepository()
+        self.repo = DBConnectionRepository()
         self.org_service = OrganizationService()
 
-    async def get_db_connections(self, org_id: str) -> list[DBConnectionResponse]:
+    def get_db_connections(self, org_id: str) -> list[DBConnectionResponse]:
         db_connection_refs = self.repo.get_db_connection_refs(org_id)
         db_connection_ids = [
             str(db_connection_ref.db_connection_id)
@@ -28,8 +28,9 @@ class DatabaseService:
             for db_connection in db_connections
         ]
 
-    async def get_db_connection(self, db_connection_id: str) -> DBConnectionResponse:
+    def get_db_connection(self, db_connection_id: str) -> DBConnectionResponse:
         db_connection = self.repo.get_db_connection(db_connection_id)
+        print(db_connection)
         return (
             self._get_mapped_db_connection_response(db_connection)
             if db_connection
@@ -76,14 +77,11 @@ class DatabaseService:
 
             return True
 
-    async def update_db_connection(
-        self, db_connection_id, db_connection_request: DBConnectionRequest
-    ) -> DBConnectionResponse:
-        pass
-
-    async def _get_mapped_db_connection_response(
+    def _get_mapped_db_connection_response(
         self, db_connection: DBConnection
     ) -> DBConnectionResponse:
-        db_connection_response = DBConnectionResponse(**db_connection.dict())
+        db_connection_response = DBConnectionResponse(
+            _id=str(db_connection.id), **db_connection.dict()
+        )
         db_connection_response.id = str(db_connection_response.id)
         return db_connection_response

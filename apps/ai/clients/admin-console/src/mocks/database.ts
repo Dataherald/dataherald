@@ -2,7 +2,7 @@ import { Databases } from '@/models/api'
 
 export const DATABASES: Databases = [
   {
-    db_alias: 'databricks',
+    alias: 'databricks',
     tables: [
       {
         name: 'renthub_median_rent',
@@ -73,7 +73,7 @@ export const DATABASES: Databases = [
     ],
   },
   {
-    db_alias: 'databricks',
+    alias: 'databricks',
     tables: [
       {
         name: 'renthub_median_rent',

@@ -2,17 +2,22 @@ import httpx
 from fastapi import HTTPException, status
 
 from config import settings
+from modules.db_connection.service import DBConnectionService
 from modules.table_description.models.requests import (
     ScanRequest,
     TableDescriptionRequest,
 )
-from modules.table_description.models.responses import TableDescriptionResponse
+from modules.table_description.models.responses import (
+    BasicTableDescriptionResponse,
+    DatabaseDescriptionResponse,
+    TableDescriptionResponse,
+)
 from utils.exception import raise_for_status
 
 
 class TableDescriptionService:
     def __init__(self):
-        self.repo = None
+        self.db_connection_service = DBConnectionService()
 
     async def get_table_descriptions(
         self, table_name: str, db_connection_id: str
@@ -23,10 +28,33 @@ class TableDescriptionService:
                 params={"db_connection_id": db_connection_id, "table_name": table_name},
             )
             raise_for_status(response.status_code, response.json())
-            for i in response.json():
-                print(i["id"])
+            return [
+                TableDescriptionResponse(_id=td["id"], **td) for td in response.json()
+            ]
 
-            return [TableDescriptionResponse(**td) for td in response.json()]
+    async def get_database_table_descriptions(self, db_connection_id: str):
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                settings.k2_core_url + "/table-descriptions",
+                params={"db_connection_id": db_connection_id, "table_name": ""},
+            )
+            raise_for_status(response.status_code, response.json())
+            db_connection = self.db_connection_service.get_db_connection(
+                db_connection_id
+            )
+
+            table_descriptions = [
+                TableDescriptionResponse(_id=td["id"], **td) for td in response.json()
+            ]
+            tables = [
+                BasicTableDescriptionResponse(
+                    id=td.id, name=td.table_name, columns=[c.name for c in td.columns]
+                )
+                for td in table_descriptions
+            ]
+            return [
+                DatabaseDescriptionResponse(alias=db_connection.alias, tables=tables)
+            ]
 
     async def scan_table_descriptions(self, scan_request: ScanRequest) -> bool:
         async with httpx.AsyncClient() as client:
