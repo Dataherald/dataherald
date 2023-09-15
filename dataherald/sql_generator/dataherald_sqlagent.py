@@ -503,7 +503,7 @@ class DataheraldSQLAgent(SQLGenerator):
         input_variables: List[str] | None = None,
         max_examples: int = 20,
         top_k: int = 13,
-        max_iterations: int | None = 12,
+        max_iterations: int | None = 10,
         max_execution_time: float | None = None,
         early_stopping_method: str = "force",
         verbose: bool = False,
