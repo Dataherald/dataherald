@@ -1,10 +1,8 @@
-from pydantic import Field
-
 from modules.golden_sql.models.entities import BaseGoldenSQL, GoldenSQLSource
 
 
 class GoldenSQLResponse(BaseGoldenSQL):
-    id: str = Field(alias="_id")
+    id: str
     db_connection_id: str | None
     organization_id: str
     display_id: str | None

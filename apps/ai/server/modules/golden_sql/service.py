@@ -127,7 +127,7 @@ class GoldenSQLService:
         golden_sql_ref: GoldenSQLRef,
     ) -> GoldenSQLResponse:
         return GoldenSQLResponse(
-            _id=str(golden_sql.id),
+            id=str(golden_sql.id),
             question=golden_sql.question,
             sql_query=golden_sql.sql_query,
             db_connection_id=golden_sql.db_connection_id,
