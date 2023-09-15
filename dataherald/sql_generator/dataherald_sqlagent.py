@@ -592,8 +592,8 @@ class DataheraldSQLAgent(SQLGenerator):
                     total_cost=cb.total_cost,
                     sql_query="",
                     sql_generation_status="INVALID",
-                    sql_query_result = None,
-                    error_message = str(e)
+                    sql_query_result=None,
+                    error_message=str(e),
                 )
         sql_query_list = []
         for step in result["intermediate_steps"]:
