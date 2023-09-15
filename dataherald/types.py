@@ -65,7 +65,7 @@ class NLQueryResponse(BaseModel):
     intermediate_steps: list[str] | None = None
     sql_query: str
     sql_query_result: SQLQueryResult | None
-    sql_generation_status: str = "NONE"
+    sql_generation_status: str = "INVALID"
     error_message: str | None
     exec_time: float | None = None
     total_tokens: int | None = None
