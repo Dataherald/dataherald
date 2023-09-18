@@ -47,6 +47,8 @@ if __name__ == "__main__":
     golden_records = storage.find_all("golden_records")
     for golden_record in golden_records:
         tables = Parser(golden_record["sql_query"]).tables
+        if len(tables) == 0:
+            tables = [""]
         question = golden_record["question"]
         vector_store.add_record(
             documents=question,
