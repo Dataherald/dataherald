@@ -36,6 +36,23 @@ You can find additional details on how to connect to each of the supported data 
       }
     }
 
+**SSH Parameters**
+
+.. csv-table::
+   :header: "Name", "Type", "Description"
+   :widths: 20, 20, 60
+
+    "db_name", "string", "The name of the database you want to connect to"
+    "host", "string", "The hostname or IP address of the SSH server you need to access"
+    "username", "string", "Your username for SSH authentication"
+    "password", "string", "Your password for SSH authentication"
+    "remote_host", "string", "The hostname or IP address of the remote database server you want to connect to."
+    "remote_db_name", "string", "The name of the remote database you want to interact with."
+    "remote_db_password", "string", "The password for accessing the remote database."
+    "private_key_path", "string", "The file path to locate your id_rsa private key file. For example, if you are using Docker and the file is located at the root, the path would be /app/id_rsa. Ensure that you include this file in your Docker container by building it."
+    "private_key_password", "string", "The password for the id_rsa private key file, if it is password-protected"
+    "db_driver", "string", "Set the database driver. For example, for PostgreSQL, the driver should be set to `postgresql+psycopg2`"
+
 **Responses**
 
 HTTP 200 code response
@@ -124,6 +141,10 @@ Uri structure::
 Example::
 
 "connection_uri": postgresql+psycopg2://admin:123456@foo.rds.amazonaws.com:5432/my-database
+
+Specify a schema (If it isn't specified by default it uses `public`)::
+
+"connection_uri": postgresql+psycopg2://<user>:<password>@<host>:<port>/<db-name>?options=-csearch_path=<my-schema>
 
 Databricks
 ^^^^^^^^^^^^
