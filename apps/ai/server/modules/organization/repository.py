@@ -37,3 +37,10 @@ class OrganizationRepository:
         if MongoDB.find_one(ORGANIZATION_COL, {"name": new_org_data["name"]}):
             return None
         return str(MongoDB.insert_one(ORGANIZATION_COL, new_org_data))
+
+    def update_db_connection_id(self, org_id: str, db_connection_id: str) -> int:
+        return MongoDB.update_one(
+            ORGANIZATION_COL,
+            {"_id": ObjectId(org_id)},
+            {"db_connection_id": ObjectId(db_connection_id)},
+        )

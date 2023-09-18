@@ -99,6 +99,18 @@ class OrganizationService:
             status_code=status.HTTP_404_NOT_FOUND, detail="slack installation not found"
         )
 
+    def update_db_connection_id(
+        self, org_id: str, db_connection_id: str
+    ) -> OrganizationResponse:
+        if self.repo.update_db_connection_id(org_id, db_connection_id) == 1:
+            new_org = self.repo.get_organization(org_id)
+            return self._get_mapped_organization_response(new_org)
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Organization not found or cannot be updated",
+        )
+
     def _get_mapped_organization_response(
         self, organization: Organization
     ) -> OrganizationResponse:

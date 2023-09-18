@@ -66,16 +66,14 @@ class DBConnectionService:
             self.repo.add_db_connection_ref(
                 DBConnectionRef(
                     alias=db_connection_request.alias,
-                    db_connection_id=ObjectId(db_connection.id),
+                    db_connection_id=db_connection.id,
                     organization_id=ObjectId(org_id),
                 ).dict(exclude={"id"})
             )
 
-            self.org_service.update_organization(
-                org_id, {"db_connection_id": db_connection.id}
-            )
+            self.org_service.update_db_connection_id(org_id, response_json["id"])
 
-            return True
+            return self._get_mapped_db_connection_response(db_connection)
 
     def _get_mapped_db_connection_response(
         self, db_connection: DBConnection
