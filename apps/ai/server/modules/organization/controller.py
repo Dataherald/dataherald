@@ -8,13 +8,14 @@ from modules.organization.models.requests import (
 )
 from modules.organization.models.responses import OrganizationResponse
 from modules.organization.service import OrganizationService
-from utils.auth import VerifyToken
+from utils.auth import Authorize, VerifyToken
 
 router = APIRouter(
     prefix="/organization",
     responses={404: {"description": "Not found"}},
 )
 
+authorize = Authorize()
 token_auth_scheme = HTTPBearer()
 org_service = OrganizationService()
 
@@ -23,7 +24,7 @@ org_service = OrganizationService()
 async def get_organizations(
     token: str = Depends(token_auth_scheme),
 ) -> list[OrganizationResponse]:
-    VerifyToken(token.credentials)
+    authorize.is_root_user(VerifyToken(token.credentials).verify())
     return org_service.get_organizations()
 
 
@@ -31,13 +32,13 @@ async def get_organizations(
 async def get_organization(
     id: str, token: str = Depends(token_auth_scheme)
 ) -> OrganizationResponse:
-    VerifyToken(token.credentials)
+    authorize.is_root_user(VerifyToken(token.credentials).verify())
     return org_service.get_organization(id)
 
 
 @router.delete("/{id}")
 async def delete_organization(id: str, token: str = Depends(token_auth_scheme)):
-    VerifyToken(token.credentials)
+    authorize.is_root_user(VerifyToken(token.credentials).verify())
     return org_service.delete_organization(id)
 
 
@@ -45,7 +46,7 @@ async def delete_organization(id: str, token: str = Depends(token_auth_scheme)):
 async def update_organization(
     id: str, org_request: OrganizationRequest, token: str = Depends(token_auth_scheme)
 ) -> OrganizationResponse:
-    VerifyToken(token.credentials)
+    authorize.is_root_user(VerifyToken(token.credentials).verify())
     return org_service.update_organization(id, org_request)
 
 
@@ -53,7 +54,7 @@ async def update_organization(
 async def add_organization(
     org_request: OrganizationRequest, token: str = Depends(token_auth_scheme)
 ) -> OrganizationResponse:
-    VerifyToken(token.credentials)
+    authorize.is_root_user(VerifyToken(token.credentials).verify())
     return org_service.add_organization(org_request)
 
 
@@ -62,7 +63,7 @@ async def add_organization_by_slack_installation(
     slack_installation: SlackInstallationRequest,
     token: str = Depends(token_auth_scheme),
 ) -> OrganizationResponse:
-    VerifyToken(token.credentials)
+    VerifyToken(token.credentials).verify()
     return org_service.add_organization_by_slack_installation(slack_installation)
 
 
@@ -71,5 +72,5 @@ async def get_slack_installation_by_slack_workspace_id(
     workspace_id: str,
     token: str = Depends(token_auth_scheme),
 ) -> SlackInstallation:
-    VerifyToken(token.credentials)
+    VerifyToken(token.credentials).verify()
     return org_service.get_slack_installation_by_slack_workspace_id(workspace_id)

@@ -1,3 +1,5 @@
+import re
+
 import jwt
 from bson import ObjectId
 from fastapi import HTTPException, status
@@ -182,6 +184,21 @@ class Authorize:
             )
         organization.id = ObjectId(organization.id)
         return organization
+
+    def is_root_user(self, payload: dict):
+        if not auth_settings.auth_enabled:
+            return
+        domain_pattern = r"@([A-Za-z0-9.-]+)"
+        user = self.user(payload)
+        match = re.search(domain_pattern, user.email)
+        if match:
+            domain = match.group(1)
+            if domain == "dataherald.com":
+                return
+
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authorized"
+        )
 
     def _item_in_organization(
         self, collection: str, id: str, org_id: str, key: str = None
