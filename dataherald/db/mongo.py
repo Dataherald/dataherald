@@ -40,7 +40,9 @@ class MongoDB(DB):
         return self._data_store[collection].find_one({"_id": ObjectId(id)})
 
     @override
-    def find(self, collection: str, query: dict) -> list:
+    def find(self, collection: str, query: dict, sort: list = None) -> list:
+        if sort:
+            return self._data_store[collection].find(query).sort(sort)
         return self._data_store[collection].find(query)
 
     @override
