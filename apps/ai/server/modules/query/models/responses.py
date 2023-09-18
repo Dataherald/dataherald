@@ -48,7 +48,7 @@ class QueryListResponse(BaseModel):
 class QueryResponse(QueryListResponse):
     sql_query_result: SQLQueryResult | None
     sql_query: str
-    ai_process: list[str]
-    last_updated: str
+    ai_process: list[str] = ["process unknown"]
+    last_updated: str | None
     updated_by: User | None
     sql_error_message: str | None
