@@ -45,6 +45,7 @@ logger = logging.getLogger(__name__)
 
 SQL_QUERY_INSTRUCTIONS = [
     "The generated SQL query MUST use lower(column_name) LIKE '% entity %' notation for all of the string comparisons.",
+    "Add all of columns in the condition clause to the SELECT clause.",
 ]
 
 
