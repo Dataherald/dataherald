@@ -3,17 +3,19 @@ name: ai-server-stage
 on:
   push:
     paths:
-      - '.github/workflows/ai-server-stage.yml' # this file
+      - '.github/workflows/ai-server-stage.yml'
       - 'apps/ai/server/**'
       - '!apps/ai/server/dataherald' # ignore k2-core changes
+      - '!apps/ai/server/.env.example'
+      - '!apps/ai/server/README.md'
     branches:
       - main 
 
 env:
-  AWS_REGION: us-east-1               
+  AWS_REGION: us-east-1
   ECR_K2_SERVER_REPOSITORY: k2-server-stage
-  ECS_SERVICE: k2-stage  
-  ECS_CLUSTER: k2             
+  ECS_SERVICE: k2-stage
+  ECS_CLUSTER: k2
   ECS_TASK_DEFINITION: apps/ai/server/.aws/task-definition-stage.json
 
   K2_SERVER_CONTAINER_NAME: k2-server-stage

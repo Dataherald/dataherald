@@ -3,9 +3,11 @@ name: ai-server-prod
 on:
   push:
     paths:
-      - '.github/workflows/ai-server-prod.yml' # this file
+      - '.github/workflows/ai-server-prod.yml'
       - 'apps/ai/server/**'
       - '!apps/ai/server/dataherald' # ignore k2-core changes
+      - '!apps/ai/server/.env.example'
+      - '!apps/ai/server/README.md'
     branches:
       - production
     tags:
