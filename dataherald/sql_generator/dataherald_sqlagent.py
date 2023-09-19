@@ -19,6 +19,7 @@ from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
 )
 from langchain.chains.llm import LLMChain
+from langchain.prompts.chat import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 from langchain.schema import AgentAction
 from langchain.tools.base import BaseTool
 from overrides import override
@@ -38,6 +39,10 @@ from dataherald.types import NLQuery, NLQueryResponse
 
 logger = logging.getLogger(__name__)
 
+SQL_QUERY_INSTRUCTIONS = [
+    "The generated SQL query MUST use lower(column_name) LIKE '% entity %' notation for all of the string comparisons.",
+]
+
 
 AGENT_PREFIX = """You are an agent designed to interact with a SQL database.
 Given an input question, create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
@@ -52,7 +57,8 @@ Here is the plan you have to follow:
 4) Use the db_relevant_columns_info tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
 5) [Optional based on the question] Use the get_current_datetime tool if the question has any mentions of time or dates.
 6) [Optional based on the question] Always use the db_column_entity_checker tool to make sure that relevant columns have the cell-values.
-7) Write a {dialect} query and use sql_db_query tool the Execute the SQL query on the database to obtain the results.
+7) Write a {dialect} query and use the post_processing tool to make sure it follows the user instructions.
+8) Finally, use sql_db_query tool the Execute the post processed SQL query on the database to obtain the results.
 #
 Some tips to always keep in mind:
 tip1) For complex questions that has many relevant columns and tables request for more examples of Question/SQL pairs.
@@ -84,6 +90,16 @@ Question: {input}
 Thought: I should Collect examples of Question/SQL pairs to identify possibly relevant tables, columns, and SQL query styles. If there is a similar question among the examples, I can use the SQL query from the example and modify it to fit the given question.
 {agent_scratchpad}"""  # noqa: E501
 
+POST_PROCESSING_HUMAN_TEMPLATE = """
+The SQL query should follow the following instructions:
+{instructions}
+"""
+
+POST_PROCESSING_SYSTEM_TEMPLATE = """
+You are helpful assistant designed to edit a given SQL query to make sure it follows the user instructions.
+You received the following SQL query:
+{sql_query}
+"""
 
 def catch_exceptions():  # noqa: C901
     def decorator(fn: Callable[[str], str]) -> Callable[[str], str]:  # noqa: C901
@@ -133,7 +149,7 @@ class BaseSQLDatabaseTool(BaseModel):
 
 
 class GetCurrentTimeTool(BaseSQLDatabaseTool, BaseTool):
-    """Tool for querying a SQL database."""
+    """Tool for finding the current date and time."""
 
     name = "get_current_datetime"
     description = """
@@ -157,6 +173,39 @@ class GetCurrentTimeTool(BaseSQLDatabaseTool, BaseTool):
         run_manager: AsyncCallbackManagerForToolRun | None = None,
     ) -> str:
         raise NotImplementedError("GetCurrentTimeTool does not support async")
+
+
+class PostProcessingTool(BaseSQLDatabaseTool, BaseTool):
+    """Tool for post-processing the SQL query."""
+
+    name = "post_processing"
+    description = """
+    Input is a SQL query, output is a post-processed SQL query.
+    Always use this tool before running the SQL query on the database.
+    """
+    llm: Any
+
+    @catch_exceptions()
+    def _run(
+        self,
+        query: str,  # noqa: ARG002
+        run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
+    ) -> str:
+        human_message_prompt = HumanMessagePromptTemplate.from_template(POST_PROCESSING_HUMAN_TEMPLATE)
+        system_message_prompt = SystemMessagePromptTemplate.from_template(POST_PROCESSING_SYSTEM_TEMPLATE)
+        chat_prompt_template = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
+        chain = LLMChain(llm=self.llm, prompt=chat_prompt_template)
+        return chain.run(
+            instructions= ",".join(SQL_QUERY_INSTRUCTIONS),
+            sql_query=query,
+        )
+
+    async def _arun(
+        self,
+        query: str,
+        run_manager: AsyncCallbackManagerForToolRun | None = None,
+    ) -> str:
+        raise NotImplementedError("PostProcessingTool does not support async")
 
 
 class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
@@ -437,6 +486,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     context: List[dict] | None = Field(exclude=True, default=None)
     few_shot_examples: List[dict] | None = Field(exclude=True, default=None)
     db_scan: List[TableSchemaDetail] = Field(exclude=True)
+    llm: Any = Field(exclude=True)
 
     @property
     def dialect(self) -> str:
@@ -451,6 +501,8 @@ class SQLDatabaseToolkit(BaseToolkit):
     def get_tools(self) -> List[BaseTool]:
         """Get the tools in the toolkit."""
         tools = []
+        post_processing_tool = PostProcessingTool(db=self.db, context=self.context, llm=self.llm)
+        tools.append(post_processing_tool)
         query_sql_db_tool = QuerySQLDataBaseTool(db=self.db, context=self.context)
         tools.append(query_sql_db_tool)
         get_current_datetime = GetCurrentTimeTool(db=self.db, context=self.context)
@@ -503,7 +555,7 @@ class DataheraldSQLAgent(SQLGenerator):
         input_variables: List[str] | None = None,
         max_examples: int = 20,
         top_k: int = 13,
-        max_iterations: int | None = 10,
+        max_iterations: int | None = 12,
         max_execution_time: float | None = None,
         early_stopping_method: str = "force",
         verbose: bool = False,
@@ -572,6 +624,7 @@ class DataheraldSQLAgent(SQLGenerator):
             context=context,
             few_shot_examples=new_fewshot_examples,
             db_scan=db_scan,
+            llm=self.llm,
         )
         agent_executor = self.create_sql_agent(
             toolkit=toolkit,
