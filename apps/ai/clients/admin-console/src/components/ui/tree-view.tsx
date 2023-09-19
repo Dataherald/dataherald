@@ -10,14 +10,18 @@ export interface TreeNode {
 
 interface TreeProps {
   node: TreeNode
+  isRoot?: boolean
 }
 
-const TreeNodeComponent: FC<TreeProps> = ({ node }: TreeProps) => {
+const TreeNodeComponent: FC<TreeProps> = ({
+  node,
+  isRoot = false,
+}: TreeProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const nodeHasChildren = !!node.children?.length
 
   return (
-    <div className="pl-7">
+    <div className={isRoot ? 'pl-0' : 'pl-7'}>
       <button
         className={cn(
           'flex items-center p-2 rounded w-full hover:bg-gray-100',
@@ -55,7 +59,7 @@ const TreeView: FC<TreeViewProps & HTMLAttributes<HTMLDivElement>> = ({
 }) => (
   <div className={cn('flex flex-col gap-1', className)} {...props}>
     {data.map((node, idx) => (
-      <TreeNodeComponent key={idx} node={node} />
+      <TreeNodeComponent key={idx} node={node} isRoot />
     ))}
   </div>
 )
