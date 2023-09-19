@@ -43,6 +43,7 @@ const usePagination = <T>(
           ]
         : null,
     ([url, token]: [string, string]) => apiFetcher<List<T>>(url, { token }),
+    { revalidateAll: true },
   )
 
   const items = pages?.flat()
