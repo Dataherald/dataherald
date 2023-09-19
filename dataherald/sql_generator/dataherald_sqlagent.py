@@ -19,7 +19,11 @@ from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
 )
 from langchain.chains.llm import LLMChain
-from langchain.prompts.chat import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
+from langchain.prompts.chat import (
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    SystemMessagePromptTemplate,
+)
 from langchain.schema import AgentAction
 from langchain.tools.base import BaseTool
 from overrides import override
@@ -100,6 +104,7 @@ You are helpful assistant designed to edit a given SQL query to make sure it fol
 You received the following SQL query:
 {sql_query}
 """
+
 
 def catch_exceptions():  # noqa: C901
     def decorator(fn: Callable[[str], str]) -> Callable[[str], str]:  # noqa: C901
@@ -191,12 +196,18 @@ class PostProcessingTool(BaseSQLDatabaseTool, BaseTool):
         query: str,  # noqa: ARG002
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
-        human_message_prompt = HumanMessagePromptTemplate.from_template(POST_PROCESSING_HUMAN_TEMPLATE)
-        system_message_prompt = SystemMessagePromptTemplate.from_template(POST_PROCESSING_SYSTEM_TEMPLATE)
-        chat_prompt_template = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
+        human_message_prompt = HumanMessagePromptTemplate.from_template(
+            POST_PROCESSING_HUMAN_TEMPLATE
+        )
+        system_message_prompt = SystemMessagePromptTemplate.from_template(
+            POST_PROCESSING_SYSTEM_TEMPLATE
+        )
+        chat_prompt_template = ChatPromptTemplate.from_messages(
+            [system_message_prompt, human_message_prompt]
+        )
         chain = LLMChain(llm=self.llm, prompt=chat_prompt_template)
         return chain.run(
-            instructions= ",".join(SQL_QUERY_INSTRUCTIONS),
+            instructions=",".join(SQL_QUERY_INSTRUCTIONS),
             sql_query=query,
         )
 
@@ -501,7 +512,9 @@ class SQLDatabaseToolkit(BaseToolkit):
     def get_tools(self) -> List[BaseTool]:
         """Get the tools in the toolkit."""
         tools = []
-        post_processing_tool = PostProcessingTool(db=self.db, context=self.context, llm=self.llm)
+        post_processing_tool = PostProcessingTool(
+            db=self.db, context=self.context, llm=self.llm
+        )
         tools.append(post_processing_tool)
         query_sql_db_tool = QuerySQLDataBaseTool(db=self.db, context=self.context)
         tools.append(query_sql_db_tool)
