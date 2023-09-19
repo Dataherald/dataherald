@@ -5,15 +5,17 @@ import boto3
 from fastapi import UploadFile
 
 from config import aws_s3_settings
+from utils.encrypt import FernetEncrypt
 
 
 class S3:
     def upload(self, file: UploadFile) -> str:
+        fernet_encrypt = FernetEncrypt()
         file_name = f"{str(uuid.uuid4())}.{file.filename.split('.')[-1]}"
         file_location = f"tmp/{file_name}"
         bucket_name = "k2-core"
         with open(file_location, "w") as file_object:
-            file_object.write(file.file.read().decode("utf-8"))
+            file_object.write(fernet_encrypt.encrypt(file.file.read().decode("utf-8")))
 
         # Upload the file
         s3_client = boto3.client(

@@ -23,6 +23,7 @@ class Settings(BaseSettings):
 
     k2_core_url: str = os.environ.get("K2_CORE_URL")
     default_k2_core_timeout: int = os.environ.get("DEFAULT_TIMEOUT")
+    encrypt_key: str = os.environ.get("ENCRYPT_KEY")
 
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
