@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, List
 import numpy as np
 import openai
 import pandas as pd
+import sqlalchemy
 from google.api_core.exceptions import GoogleAPIError
 from langchain.agents.agent import AgentExecutor
 from langchain.agents.agent_toolkits.base import BaseToolkit
@@ -23,7 +24,9 @@ from langchain.schema import AgentAction
 from langchain.tools.base import BaseTool
 from overrides import override
 from pydantic import BaseModel, Extra, Field
+from sqlalchemy import MetaData
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.sql import func
 
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
@@ -283,8 +286,12 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
     ) -> str:
         schema, entity = tool_input.split(",")
         table_name, column_name = schema.split("->")
-        query = f"SELECT DISTINCT {column_name} FROM {table_name}"  # noqa: S608
-        results = self.db.run_sql(query)[1]["result"]
+        meta = MetaData(bind=self.db.engine)
+        table = sqlalchemy.Table(table_name.strip(), meta, autoload=True)
+        distinct_query = sqlalchemy.select(
+            [func.distinct(table.c[column_name.strip()])]
+        )
+        results = self.db.engine.execute(distinct_query).fetchall()
         results = self.find_similar_strings(results, entity)
         similar_items = "Similar items:\n"
         for item in results:
