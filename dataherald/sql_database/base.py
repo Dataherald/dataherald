@@ -1,9 +1,9 @@
 """SQL wrapper around SQLDatabase in langchain."""
 import logging
-import re
 from typing import Any, List
 from urllib.parse import unquote
 
+import sqlparse
 from langchain.sql_database import SQLDatabase as LangchainSQLDatabase
 from sqlalchemy import MetaData, create_engine, text
 from sqlalchemy.engine import Engine
@@ -119,14 +119,18 @@ class SQLDatabase(LangchainSQLDatabase):
             "MERGE",
             "EXECUTE",
         ]
-        pattern = (
-            r"\b(?:" + "|".join(re.escape(word) for word in sensitive_keywords) + r")\b"
-        )
-        match = re.search(pattern, command, re.IGNORECASE)
-        if match:
-            raise SQLInjectionError(
-                f"Sensitive SQL keyword '{match.group()}' detected in the query."
-            )
+        parsed_command = sqlparse.parse(command)
+
+        for stmt in parsed_command:
+            for token in stmt.tokens:
+                if (
+                    isinstance(token, sqlparse.sql.Token)
+                    and token.normalized in sensitive_keywords
+                ):
+                    raise SQLInjectionError(
+                        f"Sensitive SQL keyword '{token.normalized}' detected in the query."
+                    )
+
         return command
 
     def run_sql(self, command: str) -> tuple[str, dict]:
