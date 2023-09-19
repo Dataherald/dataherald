@@ -1,6 +1,6 @@
 # Slack Bot Client
 
-This is a Slack bot that listens for messages on companies workspaces and interact with our Dataherald AI API
+This is a Slackbot that listens for messages on the company’s workspaces and interacts with our Dataherald AI API
 
 ## Building and Running with Docker
 We use Docker to create a reproducible environment for the Slackbot.
