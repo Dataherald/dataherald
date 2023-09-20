@@ -1,3 +1,4 @@
+import DatabaseConnection from '@/components/databases/database-connection'
 import DatabasesError from '@/components/databases/error'
 import LoadingDatabases from '@/components/databases/loading'
 import PageLayout from '@/components/layout/page-layout'
@@ -10,7 +11,7 @@ import { Columns, Database as DatabaseIcon, Table2 } from 'lucide-react'
 import { FC } from 'react'
 
 const DatabasesPage: FC = () => {
-  const { databases = [], isLoading, error } = useDatabases()
+  const { databases, isLoading, error } = useDatabases()
 
   const mapDatabaseToTreeData = (databases: Databases): TreeNode[] =>
     databases.map((database) => ({
@@ -44,6 +45,8 @@ const DatabasesPage: FC = () => {
     pageContent = <DatabasesError />
   } else if (isLoading) {
     pageContent = <LoadingDatabases />
+  } else if (databases?.length === 0) {
+    pageContent = <DatabaseConnection />
   } else {
     pageContent = (
       <>

@@ -13,8 +13,10 @@
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^3.1.0",
+    "@hookform/resolvers": "^3.3.1",
     "@monaco-editor/react": "^4.5.1",
     "@radix-ui/react-alert-dialog": "^1.0.4",
+    "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-popover": "^1.0.6",
     "@radix-ui/react-select": "^1.2.2",
     "@radix-ui/react-separator": "^1.0.3",
@@ -38,11 +40,13 @@
     "postcss": "8.4.26",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-hook-form": "^7.46.1",
     "sql-formatter": "^13.0.0",
     "swr": "^2.2.0",
     "tailwind-merge": "^1.14.0",
     "tailwindcss": "3.3.3",
-    "tailwindcss-animate": "^1.0.6"
+    "tailwindcss-animate": "^1.0.6",
+    "zod": "^3.22.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.3",
