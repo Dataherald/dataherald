@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from dataherald.config import Component, System
+from dataherald.sql_database.models.types import DatabaseConnection
 
 
 class LLMModel(Component, ABC):
@@ -12,5 +13,10 @@ class LLMModel(Component, ABC):
         self.system = system
 
     @abstractmethod
-    def get_model(self, **kwargs: Any) -> Any:
+    def get_model(
+        self,
+        database_connection: DatabaseConnection,
+        model_family="openai",
+        **kwargs: Any
+    ) -> Any:
         pass

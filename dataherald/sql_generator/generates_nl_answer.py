@@ -27,8 +27,7 @@ class GeneratesNlAnswer:
     def __init__(self, system, storage):
         self.system = system
         self.storage = storage
-        model = ChatModel(self.system)
-        self.llm = model.get_model(temperature=0)
+        self.model = ChatModel(self.system)
 
     def execute(self, nl_query_response: NLQueryResponse) -> NLQueryResponse:
         nl_question_repository = NLQuestionRepository(self.storage)
@@ -39,6 +38,10 @@ class GeneratesNlAnswer:
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         database_connection = db_connection_repository.find_by_id(
             nl_question.db_connection_id
+        )
+        self.llm = self.model.get_model(
+            database_connection=database_connection,
+            temperature=0,
         )
         database = SQLDatabase.get_sql_engine(database_connection)
         nl_query_response = create_sql_query_status(

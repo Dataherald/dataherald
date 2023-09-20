@@ -133,6 +133,7 @@ class FastAPI(API):
                 alias=database_connection_request.alias,
                 uri=database_connection_request.connection_uri,
                 path_to_credentials_file=database_connection_request.path_to_credentials_file,
+                llm_credentials=database_connection_request.llm_credentials,
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
             )
@@ -158,6 +159,7 @@ class FastAPI(API):
                 alias=database_connection_request.alias,
                 uri=database_connection_request.connection_uri,
                 path_to_credentials_file=database_connection_request.path_to_credentials_file,
+                llm_credentials=database_connection_request.llm_credentials,
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
             )
