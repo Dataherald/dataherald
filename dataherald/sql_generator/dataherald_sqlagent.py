@@ -266,12 +266,12 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
     """
 
     def find_similar_strings(
-        self, input_list: List[tuple], target_string: str, threshold=0.6
+        self, input_list: List[tuple], target_string: str, threshold=0.4
     ):
         similar_strings = []
         for item in input_list:
             similarity = difflib.SequenceMatcher(
-                None, str(item[0]).strip(), target_string
+                None, str(item[0]).strip().lower(), target_string.lower()
             ).ratio()
             if similarity >= threshold:
                 similar_strings.append((str(item[0]).strip(), similarity))
@@ -286,16 +286,28 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
     ) -> str:
         schema, entity = tool_input.split(",")
         table_name, column_name = schema.split("->")
+        search_pattern = f"%{entity.strip().lower()}%"
         meta = MetaData(bind=self.db.engine)
         table = sqlalchemy.Table(table_name.strip(), meta, autoload=True)
+        search_query = sqlalchemy.select(
+            [func.distinct(table.c[column_name.strip()])]
+        ).where(func.lower(table.c[column_name.strip()]).like(search_pattern))
         distinct_query = sqlalchemy.select(
             [func.distinct(table.c[column_name.strip()])]
         )
+        search_results = self.db.engine.execute(search_query).fetchall()
+        search_results = search_results[:25]
         results = self.db.engine.execute(distinct_query).fetchall()
         results = self.find_similar_strings(results, entity)
         similar_items = "Similar items:\n"
+        already_added = {}
         for item in results:
             similar_items += f"{item[0]}\n"
+            already_added[item[0]] = True
+        if len(search_results) > 0:
+            for item in search_results:
+                if item[0] not in already_added:
+                    similar_items += f"{item[0]}\n"
         return similar_items
 
     async def _arun(
