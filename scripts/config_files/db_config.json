@@ -1,0 +1,7 @@
+[
+  {
+    "db_alias": "hkg02p",
+    "use_ssh": false,
+    "connection_uri": "mariadb+pymysql://webUser:hgdO7w45BaFT@192.168.1.148:3306/hkg02p?charset=utf8"
+  }
+]
