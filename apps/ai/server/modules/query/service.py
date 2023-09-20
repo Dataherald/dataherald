@@ -33,6 +33,8 @@ from modules.user.service import UserService
 from utils.exception import raise_for_status
 from utils.slack import SlackWebClient, remove_slack_mentions
 
+CONFIDENCE_CAP = 0.95
+
 
 class QueryService:
     def __init__(self):
@@ -156,10 +158,9 @@ class QueryService:
                             qrr.query_response_id
                         ].sql_generation_status,
                     ),
-                    evaluation_score=query_response_dict[
-                        qrr.query_response_id
-                    ].confidence_score
-                    * 100,
+                    evaluation_score=self._convert_confidence_score(
+                        query_response_dict[qrr.query_response_id].confidence_score
+                    ),
                     display_id=qrr.display_id,
                 )
                 for qrr in query_response_refs
@@ -277,7 +278,9 @@ class QueryService:
             status=self._get_query_status(
                 query_id, query_response.sql_generation_status
             ),
-            evaluation_score=query_response.confidence_score * 100,
+            evaluation_score=self._convert_confidence_score(
+                query_response.confidence_score
+            ),
             sql_error_message=query_response.error_message,
             display_id=response_ref.display_id,
         )
@@ -295,3 +298,8 @@ class QueryService:
         }:
             status = QueryStatus.SQL_ERROR
         return status
+
+    def _convert_confidence_score(self, confidence_score: float) -> int:
+        if confidence_score > CONFIDENCE_CAP:
+            return 95
+        return int(confidence_score * 100)
