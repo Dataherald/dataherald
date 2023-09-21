@@ -1,7 +1,6 @@
 from typing import Any, List
 
 import chromadb
-from chromadb.config import Settings
 from overrides import override
 
 from dataherald.config import System
