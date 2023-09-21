@@ -4,11 +4,16 @@
 
     The format of each entry is as follows:
 
+    /api/v1/table-descriptions/scan
     {
-      db_name: "alias_name",
-      table_name: "table_name",
-      table_description: "string",
-      table_columns: [
+      db_connection_id: "string",
+      table_name: ["string"],
+    }
+    
+    /api/v1/table-descriptions/{table_description_id}
+    {
+      description: "string",
+      columns: [
         {
           "name": "string",
           "description": "string"
@@ -30,13 +35,13 @@ import sys
 
 import requests
 
+from scripts.MongoDB import MongoDB
+
 # constants. TODO: move to a config file
 DATAHERALD_REST_API_URL = "http://localhost"
 
-DB_CONNECTION_ID = "650abe8e9baa67d0f0f47247"
 
-
-def scan_table(alias: str, table_name: str):
+def scan_table(db_connection_id: str, table_name: str):
     """scan the given table in the given database
     Args:
         alias (str): the db alias to scan
@@ -45,13 +50,13 @@ def scan_table(alias: str, table_name: str):
 
     scanner_endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/table-descriptions/scan"
     scanner_request_body: dict = {
-        "db_connection_id": DB_CONNECTION_ID,
+        "db_connection_id": db_connection_id,
         "table_names": [table_name]
     }
 
     print("scanner request: ")
     print(f"endpoint url: {scanner_endpoint_url}")
-    print("alias: " + alias)
+    print("db_connection_id: " + db_connection_id)
     print("table_name: " + table_name)
     print(json.dumps(scanner_request_body, indent=4, sort_keys=True))
     r = requests.post(scanner_endpoint_url, json=scanner_request_body, headers={
@@ -61,31 +66,31 @@ def scan_table(alias: str, table_name: str):
     print()
 
 
-def add_table_meta_data(alias: str, table_name: str, table_description: str, table_columns: list):
+def add_table_meta_data(db_connection_id: str, table_description_id: str, description: str, columns: list):
     """This function adds meta data to the given table in the given database
 
     Args:
         alias (str): the db alias
         table_name (str): the table name
-        table_description (str): Meta data description of the table
-        table_columns (list): Meta data for each column in the table
+        description (str): Meta data description of the table
+        columns (list): Meta data for each column in the table
     """
     # construct the REST API call
     # construct the URL
-    endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/scanned-db/{DB_CONNECTION_ID}"
+    endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/table-descriptions/{table_description_id }"
 
     # construct the request body
     request_body: dict = {
-        "table_description": table_description,
-        "table_columns": table_columns
+        "description": description,
+        "columns": columns
     }
 
     # 3. Run the REST API call to create the database in Dataherald
     # set accept header to application/json
     print("Meta Data Add Request: ")
     print(f"endpoint url: {endpoint_url}")
-    print("alias: " + alias)
-    print("table_name: " + table_name)
+    print("db_connection_id: " + db_connection_id)
+    print("table_description_id : " + table_description_id)
     print("table_description: " + table_description)
     print("request body: ")
     print(json.dumps(request_body, indent=4, sort_keys=True))
@@ -116,28 +121,66 @@ def run(config_file: str):
 
             alias = config["alias"]
             table_name = config["table_name"]
-            table_description = config["table_description"]
-            table_columns = config["table_columns"]
+            description = config["description"]
+            columns = config["columns"]
 
             # first execute the scanner to add the table to the database
             # construct the URL
-            # scan_table(alias, table_name)
+
+            # get the db_connection_id from the mongo database /
+            mongo = MongoDB()
+
+            # select the _id from the database_connections collection where alias = alias
+            query = {"alias": alias}
+            projection = {"_id": 1}
+            result = mongo.select(
+                "database_connections", query, projection)
+
+            # check if the result is empty
+            if result is None:
+                print(f"alias: {alias} not found in database_connections")
+                continue
+
+            # get the first item in the list
+            db_connection_id = str(list(result)[0]["_id"])
+            mongo.close()
+
+            print(f"db_connection_id: {db_connection_id}")
+
+            scan_table(db_connection_id, table_name)
+
+            # get the _id from the table_descriptions collection where db_connection_id = db_connection_id and table_name = table_name
+
+            mongo = MongoDB()
+            query = {"db_connection_id": db_connection_id,
+                     "table_name": table_name}
+            projection = {"_id": 1}
+            result = mongo.select("table_descriptions", query, projection)
+            # check if the result is empty
+            if result is None:
+                print(
+                    f"table_description_id not found for db: {alias} with table name: {table_name} not found in table_descriptions collection")
+                continue
+
+            # get the first item in the list
+            table_description_id = str(list(result)[0]["_id"])
+            mongo.close()
 
             # second add meta data to the table
-            add_table_meta_data(alias, table_name,
-                                table_description, table_columns)
+            add_table_meta_data(db_connection_id,
+                                table_description_id, description, columns)
 
 
 if __name__ == "__main__":
     print("################################################################################")
-    print("                      Running setup_scanner.py")
+    print("                      Running setup_table_descriptions.py")
     print("################################################################################")
     # read in the database configuration file but use the default if not provided
     print(f"Current working directory: {os.getcwd()}")
 
     # default database configuration file
     default_config_file = str(os.path.join(os.path.dirname(
-        __file__), "config_files", "scanner_config.json"))
+        __file__), "config_files", "table_descriptions.json"))
 
     config_file_to_use = default_config_file
     if len(sys.argv) < 2:
