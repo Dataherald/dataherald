@@ -76,7 +76,7 @@ class GoldenSQLService:
                 json=[golden_sql_request.dict()],
                 timeout=settings.default_k2_core_timeout,
             )
-            raise_for_status(response.status_code, response.json())
+            raise_for_status(response.status_code, response.text)
             response_json = response.json()[0]
             golden_sql = GoldenSQL(**response_json)
             golden_sql.id = ObjectId(response_json["id"])
@@ -108,7 +108,7 @@ class GoldenSQLService:
                 settings.k2_core_url + f"/golden-records/{golden_id}",
                 timeout=settings.default_k2_core_timeout,
             )
-            raise_for_status(response.status_code, response.json())
+            raise_for_status(response.status_code, response.text)
             if response.json()["status"]:
                 if query_response_id:
                     matched_count = self.repo.delete_verified_golden_sql_ref(

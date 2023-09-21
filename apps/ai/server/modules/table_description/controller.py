@@ -30,7 +30,7 @@ async def get_table_descriptions(
     user = authorize.user(VerifyToken(token.credentials).verify())
     organization = authorize.get_organization_by_user(user)
     return await table_description_service.get_table_descriptions(
-        table_name, str(organization.db_connection_id)
+        table_name, organization.db_connection_id
     )
 
 
@@ -41,16 +41,16 @@ async def get_database_table_descriptions(
     user = authorize.user(VerifyToken(token.credentials).verify())
     organization = authorize.get_organization_by_user(user)
     return await table_description_service.get_database_table_descriptions(
-        str(organization.db_connection_id)
+        organization.db_connection_id
     )
 
 
-@router.post("/scan", status_code=status.HTTP_201_CREATED)
-async def scan_table_descriptions(
+@router.post("/sync-schemas", status_code=status.HTTP_201_CREATED)
+async def sync_table_descriptions_schemas(
     scan_request: ScanRequest, token: str = Depends(token_auth_scheme)
 ):
     authorize.user(VerifyToken(token.credentials).verify())
-    return await table_description_service.scan_table_descriptions(scan_request)
+    return await table_description_service.sync_table_descriptions_schemas(scan_request)
 
 
 @router.patch("/{id}", status_code=status.HTTP_200_OK)

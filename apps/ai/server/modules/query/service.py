@@ -8,7 +8,7 @@ from config import settings
 from modules.golden_sql.models.entities import GoldenSQLSource
 from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.service import GoldenSQLService
-from modules.organization.models.entities import Organization
+from modules.organization.models.responses import OrganizationResponse
 from modules.organization.service import OrganizationService
 from modules.query.models.entities import (
     QueryRef,
@@ -44,7 +44,7 @@ class QueryService:
         self.user_service = UserService()
 
     async def answer_question(
-        self, question_request: QuestionRequest, organization: Organization
+        self, question_request: QuestionRequest, organization: OrganizationResponse
     ) -> QuerySlackResponse:
         question_string = remove_slack_mentions(question_request.question)
 
@@ -54,12 +54,12 @@ class QueryService:
                 settings.k2_core_url + "/question",
                 json={
                     "question": question_string,
-                    "db_connection_id": str(organization.db_connection_id),
+                    "db_connection_id": organization.db_connection_id,
                 },
                 timeout=settings.default_k2_core_timeout,
             )
 
-            raise_for_status(response.status_code, response.json())
+            raise_for_status(response.status_code, response.text)
 
         # adds document that links user info to query response
         query_response = CoreQueryResponse(**response.json())
@@ -67,7 +67,7 @@ class QueryService:
 
         # if query ref doesn't exist, create one
         if not self.repo.get_query_response_ref(query_id):
-            display_id = self.repo.get_next_display_id(str(organization.id))
+            display_id = self.repo.get_next_display_id(organization.id)
 
             current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
             username = SlackWebClient(
@@ -172,7 +172,7 @@ class QueryService:
         self,
         query_id: str,
         query_request: QueryUpdateRequest,
-        organization: Organization,
+        organization: OrganizationResponse,
         user: User,
     ) -> QueryResponse:
         is_golden_record = (
@@ -185,7 +185,7 @@ class QueryService:
                 json={"sql_query": query_request.sql_query},
                 timeout=settings.default_k2_core_timeout,
             )
-            raise_for_status(response.status_code, response.json())
+            raise_for_status(response.status_code, response.text)
 
             new_query_response = CoreQueryResponse(**response.json())
             question = self.repo.get_question(new_query_response.nl_question_id["$oid"])
@@ -200,7 +200,7 @@ class QueryService:
                 )
                 await self.golden_sql_service.add_golden_sql(
                     golden_sql,
-                    str(organization.id),
+                    organization.id,
                     source=GoldenSQLSource.verified_query,
                     query_response_id=query_id,
                 )
@@ -244,7 +244,7 @@ class QueryService:
                 },
                 timeout=settings.default_k2_core_timeout,
             )
-            raise_for_status(response.status_code, response.json())
+            raise_for_status(response.status_code, response.text)
             response_ref = self.repo.get_query_response_ref(query_id)
             new_query_response = CoreQueryResponse(**response.json())
             question = self.repo.get_question(new_query_response.nl_question_id["$oid"])

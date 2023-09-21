@@ -15,12 +15,12 @@ from config import (
 )
 from database.mongo import MongoDB
 from modules.organization.models.entities import (
-    Organization,
     SlackBot,
     SlackInstallation,
     SlackTeam,
     SlackUser,
 )
+from modules.organization.models.responses import OrganizationResponse
 from modules.organization.service import OrganizationService
 from modules.query.service import QueryService
 from modules.user.models.entities import User
@@ -38,10 +38,10 @@ test_user = User(
     organization_id=ObjectId(b"foo-bar-quux"),
 )
 
-test_organization = Organization(
-    _id=ObjectId("64ee518fadb29ccf33d51739"),
+test_organization = OrganizationResponse(
+    id="64ee518fadb29ccf33d51739",
     name="Test Org",
-    db_alias="v2_real_estate",
+    db_connection_id="64ee518fadb29ccf33d51124",
     slack_installation=SlackInstallation(
         team=SlackTeam(id="TT1TV3MSL", name="test_org"),
         bot=SlackBot(
@@ -158,8 +158,6 @@ class Authorize:
 
     def table_description_in_organization(self, table_description_id: str, org_id: str):
         organization = org_service.get_organization(org_id)
-        print(organization.db_connection_id)
-        print(table_description_id)
         table_description = MongoDB.find_one(
             TABLE_DESCRIPTION_COL,
             {
@@ -172,7 +170,7 @@ class Authorize:
                 status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
             )
 
-    def get_organization_by_user(self, user: User) -> Organization:
+    def get_organization_by_user(self, user: User) -> OrganizationResponse:
         if not auth_settings.auth_enabled:
             return test_organization
 
@@ -182,7 +180,6 @@ class Authorize:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User does not belong to an Organization",
             )
-        organization.id = ObjectId(organization.id)
         return organization
 
     def is_root_user(self, payload: dict):

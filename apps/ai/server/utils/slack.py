@@ -76,5 +76,5 @@ def remove_slack_mentions(text: str) -> str:
             slack_team_mention_pattern,
             "",
             re.sub(slack_user_mention_pattern, "", text),
-        ),
+        ).lstrip(),
     )

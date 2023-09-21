@@ -20,17 +20,22 @@ class SSHSettings(BaseModel):
 class BaseDBConnection(BaseModel):
     alias: str | None
     use_ssh: bool = False
-    connection_uri: str | None
+
     path_to_credentials_file: str | None
     ssh_settings: SSHSettings | None
 
 
 class DBConnection(BaseDBConnection):
     id: Any = Field(alias="_id")
+    uri: str | None
 
 
 class DBConnectionRef(BaseModel):
     id: Any = Field(alias="_id")
     db_connection_id: Any
     organization_id: Any
-    alias: str
+
+
+class Driver(BaseModel):
+    name: str | None
+    driver: str

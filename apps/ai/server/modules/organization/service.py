@@ -116,5 +116,7 @@ class OrganizationService:
     ) -> OrganizationResponse:
         org_dict = organization.dict()
         org_dict["id"] = str(org_dict["id"])
-        org_dict["db_connection_id"] = str(org_dict["db_connection_id"])
+        org_dict["db_connection_id"] = (
+            str(org_dict["db_connection_id"]) if org_dict["db_connection_id"] else None
+        )
         return OrganizationResponse(**org_dict)
