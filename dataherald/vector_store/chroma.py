@@ -1,7 +1,6 @@
 from typing import Any, List
 
 import chromadb
-from chromadb.config import Settings
 from overrides import override
 
 from dataherald.config import System
@@ -12,13 +11,10 @@ class Chroma(VectorStore):
     def __init__(
         self,
         system: System,
-        chroma_db_impl: str = "duckdb+parquet",
         persist_directory: str = "/app/chroma",
     ):
         super().__init__(system)
-        self.chroma_client = chromadb.Client(
-            Settings(chroma_db_impl=chroma_db_impl, persist_directory=persist_directory)
-        )
+        self.chroma_client = chromadb.PersistentClient(path=persist_directory)
 
     @override
     def query(
