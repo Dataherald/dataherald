@@ -91,7 +91,7 @@ def add_table_meta_data(db_connection_id: str, table_description_id: str, descri
     print(f"endpoint url: {endpoint_url}")
     print("db_connection_id: " + db_connection_id)
     print("table_description_id : " + table_description_id)
-    print("table_description: " + table_description)
+    print("table_description: " + description)
     print("request body: ")
     print(json.dumps(request_body, indent=4, sort_keys=True))
     # print the endpoint url
@@ -129,21 +129,12 @@ def run(config_file: str):
 
             # get the db_connection_id from the mongo database /
             mongo = MongoDB()
-
-            # select the _id from the database_connections collection where alias = alias
-            query = {"alias": alias}
-            projection = {"_id": 1}
-            result = mongo.select(
-                "database_connections", query, projection)
-
-            # check if the result is empty
-            if result is None:
-                print(f"alias: {alias} not found in database_connections")
-                continue
-
-            # get the first item in the list
-            db_connection_id = str(list(result)[0]["_id"])
+            db_connection_id = mongo.get_db_connection_id_for_db_alias(alias)
             mongo.close()
+
+            if db_connection_id is None:
+                print(f"db_connection_id not found for db: {alias}")
+                continue
 
             print(f"db_connection_id: {db_connection_id}")
 
@@ -152,19 +143,14 @@ def run(config_file: str):
             # get the _id from the table_descriptions collection where db_connection_id = db_connection_id and table_name = table_name
 
             mongo = MongoDB()
-            query = {"db_connection_id": db_connection_id,
-                     "table_name": table_name}
-            projection = {"_id": 1}
-            result = mongo.select("table_descriptions", query, projection)
-            # check if the result is empty
-            if result is None:
-                print(
-                    f"table_description_id not found for db: {alias} with table name: {table_name} not found in table_descriptions collection")
-                continue
-
-            # get the first item in the list
-            table_description_id = str(list(result)[0]["_id"])
+            table_description_id = mongo.get_table_desc_id_for_dblias_tablename(
+                alias)
             mongo.close()
+
+            if table_description_id is None:
+                print(
+                    f"table_description_id not found for db: {alias} and table: {table_name}")
+                continue
 
             # second add meta data to the table
             add_table_meta_data(db_connection_id,
