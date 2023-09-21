@@ -94,3 +94,9 @@ export interface Database {
 }
 
 export type Databases = Database[]
+
+export interface DatabaseConnection {
+  alias: string
+  use_ssh: boolean
+  connection_uri: string
+}

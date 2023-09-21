@@ -4,7 +4,7 @@ import { FC, ReactNode } from 'react'
 const TreeItemSkeleton: FC = () => (
   <div className="flex items-center space-x-2">
     <Skeleton className="w-6 h-6" />
-    <Skeleton className="w-64 h-4" />
+    <Skeleton className="w-full h-4" />
   </div>
 )
 

@@ -8,36 +8,46 @@ import useDatabases from '@/hooks/api/useDatabases'
 import { Databases } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { Columns, Database as DatabaseIcon, Table2 } from 'lucide-react'
-import { FC } from 'react'
+import { FC, useEffect, useState } from 'react'
+
+const mapDatabaseToTreeData = (databases: Databases): TreeNode[] =>
+  databases.map((database) => ({
+    name: database.alias,
+    icon: DatabaseIcon,
+    children: [
+      {
+        name: 'Tables',
+        icon: Table2,
+        children: database.tables.map((table) => ({
+          name: table.name,
+          icon: Table2,
+          children: [
+            {
+              name: 'Columns',
+              icon: Columns,
+              children: table.columns.map((column) => ({
+                name: column,
+                icon: Columns,
+              })),
+            },
+          ],
+        })),
+      },
+    ],
+  }))
 
 const DatabasesPage: FC = () => {
-  const { databases, isLoading, error } = useDatabases()
+  const { databases, isLoading, error, mutate } = useDatabases()
+  const [connectingDB, setConnectingDB] = useState<boolean | null>(null)
 
-  const mapDatabaseToTreeData = (databases: Databases): TreeNode[] =>
-    databases.map((database) => ({
-      name: database.alias,
-      icon: DatabaseIcon,
-      children: [
-        {
-          name: 'Tables',
-          icon: Table2,
-          children: database.tables.map((table) => ({
-            name: table.name,
-            icon: Table2,
-            children: [
-              {
-                name: 'Columns',
-                icon: Columns,
-                children: table.columns.map((column) => ({
-                  name: column,
-                  icon: Columns,
-                })),
-              },
-            ],
-          })),
-        },
-      ],
-    }))
+  const handleDatabaseConnected = () => mutate()
+  const handleDatabaseConnectionFinish = () => setConnectingDB(false)
+
+  useEffect(() => {
+    if (databases?.length === 0 && connectingDB === null) {
+      setConnectingDB(true)
+    }
+  }, [databases, connectingDB])
 
   let pageContent: JSX.Element = <></>
 
@@ -45,8 +55,13 @@ const DatabasesPage: FC = () => {
     pageContent = <DatabasesError />
   } else if (isLoading) {
     pageContent = <LoadingDatabases />
-  } else if (databases?.length === 0) {
-    pageContent = <DatabaseConnection />
+  } else if (connectingDB) {
+    pageContent = (
+      <DatabaseConnection
+        onConnected={handleDatabaseConnected}
+        onFinish={handleDatabaseConnectionFinish}
+      />
+    )
   } else {
     pageContent = (
       <>

@@ -3,7 +3,9 @@ export const apiFetcher = async <T>(
   options?: RequestInit & { token?: string },
 ): Promise<T> => {
   const headers = {
-    'Content-Type': 'application/json',
+    ...(!(options?.body instanceof FormData)
+      ? { 'Content-Type': 'application/json' }
+      : {}),
     ...(options?.token ? { Authorization: `Bearer ${options?.token}` } : {}),
     ...(options?.headers || {}),
   }
