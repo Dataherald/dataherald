@@ -5,7 +5,7 @@
     The format of each entry is as follows:
 
     {
-      db_name: "db_alias_name",
+      db_name: "alias_name",
       table_name: "table_name",
       table_description: "string",
       table_columns: [
@@ -33,23 +33,25 @@ import requests
 # constants. TODO: move to a config file
 DATAHERALD_REST_API_URL = "http://localhost"
 
+DB_CONNECTION_ID = "650abe8e9baa67d0f0f47247"
 
-def scan_table(db_alias: str, table_name: str):
+
+def scan_table(alias: str, table_name: str):
     """scan the given table in the given database
     Args:
-        db_alias (str): the db alias to scan
+        alias (str): the db alias to scan
         table_name (str): the table name to scan
     """
 
-    scanner_endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/scanner"
+    scanner_endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/table-descriptions/scan"
     scanner_request_body: dict = {
-        "db_alias": db_alias,
-        "table_name": table_name
+        "db_connection_id": DB_CONNECTION_ID,
+        "table_names": [table_name]
     }
 
     print("scanner request: ")
     print(f"endpoint url: {scanner_endpoint_url}")
-    print("db_alias: " + db_alias)
+    print("alias: " + alias)
     print("table_name: " + table_name)
     print(json.dumps(scanner_request_body, indent=4, sort_keys=True))
     r = requests.post(scanner_endpoint_url, json=scanner_request_body, headers={
@@ -59,18 +61,18 @@ def scan_table(db_alias: str, table_name: str):
     print()
 
 
-def add_table_meta_data(db_alias: str, table_name: str, table_description: str, table_columns: list):
+def add_table_meta_data(alias: str, table_name: str, table_description: str, table_columns: list):
     """This function adds meta data to the given table in the given database
 
     Args:
-        db_alias (str): the db alias
+        alias (str): the db alias
         table_name (str): the table name
         table_description (str): Meta data description of the table
         table_columns (list): Meta data for each column in the table
     """
     # construct the REST API call
     # construct the URL
-    endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/scanned-db/{db_alias}/{table_name}"
+    endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/scanned-db/{DB_CONNECTION_ID}"
 
     # construct the request body
     request_body: dict = {
@@ -82,7 +84,7 @@ def add_table_meta_data(db_alias: str, table_name: str, table_description: str, 
     # set accept header to application/json
     print("Meta Data Add Request: ")
     print(f"endpoint url: {endpoint_url}")
-    print("db_alias: " + db_alias)
+    print("alias: " + alias)
     print("table_name: " + table_name)
     print("table_description: " + table_description)
     print("request body: ")
@@ -106,23 +108,23 @@ def run(config_file: str):
         for config in data:
             # print the config
             print(json.dumps(config, indent=4, sort_keys=True))
-            if "db_alias" not in config:
+            if "alias" not in config:
                 # print error message
-                print("db_alias not found in config. Skipping entry.")
+                print("alias not found in config. Skipping entry.")
                 # skip this entry
                 continue
 
-            db_alias = config["db_alias"]
+            alias = config["alias"]
             table_name = config["table_name"]
             table_description = config["table_description"]
             table_columns = config["table_columns"]
 
             # first execute the scanner to add the table to the database
             # construct the URL
-            scan_table(db_alias, table_name)
+            # scan_table(alias, table_name)
 
             # second add meta data to the table
-            add_table_meta_data(db_alias, table_name,
+            add_table_meta_data(alias, table_name,
                                 table_description, table_columns)
 
 

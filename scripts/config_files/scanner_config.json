@@ -1,6 +1,6 @@
 [
   {
-    "db_alias": "hkg02p",
+    "alias": "hkg02p",
     "table_name": "t05PortfolioResponsibilities",
     "table_description": "The purpose of this table is to record a daily snapshot of the firms daily positions along with PL (Profit and Loss), Attribution, Exposure, Alpha and advisor tags and other factors. There are 4 funds in the firm Rockhampton, Yaraka, RPA and Canoonan, with the following respective codes RH, YA, LR and CA. Some columns like Attribution, Alpha, SectorAlpha and Exposure are prefixed with the fund codes. Unless a value column augmentd with _USD the value is assumed to be in JPY. Some performance indicators: TPX Sector Alpha: Attribution - (Exposure * TPX Sector return), Alpha: Attribution - (Exposure * Beta * TPX return), Outperformance (Outperform/OP): Attribution - (Exposure * TPX return). If side is S then values will need to be multiplied by -1 if calculating the net but not for gross. If someone asked what is the attribution, alpha or exposure without specifying fund, the values per fund should be returned. If someone mentions (fund) RPA they are referring to LR.",
     "table_columns": [
@@ -113,7 +113,7 @@
     ]
   },
   {
-    "db_alias": "hkg02p",
+    "alias": "hkg02p",
     "table_name": "t01Instrument",
     "table_description": "This table stores individual instrument information. Most of the instruments are single stocks/equities. There are also indices and baskets. There are a few foreign keys pointing to different tables including exchangeID (hkg02p.t02Exchange.exchangeID), currencyID (hkg02p.t02Currency.currencyID), indexID (hkg02p.t07Index.indexID). The InstrumentID is local unique primary key. There are other unique identifiers tied to vendors or exchanges including quick, isin, sedol, enfusionInstrumentID. The table also contains other static data such as GIC (GICS sector), TPX (Topix sector), lotsize and instrument name. This table is joined to other tables to get more information about the instrument",
     "table_columns": [
@@ -185,7 +185,7 @@
     ]
   },
   {
-    "db_alias": "hkg02p",
+    "alias": "hkg02p",
     "table_name": "t02WorkDay",
     "table_description": "A table which holds a list of work days and their respective previous work days for different countries. Weekends and public holidays in the respective countries are skipped. This is to be used to calculate the previous work day for a given country. There are also a few flags to indicate if the day is the start or end of the month or week.",
     "table_columns": [
@@ -200,7 +200,7 @@
     ]
   },
   {
-    "db_alias": "hkg02p",
+    "alias": "hkg02p",
     "table_name": "t06DailyCrossRate",
     "table_description": "Contains daily foreign exchange rates between 2 currencies. The base currency is the currency which the rate is denoted in. The quote currency is the currency which the rate is relative to. For example if the base currency is JPY and the quote currency is USD then the rate is the numer of JPY per USD.",
     "table_columns": [
@@ -213,7 +213,7 @@
     ]
   },
   {
-    "db_alias": "hkg02p",
+    "alias": "hkg02p",
     "table_name": "t18Trade",
     "table_description": "Contains daily Trades of instruments done by the firm via Enfusion. Enfusion is the firm's OMS. Each entry is an individual trade with execution details. Trades are aggreated into positions. Position information is stored in other tables including t05PortfolioResponsibilities, t05PortfolioPositionCCY, t05PortfolioPosition",
     "table_columns": [
@@ -294,7 +294,7 @@
     ]
   },
   {
-    "db_alias": "hkg02p",
+    "alias": "hkg02p",
     "table_name": "t05PortfolioPositionCCY",
     "table_description": "Contains daily positions per portfolio at the instrument level. Positions are a daily snapshot of the portfolio at the instrument level",
     "table_columns": [

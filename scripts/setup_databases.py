@@ -4,14 +4,14 @@ the database configuration file is in the format of:
 
 Without a SSH connection
 {
-  "db_alias": "test_db",
+  "alias": "test_db",
   "use_ssh": false,
   "connection_uri": "sqlite:///mydb.db"
 }
 
 With a SSH connection
 {
-  "db_alias": "my_db_alias_identifier",
+  "alias": "my_db_alias_identifier",
   "use_ssh": true,
   "ssh_settings": {
     "db_name": "db_name",
@@ -40,7 +40,7 @@ import requests
 
 # constants. TODO: move to a config file
 DATAHERALD_REST_API_URL = "http://localhost"
-DATAHERALD_REST_CREATE_DATABASE_END_POINT = "/api/v1/database"
+DATAHERALD_REST_CREATE_DATABASE_END_POINT = "/api/v1/database-connections"
 
 
 def main():
@@ -58,25 +58,25 @@ def main():
         # construct the REST API call
         if db["use_ssh"]:
             print("Creating database {} with SSH connection".format(
-                db["db_alias"]))
+                db["alias"]))
             request_body: dict = {
-                "db_alias": db["db_alias"],
+                "alias": db["alias"],
                 "use_ssh": db["use_ssh"],
                 "ssh_settings": db["ssh_settings"],
                 "connection_uri": db["connection_uri"],
             }
         else:
-            print("Creating database {} without SSH connection".format(
-                db["db_alias"]))
+            print(
+                "Creating database {} without SSH connection".format(db["alias"]))
             request_body: dict = {
-                "db_alias": db["db_alias"],
+                "alias": db["alias"],
                 "use_ssh": db["use_ssh"],
                 "connection_uri": db["connection_uri"],
             }
 
         # 3. Run the REST API call to create the database in Dataherald
         # set accept header to application/json
-        if "db_alias" in request_body:
+        if "alias" in request_body:
             # print the request body
             print("request body: ")
             print(json.dumps(request_body, indent=4, sort_keys=True))
