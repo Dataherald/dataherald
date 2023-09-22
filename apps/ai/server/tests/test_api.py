@@ -1,12 +1,14 @@
+from unittest import TestCase
+
+from fastapi import status
 from fastapi.testclient import TestClient
 
 from app import app
 
 client = TestClient(app)
 
-HTTP_200_CODE = 200
 
-
-def test_heartbeat():
-    response = client.get("/heartbeat")
-    assert response.status_code == HTTP_200_CODE
+class TestAPI(TestCase):
+    def test_heartbeat(self):
+        response = client.get("/heartbeat")
+        assert response.status_code == status.HTTP_200_OK

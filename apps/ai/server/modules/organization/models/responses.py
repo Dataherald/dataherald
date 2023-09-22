@@ -1,8 +1,6 @@
-from pydantic import Field
-
 from modules.organization.models.entities import BaseOrganization
 
 
 class OrganizationResponse(BaseOrganization):
-    id: str = Field(alias="_id")
+    id: str
     db_connection_id: str

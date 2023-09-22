@@ -1,6 +1,6 @@
 import httpx
 from bson import ObjectId
-from fastapi import HTTPException, UploadFile, status
+from fastapi import UploadFile
 
 from config import settings
 from modules.db_connection.models.entities import DBConnection, DBConnectionRef
@@ -8,6 +8,7 @@ from modules.db_connection.models.requests import DBConnectionRequest
 from modules.db_connection.models.responses import DBConnectionResponse
 from modules.db_connection.repository import DBConnectionRepository
 from modules.organization.service import OrganizationService
+from utils.exception import raise_for_status
 from utils.s3 import S3
 
 
@@ -30,7 +31,6 @@ class DBConnectionService:
 
     def get_db_connection(self, db_connection_id: str) -> DBConnectionResponse:
         db_connection = self.repo.get_db_connection(db_connection_id)
-        print(db_connection)
         return (
             self._get_mapped_db_connection_response(db_connection)
             if db_connection
@@ -55,10 +55,7 @@ class DBConnectionService:
                 json=db_connection_request.dict(),
             )
 
-            if response.status_code != status.HTTP_200_OK:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST, detail=response.json()
-                )
+            raise_for_status(response.status_code, response.text)
 
             response_json = response.json()
             db_connection = DBConnection(**response_json)
@@ -79,7 +76,7 @@ class DBConnectionService:
         self, db_connection: DBConnection
     ) -> DBConnectionResponse:
         db_connection_response = DBConnectionResponse(
-            _id=str(db_connection.id), **db_connection.dict()
+            id=str(db_connection.id), **db_connection.dict(exclude={"id"})
         )
         db_connection_response.id = str(db_connection_response.id)
         return db_connection_response

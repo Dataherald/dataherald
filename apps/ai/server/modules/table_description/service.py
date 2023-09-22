@@ -28,9 +28,7 @@ class TableDescriptionService:
                 params={"db_connection_id": db_connection_id, "table_name": table_name},
             )
             raise_for_status(response.status_code, response.json())
-            return [
-                TableDescriptionResponse(_id=td["id"], **td) for td in response.json()
-            ]
+            return [TableDescriptionResponse(**td) for td in response.json()]
 
     async def get_database_table_descriptions(self, db_connection_id: str):
         async with httpx.AsyncClient() as client:
@@ -44,7 +42,7 @@ class TableDescriptionService:
             )
 
             table_descriptions = [
-                TableDescriptionResponse(_id=td["id"], **td) for td in response.json()
+                TableDescriptionResponse(**td) for td in response.json()
             ]
             tables = [
                 BasicTableDescriptionResponse(

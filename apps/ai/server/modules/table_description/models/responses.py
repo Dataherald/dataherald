@@ -1,10 +1,10 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from modules.table_description.models.entities import BaseTableDescription
 
 
 class TableDescriptionResponse(BaseTableDescription):
-    id: str | None = Field(alias="_id")
+    id: str
     table_name: str
 
 

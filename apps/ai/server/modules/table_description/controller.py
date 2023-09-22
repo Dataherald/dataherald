@@ -55,12 +55,12 @@ async def scan_table_descriptions(
 
 @router.patch("/{id}", status_code=status.HTTP_200_OK)
 async def update_table_description(
-    table_description_id: str,
+    id: str,
     table_description_request: TableDescriptionRequest,
     token: str = Depends(token_auth_scheme),
 ) -> TableDescriptionResponse:
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
-    authorize.table_description_in_organization(table_description_id, org_id)
+    authorize.table_description_in_organization(id, org_id)
     return await table_description_service.update_table_description(
-        table_description_id, table_description_request
+        id, table_description_request
     )

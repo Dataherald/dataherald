@@ -41,13 +41,6 @@ async def get_golden_sql(
     return golden_sql_service.get_golden_sql(id)
 
 
-@router.delete("/{id}")
-async def delete_golden_sql(id: str, token: str = Depends(token_auth_scheme)):
-    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
-    authorize.golden_sql_in_organization(id, org_id)
-    return await golden_sql_service.delete_golden_sql(id)
-
-
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def add_golden_sql(
     golden_sql_request: GoldenSQLRequest, token: str = Depends(token_auth_scheme)
@@ -56,3 +49,10 @@ async def add_golden_sql(
     return await golden_sql_service.add_golden_sql(
         golden_sql_request, org_id, GoldenSQLSource.user_upload
     )
+
+
+@router.delete("/{id}")
+async def delete_golden_sql(id: str, token: str = Depends(token_auth_scheme)):
+    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
+    authorize.golden_sql_in_organization(id, org_id)
+    return await golden_sql_service.delete_golden_sql(id)

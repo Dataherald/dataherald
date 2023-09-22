@@ -36,10 +36,12 @@ async def get_organization(
     return org_service.get_organization(id)
 
 
-@router.delete("/{id}")
-async def delete_organization(id: str, token: str = Depends(token_auth_scheme)):
+@router.post("", status_code=status.HTTP_201_CREATED)
+async def add_organization(
+    org_request: OrganizationRequest, token: str = Depends(token_auth_scheme)
+) -> OrganizationResponse:
     authorize.is_root_user(VerifyToken(token.credentials).verify())
-    return org_service.delete_organization(id)
+    return org_service.add_organization(org_request)
 
 
 @router.put("/{id}")
@@ -50,12 +52,10 @@ async def update_organization(
     return org_service.update_organization(id, org_request)
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
-async def add_organization(
-    org_request: OrganizationRequest, token: str = Depends(token_auth_scheme)
-) -> OrganizationResponse:
+@router.delete("/{id}")
+async def delete_organization(id: str, token: str = Depends(token_auth_scheme)):
     authorize.is_root_user(VerifyToken(token.credentials).verify())
-    return org_service.add_organization(org_request)
+    return org_service.delete_organization(id)
 
 
 @router.post("/slack/installation", status_code=status.HTTP_201_CREATED)

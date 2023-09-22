@@ -32,13 +32,19 @@ class OrganizationService:
             status_code=status.HTTP_404_NOT_FOUND, detail="Organization not found"
         )
 
-    def delete_organization(self, org_id: str) -> dict:
-        if self.repo.delete_organization(org_id) == 1:
-            return {"id": org_id}
+    def add_organization(
+        self, org_request: OrganizationRequest
+    ) -> OrganizationResponse:
+        new_org_data = Organization(**org_request.dict())
+        new_org_data.db_connection_id = ObjectId(new_org_data.db_connection_id)
+        new_id = self.repo.add_organization(new_org_data.dict(exclude={"id"}))
+        if new_id:
+            new_org = self.repo.get_organization(new_id)
+            return self._get_mapped_organization_response(new_org)
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Organization not found or cannot be deleted",
+            detail="Organization exists or cannot add organization",
         )
 
     def update_organization(
@@ -53,19 +59,13 @@ class OrganizationService:
             detail="Organization not found or cannot be updated",
         )
 
-    def add_organization(
-        self, org_request: OrganizationRequest
-    ) -> OrganizationResponse:
-        new_org_data = Organization(**org_request.dict())
-        new_org_data.db_connection_id = ObjectId(new_org_data.db_connection_id)
-        new_id = self.repo.add_organization(new_org_data.dict(exclude={"id"}))
-        if new_id:
-            new_org = self.repo.get_organization(new_id)
-            return self._get_mapped_organization_response(new_org)
+    def delete_organization(self, org_id: str) -> dict:
+        if self.repo.delete_organization(org_id) == 1:
+            return {"id": org_id}
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Organization exists or cannot add organization",
+            detail="Organization not found or cannot be deleted",
         )
 
     def add_organization_by_slack_installation(
@@ -117,4 +117,4 @@ class OrganizationService:
         org_dict = organization.dict()
         org_dict["id"] = str(org_dict["id"])
         org_dict["db_connection_id"] = str(org_dict["db_connection_id"])
-        return OrganizationResponse(**org_dict, _id=org_dict["id"])
+        return OrganizationResponse(**org_dict)

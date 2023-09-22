@@ -9,6 +9,7 @@ from modules.user.models.entities import SlackInfo
 class Question(BaseModel):
     id: Any = Field(alias="_id")
     question: str
+    db_connection_id: str | None
 
 
 class QueryStatus(Enum):
