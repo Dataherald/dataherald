@@ -12,7 +12,7 @@ const usePostDatabaseConnection = () => {
       const formData = new FormData()
 
       if (file) {
-        formData.append('file', file)
+        formData.append('file', file, file.name)
       }
 
       formData.append(

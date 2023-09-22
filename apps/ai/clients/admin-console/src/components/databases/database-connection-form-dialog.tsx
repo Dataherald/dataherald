@@ -23,9 +23,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, CheckCircle, Loader, UploadCloud } from 'lucide-react'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import * as z from 'zod'
 
-const DatabaseConnectionDialog: FC<{
+const DatabaseConnectionFormDialog: FC<{
   onConnected: () => void
   onFinish: () => void
 }> = ({ onConnected, onFinish }) => {
@@ -35,6 +34,7 @@ const DatabaseConnectionDialog: FC<{
       use_ssh: false,
       alias: '',
       connection_uri: '',
+      file: '',
     },
   })
 
@@ -42,9 +42,12 @@ const DatabaseConnectionDialog: FC<{
 
   const connectDatabase = usePostDatabaseConnection()
 
-  const onSubmit = async (values: z.infer<typeof dbConnectionFormSchema>) => {
+  const onSubmit = async () => {
+    if (!form.formState.isValid) return
     try {
-      await connectDatabase(values)
+      const formFieldsValues = form.getValues()
+      const { file, ...dbConnectionFields } = formFieldsValues
+      await connectDatabase(dbConnectionFields, file)
       setDatabaseConnected(true)
       onConnected()
     } catch (e) {
@@ -53,7 +56,10 @@ const DatabaseConnectionDialog: FC<{
         title: 'Ups! Something went wrong.',
         description: 'There was a problem connecting your Database.',
         action: (
-          <ToastAction altText="Try again" onClick={() => onSubmit(values)}>
+          <ToastAction
+            altText="Try again"
+            onClick={() => form.handleSubmit(onSubmit)()}
+          >
             Try again
           </ToastAction>
         ),
@@ -158,4 +164,4 @@ const DatabaseConnectionDialog: FC<{
   )
 }
 
-export default DatabaseConnectionDialog
+export default DatabaseConnectionFormDialog

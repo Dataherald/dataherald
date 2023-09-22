@@ -1,4 +1,5 @@
 import { DatabaseConnectionFormValues } from '@/components/databases/form-schema'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Form,
   FormControl,
@@ -18,8 +19,9 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import DATABASE_PROVIDERS from '@/constants/database-providers'
+import { AlertCircle } from 'lucide-react'
 import Image from 'next/image'
-import { FC } from 'react'
+import { FC, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
 const DatabaseConnectionForm: FC<{
@@ -29,12 +31,20 @@ const DatabaseConnectionForm: FC<{
     (dp) => dp.driver === form.watch('data_warehouse'),
   )
 
+  useEffect(() => {
+    if (selectedDatabaseProvider?.driver === 'bigquery') {
+      form.setValue('use_ssh', false, { shouldValidate: true })
+    } else {
+      form.setValue('file', null, { shouldValidate: true })
+    }
+  }, [form, selectedDatabaseProvider])
+
   return (
     <Form {...form}>
       <form>
         <fieldset
           disabled={form.formState.isSubmitting}
-          className="flex flex-col gap-3"
+          className="flex flex-col gap-2"
         >
           <div className="grid grid-cols-2 gap-4">
             <FormField
@@ -97,28 +107,39 @@ const DatabaseConnectionForm: FC<{
                 </FormItem>
               )}
             />
-            <div className="self-end justify-self-end pb-2">
-              <FormField
-                control={form.control}
-                name="use_ssh"
-                render={({ field }) => (
-                  <div className="flex items-center">
-                    <FormLabel className="mr-2 font-normal">
-                      Connect through SSH tunnel
-                    </FormLabel>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </div>
-                )}
-              />
-            </div>
+            {selectedDatabaseProvider?.driver === 'bigquery' ? (
+              <Alert variant="info" className="self-end flex items-start gap-2">
+                <div>
+                  <AlertCircle />
+                </div>
+                <AlertDescription>
+                  SSH tunnel is not supported for BigQuery data warehouse.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="self-end justify-self-end pb-2">
+                <FormField
+                  control={form.control}
+                  name="use_ssh"
+                  render={({ field }) => (
+                    <div className="flex items-center">
+                      <FormLabel className="mr-2 font-normal pointer-events-none">
+                        Connect through SSH tunnel
+                      </FormLabel>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </div>
+                  )}
+                />
+              </div>
+            )}
           </div>
           <FormMessage>
-            {form.control.getFieldState('data_warehouse').error?.message}
+            {form.getFieldState('data_warehouse').error?.message}
           </FormMessage>
           <FormField
             control={form.control}
@@ -154,6 +175,34 @@ const DatabaseConnectionForm: FC<{
               </FormItem>
             )}
           />
+          {selectedDatabaseProvider?.driver === 'bigquery' && (
+            <FormField
+              control={form.control}
+              name="file"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Service Account Key File</FormLabel>
+                  <FormControl>
+                    <Input
+                      className="cursor-pointer"
+                      placeholder="Upload key file"
+                      type="file"
+                      ref={field.ref}
+                      onChange={(e) => {
+                        const files = e.target.files
+                        if (files) {
+                          form.setValue('file', files[0], {
+                            shouldValidate: true,
+                          })
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </fieldset>
       </form>
     </Form>
