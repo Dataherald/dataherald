@@ -36,7 +36,6 @@ You can find additional details on how to connect to each of the supported data 
       "remote_host": "string",
       "remote_db_name": "string",
       "remote_db_password": "string",
-      "private_key_path": "string",
       "private_key_password": "string",
       "db_driver": "string"
     }
@@ -55,7 +54,7 @@ You can find additional details on how to connect to each of the supported data 
     "remote_host", "string", "The hostname or IP address of the remote database server you want to connect to."
     "remote_db_name", "string", "The name of the remote database you want to interact with."
     "remote_db_password", "string", "The password for accessing the remote database."
-    "private_key_path", "string", "The file path to locate your id_rsa private key file. For example, if you are using Docker and the file is located at the root, the path would be /app/id_rsa. Ensure that you include this file in your Docker container by building it."
+    "path_to_credentials_file", "string", "The file path to locate your id_rsa private key file. For example, if you are using Docker and the file is located at the root, the path would be /app/id_rsa. Ensure that you include this file in your Docker container by building it."
     "private_key_password", "string", "The password for the id_rsa private key file, if it is password-protected"
     "db_driver", "string", "Set the database driver. For example, for PostgreSQL, the driver should be set to `postgresql+psycopg2`"
 
@@ -83,7 +82,6 @@ HTTP 200 code response
         "remote_host": "string",
         "remote_db_name": "string",
         "remote_db_password": "gAAAAABk8lHQpZyZ6ow8EuYPWe5haP-roQbBWkZn3trLgdO632IDoKcXAW-8yjzDDQ4uH03iWFzEgJq8HRxkJTC6Ht7Qrlz2PQ==",
-        "private_key_path": "string",
         "private_key_password": "gAAAAABk8lHQWilFpIbCADvunHGYFMqgoPKIml_WRXf5Yuowqng28DVsq6-sChl695y5D_mWrr1I3hcJCZqkmhDqpma6iz3PKA==",
         "db_driver": "string"
       }
@@ -134,7 +132,6 @@ With a SSH connection
         "remote_host": "string",
         "remote_db_name": "string",
         "remote_db_password": "string",
-        "private_key_path": "string",
         "private_key_password": "string",
         "db_driver": "string"
       }
@@ -165,7 +162,6 @@ With a SSH connection and LLM credentials
         "remote_host": "string",
         "remote_db_name": "string",
         "remote_db_password": "string",
-        "private_key_path": "string",
         "private_key_password": "string",
         "db_driver": "string"
       }
