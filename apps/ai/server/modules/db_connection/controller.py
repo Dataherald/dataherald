@@ -45,9 +45,10 @@ async def add_db_connection(
     file: UploadFile = None,
     token: str = Depends(token_auth_scheme),
 ) -> DBConnectionResponse:
-    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    organization = authorize.get_organization_by_user(user)
     return await db_connection_service.add_db_connection(
-        db_connection_request_json, org_id, file
+        db_connection_request_json, organization, file
     )
 
 

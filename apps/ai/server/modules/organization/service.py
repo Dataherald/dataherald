@@ -1,10 +1,12 @@
 from bson import ObjectId
 from fastapi import HTTPException, status
 
+from modules.db_connection.models.entities import LLMCredentials
 from modules.organization.models.entities import Organization, SlackInstallation
 from modules.organization.models.requests import OrganizationRequest
 from modules.organization.models.responses import OrganizationResponse
 from modules.organization.repository import OrganizationRepository
+from utils.encrypt import FernetEncrypt
 
 
 class OrganizationService:
@@ -50,6 +52,10 @@ class OrganizationService:
     def update_organization(
         self, org_id: str, org_request: OrganizationRequest
     ) -> OrganizationResponse:
+        if org_request.llm_credentials:
+            org_request.llm_credentials = self._encrypt_llm_credentials(
+                org_request.llm_credentials
+            )
         if self.repo.update_organization(org_id, org_request.dict()) == 1:
             new_org = self.repo.get_organization(org_id)
             return self._get_mapped_organization_response(new_org)
@@ -120,3 +126,13 @@ class OrganizationService:
             str(org_dict["db_connection_id"]) if org_dict["db_connection_id"] else None
         )
         return OrganizationResponse(**org_dict)
+
+    def _encrypt_llm_credentials(
+        self, llm_credentials: LLMCredentials
+    ) -> LLMCredentials:
+        fernet_encrypt = FernetEncrypt()
+        llm_credentials.api_key = fernet_encrypt.encrypt(llm_credentials.api_key)
+        llm_credentials.organization_id = fernet_encrypt.encrypt(
+            llm_credentials.organization_id
+        )
+        return llm_credentials

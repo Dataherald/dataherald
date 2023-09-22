@@ -1,4 +1,6 @@
-from pydantic import BaseModel, Field, confloat
+from pydantic import BaseModel, Field
+
+from modules.organization.models.entities import BaseOrganization
 
 
 class SlackTeamRequest(BaseModel):
@@ -30,8 +32,5 @@ class SlackInstallationRequest(BaseModel):
     bot: SlackBotRequest | None
 
 
-class OrganizationRequest(BaseModel):
-    name: str
+class OrganizationRequest(BaseOrganization):
     db_connection_id: str | None
-    confidence_threshold: confloat(ge=0, le=1) = 1.0
-    slack_installation: SlackInstallationRequest | None

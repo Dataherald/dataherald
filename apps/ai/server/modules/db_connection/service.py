@@ -7,6 +7,7 @@ from modules.db_connection.models.entities import DBConnectionRef, Driver
 from modules.db_connection.models.requests import DBConnectionRequest
 from modules.db_connection.models.responses import DBConnectionResponse
 from modules.db_connection.repository import DBConnectionRepository
+from modules.organization.models.responses import OrganizationResponse
 from modules.organization.service import OrganizationService
 from utils.exception import raise_for_status
 from utils.s3 import S3
@@ -44,7 +45,7 @@ class DBConnectionService:
     async def add_db_connection(
         self,
         db_connection_request_json: dict,
-        org_id: str,
+        organization: OrganizationResponse,
         file: UploadFile = None,
     ) -> DBConnectionResponse:
         db_connection_request = DBConnectionRequest(**db_connection_request_json)
@@ -56,7 +57,12 @@ class DBConnectionService:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.k2_core_url + "/database-connections",
-                json=db_connection_request.dict(),
+                json={
+                    "llm_credentials": organization.llm_credentials.dict()
+                    if organization.llm_credentials
+                    else None,
+                    **db_connection_request.dict(),
+                },
             )
 
             raise_for_status(response.status_code, response.text)
@@ -66,11 +72,13 @@ class DBConnectionService:
                 DBConnectionRef(
                     alias=db_connection_request.alias,
                     db_connection_id=ObjectId(response_json["id"]),
-                    organization_id=ObjectId(org_id),
+                    organization_id=ObjectId(organization.id),
                 ).dict(exclude={"id"})
             )
 
-            self.org_service.update_db_connection_id(org_id, response_json["id"])
+            self.org_service.update_db_connection_id(
+                organization.id, response_json["id"]
+            )
 
             return DBConnectionResponse(**response.json())
 

@@ -8,6 +8,8 @@ from fastapi.testclient import TestClient
 from httpx import Response
 
 from app import app
+from modules.organization.models.entities import Organization
+from modules.user.models.entities import User
 
 client = TestClient(app)
 
@@ -17,6 +19,19 @@ client = TestClient(app)
     "utils.auth.Authorize",
     user_and_get_org_id=Mock(return_value="0123456789ab0123456789ab"),
     db_connection_in_organization=Mock(return_value=None),
+    user=Mock(
+        return_value=User(
+            id="0123456789ab0123456789ab",
+            email="test@gmail.com",
+            username="test_user",
+            organization_id="0123456789ab0123456789ab",
+        )
+    ),
+    get_organization_by_user=Mock(
+        return_value=Organization(
+            id="123", name="test_org", db_connection_id="0123456789ab0123456789ab"
+        )
+    ),
 )
 class TestDBConnectionAPI(TestCase):
     url = "/database-connection"
@@ -27,6 +42,7 @@ class TestDBConnectionAPI(TestCase):
         "use_ssh": False,
         "uri": "test_uri_1",
         "path_to_credentials_file": None,
+        "llm_credentials": None,
     }
     test_2 = {
         "_id": ObjectId(b"lao-gan-maaa"),
@@ -34,6 +50,7 @@ class TestDBConnectionAPI(TestCase):
         "use_ssh": False,
         "uri": "test_uri_2",
         "path_to_credentials_file": None,
+        "llm_credentials": None,
     }
 
     test_1_ref = {
@@ -57,6 +74,7 @@ class TestDBConnectionAPI(TestCase):
         "uri": test_1["uri"],
         "path_to_credentials_file": test_1["path_to_credentials_file"],
         "ssh_settings": None,
+        "llm_credentials": None,
     }
 
     test_response_2 = {
@@ -66,6 +84,7 @@ class TestDBConnectionAPI(TestCase):
         "uri": test_2["uri"],
         "path_to_credentials_file": test_2["path_to_credentials_file"],
         "ssh_settings": None,
+        "llm_credentials": None,
     }
 
     @patch.multiple(

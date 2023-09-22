@@ -21,6 +21,7 @@ class TestOrganizationAPI(TestCase):
         "name": "test_org_1",
         "confidence_threshold": 0.5,
         "db_connection_id": "test_connection_id_1",
+        "llm_credentials": None,
     }
 
     test_2 = {
@@ -50,6 +51,7 @@ class TestOrganizationAPI(TestCase):
             "auth_version": "V2",
             "app_id": "0123456789ab0123456789ab",
         },
+        "llm_credentials": None,
     }
 
     test_response_1 = {
@@ -58,6 +60,7 @@ class TestOrganizationAPI(TestCase):
         "db_connection_id": test_1["db_connection_id"],
         "confidence_threshold": test_1["confidence_threshold"],
         "slack_installation": None,
+        "llm_credentials": None,
     }
 
     test_response_2 = {
@@ -66,6 +69,7 @@ class TestOrganizationAPI(TestCase):
         "db_connection_id": test_2["db_connection_id"],
         "confidence_threshold": test_2["confidence_threshold"],
         "slack_installation": test_2["slack_installation"],
+        "llm_credentials": None,
     }
 
     @patch("database.mongo.MongoDB.find", Mock(return_value=[test_1, test_2]))
