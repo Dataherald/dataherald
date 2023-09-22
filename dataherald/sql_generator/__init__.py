@@ -22,8 +22,7 @@ class SQLGenerator(Component, ABC):
 
     def __init__(self, system: System):  # noqa: ARG002
         self.system = system
-        model = ChatModel(self.system)
-        self.llm = model.get_model(temperature=0)
+        self.model = ChatModel(self.system)
 
     def create_sql_query_status(
         self, db: SQLDatabase, query: str, response: NLQueryResponse

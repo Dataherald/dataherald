@@ -168,6 +168,7 @@ class SQLEvaluationToolkit(BaseToolkit):
 
 class EvaluationAgent(Evaluator):
     sample_rows: int = 10
+    llm: Any = None
 
     def __init__(self, system: System):
         super().__init__(system)
@@ -245,6 +246,9 @@ class EvaluationAgent(Evaluator):
         start_time = time.time()
         logger.info(
             f"Generating score for the question/sql pair: {str(question.question)}/ {str(generated_answer.sql_query)}"
+        )
+        self.llm = self.model.get_model(
+            database_connection=database_connection, temperature=0
         )
         database = SQLDatabase.get_sql_engine(database_connection)
         user_question = question.question

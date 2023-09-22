@@ -1,6 +1,7 @@
 import logging
 import re
 import time
+from typing import Any
 
 from langchain.chains import LLMChain
 from langchain.prompts.chat import (
@@ -52,6 +53,8 @@ give me a one or two lines explanation and the score after 'Score: '.
 
 
 class SimpleEvaluator(Evaluator):
+    llm: Any = None
+
     def __init__(self, system: System):
         super().__init__(system)
         self.system = system
@@ -84,6 +87,9 @@ class SimpleEvaluator(Evaluator):
         database = SQLDatabase.get_sql_engine(database_connection)
         logger.info(
             f"(Simple evaluator) Generating score for the question/sql pair: {str(question.question)}/ {str(generated_answer.sql_query)}"
+        )
+        self.llm = self.model.get_model(
+            database_connection=database_connection, temperature=0
         )
         start_time = time.time()
         system_message_prompt = SystemMessagePromptTemplate.from_template(

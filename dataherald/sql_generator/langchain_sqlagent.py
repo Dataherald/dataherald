@@ -2,7 +2,7 @@
 
 import logging
 import time
-from typing import List
+from typing import Any, List
 
 from langchain.agents import initialize_agent
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 class LangChainSQLAgentSQLGenerator(SQLGenerator):
+    llm: Any | None = None
+
     @override
     def generate_response(
         self,
@@ -28,6 +30,9 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
         context: List[dict] = None,
     ) -> NLQueryResponse:  # type: ignore
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
+        self.llm = self.model.get_model(
+            database_connection=database_connection, temperature=0
+        )
         self.database = SQLDatabase.get_sql_engine(database_connection)
         tools = SQLDatabaseToolkit(db=self.database, llm=self.llm).get_tools()
         start_time = time.time()

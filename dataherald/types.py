@@ -5,7 +5,7 @@ from bson.errors import InvalidId
 from bson.objectid import ObjectId
 from pydantic import BaseModel, validator
 
-from dataherald.sql_database.models.types import SSHSettings
+from dataherald.sql_database.models.types import LLMCredentials, SSHSettings
 
 
 class DBConnectionValidation(BaseModel):
@@ -95,6 +95,7 @@ class DatabaseConnectionRequest(BaseModel):
     use_ssh: bool = False
     connection_uri: str | None
     path_to_credentials_file: str | None
+    llm_credentials: LLMCredentials | None
     ssh_settings: SSHSettings | None
 
 

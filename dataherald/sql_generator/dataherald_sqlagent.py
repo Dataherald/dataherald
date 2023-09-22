@@ -502,6 +502,7 @@ class DataheraldSQLAgent(SQLGenerator):
     """Dataherald SQL agent"""
 
     max_number_of_examples: int = 100  # maximum number of question/SQL pairs
+    llm: Any = None
 
     def remove_duplicate_examples(self, fewshot_exmaples: List[dict]) -> List[dict]:
         returned_result = []
@@ -569,6 +570,10 @@ class DataheraldSQLAgent(SQLGenerator):
         start_time = time.time()
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
+        self.llm = self.model.get_model(
+            database_connection=database_connection,
+            temperature=0,
+        )
         repository = DBScannerRepository(storage)
         db_scan = repository.get_all_tables_by_db(
             db_connection_id=database_connection.id
