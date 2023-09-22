@@ -36,7 +36,6 @@ This endpoint is used to update a Database connection
         "remote_host": "string",
         "remote_db_name": "string",
         "remote_db_password": "string",
-        "private_key_path": "string",
         "private_key_password": "string",
         "db_driver": "string"
       }
@@ -66,7 +65,6 @@ HTTP 200 code response
         "remote_host": "string",
         "remote_db_name": "string",
         "remote_db_password": "gAAAAABk8lHQpZyZ6ow8EuYPWe5haP-roQbBWkZn3trLgdO632IDoKcXAW-8yjzDDQ4uH03iWFzEgJq8HRxkJTC6Ht7Qrlz2PQ==",
-        "private_key_path": "string",
         "private_key_password": "gAAAAABk8lHQWilFpIbCADvunHGYFMqgoPKIml_WRXf5Yuowqng28DVsq6-sChl695y5D_mWrr1I3hcJCZqkmhDqpma6iz3PKA==",
         "db_driver": "string"
       }
@@ -117,7 +115,6 @@ With a SSH connection
         "remote_host": "string",
         "remote_db_name": "string",
         "remote_db_password": "string",
-        "private_key_path": "string",
         "private_key_password": "string",
         "db_driver": "string"
       }
@@ -148,7 +145,6 @@ With a SSH connection and LLM credentials
         "remote_host": "string",
         "remote_db_name": "string",
         "remote_db_password": "string",
-        "private_key_path": "string",
         "private_key_password": "string",
         "db_driver": "string"
       }

@@ -42,7 +42,6 @@ HTTP 200 code response
           "remote_host": "string",
           "remote_db_name": "string",
           "remote_db_password": "bar-LWxpBkRDuasdOwU__Sk4bdzruiYYqiyl8gBEEzCyFYCaCOcbQqOa_OwsS-asdasdsad==",
-          "private_key_path": "string",
           "private_key_password": "fooo-LWxPdFcjQw9lU7CeK_2ELR3jGBq0G_uQ7E2rfPLk2RcFR4aDO9e2HmeAQtVpdvtrsQ_0zjsy9q7asdsadXExYJ0g==",
           "db_driver": "string"
         }

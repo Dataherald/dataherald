@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel, BaseSettings, validator
+from pydantic import BaseModel, BaseSettings, Extra, validator
 
 from dataherald.utils.encrypt import FernetEncrypt
 
@@ -27,13 +27,14 @@ class SSHSettings(BaseSettings):
     host: str | None
     username: str | None
     password: str | None
-
     remote_host: str | None
     remote_db_name: str | None
     remote_db_password: str | None
-    private_key_path: str | None
     private_key_password: str | None
     db_driver: str | None
+
+    class Config:
+        extra = Extra.ignore
 
     @validator(
         "password", "remote_db_password", "private_key_password", pre=True, always=True

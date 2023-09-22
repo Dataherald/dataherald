@@ -37,7 +37,6 @@ Related endpoints are:
             "remote_host": "string",
             "remote_db_name": "string",
             "remote_db_password": "string",
-            "private_key_path": "string",
             "private_key_password": "string",
             "db_driver": "string"
         }
