@@ -1,5 +1,6 @@
 import { apiFetcher } from '@/lib/api/fetcher'
 import { useUser } from '@auth0/nextjs-auth0/client'
+import { useRouter } from 'next/navigation'
 import {
   Dispatch,
   FC,
@@ -23,16 +24,21 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
+  const router = useRouter()
   const [token, setToken] = useState<string | null>(null)
   const { user } = useUser()
 
   useEffect(() => {
     const fetchToken = async () => {
-      const token: string = await apiFetcher<string>('/api/auth/token')
-      setToken(token)
+      try {
+        const token: string = await apiFetcher<string>('/api/auth/token')
+        setToken(token)
+      } catch (error) {
+        router.push('/api/auth/login')
+      }
     }
     !!user && fetchToken()
-  }, [user])
+  }, [user, router])
 
   return (
     <AuthContext.Provider value={{ token, setToken }}>
