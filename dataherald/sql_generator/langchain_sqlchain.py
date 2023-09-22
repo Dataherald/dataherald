@@ -2,7 +2,7 @@
 
 import logging
 import time
-from typing import List
+from typing import Any, List
 
 from langchain import SQLDatabaseChain
 from langchain.callbacks import get_openai_callback
@@ -38,6 +38,8 @@ The question:
 
 
 class LangChainSQLChainSQLGenerator(SQLGenerator):
+    llm: Any | None = None
+
     @override
     def generate_response(
         self,
@@ -46,6 +48,9 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         context: List[dict] = None,
     ) -> NLQueryResponse:
         start_time = time.time()
+        self.llm = self.model.get_model(
+            database_connection=database_connection, temperature=0
+        )
         self.database = SQLDatabase.get_sql_engine(database_connection)
         logger.info(
             f"Generating SQL response to question: {str(user_question.dict())} with passed context {context}"

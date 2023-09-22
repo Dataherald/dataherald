@@ -6,6 +6,8 @@ is encrypted using the key you provide in your .env file before being stored to 
 
 You can also specify the engine to connect to the Database through an SSH tunnel, as demonstrated in the second example below.
 
+You can include the API key for the LLM in the request body as an optional parameter. If you do not include the API key, the LLM will use the API key specified in the .env file.
+
 You can find additional details on how to connect to each of the supported data warehouses :ref:`below <Supported Data warehouses>`.
 
 
@@ -18,23 +20,27 @@ You can find additional details on how to connect to each of the supported data 
 .. code-block:: rst
 
    {
-      "alias": "string",
-      "use_ssh": true,
-      "connection_uri": "string",
-      "path_to_credentials_file": "string",
-      "ssh_settings": {
-        "db_name": "string",
-        "host": "string",
-        "username": "string",
-        "password": "string",
-        "remote_host": "string",
-        "remote_db_name": "string",
-        "remote_db_password": "string",
-        "private_key_path": "string",
-        "private_key_password": "string",
-        "db_driver": "string"
-      }
+    "alias": "string",
+    "use_ssh": false,
+    "connection_uri": "string",
+    "path_to_credentials_file": "string",
+    "llm_credentials": {
+      "organization_id": "string",
+      "api_key": "string"
+    },
+    "ssh_settings": {
+      "db_name": "string",
+      "host": "string",
+      "username": "string",
+      "password": "string",
+      "remote_host": "string",
+      "remote_db_name": "string",
+      "remote_db_password": "string",
+      "private_key_path": "string",
+      "private_key_password": "string",
+      "db_driver": "string"
     }
+  }
 
 **SSH Parameters**
 
@@ -65,6 +71,10 @@ HTTP 200 code response
       "use_ssh": false,
       "uri": "gAAAAABk8lHQNAUn5XARb94Q8H1OfHpVzOtzP3b2LCpwxUsNCe7LGkwkN8FX-IF3t65oI5mTzgDMR0BY2lzvx55gO0rxlQxRDA==",
       "path_to_credentials_file": "string",
+      "llm_credentials": {
+        "organization_id": "gAAAAABlCz5TvOWQQ9TeSKgtCbaisl343oG3SaBlSniTsqs9R8aTIrptvzQq7b2a13ocBPuV6kGw17bximFbqAF_yaHmJF-Psw==",
+        "api_key": "gAAAAABlCz5TeU0ym4hW3bf9u21dz7B9tlnttOGLRDt8gq2ykkblNvpp70ZjT9FeFcoyMv-Csvp3GNQfw66eYvQBrcBEPsLokkLO2Jc2DD-Q8Aw6g_8UahdOTxJdT4izA6MsiQrf7GGmYBGZqbqsjTdNmcq661wF9Q=="
+      },
       "ssh_settings": {
         "db_name": "string",
         "host": "string",
@@ -116,6 +126,37 @@ With a SSH connection
       -d '{
       "alias": "my_db_alias",
       "use_ssh": true,
+      "ssh_settings": {
+        "db_name": "db_name",
+        "host": "string",
+        "username": "string",
+        "password": "string",
+        "remote_host": "string",
+        "remote_db_name": "string",
+        "remote_db_password": "string",
+        "private_key_path": "string",
+        "private_key_password": "string",
+        "db_driver": "string"
+      }
+    }'
+
+**Example 3**
+
+With a SSH connection and LLM credentials
+
+.. code-block:: rst
+
+    url -X 'POST' \
+      '<host>/api/v1/database-connections' \
+      -H 'accept: application/json' \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "alias": "my_db_alias",
+      "use_ssh": true,
+      "llm_credentials": {
+        "organization_id": "organization_id",
+        "api_key": "api_key"
+      },
       "ssh_settings": {
         "db_name": "db_name",
         "host": "string",
