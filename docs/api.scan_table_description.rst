@@ -8,9 +8,11 @@ all tables and columns so It will help the SQL Agent to generate an accurate ans
 
 It can scan all db tables or if you specify a `table_names` then It will only scan those tables.
 
+The process is carried out through Background Tasks, ensuring that even if it operates slowly, taking several minutes, the HTTP response remains swift.
+
 Request this ``POST`` endpoint::
 
-   /api/v1/table-descriptions/scan
+   /api/v1/table-descriptions/sync-schemas
 
 **Request body**
 
@@ -36,7 +38,7 @@ To scan all the tables in a db don't specify a `table_names`
 .. code-block:: rst
 
    curl -X 'POST' \
-  '<localhost>/api/v1/scanner' \
+  '<localhost>/api/v1/table-descriptions/sync-schemas' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
       -d '{

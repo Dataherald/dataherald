@@ -4,7 +4,7 @@ import time
 from typing import List
 
 from bson import json_util
-from fastapi import HTTPException
+from fastapi import BackgroundTasks, HTTPException
 from overrides import override
 
 from dataherald.api import API
@@ -40,6 +40,15 @@ from dataherald.types import (
 logger = logging.getLogger(__name__)
 
 
+def async_scanning(scanner, database, scanner_request, storage):
+    scanner.scan(
+        database,
+        scanner_request.db_connection_id,
+        scanner_request.table_names,
+        DBScannerRepository(storage),
+    )
+
+
 class FastAPI(API):
     def __init__(self, system: System):
         super().__init__(system)
@@ -52,7 +61,9 @@ class FastAPI(API):
         return int(time.time_ns())
 
     @override
-    def scan_db(self, scanner_request: ScannerRequest) -> bool:
+    def scan_db(
+        self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
+    ) -> bool:
         """Takes a db_connection_id and scan all the tables columns"""
         db_connection_repository = DatabaseConnectionRepository(self.storage)
 
@@ -71,15 +82,9 @@ class FastAPI(API):
             )
 
         scanner = self.system.instance(Scanner)
-        try:
-            scanner.scan(
-                database,
-                scanner_request.db_connection_id,
-                scanner_request.table_names,
-                DBScannerRepository(self.storage),
-            )
-        except ValueError as e:
-            raise HTTPException(status_code=404, detail=str(e))  # noqa: B904
+        background_tasks.add_task(
+            async_scanning, scanner, database, scanner_request, self.storage
+        )
         return True
 
     @override
