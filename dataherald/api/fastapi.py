@@ -20,7 +20,11 @@ from dataherald.repositories.base import NLQueryResponseRepository
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.golden_records import GoldenRecordRepository
 from dataherald.repositories.nl_question import NLQuestionRepository
-from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
+from dataherald.sql_database.base import (
+    InvalidDBConnectionError,
+    SQLDatabase,
+    SQLInjectionError,
+)
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
 from dataherald.sql_generator.generates_nl_answer import GeneratesNlAnswer
@@ -136,8 +140,16 @@ class FastAPI(API):
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
             )
+
+            SQLDatabase.get_sql_engine(db_connection, True)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))  # noqa: B904
+        except InvalidDBConnectionError as e:
+            raise HTTPException(  # noqa: B904
+                status_code=400,
+                detail=f"{e}",
+            )
+
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         return db_connection_repository.insert(db_connection)
 
@@ -161,8 +173,15 @@ class FastAPI(API):
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
             )
+
+            SQLDatabase.get_sql_engine(db_connection, True)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))  # noqa: B904
+        except InvalidDBConnectionError as e:
+            raise HTTPException(  # noqa: B904
+                status_code=400,
+                detail=f"{e}",
+            )
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         return db_connection_repository.update(db_connection)
 
