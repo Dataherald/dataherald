@@ -41,7 +41,9 @@ const DatabasesPage: FC = () => {
   const [connectingDB, setConnectingDB] = useState<boolean | null>(null)
 
   const handleDatabaseConnected = () => mutate()
-  const handleDatabaseConnectionFinish = () => setConnectingDB(false)
+  const handleDatabaseConnectionFinish = () => {
+    if (databases?.length !== 0) setConnectingDB(false)
+  }
 
   useEffect(() => {
     if (databases?.length === 0 && connectingDB === null) {

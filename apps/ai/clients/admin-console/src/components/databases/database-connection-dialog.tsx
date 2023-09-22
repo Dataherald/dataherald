@@ -61,8 +61,12 @@ const DatabaseConnectionDialog: FC<{
     }
   }
 
-  const handleDialogOpenChange = (isOpen: boolean) => {
-    if (databaseConnected && !isOpen) onFinish()
+  const handleDialogOpenChange = (open: boolean) => {
+    if (databaseConnected && !open) {
+      form.reset()
+      setDatabaseConnected(false)
+      onFinish()
+    }
   }
 
   return (

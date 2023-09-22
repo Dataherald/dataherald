@@ -31,8 +31,11 @@ const DatabaseConnectionForm: FC<{
 
   return (
     <Form {...form}>
-      <form className="flex flex-col gap-4">
-        <fieldset disabled={form.formState.isSubmitting}>
+      <form>
+        <fieldset
+          disabled={form.formState.isSubmitting}
+          className="flex flex-col gap-3"
+        >
           <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -91,7 +94,6 @@ const DatabaseConnectionForm: FC<{
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -115,6 +117,9 @@ const DatabaseConnectionForm: FC<{
               />
             </div>
           </div>
+          <FormMessage>
+            {form.control.getFieldState('data_warehouse').error?.message}
+          </FormMessage>
           <FormField
             control={form.control}
             name="alias"
