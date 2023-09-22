@@ -64,6 +64,14 @@ HTTP 200 code response
       }
     }
 
+HTTP 400 code response (if the db connection fails it returns a 400 error)
+
+.. code-block:: rst
+
+    {
+        "detail": "string"
+    }
+
 **Example 1**
 
 Without a SSH connection
