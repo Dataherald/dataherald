@@ -84,7 +84,6 @@ const DatabaseConnectionFormDialog: FC<{
   const connectDatabase = usePostDatabaseConnection()
 
   const onSubmit = async () => {
-    if (!form.formState.isValid) return
     try {
       const formFieldsValues = form.getValues()
       const { file, ...dbConnectionFields } = formFieldsValues
