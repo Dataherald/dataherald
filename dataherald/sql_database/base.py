@@ -21,6 +21,10 @@ class SQLInjectionError(Exception):
     pass
 
 
+class InvalidDBConnectionError(Exception):
+    pass
+
+
 class DBConnections:
     db_connections = {}
 
@@ -62,9 +66,15 @@ class SQLDatabase(LangchainSQLDatabase):
         return cls(engine, **kwargs)
 
     @classmethod
-    def get_sql_engine(cls, database_info: DatabaseConnection) -> "SQLDatabase":
+    def get_sql_engine(
+        cls, database_info: DatabaseConnection, refresh_connection=False
+    ) -> "SQLDatabase":
         logger.info(f"Connecting db: {database_info.id}")
-        if database_info.id in DBConnections.db_connections:
+        if (
+            database_info.id
+            and database_info.id in DBConnections.db_connections
+            and not refresh_connection
+        ):
             return DBConnections.db_connections[database_info.id]
 
         fernet_encrypt = FernetEncrypt()
@@ -80,20 +90,29 @@ class SQLDatabase(LangchainSQLDatabase):
                 file_path = s3.download(file_path)
 
             db_uri = db_uri + f"?credentials_path={file_path}"
-
-        engine = cls.from_uri(db_uri)
-        DBConnections.add(database_info.id, engine)
+        try:
+            engine = cls.from_uri(db_uri)
+            DBConnections.add(database_info.id, engine)
+        except Exception as e:
+            raise InvalidDBConnectionError(  # noqa: B904
+                f"Unable to connect to db: {database_info.alias}, {e}"
+            )
         return engine
 
     @classmethod
     def from_uri_ssh(cls, database_info: DatabaseConnection):
+        file_path = database_info.path_to_credentials_file
+        if file_path.lower().startswith("s3"):
+            s3 = S3()
+            file_path = s3.download(file_path)
+
         fernet_encrypt = FernetEncrypt()
         ssh = database_info.ssh_settings
         server = SSHTunnelForwarder(
             (ssh.host, 22),
             ssh_username=ssh.username,
             ssh_password=fernet_encrypt.decrypt(ssh.password),
-            ssh_pkey=ssh.private_key_path,
+            ssh_pkey=file_path,
             ssh_private_key_password=fernet_encrypt.decrypt(ssh.private_key_password),
             remote_bind_address=(ssh.remote_host, 5432),
         )

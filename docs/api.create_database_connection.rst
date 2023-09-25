@@ -6,6 +6,8 @@ is encrypted using the key you provide in your .env file before being stored to 
 
 You can also specify the engine to connect to the Database through an SSH tunnel, as demonstrated in the second example below.
 
+You can include the API key for the LLM in the request body as an optional parameter. If you do not include the API key, the LLM will use the API key specified in the .env file.
+
 You can find additional details on how to connect to each of the supported data warehouses :ref:`below <Supported Data warehouses>`.
 
 
@@ -18,23 +20,26 @@ You can find additional details on how to connect to each of the supported data 
 .. code-block:: rst
 
    {
-      "alias": "string",
-      "use_ssh": true,
-      "connection_uri": "string",
-      "path_to_credentials_file": "string",
-      "ssh_settings": {
-        "db_name": "string",
-        "host": "string",
-        "username": "string",
-        "password": "string",
-        "remote_host": "string",
-        "remote_db_name": "string",
-        "remote_db_password": "string",
-        "private_key_path": "string",
-        "private_key_password": "string",
-        "db_driver": "string"
-      }
+    "alias": "string",
+    "use_ssh": false,
+    "connection_uri": "string",
+    "path_to_credentials_file": "string",
+    "llm_credentials": {
+      "organization_id": "string",
+      "api_key": "string"
+    },
+    "ssh_settings": {
+      "db_name": "string",
+      "host": "string",
+      "username": "string",
+      "password": "string",
+      "remote_host": "string",
+      "remote_db_name": "string",
+      "remote_db_password": "string",
+      "private_key_password": "string",
+      "db_driver": "string"
     }
+  }
 
 **SSH Parameters**
 
@@ -49,7 +54,7 @@ You can find additional details on how to connect to each of the supported data 
     "remote_host", "string", "The hostname or IP address of the remote database server you want to connect to."
     "remote_db_name", "string", "The name of the remote database you want to interact with."
     "remote_db_password", "string", "The password for accessing the remote database."
-    "private_key_path", "string", "The file path to locate your id_rsa private key file. For example, if you are using Docker and the file is located at the root, the path would be /app/id_rsa. Ensure that you include this file in your Docker container by building it."
+    "path_to_credentials_file", "string", "The file path to locate your id_rsa private key file. For example, if you are using Docker and the file is located at the root, the path would be /app/id_rsa. Ensure that you include this file in your Docker container by building it."
     "private_key_password", "string", "The password for the id_rsa private key file, if it is password-protected"
     "db_driver", "string", "Set the database driver. For example, for PostgreSQL, the driver should be set to `postgresql+psycopg2`"
 
@@ -65,6 +70,10 @@ HTTP 200 code response
       "use_ssh": false,
       "uri": "gAAAAABk8lHQNAUn5XARb94Q8H1OfHpVzOtzP3b2LCpwxUsNCe7LGkwkN8FX-IF3t65oI5mTzgDMR0BY2lzvx55gO0rxlQxRDA==",
       "path_to_credentials_file": "string",
+      "llm_credentials": {
+        "organization_id": "gAAAAABlCz5TvOWQQ9TeSKgtCbaisl343oG3SaBlSniTsqs9R8aTIrptvzQq7b2a13ocBPuV6kGw17bximFbqAF_yaHmJF-Psw==",
+        "api_key": "gAAAAABlCz5TeU0ym4hW3bf9u21dz7B9tlnttOGLRDt8gq2ykkblNvpp70ZjT9FeFcoyMv-Csvp3GNQfw66eYvQBrcBEPsLokkLO2Jc2DD-Q8Aw6g_8UahdOTxJdT4izA6MsiQrf7GGmYBGZqbqsjTdNmcq661wF9Q=="
+      },
       "ssh_settings": {
         "db_name": "string",
         "host": "string",
@@ -73,10 +82,17 @@ HTTP 200 code response
         "remote_host": "string",
         "remote_db_name": "string",
         "remote_db_password": "gAAAAABk8lHQpZyZ6ow8EuYPWe5haP-roQbBWkZn3trLgdO632IDoKcXAW-8yjzDDQ4uH03iWFzEgJq8HRxkJTC6Ht7Qrlz2PQ==",
-        "private_key_path": "string",
         "private_key_password": "gAAAAABk8lHQWilFpIbCADvunHGYFMqgoPKIml_WRXf5Yuowqng28DVsq6-sChl695y5D_mWrr1I3hcJCZqkmhDqpma6iz3PKA==",
         "db_driver": "string"
       }
+    }
+
+HTTP 400 code response (if the db connection fails it returns a 400 error)
+
+.. code-block:: rst
+
+    {
+        "detail": "string"
     }
 
 **Example 1**
@@ -116,7 +132,36 @@ With a SSH connection
         "remote_host": "string",
         "remote_db_name": "string",
         "remote_db_password": "string",
-        "private_key_path": "string",
+        "private_key_password": "string",
+        "db_driver": "string"
+      }
+    }'
+
+**Example 3**
+
+With a SSH connection and LLM credentials
+
+.. code-block:: rst
+
+    url -X 'POST' \
+      '<host>/api/v1/database-connections' \
+      -H 'accept: application/json' \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "alias": "my_db_alias",
+      "use_ssh": true,
+      "llm_credentials": {
+        "organization_id": "organization_id",
+        "api_key": "api_key"
+      },
+      "ssh_settings": {
+        "db_name": "db_name",
+        "host": "string",
+        "username": "string",
+        "password": "string",
+        "remote_host": "string",
+        "remote_db_name": "string",
+        "remote_db_password": "string",
         "private_key_password": "string",
         "db_driver": "string"
       }

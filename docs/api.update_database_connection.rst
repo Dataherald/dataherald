@@ -24,6 +24,10 @@ This endpoint is used to update a Database connection
       "use_ssh": true,
       "connection_uri": "string",
       "path_to_credentials_file": "string",
+      "llm_credentials": {
+        "organization_id": "string",
+        "api_key": "string"
+      },
       "ssh_settings": {
         "db_name": "string",
         "host": "string",
@@ -32,7 +36,6 @@ This endpoint is used to update a Database connection
         "remote_host": "string",
         "remote_db_name": "string",
         "remote_db_password": "string",
-        "private_key_path": "string",
         "private_key_password": "string",
         "db_driver": "string"
       }
@@ -50,6 +53,10 @@ HTTP 200 code response
       "use_ssh": false,
       "uri": "gAAAAABk8lHQNAUn5XARb94Q8H1OfHpVzOtzP3b2LCpwxUsNCe7LGkwkN8FX-IF3t65oI5mTzgDMR0BY2lzvx55gO0rxlQxRDA==",
       "path_to_credentials_file": "string",
+      "llm_credentials": {
+        "organization_id": "string",
+        "api_key": "string"
+      },
       "ssh_settings": {
         "db_name": "string",
         "host": "string",
@@ -58,10 +65,17 @@ HTTP 200 code response
         "remote_host": "string",
         "remote_db_name": "string",
         "remote_db_password": "gAAAAABk8lHQpZyZ6ow8EuYPWe5haP-roQbBWkZn3trLgdO632IDoKcXAW-8yjzDDQ4uH03iWFzEgJq8HRxkJTC6Ht7Qrlz2PQ==",
-        "private_key_path": "string",
         "private_key_password": "gAAAAABk8lHQWilFpIbCADvunHGYFMqgoPKIml_WRXf5Yuowqng28DVsq6-sChl695y5D_mWrr1I3hcJCZqkmhDqpma6iz3PKA==",
         "db_driver": "string"
       }
+    }
+
+HTTP 400 code response (if the db connection fails it returns a 400 error)
+
+.. code-block:: rst
+
+    {
+        "detail": "string"
     }
 
 **Example 1**
@@ -101,8 +115,38 @@ With a SSH connection
         "remote_host": "string",
         "remote_db_name": "string",
         "remote_db_password": "string",
-        "private_key_path": "string",
         "private_key_password": "string",
         "db_driver": "string"
       }
     }'
+
+**Example 3**
+
+With a SSH connection and LLM credentials
+
+.. code-block:: rst
+
+    url -X 'POST' \
+      '<host>/api/v1/database-connections' \
+      -H 'accept: application/json' \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "alias": "my_db_alias",
+      "use_ssh": true,
+      "llm_credentials": {
+        "organization_id": "organization_id",
+        "api_key": "api_key"
+      },
+      "ssh_settings": {
+        "db_name": "db_name",
+        "host": "string",
+        "username": "string",
+        "password": "string",
+        "remote_host": "string",
+        "remote_db_name": "string",
+        "remote_db_password": "string",
+        "private_key_password": "string",
+        "db_driver": "string"
+      }
+    }'
+

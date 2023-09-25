@@ -21,6 +21,7 @@ HTTP 200 code response
         "use_ssh": false,
         "uri": "foooAABk91Q4wjoR2h07GR7_72BdQnxi8Rm6i_EjyS-mzz_o2c3RAWaEqnlUvkK5eGD5kUfE5xheyivl1Wfbk_EM7CgV4SvdLmOOt7FJV-3kG4zAbar=",
         "path_to_credentials_file": null,
+        "llm_credentials": null,
         "ssh_settings": null
       },
       {
@@ -29,6 +30,10 @@ HTTP 200 code response
         "use_ssh": true,
         "uri": null,
         "path_to_credentials_file": null,
+        "llm_credentials": {
+          "organization_id": "gAAAAABlCz5TvOWQQ9TeSKgtCbaisl343oG3SaBlSniTsqs9R8aTIrptvzQq7b2a13ocBPuV6kGw17bximFbqAF_yaHmJF-Psw==",
+          "api_key": "gAAAAABlCz5TeU0ym4hW3bf9u21dz7B9tlnttOGLRDt8gq2ykkblNvpp70ZjT9FeFcoyMv-Csvp3GNQfw66eYvQBrcBEPsLokkLO2Jc2DD-Q8Aw6g_8UahdOTxJdT4izA6MsiQrf7GGmYBGZqbqsjTdNmcq661wF9Q=="
+        },
         "ssh_settings": {
           "db_name": "string",
           "host": "string",
@@ -37,7 +42,6 @@ HTTP 200 code response
           "remote_host": "string",
           "remote_db_name": "string",
           "remote_db_password": "bar-LWxpBkRDuasdOwU__Sk4bdzruiYYqiyl8gBEEzCyFYCaCOcbQqOa_OwsS-asdasdsad==",
-          "private_key_path": "string",
           "private_key_password": "fooo-LWxPdFcjQw9lU7CeK_2ELR3jGBq0G_uQ7E2rfPLk2RcFR4aDO9e2HmeAQtVpdvtrsQ_0zjsy9q7asdsadXExYJ0g==",
           "db_driver": "string"
         }

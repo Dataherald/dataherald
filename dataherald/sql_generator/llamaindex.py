@@ -2,7 +2,7 @@
 
 import logging
 import time
-from typing import List
+from typing import Any, List
 
 import tiktoken
 from langchain.callbacks.openai_info import MODEL_COST_PER_1K_TOKENS
@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 
 class LlamaIndexSQLGenerator(SQLGenerator):
+    llm: Any | None = None
+
     @override
     def generate_response(
         self,
@@ -35,6 +37,9 @@ class LlamaIndexSQLGenerator(SQLGenerator):
     ) -> NLQueryResponse:
         start_time = time.time()
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
+        self.llm = self.model.get_model(
+            database_connection=database_connection, temperature=0
+        )
         token_counter = TokenCountingHandler(
             tokenizer=tiktoken.encoding_for_model(self.llm.model_name).encode,
             verbose=False,  # set to true to see usage printed to the console

@@ -23,8 +23,7 @@ class Evaluator(Component, ABC):
 
     def __init__(self, system: System):
         self.system = system
-        model = ChatModel(self.system)
-        self.llm = model.get_model(temperature=0)
+        self.model = ChatModel(self.system)
 
     def get_confidence_score(
         self,
