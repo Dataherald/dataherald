@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel
@@ -26,3 +27,5 @@ class TableSchemaDetail(BaseModel):
     table_schema: str | None
     columns: list[ColumnDetail]
     examples: list = []
+    last_schema_sync: datetime | None
+    status: str = "synchrinozed"

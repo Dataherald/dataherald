@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, List
 
 import sqlalchemy
@@ -144,6 +145,8 @@ class SqlAlchemyScanner(Scanner):
             examples=self.get_table_examples(
                 meta=meta, db_engine=db_engine, table=table, rows_number=3
             ),
+            last_schema_sync=datetime.now(),
+            status="syncronized",
         )
 
         repository.save_table_info(object)
