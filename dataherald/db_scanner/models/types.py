@@ -25,7 +25,8 @@ class TableSchemaDetail(BaseModel):
     table_name: str
     description: str | None
     table_schema: str | None
-    columns: list[ColumnDetail]
+    columns: list[ColumnDetail] = []
     examples: list = []
     last_schema_sync: datetime | None
-    status: str = "synchrinozed"
+    status: str = "SYNCHRONIZED"
+    error_message: str | None

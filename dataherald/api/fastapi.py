@@ -6,6 +6,7 @@ from typing import List
 from bson import json_util
 from fastapi import BackgroundTasks, HTTPException
 from overrides import override
+from sqlalchemy import MetaData, inspect
 
 from dataherald.api import API
 from dataherald.api.types import Query
@@ -221,9 +222,35 @@ class FastAPI(API):
         self, db_connection_id: str | None = None, table_name: str | None = None
     ) -> list[TableSchemaDetail]:
         scanner_repository = DBScannerRepository(self.storage)
-        return scanner_repository.find_by(
+        table_descriptions = scanner_repository.find_by(
             {"db_connection_id": db_connection_id, "table_name": table_name}
         )
+
+        if db_connection_id:
+            db_connection_repository = DatabaseConnectionRepository(self.storage)
+            db_connection = db_connection_repository.find_by_id(db_connection_id)
+            database = SQLDatabase.get_sql_engine(db_connection)
+            inspector = inspect(database.engine)
+            meta = MetaData(bind=database.engine)
+            MetaData.reflect(meta, views=True)
+            all_tables = inspector.get_table_names() + inspector.get_view_names()
+
+            for table_description in table_descriptions:
+                if table_description.table_name not in all_tables:
+                    table_description.status = "DEPRECATED"
+                else:
+                    all_tables.remove(table_description.table_name)
+            for table in all_tables:
+                table_descriptions.append(
+                    TableSchemaDetail(
+                        table_name=table,
+                        status="NOT_SYNCHRONIZED",
+                        db_connection_id=db_connection_id,
+                        columns=[],
+                    )
+                )
+
+        return table_descriptions
 
     @override
     def add_golden_records(
