@@ -30,7 +30,7 @@ from sqlalchemy.sql import func
 
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
-from dataherald.db_scanner.models.types import TableSchemaDetail
+from dataherald.db_scanner.models.types import TableDescriptionStatus, TableSchemaDetail
 from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.sql_database.models.types import (
@@ -581,7 +581,8 @@ class DataheraldSQLAgent(SQLGenerator):
         )
         repository = DBScannerRepository(storage)
         db_scan = repository.get_all_tables_by_db(
-            db_connection_id=database_connection.id
+            db_connection_id=database_connection.id,
+            status=TableDescriptionStatus.SYNCHRONIZED.value,
         )
         if not db_scan:
             raise ValueError("No scanned tables found for database")
