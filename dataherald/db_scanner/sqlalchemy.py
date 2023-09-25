@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, List
 
 import sqlalchemy
@@ -7,7 +8,11 @@ from sqlalchemy.schema import CreateTable
 from sqlalchemy.sql import func
 
 from dataherald.db_scanner import Scanner
-from dataherald.db_scanner.models.types import ColumnDetail, TableSchemaDetail
+from dataherald.db_scanner.models.types import (
+    ColumnDetail,
+    TableDescriptionStatus,
+    TableSchemaDetail,
+)
 from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.sql_database.base import SQLDatabase
 
@@ -144,6 +149,8 @@ class SqlAlchemyScanner(Scanner):
             examples=self.get_table_examples(
                 meta=meta, db_engine=db_engine, table=table, rows_number=3
             ),
+            last_schema_sync=datetime.now(),
+            status="SYNCHRONIZED",
         )
 
         repository.save_table_info(object)
@@ -168,13 +175,32 @@ class SqlAlchemyScanner(Scanner):
             ]
         if len(tables) == 0:
             raise ValueError("No table found")
-        result = []
+
+        # persist tables to be scanned
         for table in tables:
-            obj = self.scan_single_table(
-                meta=meta,
-                table=table,
-                db_engine=db_engine,
-                db_connection_id=db_connection_id,
-                repository=repository,
+            repository.save_table_info(
+                TableSchemaDetail(
+                    db_connection_id=db_connection_id,
+                    table_name=table,
+                    status=TableDescriptionStatus.SYNCHRONIZING.value,
+                )
             )
-            result.append(obj)
+
+        for table in tables:
+            try:
+                self.scan_single_table(
+                    meta=meta,
+                    table=table,
+                    db_engine=db_engine,
+                    db_connection_id=db_connection_id,
+                    repository=repository,
+                )
+            except Exception as e:
+                repository.save_table_info(
+                    TableSchemaDetail(
+                        db_connection_id=db_connection_id,
+                        table_name=table,
+                        status=TableDescriptionStatus.FAILED.value,
+                        error_message=f"{e}",
+                    )
+                )

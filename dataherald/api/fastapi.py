@@ -4,8 +4,9 @@ import time
 from typing import List
 
 from bson import json_util
-from fastapi import HTTPException
+from fastapi import BackgroundTasks, HTTPException
 from overrides import override
+from sqlalchemy import MetaData, inspect
 
 from dataherald.api import API
 from dataherald.api.types import Query
@@ -13,7 +14,7 @@ from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.db_scanner import Scanner
-from dataherald.db_scanner.models.types import TableSchemaDetail
+from dataherald.db_scanner.models.types import TableDescriptionStatus, TableSchemaDetail
 from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.eval import Evaluator
 from dataherald.repositories.base import NLQueryResponseRepository
@@ -44,6 +45,15 @@ from dataherald.types import (
 logger = logging.getLogger(__name__)
 
 
+def async_scanning(scanner, database, scanner_request, storage):
+    scanner.scan(
+        database,
+        scanner_request.db_connection_id,
+        scanner_request.table_names,
+        DBScannerRepository(storage),
+    )
+
+
 class FastAPI(API):
     def __init__(self, system: System):
         super().__init__(system)
@@ -56,7 +66,9 @@ class FastAPI(API):
         return int(time.time_ns())
 
     @override
-    def scan_db(self, scanner_request: ScannerRequest) -> bool:
+    def scan_db(
+        self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
+    ) -> bool:
         """Takes a db_connection_id and scan all the tables columns"""
         db_connection_repository = DatabaseConnectionRepository(self.storage)
 
@@ -75,15 +87,9 @@ class FastAPI(API):
             )
 
         scanner = self.system.instance(Scanner)
-        try:
-            scanner.scan(
-                database,
-                scanner_request.db_connection_id,
-                scanner_request.table_names,
-                DBScannerRepository(self.storage),
-            )
-        except ValueError as e:
-            raise HTTPException(status_code=404, detail=str(e))  # noqa: B904
+        background_tasks.add_task(
+            async_scanning, scanner, database, scanner_request, self.storage
+        )
         return True
 
     @override
@@ -216,9 +222,35 @@ class FastAPI(API):
         self, db_connection_id: str | None = None, table_name: str | None = None
     ) -> list[TableSchemaDetail]:
         scanner_repository = DBScannerRepository(self.storage)
-        return scanner_repository.find_by(
+        table_descriptions = scanner_repository.find_by(
             {"db_connection_id": db_connection_id, "table_name": table_name}
         )
+
+        if db_connection_id:
+            db_connection_repository = DatabaseConnectionRepository(self.storage)
+            db_connection = db_connection_repository.find_by_id(db_connection_id)
+            database = SQLDatabase.get_sql_engine(db_connection)
+            inspector = inspect(database.engine)
+            meta = MetaData(bind=database.engine)
+            MetaData.reflect(meta, views=True)
+            all_tables = inspector.get_table_names() + inspector.get_view_names()
+
+            for table_description in table_descriptions:
+                if table_description.table_name not in all_tables:
+                    table_description.status = TableDescriptionStatus.DEPRECATED.value
+                else:
+                    all_tables.remove(table_description.table_name)
+            for table in all_tables:
+                table_descriptions.append(
+                    TableSchemaDetail(
+                        table_name=table,
+                        status=TableDescriptionStatus.NOT_SYNCHRONIZED.value,
+                        db_connection_id=db_connection_id,
+                        columns=[],
+                    )
+                )
+
+        return table_descriptions
 
     @override
     def add_golden_records(

@@ -30,7 +30,7 @@ from sqlalchemy.sql import func
 
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
-from dataherald.db_scanner.models.types import TableSchemaDetail
+from dataherald.db_scanner.models.types import TableDescriptionStatus, TableSchemaDetail
 from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.sql_database.models.types import (
@@ -289,14 +289,17 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
         search_pattern = f"%{entity.strip().lower()}%"
         meta = MetaData(bind=self.db.engine)
         table = sqlalchemy.Table(table_name.strip(), meta, autoload=True)
-        search_query = sqlalchemy.select(
-            [func.distinct(table.c[column_name.strip()])]
-        ).where(func.lower(table.c[column_name.strip()]).like(search_pattern))
+        try:
+            search_query = sqlalchemy.select(
+                [func.distinct(table.c[column_name.strip()])]
+            ).where(func.lower(table.c[column_name.strip()]).like(search_pattern))
+            search_results = self.db.engine.execute(search_query).fetchall()
+            search_results = search_results[:25]
+        except SQLAlchemyError:
+            search_results = []
         distinct_query = sqlalchemy.select(
             [func.distinct(table.c[column_name.strip()])]
         )
-        search_results = self.db.engine.execute(search_query).fetchall()
-        search_results = search_results[:25]
         results = self.db.engine.execute(distinct_query).fetchall()
         results = self.find_similar_strings(results, entity)
         similar_items = "Similar items:\n"
@@ -343,6 +346,8 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         for table in self.db_scan:
             if table.table_name in table_names_list:
                 tables_schema += table.table_schema + "\n"
+                if table.description is not None:
+                    tables_schema += "Table description: " + table.description + "\n"
         if tables_schema == "":
             tables_schema += "Tables not found in the database"
         return tables_schema
@@ -576,7 +581,8 @@ class DataheraldSQLAgent(SQLGenerator):
         )
         repository = DBScannerRepository(storage)
         db_scan = repository.get_all_tables_by_db(
-            db_connection_id=database_connection.id
+            db_connection_id=database_connection.id,
+            status=TableDescriptionStatus.SYNCHRONIZED.value,
         )
         if not db_scan:
             raise ValueError("No scanned tables found for database")

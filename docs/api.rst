@@ -77,7 +77,7 @@ These are then used to help the LLM build valid SQL to answer natural language q
 
 Related endpoints are:
 
-* :doc:`Scan table description <api.scan_table_description>` -- ``POST api/v1/table-descriptions/scan``
+* :doc:`Scan table description <api.scan_table_description>` -- ``POST api/v1/table-descriptions/sync-schemas``
 * :doc:`Add table description <api.add_descriptions>` -- ``PATCH api/v1/table-descriptions/{table_description_id}``
 * :doc:`List table description <api.list_table_description>` -- ``GET api/v1/table-descriptions``
 

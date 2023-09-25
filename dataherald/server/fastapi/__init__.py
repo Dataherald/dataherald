@@ -1,8 +1,8 @@
 from typing import Any, List
 
 import fastapi
+from fastapi import BackgroundTasks, status
 from fastapi import FastAPI as _FastAPI
-from fastapi import status
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 
@@ -65,7 +65,7 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/table-descriptions/scan",
+            "/api/v1/table-descriptions/sync-schemas",
             self.scan_db,
             methods=["POST"],
             tags=["Table descriptions"],
@@ -144,8 +144,10 @@ class FastAPI(dataherald.server.Server):
     def app(self) -> fastapi.FastAPI:
         return self._app
 
-    def scan_db(self, scanner_request: ScannerRequest) -> bool:
-        return self._api.scan_db(scanner_request)
+    def scan_db(
+        self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
+    ) -> bool:
+        return self._api.scan_db(scanner_request, background_tasks)
 
     def answer_question(self, question_request: QuestionRequest) -> NLQueryResponse:
         return self._api.answer_question(question_request)

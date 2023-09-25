@@ -1,3 +1,5 @@
+from datetime import datetime
+from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel
@@ -18,11 +20,22 @@ class ColumnDetail(BaseModel):
     foreign_key: ForeignKeyDetail | None
 
 
+class TableDescriptionStatus(Enum):
+    NOT_SYNCHRONIZED = "NOT_SYNCHRONIZED"
+    SYNCHRONIZING = "SYNCHRONIZING"
+    DEPRECATED = "DEPRECATED"
+    SYNCHRONIZED = "SYNCHRONIZED"
+    FAILED = "FAILED"
+
+
 class TableSchemaDetail(BaseModel):
     id: Any
     db_connection_id: str
     table_name: str
     description: str | None
     table_schema: str | None
-    columns: list[ColumnDetail]
+    columns: list[ColumnDetail] = []
     examples: list = []
+    last_schema_sync: datetime | None
+    status: str = TableDescriptionStatus.SYNCHRONIZED.value
+    error_message: str | None
