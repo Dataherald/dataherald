@@ -19,14 +19,165 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import DATABASE_PROVIDERS from '@/constants/database-providers'
+import { formatDriver } from '@/lib/domain/database'
 import { AlertCircle } from 'lucide-react'
 import Image from 'next/image'
 import { FC, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
+const SSHForm: FC<{
+  form: UseFormReturn<DatabaseConnectionFormValues>
+}> = ({ form }) => (
+  <div className="grid grid-cols-2 gap-4">
+    <FormField
+      control={form.control}
+      name="ssh_settings.db_name"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Database Name</FormLabel>
+          <FormControl>
+            <Input placeholder="Database Name" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name="ssh_settings.host"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Host</FormLabel>
+          <FormControl>
+            <Input placeholder="Host" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+
+    <FormField
+      control={form.control}
+      name="ssh_settings.username"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Username</FormLabel>
+          <FormControl>
+            <Input placeholder="Username" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name="ssh_settings.password"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Password</FormLabel>
+          <div className="flex items-center gap-3">
+            <FormControl>
+              <Input placeholder="Password" {...field} />
+            </FormControl>
+          </div>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name="ssh_settings.remote_host"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Remote Host</FormLabel>
+          <FormControl>
+            <Input placeholder="Remote Host" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <div></div>
+    <FormField
+      control={form.control}
+      name="ssh_settings.remote_db_name"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Remote Database Name</FormLabel>
+          <FormControl>
+            <Input placeholder="Remote Database Name" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name="ssh_settings.remote_db_password"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Remote Database Password</FormLabel>
+          <div className="flex items-center gap-3">
+            <FormControl>
+              <Input placeholder="Remote Database Password" {...field} />
+            </FormControl>
+          </div>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name="file"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Private Key File</FormLabel>
+          <FormControl>
+            <Input
+              className="cursor-pointer"
+              placeholder="Upload private key file"
+              type="file"
+              ref={field.ref}
+              onChange={(e) => {
+                const files = e.target.files
+                if (files) {
+                  form.setValue('file', files[0], {
+                    shouldValidate: true,
+                  })
+                }
+              }}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name="ssh_settings.private_key_password"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Private Key Password</FormLabel>
+          <div className="flex items-center gap-3">
+            <FormControl>
+              <Input
+                type="password"
+                placeholder="Private Key Password"
+                {...field}
+              />
+            </FormControl>
+          </div>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  </div>
+)
+
 const DatabaseConnectionForm: FC<{
   form: UseFormReturn<DatabaseConnectionFormValues>
 }> = ({ form }) => {
+  const useSsh = form.watch('use_ssh')
   const selectedDatabaseProvider = DATABASE_PROVIDERS.find(
     (dp) => dp.driver === form.watch('data_warehouse'),
   )
@@ -35,9 +186,18 @@ const DatabaseConnectionForm: FC<{
     if (selectedDatabaseProvider?.driver === 'bigquery') {
       form.setValue('use_ssh', false, { shouldValidate: true })
     } else {
-      form.setValue('file', null, { shouldValidate: true })
+      form.setValue('file', undefined, { shouldValidate: true })
     }
   }, [form, selectedDatabaseProvider])
+
+  useEffect(() => {
+    if (useSsh !== true) {
+      form.setValue('ssh_settings', {}, { shouldValidate: true })
+      form.setValue('file', undefined, { shouldValidate: true })
+    } else {
+      form.setValue('connection_uri', undefined, { shouldValidate: true })
+    }
+  }, [form, useSsh])
 
   return (
     <Form {...form}>
@@ -157,24 +317,32 @@ const DatabaseConnectionForm: FC<{
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="connection_uri"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Connection URI</FormLabel>
-                <div className="flex items-center gap-3">
-                  {selectedDatabaseProvider && (
-                    <FormDescription>{`jdbc:${selectedDatabaseProvider.driver}://`}</FormDescription>
-                  )}
-                  <FormControl>
-                    <Input placeholder="Connection URI" {...field} />
-                  </FormControl>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!useSsh && (
+            <FormField
+              control={form.control}
+              name="connection_uri"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Connection URI</FormLabel>
+                  <div className="flex items-start gap-3">
+                    {selectedDatabaseProvider && (
+                      <FormDescription className="py-2.5">
+                        {`jdbc:${formatDriver(
+                          selectedDatabaseProvider.driver,
+                        )}`}
+                      </FormDescription>
+                    )}
+                    <FormControl>
+                      <div className="w-full flex flex-col gap-2">
+                        <Input placeholder="Connection URI" {...field} />
+                        <FormMessage />
+                      </div>
+                    </FormControl>
+                  </div>
+                </FormItem>
+              )}
+            />
+          )}
           {selectedDatabaseProvider?.driver === 'bigquery' && (
             <FormField
               control={form.control}
@@ -203,6 +371,7 @@ const DatabaseConnectionForm: FC<{
               )}
             />
           )}
+          {useSsh && <SSHForm form={form} />}
         </fieldset>
       </form>
     </Form>

@@ -8,7 +8,7 @@ const usePostDatabaseConnection = () => {
   const { token } = useAuth()
 
   const connectDatabase = useCallback(
-    async (dbConnection: DatabaseConnection, file?: File) => {
+    async (dbConnection: DatabaseConnection, file?: File | null) => {
       const formData = new FormData()
 
       if (file) {

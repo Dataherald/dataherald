@@ -95,8 +95,21 @@ export interface Database {
 
 export type Databases = Database[]
 
+export interface SshSettings {
+  db_driver: string
+  db_name: string
+  host: string
+  username: string
+  password: string
+  remote_host: string
+  remote_db_name: string
+  remote_db_password: string
+  private_key_password?: string
+}
+
 export interface DatabaseConnection {
   alias: string
   use_ssh: boolean
-  connection_uri: string
+  connection_uri?: string
+  ssh_settings?: SshSettings
 }

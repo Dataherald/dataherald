@@ -19,22 +19,63 @@ import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
 import usePostDatabaseConnection from '@/hooks/api/usePostDatabaseConnection'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { formatDriver } from '@/lib/domain/database'
+import { cn } from '@/lib/utils'
+import { DatabaseConnection } from '@/models/api'
+import { yupResolver } from '@hookform/resolvers/yup'
 import { AlertCircle, CheckCircle, Loader, UploadCloud } from 'lucide-react'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
+
+const mapDatabaseConnectionFormValues = (
+  formValues: DatabaseConnectionFormValues,
+): DatabaseConnection =>
+  formValues.use_ssh === false
+    ? {
+        alias: formValues.alias,
+        use_ssh: false,
+        connection_uri:
+          formatDriver(formValues.data_warehouse) + formValues.connection_uri,
+      }
+    : {
+        alias: formValues.alias,
+        use_ssh: true,
+        ssh_settings: {
+          db_driver: formValues.data_warehouse,
+          db_name: formValues.ssh_settings.db_name as string,
+          host: formValues.ssh_settings.host as string,
+          username: formValues.ssh_settings.username as string,
+          password: formValues.ssh_settings.password as string,
+          remote_host: formValues.ssh_settings.remote_host as string,
+          remote_db_name: formValues.ssh_settings.remote_db_name as string,
+          remote_db_password: formValues.ssh_settings
+            .remote_db_password as string,
+          private_key_password: formValues.ssh_settings.private_key_password,
+        },
+      }
 
 const DatabaseConnectionFormDialog: FC<{
   onConnected: () => void
   onFinish: () => void
 }> = ({ onConnected, onFinish }) => {
   const form = useForm<DatabaseConnectionFormValues>({
-    resolver: zodResolver(dbConnectionFormSchema as never),
+    resolver: yupResolver(dbConnectionFormSchema),
     defaultValues: {
       use_ssh: false,
       alias: '',
       connection_uri: '',
-      file: '',
+      file: null,
+      ssh_settings: {
+        db_driver: '',
+        db_name: '',
+        host: '',
+        username: '',
+        password: '',
+        remote_host: '',
+        remote_db_name: '',
+        remote_db_password: '',
+        private_key_password: '',
+      },
     },
   })
 
@@ -47,7 +88,10 @@ const DatabaseConnectionFormDialog: FC<{
     try {
       const formFieldsValues = form.getValues()
       const { file, ...dbConnectionFields } = formFieldsValues
-      await connectDatabase(dbConnectionFields, file)
+      await connectDatabase(
+        mapDatabaseConnectionFormValues(dbConnectionFields),
+        file as File | null | undefined,
+      )
       setDatabaseConnected(true)
       onConnected()
     } catch (e) {
@@ -75,6 +119,8 @@ const DatabaseConnectionFormDialog: FC<{
     }
   }
 
+  const isSshFormDisplayed = form.watch('use_ssh')
+
   return (
     <>
       <Dialog onOpenChange={handleDialogOpenChange}>
@@ -84,7 +130,12 @@ const DatabaseConnectionFormDialog: FC<{
             Connect your Database
           </Button>
         </DialogTrigger>
-        <DialogContent className="h-[80vh] max-w-[70vw] lg:max-w-[700px] flex flex-col">
+        <DialogContent
+          className={cn(
+            isSshFormDisplayed ? 'h-[90vh]' : 'h-[70vh]',
+            'max-w-[70vw] lg:max-w-[700px] overflow-auto flex flex-col',
+          )}
+        >
           {databaseConnected ? (
             <>
               <DialogHeader className="flex-none">
@@ -125,7 +176,7 @@ const DatabaseConnectionFormDialog: FC<{
                   Connect your database to start using the platform.
                 </DialogDescription>
               </DialogHeader>
-              <div className="grow">
+              <div className="grow overflow-auto px-2">
                 <DatabaseConnectionForm form={form} />
               </div>
               <DialogFooter>
