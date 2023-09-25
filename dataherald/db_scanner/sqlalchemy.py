@@ -8,7 +8,11 @@ from sqlalchemy.schema import CreateTable
 from sqlalchemy.sql import func
 
 from dataherald.db_scanner import Scanner
-from dataherald.db_scanner.models.types import ColumnDetail, TableSchemaDetail
+from dataherald.db_scanner.models.types import (
+    ColumnDetail,
+    TableDescriptionStatus,
+    TableSchemaDetail,
+)
 from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.sql_database.base import SQLDatabase
 
@@ -178,7 +182,7 @@ class SqlAlchemyScanner(Scanner):
                 TableSchemaDetail(
                     db_connection_id=db_connection_id,
                     table_name=table,
-                    status="SYNCHRONIZING",
+                    status=TableDescriptionStatus.SYNCHRONIZING.value,
                 )
             )
 
@@ -196,7 +200,7 @@ class SqlAlchemyScanner(Scanner):
                     TableSchemaDetail(
                         db_connection_id=db_connection_id,
                         table_name=table,
-                        status="FAILED",
+                        status=TableDescriptionStatus.FAILED.value,
                         error_message=f"{e}",
                     )
                 )

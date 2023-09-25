@@ -14,7 +14,7 @@ from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.db_scanner import Scanner
-from dataherald.db_scanner.models.types import TableSchemaDetail
+from dataherald.db_scanner.models.types import TableDescriptionStatus, TableSchemaDetail
 from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.eval import Evaluator
 from dataherald.repositories.base import NLQueryResponseRepository
@@ -237,14 +237,14 @@ class FastAPI(API):
 
             for table_description in table_descriptions:
                 if table_description.table_name not in all_tables:
-                    table_description.status = "DEPRECATED"
+                    table_description.status = TableDescriptionStatus.DEPRECATED.value
                 else:
                     all_tables.remove(table_description.table_name)
             for table in all_tables:
                 table_descriptions.append(
                     TableSchemaDetail(
                         table_name=table,
-                        status="NOT_SYNCHRONIZED",
+                        status=TableDescriptionStatus.NOT_SYNCHRONIZED.value,
                         db_connection_id=db_connection_id,
                         columns=[],
                     )
