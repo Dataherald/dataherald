@@ -52,6 +52,8 @@ class TestTableDescriptionAPI(TestCase):
             }
         ],
         "examples": ["example1"],
+        "last_schemas_sync": None,
+        "schemas_status": "NOT_SYNCHRONIZED",
     }
 
     test_response_0 = {
@@ -60,6 +62,8 @@ class TestTableDescriptionAPI(TestCase):
         "description": test_1["description"],
         "columns": test_1["columns"],
         "examples": test_1["examples"],
+        "last_schemas_sync": None,
+        "schemas_status": "NOT_SYNCHRONIZED",
     }
 
     test_response_1 = test_response_0.copy()
@@ -71,6 +75,8 @@ class TestTableDescriptionAPI(TestCase):
                 "id": "666f6f2d6261722d71757578",
                 "name": "test_table",
                 "columns": ["column1"],
+                "last_schemas_sync": None,
+                "schemas_status": "NOT_SYNCHRONIZED",
             }
         ],
     }
@@ -82,7 +88,7 @@ class TestTableDescriptionAPI(TestCase):
     def test_get_table_descriptions(self):
         response = client.get(self.url + "/list", headers=self.test_header)
         assert response.status_code == status.HTTP_200_OK
-        assert response.json() == [self.test_response_1]
+        assert response.json() == [self.test_response_0]
 
     @patch(
         "httpx.AsyncClient.get",
@@ -92,7 +98,9 @@ class TestTableDescriptionAPI(TestCase):
         "modules.db_connection.service.DBConnectionService.get_db_connection",
         Mock(
             return_value=DBConnectionResponse(
-                id="0123456789ab0123456789ab", alias=test_db_response_1["alias"]
+                id="0123456789ab0123456789ab",
+                alias=test_db_response_1["alias"],
+                uri="test_uri",
             )
         ),
     )
@@ -102,12 +110,12 @@ class TestTableDescriptionAPI(TestCase):
         assert response.json() == [self.test_db_response_1]
 
     @patch(
-        "modules.table_description.service.TableDescriptionService.scan_table_descriptions",
+        "modules.table_description.service.TableDescriptionService.sync_table_descriptions_schemas",
         AsyncMock(return_value=True),
     )
-    def test_scan_table_descriptions(self):
+    def test_sync_table_descriptions_schemas(self):
         response = client.post(
-            self.url + "/scan",
+            self.url + "/sync-schemas",
             headers=self.test_header,
             json={"db_connection_id": "123", "table_names": ["test_table"]},
         )

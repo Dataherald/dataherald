@@ -12,7 +12,6 @@ class SSHSettings(BaseModel):
     remote_host: str | None
     remote_db_name: str | None
     remote_db_password: str | None
-    private_key_path: str | None
     private_key_password: str | None
     db_driver: str | None
 

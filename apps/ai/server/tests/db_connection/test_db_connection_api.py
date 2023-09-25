@@ -25,14 +25,14 @@ class TestDBConnectionAPI(TestCase):
         "_id": ObjectId(b"foo-bar-quux"),
         "alias": "test_connection_1",
         "use_ssh": False,
-        "connection_uri": "test_uri_1",
+        "uri": "test_uri_1",
         "path_to_credentials_file": None,
     }
     test_2 = {
         "_id": ObjectId(b"lao-gan-maaa"),
         "alias": "test_connection_2",
         "use_ssh": False,
-        "connection_uri": "test_uri_2",
+        "uri": "test_uri_2",
         "path_to_credentials_file": None,
     }
 
@@ -54,7 +54,7 @@ class TestDBConnectionAPI(TestCase):
         "id": str(test_1["_id"]),
         "alias": test_1["alias"],
         "use_ssh": test_1["use_ssh"],
-        "connection_uri": test_1["connection_uri"],
+        "uri": test_1["uri"],
         "path_to_credentials_file": test_1["path_to_credentials_file"],
         "ssh_settings": None,
     }
@@ -63,7 +63,7 @@ class TestDBConnectionAPI(TestCase):
         "id": str(test_2["_id"]),
         "alias": test_2["alias"],
         "use_ssh": test_2["use_ssh"],
-        "connection_uri": test_2["connection_uri"],
+        "uri": test_2["uri"],
         "path_to_credentials_file": test_2["path_to_credentials_file"],
         "ssh_settings": None,
     }

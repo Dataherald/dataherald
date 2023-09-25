@@ -17,7 +17,7 @@ const usePostDatabaseConnection = () => {
 
       formData.append(
         'db_connection_request_json',
-        JSON.stringify(JSON.stringify(dbConnection)),
+        JSON.stringify(dbConnection),
       )
 
       return apiFetcher<DatabaseConnection>(`${API_URL}/database-connection`, {
