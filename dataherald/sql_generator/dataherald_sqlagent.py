@@ -343,6 +343,8 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         for table in self.db_scan:
             if table.table_name in table_names_list:
                 tables_schema += table.table_schema + "\n"
+                if table.description is not None:
+                    tables_schema += "Table description: " + table.description + "\n"
         if tables_schema == "":
             tables_schema += "Tables not found in the database"
         return tables_schema
