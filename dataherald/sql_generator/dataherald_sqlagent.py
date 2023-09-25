@@ -289,14 +289,17 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
         search_pattern = f"%{entity.strip().lower()}%"
         meta = MetaData(bind=self.db.engine)
         table = sqlalchemy.Table(table_name.strip(), meta, autoload=True)
-        search_query = sqlalchemy.select(
-            [func.distinct(table.c[column_name.strip()])]
-        ).where(func.lower(table.c[column_name.strip()]).like(search_pattern))
+        try:
+            search_query = sqlalchemy.select(
+                [func.distinct(table.c[column_name.strip()])]
+            ).where(func.lower(table.c[column_name.strip()]).like(search_pattern))
+            search_results = self.db.engine.execute(search_query).fetchall()
+            search_results = search_results[:25]
+        except SQLAlchemyError:
+            search_results = []
         distinct_query = sqlalchemy.select(
             [func.distinct(table.c[column_name.strip()])]
         )
-        search_results = self.db.engine.execute(search_query).fetchall()
-        search_results = search_results[:25]
         results = self.db.engine.execute(distinct_query).fetchall()
         results = self.find_similar_strings(results, entity)
         similar_items = "Similar items:\n"
