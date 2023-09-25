@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List
 
+from fastapi import BackgroundTasks
+
 from dataherald.api.types import Query
 from dataherald.config import Component
 from dataherald.db_scanner.models.types import TableSchemaDetail
@@ -25,7 +27,9 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def scan_db(self, scanner_request: ScannerRequest) -> bool:
+    def scan_db(
+        self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
+    ) -> bool:
         pass
 
     @abstractmethod

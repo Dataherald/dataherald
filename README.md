@@ -251,12 +251,12 @@ Once you have connected to the data warehouse, you should add context to the eng
 While only the Database scan part is required to start generating SQL, adding verified SQL and string descriptions are also important for the tool to generate accurate SQL. 
 
 #### Scanning the Database
-The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM. You can trigger a scan of a database from the `POST /api/v1/table-descriptions/scan` endpoint. Example below
+The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM. You can trigger a scan of a database from the `POST /api/v1/table-descriptions/sync-schemas` endpoint. Example below
 
 
 ```
 curl -X 'POST' \
-  '<host>/api/v1/table-descriptions/scan' \
+  '<host>/api/v1/table-descriptions/sync-schemas' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
