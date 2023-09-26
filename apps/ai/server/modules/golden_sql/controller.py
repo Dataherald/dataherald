@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, status
 from fastapi.security import HTTPBearer
 
@@ -43,11 +45,11 @@ async def get_golden_sql(
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def add_golden_sql(
-    golden_sql_request: GoldenSQLRequest, token: str = Depends(token_auth_scheme)
+    golden_sql_requests: List[GoldenSQLRequest], token: str = Depends(token_auth_scheme)
 ) -> GoldenSQLResponse:
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
     return await golden_sql_service.add_golden_sql(
-        golden_sql_request, org_id, GoldenSQLSource.user_upload
+        golden_sql_requests, org_id, GoldenSQLSource.user_upload
     )
 
 

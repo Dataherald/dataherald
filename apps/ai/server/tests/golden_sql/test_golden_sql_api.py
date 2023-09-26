@@ -150,11 +150,13 @@ class TestGoldenSQLAPI(TestCase):
         response = client.post(
             self.url,
             headers=self.test_header,
-            json={
-                "question": "test_question",
-                "sql_query": "test_query",
-                "db_connection_id": "test_connection_id",
-            },
+            json=[
+                {
+                    "question": "test_question",
+                    "sql_query": "test_query",
+                    "db_connection_id": "test_connection_id",
+                }
+            ],
         )
         assert response.status_code == status.HTTP_201_CREATED
         assert response.json() == self.test_response_1

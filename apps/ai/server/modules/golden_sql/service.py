@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Dict
+from typing import Dict, List
 
 import httpx
 from bson import ObjectId
@@ -55,7 +55,7 @@ class GoldenSQLService:
 
     async def add_golden_sql(
         self,
-        golden_sql_request: GoldenSQLRequest,
+        golden_sql_requests: List[GoldenSQLRequest],
         org_id: str,
         source: GoldenSQLSource,
         query_response_id: str = None,
@@ -73,7 +73,10 @@ class GoldenSQLService:
             response = await client.post(
                 settings.k2_core_url + "/golden-records",
                 # core should have consistent request body
-                json=[golden_sql_request.dict()],
+                json=[
+                    golden_sql_request.dict()
+                    for golden_sql_request in golden_sql_requests
+                ],
                 timeout=settings.default_k2_core_timeout,
             )
             raise_for_status(response.status_code, response.text)
