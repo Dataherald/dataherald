@@ -45,7 +45,8 @@ class DefaultContextStore(ContextStore):
             samples = None
         instructions = []
         instruction_repository = InstructionRepository(self.db)
-        for instruction in instruction_repository.find_all():
+        all_instructions = instruction_repository.find_all()
+        for instruction in all_instructions:
             if instruction.db_connection_id == nl_question.db_connection_id:
                 instructions.append(
                     {
