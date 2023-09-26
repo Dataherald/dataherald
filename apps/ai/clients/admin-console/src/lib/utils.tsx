@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from 'clsx'
+import { LucideIcon } from 'lucide-react'
 import { ParsedUrlQuery } from 'querystring'
 import { twMerge } from 'tailwind-merge'
 
@@ -20,3 +21,13 @@ export const formatUrl = (segment: string): string =>
 
 export const formatKey = (key: string): string =>
   key.replace('_', ' ').toLowerCase()
+
+export const renderIcon = (
+  IconComponent: LucideIcon | null,
+  config: { size: number; strokeWidth: number } = { size: 16, strokeWidth: 2 },
+) => {
+  if (IconComponent) {
+    return <IconComponent {...config} />
+  }
+  return null
+}

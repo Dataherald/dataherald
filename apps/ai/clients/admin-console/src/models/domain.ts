@@ -20,3 +20,11 @@ export enum EDomainQueryStatusTextColor {
   HIGH_CONFIDENCE = 'text-green-500',
   VERIFIED = 'text-green-700',
 }
+
+export enum EDomainSchemaStatusTextColor {
+  NOT_SYNCHRONIZED = 'text-gray-500',
+  SYNCHRONIZING = 'text-yellow-600',
+  SYNCHRONIZED = 'text-green-700',
+  DEPRECATED = 'text-orange-800',
+  FAILED = 'text-red-600',
+}

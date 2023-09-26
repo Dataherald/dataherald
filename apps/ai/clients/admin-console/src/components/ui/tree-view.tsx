@@ -92,6 +92,7 @@ export interface TreeNode {
   icon: LucideIcon
   children?: TreeNode[]
   selectable?: boolean
+  slot?: JSX.Element
 }
 
 interface TreeProps {
@@ -145,10 +146,10 @@ const TreeNodeComponent: FC<TreeProps> = ({
 
   return (
     <div className={isRoot ? 'pl-0' : 'pl-7'}>
-      <div className="flex items-center gap-2">
+      <div className="w-full flex items-center justify-between gap-2 rounded-lg hover:bg-gray-200">
         <div
           className={cn(
-            'flex items-center p-2 rounded w-full hover:bg-gray-200',
+            'flex items-center w-full px-3 py-2',
             nodeHasChildren ? 'cursor-pointer' : 'cursor-default',
           )}
           onClick={() => setIsOpen(!isOpen)}
@@ -175,6 +176,7 @@ const TreeNodeComponent: FC<TreeProps> = ({
           <node.icon size={22} strokeWidth={1.5} className="mx-2" />
           <span>{node.name}</span>
         </div>
+        <div className="min-w-fit">{node.slot}</div>
       </div>
       {isOpen && nodeHasChildren && (
         <div className="transition-all duration-300">

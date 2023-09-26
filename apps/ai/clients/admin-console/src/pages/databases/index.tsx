@@ -6,8 +6,16 @@ import { ContentBox } from '@/components/ui/content-box'
 import { TreeNode, TreeView } from '@/components/ui/tree-view'
 import { TreeProvider } from '@/components/ui/tree-view-context'
 import useDatabases from '@/hooks/api/useDatabases'
+import {
+  formatSchemaStatus,
+  getDomainSchemaStatusColor,
+  getDomainSchemaStatusIcon,
+  isSelectableByStatus,
+} from '@/lib/domain/database'
+import { cn, renderIcon } from '@/lib/utils'
 import { Databases } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
+import { formatDistance } from 'date-fns'
 import { Columns, Database as DatabaseIcon, Table2 } from 'lucide-react'
 import { FC, useEffect, useState } from 'react'
 
@@ -19,7 +27,9 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode => ({
     id: database.alias,
     name: database.alias,
     icon: DatabaseIcon,
-    selectable: true,
+    selectable: !database.tables.find(
+      (table) => !isSelectableByStatus(table.status),
+    ),
     children: [
       {
         name: 'Tables',
@@ -29,7 +39,34 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode => ({
           id: table.name,
           name: table.name,
           icon: Table2,
-          selectable: true,
+          selectable: isSelectableByStatus(table.status),
+          slot: (
+            <div
+              className={cn(
+                'flex items-center gap-2 text-sm',
+                getDomainSchemaStatusColor(table.status),
+              )}
+            >
+              <div className="flex items-center gap-3 min-w-fit px-5">
+                {renderIcon(getDomainSchemaStatusIcon(table.status), {
+                  size: 16,
+                  strokeWidth: 2,
+                })}
+                <span className="capitalize">
+                  {formatSchemaStatus(table.status)}
+                </span>
+                {table.last_schemas_sync && (
+                  <span className="text-gray-400">
+                    {formatDistance(
+                      new Date(table.last_schemas_sync),
+                      new Date(),
+                      { addSuffix: true },
+                    )}
+                  </span>
+                )}
+              </div>
+            </div>
+          ),
           children: table.columns?.length
             ? [
                 {

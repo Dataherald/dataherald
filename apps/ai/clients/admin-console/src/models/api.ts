@@ -84,12 +84,29 @@ export interface GoldenSqlListItem {
 
 export type GoldenSqlList = GoldenSqlListItem[]
 
+export type SchemaStatus =
+  | 'NOT_SYNCHRONIZED'
+  | 'SYNCHRONIZING'
+  | 'SYNCHRONIZED'
+  | 'DEPRECATED'
+  | 'FAILED'
+
+export enum ESchemaStatus {
+  NOT_SYNCHRONIZED = 'NOT_SYNCHRONIZED',
+  SYNCHRONIZING = 'SYNCHRONIZING',
+  SYNCHRONIZED = 'SYNCHRONIZED',
+  DEPRECATED = 'DEPRECATED',
+  FAILED = 'FAILED',
+}
+
 export interface Database {
   alias: string
   tables: {
     id?: string
     name: string
     columns: string[]
+    status: SchemaStatus
+    last_schemas_sync: string
   }[]
 }
 
