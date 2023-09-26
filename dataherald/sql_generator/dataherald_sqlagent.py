@@ -55,7 +55,8 @@ Here is the plan you have to follow:
 4) Use the db_relevant_columns_info tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
 5) [Optional based on the question] Use the get_current_datetime tool if the question has any mentions of time or dates.
 6) [Optional based on the question] Always use the db_column_entity_checker tool to make sure that relevant columns have the cell-values.
-7) Write a {dialect} query and use sql_db_query tool the Execute the SQL query on the database to obtain the results.
+7) Use the get_admin_instructions tool to retrieve the DB admin instructions before generating the SQL query.
+8) Write a {dialect} query and use sql_db_query tool the Execute the SQL query on the database to obtain the results.
 #
 Some tips to always keep in mind:
 tip1) For complex questions that has many relevant columns and tables request for more examples of Question/SQL pairs.
@@ -136,7 +137,7 @@ class BaseSQLDatabaseTool(BaseModel):
 
 
 class GetCurrentTimeTool(BaseSQLDatabaseTool, BaseTool):
-    """Tool for querying a SQL database."""
+    """Tool for finding the current data and time."""
 
     name = "get_current_datetime"
     description = """
@@ -187,7 +188,37 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
         query: str,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
     ) -> str:
-        raise NotImplementedError("DBQueryTool does not support async")
+        raise NotImplementedError("QuerySQLDataBaseTool does not support async")
+
+
+class GetUserInstructions(BaseSQLDatabaseTool, BaseTool):
+    """Tool for retrieving the instructions from the user"""
+
+    name = "get_admin_instructions"
+    description = """
+    Input: is an empty string.
+    Output: Database admin instructions before generating the SQL query.
+    The generated SQL query MUST follow the admin instructions even it contradicts with the given question.
+    """
+    instructions: List[dict]
+
+    @catch_exceptions()
+    def _run(
+        self,
+        tool_input: str = "",  # noqa: ARG002
+        run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
+    ) -> str:
+        response = "Admin: All of the generated SQL queries must follow the below instructions:\n"
+        for instruction in self.instructions:
+            response += f"{instruction['instruction']}\n"
+        return response
+
+    async def _arun(
+        self,
+        tool_input: str = "",  # noqa: ARG002
+        run_manager: AsyncCallbackManagerForToolRun | None = None,
+    ) -> str:
+        raise NotImplementedError("GetUserInstructions does not support async")
 
 
 class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
@@ -248,13 +279,11 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         user_question: str = "",
         run_manager: AsyncCallbackManagerForToolRun | None = None,
     ) -> str:
-        raise NotImplementedError(
-            "TablesWithRelevanceScoresTool does not support async"
-        )
+        raise NotImplementedError("TablesSQLDatabaseTool does not support async")
 
 
 class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
-    """Tool for getting sample rows for the given column."""
+    """Tool for checking the existance of an entity inside a column."""
 
     name = "db_column_entity_checker"
     description = """
@@ -318,7 +347,7 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
         tool_input: str,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
     ) -> str:
-        raise NotImplementedError("ColumnsSampleRowsTool does not support async")
+        raise NotImplementedError("ColumnEntityChecker does not support async")
 
 
 class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
@@ -357,7 +386,7 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         table_name: str,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
     ) -> str:
-        raise NotImplementedError("DBRelevantTablesSchemaTool does not support async")
+        raise NotImplementedError("SchemaSQLDatabaseTool does not support async")
 
 
 class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
@@ -379,7 +408,7 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
         column_names: str,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
-        """Get the schema for tables in a comma-separated list."""
+        """Get the column level information."""
         items_list = column_names.split(", ")
         column_full_info = ""
         for item in items_list:
@@ -460,6 +489,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     db: SQLDatabase = Field(exclude=True)
     context: List[dict] | None = Field(exclude=True, default=None)
     few_shot_examples: List[dict] | None = Field(exclude=True, default=None)
+    instructions: List[dict] | None = Field(exclude=True, default=None)
     db_scan: List[TableSchemaDetail] = Field(exclude=True)
 
     @property
@@ -477,6 +507,12 @@ class SQLDatabaseToolkit(BaseToolkit):
         tools = []
         query_sql_db_tool = QuerySQLDataBaseTool(db=self.db, context=self.context)
         tools.append(query_sql_db_tool)
+        if self.instructions is not None:
+            tools.append(
+                GetUserInstructions(
+                    db=self.db, context=self.context, instructions=self.instructions
+                )
+            )
         get_current_datetime = GetCurrentTimeTool(db=self.db, context=self.context)
         tools.append(get_current_datetime)
         tables_sql_db_tool = TablesSQLDatabaseTool(
@@ -528,7 +564,7 @@ class DataheraldSQLAgent(SQLGenerator):
         input_variables: List[str] | None = None,
         max_examples: int = 20,
         top_k: int = 13,
-        max_iterations: int | None = 10,
+        max_iterations: int | None = 15,
         max_execution_time: float | None = None,
         early_stopping_method: str = "force",
         verbose: bool = False,
@@ -585,7 +621,7 @@ class DataheraldSQLAgent(SQLGenerator):
         )
         if not db_scan:
             raise ValueError("No scanned tables found for database")
-        few_shot_examples = context_store.retrieve_context_for_question(
+        few_shot_examples, instructions = context_store.retrieve_context_for_question(
             user_question, number_of_samples=self.max_number_of_examples
         )
         if few_shot_examples is not None:
@@ -600,6 +636,7 @@ class DataheraldSQLAgent(SQLGenerator):
             db=self.database,
             context=context,
             few_shot_examples=new_fewshot_examples,
+            instructions=instructions,
             db_scan=db_scan,
         )
         agent_executor = self.create_sql_agent(

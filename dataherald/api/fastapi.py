@@ -19,6 +19,7 @@ from dataherald.eval import Evaluator
 from dataherald.repositories.base import NLQueryResponseRepository
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.golden_records import GoldenRecordRepository
+from dataherald.repositories.instructions import InstructionRepository
 from dataherald.repositories.nl_question import NLQuestionRepository
 from dataherald.sql_database.base import (
     InvalidDBConnectionError,
@@ -33,6 +34,8 @@ from dataherald.types import (
     ExecuteTempQueryRequest,
     GoldenRecord,
     GoldenRecordRequest,
+    Instruction,
+    InstructionRequest,
     NLQuery,
     NLQueryResponse,
     QuestionRequest,
@@ -117,7 +120,7 @@ class FastAPI(API):
         start_generated_answer = time.time()
         try:
             generated_answer = sql_generation.generate_response(
-                user_question, database_connection, context
+                user_question, database_connection, context[0]
             )
             logger.info("Starts evaluator...")
             confidence_score = evaluator.get_confidence_score(
@@ -312,3 +315,53 @@ class FastAPI(API):
         start_idx = (page - 1) * limit
         end_idx = start_idx + limit
         return all_records[start_idx:end_idx]
+
+    @override
+    def add_instruction(
+        self, db_connection_id: str, instruction_request: InstructionRequest
+    ) -> Instruction:
+        instruction_repository = InstructionRepository(self.storage)
+        instruction = Instruction(
+            instruction=instruction_request.instruction,
+            db_connection_id=db_connection_id,
+        )
+        return instruction_repository.insert(instruction)
+
+    @override
+    def get_instructions(
+        self, db_connection_id: str, page: int = 1, limit: int = 10
+    ) -> List[Instruction]:
+        instruction_repository = InstructionRepository(self.storage)
+        instructions = instruction_repository.find_all()
+        filtered_instructions = []
+        for instruction in instructions:
+            if instruction.db_connection_id == db_connection_id:
+                filtered_instructions.append(instruction)
+        start_idx = (page - 1) * limit
+        end_idx = start_idx + limit
+        return filtered_instructions[start_idx:end_idx]
+
+    @override
+    def delete_instruction(self, db_connection_id: str, instruction_id: str) -> dict:
+        instruction_repository = InstructionRepository(self.storage)
+        instruction = instruction_repository.find_by_id(instruction_id)
+        if instruction.db_connection_id != db_connection_id:
+            raise HTTPException(status_code=404, detail="Instruction not found")
+        instruction_repository.delete_by_id(instruction_id)
+        return {"status": "success"}
+
+    @override
+    def update_instruction(
+        self,
+        db_connection_id: str,
+        instruction_id: str,
+        instruction_request: InstructionRequest,
+    ) -> Instruction:
+        instruction_repository = InstructionRepository(self.storage)
+        instruction = Instruction(
+            id=instruction_id,
+            instruction=instruction_request.instruction,
+            db_connection_id=db_connection_id,
+        )
+        instruction_repository.update(instruction)
+        return json.loads(json_util.dumps(instruction))

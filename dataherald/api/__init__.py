@@ -12,6 +12,8 @@ from dataherald.types import (
     ExecuteTempQueryRequest,
     GoldenRecord,
     GoldenRecordRequest,
+    Instruction,
+    InstructionRequest,
     NLQueryResponse,
     QuestionRequest,
     ScannerRequest,
@@ -96,4 +98,29 @@ class API(Component, ABC):
 
     @abstractmethod
     def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
+        pass
+
+    @abstractmethod
+    def add_instruction(
+        self, db_connection_id: str, instruction_request: InstructionRequest
+    ) -> Instruction:
+        pass
+
+    @abstractmethod
+    def get_instructions(
+        self, db_connection_id: str, page: int = 1, limit: int = 10
+    ) -> List[Instruction]:
+        pass
+
+    @abstractmethod
+    def delete_instruction(self, db_connection_id: str, instruction_id: str) -> dict:
+        pass
+
+    @abstractmethod
+    def update_instruction(
+        self,
+        db_connection_id: str,
+        instruction_id: str,
+        instruction_request: InstructionRequest,
+    ) -> Instruction:
         pass
