@@ -19,6 +19,13 @@ class TestDB(DB):
                 "ssh_settings": None,
             }
         ]
+        self.memory["instructions"] = [
+            {
+                "_id": "64dfa0e103f5134086f7090c",
+                "instructions": "foo",
+                "db_connection_id": "64dfa0e103f5134086f7090c",
+            }
+        ]
 
     @override
     def insert_one(self, collection: str, obj: dict) -> int:
