@@ -16,6 +16,7 @@ const useDatabases = (): DatabasesResponse => {
   const { data, isLoading, error, mutate } = useSWR<Databases>(
     token ? [`${API_URL}/table-description/database/list`, token] : null,
     ([url, token]: [string, string]) => apiFetcher<Databases>(url, { token }),
+    { revalidateIfStale: false, revalidateOnFocus: false },
   )
   return {
     databases: data,

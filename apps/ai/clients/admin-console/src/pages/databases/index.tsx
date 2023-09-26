@@ -2,6 +2,7 @@ import DatabaseConnection from '@/components/databases/database-connection'
 import DatabasesError from '@/components/databases/error'
 import LoadingDatabases from '@/components/databases/loading'
 import PageLayout from '@/components/layout/page-layout'
+import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
 import { TreeNode, TreeView } from '@/components/ui/tree-view'
 import { TreeProvider } from '@/components/ui/tree-view-context'
@@ -16,7 +17,12 @@ import { cn, renderIcon } from '@/lib/utils'
 import { Databases } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { formatDistance } from 'date-fns'
-import { Columns, Database as DatabaseIcon, Table2 } from 'lucide-react'
+import {
+  Columns,
+  Database as DatabaseIcon,
+  RefreshCw,
+  Table2,
+} from 'lucide-react'
 import { FC, useEffect, useState } from 'react'
 
 const mapDatabaseToTreeData = (databases: Databases): TreeNode => ({
@@ -89,11 +95,18 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode => ({
 
 const DatabasesPage: FC = () => {
   const { databases, isLoading, error, mutate } = useDatabases()
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [connectingDB, setConnectingDB] = useState<boolean | null>(null)
 
   const handleDatabaseConnected = () => mutate()
   const handleDatabaseConnectionFinish = () => {
     if (databases?.length !== 0) setConnectingDB(false)
+  }
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await mutate()
+    setIsRefreshing(false)
   }
 
   useEffect(() => {
@@ -118,7 +131,22 @@ const DatabasesPage: FC = () => {
   } else {
     pageContent = (
       <>
-        <h1 className="capitalize font-semibold">Connected Databases</h1>
+        <div className="flex items-center justify-between bg-gray-50 py-0">
+          <h1 className="font-bold">Connected Databases</h1>
+          <Button
+            variant="outline"
+            className="bg-gray-50"
+            disabled={isRefreshing}
+            onClick={handleRefresh}
+          >
+            <RefreshCw
+              size={18}
+              className={cn('mr-2', isRefreshing ? 'animate-spin' : '')}
+            />{' '}
+            {!isRefreshing ? 'Refresh' : 'Refreshing'}
+          </Button>
+        </div>
+
         <TreeProvider>
           <TreeView rootNode={mapDatabaseToTreeData(databases as Databases)} />
         </TreeProvider>
