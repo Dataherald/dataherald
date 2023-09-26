@@ -581,8 +581,10 @@ class DataheraldSQLAgent(SQLGenerator):
         )
         repository = DBScannerRepository(storage)
         db_scan = repository.get_all_tables_by_db(
-            db_connection_id=database_connection.id,
-            status=TableDescriptionStatus.SYNCHRONIZED.value,
+            {
+                "db_connection_id": str(database_connection.id),
+                "status": TableDescriptionStatus.SYNCHRONIZED.value,
+            }
         )
         if not db_scan:
             raise ValueError("No scanned tables found for database")
