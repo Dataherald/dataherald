@@ -50,8 +50,8 @@ class TableDescriptionService:
                 BasicTableDescriptionResponse(
                     id=td.id,
                     name=td.table_name,
+                    status=td.status,
                     columns=[c.name for c in td.columns],
-                    schemas_status=td.schemas_status,
                     last_schemas_sync=td.last_schemas_sync,
                 )
                 for td in table_descriptions

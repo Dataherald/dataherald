@@ -9,6 +9,7 @@ from httpx import Response
 from app import app
 from modules.db_connection.models.responses import DBConnectionResponse
 from modules.organization.models.entities import Organization
+from modules.table_description.models.entities import SchemaStatus
 from modules.user.models.entities import User
 
 client = TestClient(app)
@@ -53,7 +54,7 @@ class TestTableDescriptionAPI(TestCase):
         ],
         "examples": ["example1"],
         "last_schemas_sync": None,
-        "schemas_status": "NOT_SYNCHRONIZED",
+        "status": SchemaStatus.NOT_SYNCHRONIZED.value,
     }
 
     test_response_0 = {
@@ -63,7 +64,7 @@ class TestTableDescriptionAPI(TestCase):
         "columns": test_1["columns"],
         "examples": test_1["examples"],
         "last_schemas_sync": None,
-        "schemas_status": "NOT_SYNCHRONIZED",
+        "status": SchemaStatus.NOT_SYNCHRONIZED.value,
     }
 
     test_response_1 = test_response_0.copy()
@@ -76,7 +77,7 @@ class TestTableDescriptionAPI(TestCase):
                 "name": "test_table",
                 "columns": ["column1"],
                 "last_schemas_sync": None,
-                "schemas_status": "NOT_SYNCHRONIZED",
+                "status": SchemaStatus.NOT_SYNCHRONIZED.value,
             }
         ],
     }

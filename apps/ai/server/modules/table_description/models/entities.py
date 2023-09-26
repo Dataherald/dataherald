@@ -8,6 +8,8 @@ class SchemaStatus(Enum):
     NOT_SYNCHRONIZED = "NOT_SYNCHRONIZED"
     SYNCHRONIZING = "SYNCHRONIZING"
     SYNCHRONIZED = "SYNCHRONIZED"
+    DEPRECATED = "DEPRECATED"
+    FAILED = "FAILED"
 
 
 class ColumnDescription(BaseModel):

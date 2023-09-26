@@ -1,20 +1,24 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Extra
 
 from modules.table_description.models.entities import BaseTableDescription, SchemaStatus
 
 
 class TableDescriptionResponse(BaseTableDescription):
-    id: str
+    id: str | None
     table_name: str
-    schemas_status: SchemaStatus | None
+    status: str | None
+    status: SchemaStatus
     last_schemas_sync: str | None
+
+    class Config:
+        extra = Extra.ignore
 
 
 class BasicTableDescriptionResponse(BaseModel):
-    id: str
+    id: str | None
     name: str | None
     columns: list[str] | None
-    schemas_status: SchemaStatus | None
+    status: SchemaStatus
     last_schemas_sync: str | None
 
 
