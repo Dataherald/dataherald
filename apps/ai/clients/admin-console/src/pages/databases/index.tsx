@@ -4,37 +4,51 @@ import LoadingDatabases from '@/components/databases/loading'
 import PageLayout from '@/components/layout/page-layout'
 import { ContentBox } from '@/components/ui/content-box'
 import { TreeNode, TreeView } from '@/components/ui/tree-view'
+import { TreeProvider } from '@/components/ui/tree-view-context'
 import useDatabases from '@/hooks/api/useDatabases'
 import { Databases } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { Columns, Database as DatabaseIcon, Table2 } from 'lucide-react'
 import { FC, useEffect, useState } from 'react'
 
-const mapDatabaseToTreeData = (databases: Databases): TreeNode[] =>
-  databases.map((database) => ({
+const mapDatabaseToTreeData = (databases: Databases): TreeNode => ({
+  id: 'root',
+  name: 'Databases',
+  icon: DatabaseIcon,
+  children: databases.map((database) => ({
+    id: database.alias,
     name: database.alias,
     icon: DatabaseIcon,
+    selectable: true,
     children: [
       {
         name: 'Tables',
+        id: 'tables-root',
         icon: Table2,
         children: database.tables.map((table) => ({
+          id: table.name,
           name: table.name,
           icon: Table2,
-          children: [
-            {
-              name: 'Columns',
-              icon: Columns,
-              children: table.columns.map((column) => ({
-                name: column,
-                icon: Columns,
-              })),
-            },
-          ],
+          selectable: true,
+          children: table.columns?.length
+            ? [
+                {
+                  id: 'columns-root',
+                  name: 'Columns',
+                  icon: Columns,
+                  children: table.columns.map((column) => ({
+                    id: column,
+                    name: column,
+                    icon: Columns,
+                  })),
+                },
+              ]
+            : [],
         })),
       },
     ],
-  }))
+  })),
+})
 
 const DatabasesPage: FC = () => {
   const { databases, isLoading, error, mutate } = useDatabases()
@@ -68,7 +82,9 @@ const DatabasesPage: FC = () => {
     pageContent = (
       <>
         <h1 className="capitalize font-semibold">Connected Databases</h1>
-        <TreeView data={mapDatabaseToTreeData(databases as Databases)} />
+        <TreeProvider>
+          <TreeView rootNode={mapDatabaseToTreeData(databases as Databases)} />
+        </TreeProvider>
       </>
     )
   }

@@ -12,11 +12,12 @@ export const useMockGetter = <T>(
       }, delayDuration)
     })
   }
-  const { data, isLoading, error } = useSWR<T>(mockUrl, fetchMockData)
+  const { data, isLoading, error, mutate } = useSWR<T>(mockUrl, fetchMockData)
 
   return {
     data,
     isLoading,
     error,
+    mutate,
   }
 }
