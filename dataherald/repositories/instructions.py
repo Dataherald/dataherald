@@ -35,6 +35,15 @@ class InstructionRepository:
             return None
         return Instruction(**row)
 
+    def find_by(self, query: dict) -> list[Instruction]:
+        rows = self.storage.find(DB_COLLECTION, query)
+        result = []
+        for row in rows:
+            obj = Instruction(**row)
+            obj.id = str(row["_id"])
+            result.append(obj)
+        return result
+
     def find_all(self) -> list[Instruction]:
         rows = self.storage.find_all(DB_COLLECTION)
         return [Instruction(id=str(row["_id"]), **row) for row in rows]
