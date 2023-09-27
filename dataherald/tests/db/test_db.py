@@ -19,6 +19,13 @@ class TestDB(DB):
                 "ssh_settings": None,
             }
         ]
+        self.memory["instructions"] = [
+            {
+                "_id": "64dfa0e103f5134086f7090c",
+                "instruction": "foo",
+                "db_connection_id": "64dfa0e103f5134086f7090c",
+            }
+        ]
 
     @override
     def insert_one(self, collection: str, obj: dict) -> int:
@@ -48,7 +55,14 @@ class TestDB(DB):
         return None
 
     @override
-    def find(self, collection: str, query: dict, sort: list = None) -> list:
+    def find(
+        self,
+        collection: str,
+        query: dict,
+        sort: list = None,
+        page: int = 0,
+        limit: int = 0,
+    ) -> list:
         return []
 
     @override
