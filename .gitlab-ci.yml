@@ -19,6 +19,7 @@ deploy_to_local:
   script:
     - echo "Deploying to local environment"
     - echo "-----------------------------------------------------------------"
+    - docker network create backendnetwork
     - docker-compose up -d
   tags:
     - dockerexecutor
@@ -30,6 +31,7 @@ deploy_to_local_staging:
   script:
     - echo "Deploying to local staging environment"
     - echo "-----------------------------------------------------------------"
+    - docker network create backendnetwork
     - docker-compose -f docker-compose.staging.yml up -d
   tags:
     - dockerexecutor
