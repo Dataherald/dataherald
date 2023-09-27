@@ -109,10 +109,11 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
   const { selectedNodes, setSelectedNodes } = useTree()
   const synchronizeSchemas = useSynchronizeSchemas()
   const databaseTree = useMemo(
-    () => mapDatabaseToTreeData(databases as Databases),
+    () => (databases.length > 0 ? mapDatabaseToTreeData(databases) : null),
     [databases],
   )
-  const databaseId = databaseTree.id
+
+  if (databaseTree === null) return <></>
 
   const resetSyncSelection = () => setSelectedNodes(new Set())
 
@@ -126,7 +127,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
     try {
       setIsSynchronizing(true)
       await synchronizeSchemas({
-        db_connection_id: databaseId,
+        db_connection_id: databaseTree.id,
         table_names: Array.from(selectedNodes),
       })
       toast({
