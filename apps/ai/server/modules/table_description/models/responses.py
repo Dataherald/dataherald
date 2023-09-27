@@ -25,3 +25,4 @@ class BasicTableDescriptionResponse(BaseModel):
 class DatabaseDescriptionResponse(BaseModel):
     alias: str
     tables: list[BasicTableDescriptionResponse]
+    db_connection_id: str | None

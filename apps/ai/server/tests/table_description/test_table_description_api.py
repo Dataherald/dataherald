@@ -80,6 +80,7 @@ class TestTableDescriptionAPI(TestCase):
                 "status": SchemaStatus.NOT_SYNCHRONIZED.value,
             }
         ],
+        "db_connection_id": "0123456789ab0123456789ab",
     }
 
     @patch(
@@ -118,7 +119,10 @@ class TestTableDescriptionAPI(TestCase):
         response = client.post(
             self.url + "/sync-schemas",
             headers=self.test_header,
-            json={"db_connection_id": "123", "table_names": ["test_table"]},
+            json={
+                "db_connection_id": "0123456789ab0123456789ab",
+                "table_names": ["test_table"],
+            },
         )
         assert response.status_code == status.HTTP_201_CREATED
 

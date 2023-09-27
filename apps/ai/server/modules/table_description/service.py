@@ -57,7 +57,11 @@ class TableDescriptionService:
                 for td in table_descriptions
             ]
             return [
-                DatabaseDescriptionResponse(alias=db_connection.alias, tables=tables)
+                DatabaseDescriptionResponse(
+                    alias=db_connection.alias,
+                    tables=tables,
+                    db_connection_id=db_connection_id,
+                )
             ]
 
     async def sync_table_descriptions_schemas(self, scan_request: ScanRequest) -> bool:
