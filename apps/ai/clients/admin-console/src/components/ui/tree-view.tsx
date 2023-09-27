@@ -4,24 +4,7 @@ import { cn } from '@/lib/utils'
 import { ChevronDown, ChevronRight, LucideIcon } from 'lucide-react'
 import { FC, HTMLAttributes, useEffect, useState } from 'react'
 
-export const findSelectableNodeByName = (
-  nodeName: string,
-  rootTree: SelectableTreeNode | null,
-): SelectableTreeNode | null => {
-  if (!rootTree) return null
-  if (rootTree.name === nodeName) {
-    return rootTree
-  }
-  for (const child of rootTree.children || []) {
-    const found = findSelectableNodeByName(nodeName, child)
-    if (found) {
-      return found
-    }
-  }
-  return null
-}
-
-export const createSelectableTree = (
+export const buildSelectableTree = (
   originalNode: TreeNode,
   parentNode: SelectableTreeNode | null = null,
   isRoot = false,
@@ -41,7 +24,7 @@ export const createSelectableTree = (
   }
 
   originalNode.children?.forEach((child) => {
-    createSelectableTree(child, newSelectableNode || parentNode)
+    buildSelectableTree(child, newSelectableNode || parentNode)
   })
 
   return isRoot ? newSelectableNode : newSelectableNode || parentNode
@@ -49,8 +32,9 @@ export const createSelectableTree = (
 
 export const findNodeByName = (
   nodeName: string,
-  node: SelectableTreeNode,
+  node: SelectableTreeNode | null,
 ): SelectableTreeNode | null => {
+  if (!node) return null
   if (node.name === nodeName) {
     return node
   }
@@ -113,14 +97,14 @@ const TreeNodeComponent: FC<TreeProps> = ({
   )
 
   const selectionNode = node.selectable
-    ? findSelectableNodeByName(node.name, selectableRootNode)
+    ? findNodeByName(node.name, selectableRootNode)
     : null
 
   useEffect(() => {
     if (selectionNode) {
       if (selectionNode.children?.length) {
-        const allChildrenSelected = selectionNode.children.every((child) =>
-          selectedNodes.has(child.name),
+        const allChildrenSelected = !selectionNode.children.some(
+          (child) => !selectedNodes.has(child.name),
         )
         const someChildrenSelected = selectionNode.children.some((child) =>
           selectedNodes.has(child.name),
@@ -141,7 +125,7 @@ const TreeNodeComponent: FC<TreeProps> = ({
   }, [selectedNodes, selectionNode, selectableRootNode, setCheckboxState])
 
   const toggleNode = () => {
-    handleCheckboxChange(node.name)
+    handleCheckboxChange(selectionNode)
   }
 
   return (

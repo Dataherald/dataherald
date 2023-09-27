@@ -1,9 +1,8 @@
 import {
   SelectableTreeNode,
   TreeNode,
-  createSelectableTree,
+  buildSelectableTree,
   findLeafNodes,
-  findNodeByName,
 } from '@/components/ui/tree-view'
 import React, {
   ReactNode,
@@ -19,7 +18,7 @@ interface TreeContextProps {
   selectableRootNode: SelectableTreeNode | null
   selectedNodes: Set<string>
   setSelectedNodes: React.Dispatch<React.SetStateAction<Set<string>>>
-  handleCheckboxChange: (nodeName: string) => void
+  handleCheckboxChange: (node: SelectableTreeNode | null) => void
 }
 
 const TreeContext = createContext<TreeContextProps | undefined>(undefined)
@@ -32,24 +31,22 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
     useState<SelectableTreeNode | null>(null)
   const [selectedNodes, setSelectedNodes] = useState<Set<string>>(new Set())
 
-  const handleCheckboxChange = (nodeName: string) => {
-    if (!selectableRootNode) return
-    const node = findNodeByName(nodeName, selectableRootNode)
-
+  const handleCheckboxChange = (node: SelectableTreeNode | null) => {
     if (!node) return
+    if (!selectableRootNode) return
 
     const newSelectedNodes = new Set(selectedNodes)
 
     if (node.children?.length === 0) {
-      if (newSelectedNodes.has(nodeName)) {
-        newSelectedNodes.delete(nodeName)
+      if (newSelectedNodes.has(node.name)) {
+        newSelectedNodes.delete(node.name)
       } else {
-        newSelectedNodes.add(nodeName)
+        newSelectedNodes.add(node.name)
       }
     } else {
       const leafNodes = findLeafNodes(node)
-      const allSelected = leafNodes.every((leaf) =>
-        newSelectedNodes.has(leaf.name),
+      const allSelected = !leafNodes.some(
+        (leaf) => !newSelectedNodes.has(leaf.name),
       )
 
       if (allSelected) {
@@ -64,7 +61,7 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     if (rootNode) {
-      const newSelectableRootNode = createSelectableTree(rootNode, null, true)
+      const newSelectableRootNode = buildSelectableTree(rootNode, null, true)
       setSelectableRootNode(newSelectableRootNode)
     }
   }, [rootNode])

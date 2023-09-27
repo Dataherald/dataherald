@@ -36,8 +36,8 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
     id: database.db_connection_id,
     name: database.alias,
     icon: DatabaseIcon,
-    selectable: !database.tables.find(
-      (table) => !isSelectableByStatus(table.status),
+    selectable: database.tables.some((table) =>
+      isSelectableByStatus(table.status),
     ),
     children: [
       {
@@ -114,6 +114,8 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
   )
   const databaseId = databaseTree.id
 
+  const resetSyncSelection = () => setSelectedNodes(new Set())
+
   const handleRefresh = async () => {
     setIsRefreshing(true)
     await onRefresh()
@@ -132,8 +134,26 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
         title: 'Synchronization queued',
         description: `${selectedNodes.size} tables schemas were succesfully queued for synchronization.`,
       })
-      handleRefresh()
-      setSelectedNodes(new Set())
+      setIsSynchronizing(false)
+      resetSyncSelection()
+      try {
+        await handleRefresh()
+        resetSyncSelection()
+      } catch (e) {
+        toast({
+          variant: 'destructive',
+          title: 'Ups! Something went wrong.',
+          description: 'There was a problem refreshing your Database.',
+          action: (
+            <ToastAction
+              altText="Try again"
+              onClick={() => handleSynchronization()}
+            >
+              Try again
+            </ToastAction>
+          ),
+        })
+      }
     } catch (e) {
       toast({
         variant: 'destructive',
@@ -195,7 +215,6 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
 
 const DatabasesPage: FC = () => {
   const { databases, isLoading, error, mutate } = useDatabases()
-
   const [connectingDB, setConnectingDB] = useState<boolean | null>(null)
 
   const refreshDatabases = () => mutate()
