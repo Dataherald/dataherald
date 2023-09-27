@@ -26,6 +26,8 @@ deploy_to_local:
   script:
     - echo "Deploying to local environment"
     - echo "-----------------------------------------------------------------"
+    - echo $ENV_FILE | sed 's/ /\n/g'
+    - echo $ENV_FILE | sed 's/ /\n/g' > .env
     - docker-compose up -d
   tags:
     - dockerexecutor
