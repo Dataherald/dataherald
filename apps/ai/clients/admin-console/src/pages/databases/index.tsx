@@ -181,7 +181,9 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
         <h1 className="font-bold">Connected Database</h1>
         <div className="flex gap-3">
           <Button
-            disabled={selectedNodes.size === 0 || isSynchronizing}
+            disabled={
+              isSynchronizing || isRefreshing || selectedNodes.size === 0
+            }
             onClick={handleSynchronization}
           >
             {isSynchronizing ? (
