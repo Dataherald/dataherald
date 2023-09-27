@@ -6,7 +6,6 @@ from typing import List
 from bson import json_util
 from fastapi import BackgroundTasks, HTTPException
 from overrides import override
-from sqlalchemy import MetaData, inspect
 
 from dataherald.api import API
 from dataherald.api.types import Query
@@ -87,6 +86,22 @@ class FastAPI(API):
             )
 
         scanner = self.system.instance(Scanner)
+        all_tables = scanner.get_all_tables_and_views(database)
+        if scanner_request.table_names:
+            for table in scanner_request.table_names:
+                if table not in all_tables:
+                    raise HTTPException(
+                        status_code=404, detail=f"Table named: {table} doesn't exist"
+                    )  # noqa: B904
+        else:
+            scanner_request.table_names = all_tables
+
+        scanner.synchronizing(
+            scanner_request.table_names,
+            scanner_request.db_connection_id,
+            DBScannerRepository(self.storage),
+        )
+
         background_tasks.add_task(
             async_scanning, scanner, database, scanner_request, self.storage
         )
@@ -230,10 +245,9 @@ class FastAPI(API):
             db_connection_repository = DatabaseConnectionRepository(self.storage)
             db_connection = db_connection_repository.find_by_id(db_connection_id)
             database = SQLDatabase.get_sql_engine(db_connection)
-            inspector = inspect(database.engine)
-            meta = MetaData(bind=database.engine)
-            MetaData.reflect(meta, views=True)
-            all_tables = inspector.get_table_names() + inspector.get_view_names()
+
+            scanner = self.system.instance(Scanner)
+            all_tables = scanner.get_all_tables_and_views(database)
 
             for table_description in table_descriptions:
                 if table_description.table_name not in all_tables:
