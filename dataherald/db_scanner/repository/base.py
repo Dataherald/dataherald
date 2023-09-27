@@ -32,8 +32,8 @@ class DBScannerRepository:
             return TableSchemaDetail(**row)
         return None
 
-    def get_all_tables_by_db(self, db_connection_id: str) -> List[TableSchemaDetail]:
-        rows = self.storage.find(DB_COLLECTION, {"db_connection_id": db_connection_id})
+    def get_all_tables_by_db(self, query: dict) -> List[TableSchemaDetail]:
+        rows = self.storage.find(DB_COLLECTION, query)
         tables = []
         for row in rows:
             row["id"] = row["_id"]
