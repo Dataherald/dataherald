@@ -1,4 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton'
+import { Hourglass } from 'lucide-react'
 import { FC, ReactNode } from 'react'
 
 const TreeItemSkeleton: FC = () => (
@@ -21,6 +22,13 @@ const TreeNestedItemSkeleton: FC<{ children?: ReactNode }> = ({ children }) => (
 
 const LoadingDatabases: FC = () => (
   <>
+    <div className="flex items-center gap-2">
+      <Hourglass size={14} className="animate-spin" />
+      <h1>
+        Retrieving your Database... This can take up to 1 minute for large
+        Databases...
+      </h1>
+    </div>
     <Skeleton className="w-44 h-6" />
     <div className="space-y-5">
       <TreeNestedItemSkeleton>
