@@ -41,6 +41,7 @@ from dataherald.types import (
     QuestionRequest,
     ScannerRequest,
     TableDescriptionRequest,
+    UpdateInstruction,
     UpdateQueryRequest,
 )
 
@@ -318,47 +319,50 @@ class FastAPI(API):
 
     @override
     def add_instruction(
-        self, db_connection_id: str, instruction_request: InstructionRequest
+        self, instruction_request: InstructionRequest
     ) -> Instruction:
         instruction_repository = InstructionRepository(self.storage)
         instruction = Instruction(
             instruction=instruction_request.instruction,
-            db_connection_id=db_connection_id,
+            db_connection_id=instruction_request.db_connection_id,
         )
         return instruction_repository.insert(instruction)
 
     @override
     def get_instructions(
-        self, db_connection_id: str, page: int = 1, limit: int = 10
+        self, db_connection_id: str = None, page: int = 1, limit: int = 10
     ) -> List[Instruction]:
         instruction_repository = InstructionRepository(self.storage)
-        return instruction_repository.find_by(
-            {"db_connection_id": db_connection_id},
-            page=page,
-            limit=limit,
-        )
+        if db_connection_id:
+            return instruction_repository.find_by(
+                {"db_connection_id": db_connection_id},
+                page=page,
+                limit=limit,
+            )
+        return instruction_repository.find_all()
 
     @override
-    def delete_instruction(self, db_connection_id: str, instruction_id: str) -> dict:
+    def delete_instruction(self,instruction_id: str) -> dict:
         instruction_repository = InstructionRepository(self.storage)
-        instruction = instruction_repository.find_by_id(instruction_id)
-        if instruction.db_connection_id != db_connection_id:
+        deleted = instruction_repository.delete_by_id(instruction_id)
+        if deleted == 0:
             raise HTTPException(status_code=404, detail="Instruction not found")
-        instruction_repository.delete_by_id(instruction_id)
         return {"status": "success"}
 
     @override
     def update_instruction(
         self,
-        db_connection_id: str,
         instruction_id: str,
-        instruction_request: InstructionRequest,
+        instruction_request: UpdateInstruction,
     ) -> Instruction:
         instruction_repository = InstructionRepository(self.storage)
-        instruction = Instruction(
+        instruction = instruction_repository.find_by_id(instruction_id)
+        if not instruction:
+            raise HTTPException(status_code=404, detail="Instruction not found")
+        updated_instruction = Instruction(
             id=instruction_id,
             instruction=instruction_request.instruction,
-            db_connection_id=db_connection_id,
+            db_connection_id=instruction.db_connection_id,
         )
-        instruction_repository.update(instruction)
-        return json.loads(json_util.dumps(instruction))
+        instruction_repository.update(updated_instruction)
+        return json.loads(json_util.dumps(updated_instruction))

@@ -7,15 +7,7 @@ To return an accurate response based on our your business rules, you can set som
 
 Request this ``POST`` endpoint::
 
-    /api/v1/{db_connection_id}/instructions
-
-** Parameters **
-
-.. csv-table::
-   :header: "Name", "Type", "Description"
-   :widths: 20, 20, 60
-
-   "db_connection_id", "string", "Database connection we want to add instructions, ``Required``"
+    /api/v1/instructions
 
 **Request body**
 
@@ -23,6 +15,7 @@ Request this ``POST`` endpoint::
 
    {
     "instruction": "string"
+    "db_connection_id": "database_connection_id"
    }
 
 **Responses**
@@ -44,10 +37,11 @@ Only set a instruction for a database connection
 .. code-block:: rst
 
    curl -X 'POST' \
-  '<host>/api/v1/{db_connection_id}/instructions' \
+  '<host>/api/v1/instructions' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
   "instruction": "string",
+  "db_connection_id": "database_connection_id"
    }'
 

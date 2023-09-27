@@ -18,6 +18,7 @@ from dataherald.types import (
     QuestionRequest,
     ScannerRequest,
     TableDescriptionRequest,
+    UpdateInstruction,
     UpdateQueryRequest,
 )
 
@@ -102,25 +103,24 @@ class API(Component, ABC):
 
     @abstractmethod
     def add_instruction(
-        self, db_connection_id: str, instruction_request: InstructionRequest
+        self, instruction_request: InstructionRequest
     ) -> Instruction:
         pass
 
     @abstractmethod
     def get_instructions(
-        self, db_connection_id: str, page: int = 1, limit: int = 10
+        self, db_connection_id: str = None, page: int = 1, limit: int = 10
     ) -> List[Instruction]:
         pass
 
     @abstractmethod
-    def delete_instruction(self, db_connection_id: str, instruction_id: str) -> dict:
+    def delete_instruction(self, instruction_id: str) -> dict:
         pass
 
     @abstractmethod
     def update_instruction(
         self,
-        db_connection_id: str,
         instruction_id: str,
-        instruction_request: InstructionRequest,
+        instruction_request: UpdateInstruction,
     ) -> Instruction:
         pass

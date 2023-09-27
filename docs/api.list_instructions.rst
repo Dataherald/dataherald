@@ -7,7 +7,7 @@ You can use this endpoint to retrieve a list of instructions for a database conn
 
 Request this ``GET`` endpoint::
 
-    GET /api/v1/{db_connection_id}/instructions
+    GET /api/v1/instructions
 
 ** Parameters **
 
@@ -15,7 +15,7 @@ Request this ``GET`` endpoint::
    :header: "Name", "Type", "Description"
    :widths: 20, 20, 60
 
-   "db_connection_id", "string", "Database connection we want to get instructions, ``Required``"
+   "db_connection_id", "string", "Database connection we want to get instructions, ``Optional``"
    "page", "integer", "Page number, ``Optional``"
    "limit", "integer", "Limit number of instructions, ``Optional``"
 
@@ -38,6 +38,6 @@ HTTP 201 code response
 .. code-block:: rst
 
    curl -X 'GET' \
-  '<host>/api/v1/{db_connection_id}/instructions?page=1&limit=10' \
+  '<host>/api/v1/instructions?page=1&limit=10' \
   -H 'accept: application/json
 

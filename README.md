@@ -319,47 +319,48 @@ curl -X 'PATCH' \
 
 #### adding database level instructions
 
-You can add database level instructions to the context store manually from the `POST /api/v1/{db_connection_id}/instructions` endpoint
+You can add database level instructions to the context store manually from the `POST /api/v1/instructions` endpoint
 These instructions are passed directly to the engine and can be used to steer the engine to generate SQL that is more in line with your business logic.
 
 ```
 curl -X 'POST' \
-  '<host>/api/v1/{db_connection_id}/instructions' \
+  '<host>/api/v1/instructions' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
   "instruction": "This is a database level instruction"
+  "db_connection_id": "db_connection_id"
 }'
 ```
 
 #### getting database level instructions
 
-You can get database level instructions from the `GET /api/v1/{db_connection_id}/instructions` endpoint
+You can get database level instructions from the `GET /api/v1/instructions` endpoint
 
 ```
 curl -X 'GET' \
-  '<host>/api/v1/{db_connection_id}/instructions?page=1&limit=10' \
+  '<host>/api/v1/instructions?page=1&limit=10' \
   -H 'accept: application/json'
 ```
 
 #### deleting database level instructions
 
-You can delete database level instructions from the `DELETE /api/v1/{db_connection_id}/instructions/{instruction_id}` endpoint
+You can delete database level instructions from the `DELETE /api/v1/instructions/{instruction_id}` endpoint
 
 ```
 curl -X 'DELETE' \
-  '<host>/api/v1/{db_connection_id}/instructions/{instruction_id}' \
+  '<host>/api/v1/instructions/{instruction_id}' \
   -H 'accept: application/json'
 ```
 
 #### updating database level instructions
 
-You can update database level instructions from the `PATCH /api/v1/{db_connection_id}/instructions/{instruction_id}` endpoint
+You can update database level instructions from the `PUT /api/v1/instructions/{instruction_id}` endpoint
 Try different instructions to see how the engine generates SQL
 
 ```
-curl -X 'PATCH' \
-  '<host>/api/v1/{db_connection_id}/instructions/{instruction_id}' \
+curl -X 'PUT' \
+  '<host>/api/v1/instructions/{instruction_id}' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{

@@ -22,6 +22,7 @@ from dataherald.types import (
     QuestionRequest,
     ScannerRequest,
     TableDescriptionRequest,
+    UpdateInstruction,
     UpdateQueryRequest,
 )
 
@@ -137,30 +138,30 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/{db_connection_id}/instructions",
+            "/api/v1/instructions",
             self.add_instruction,
             methods=["POST"],
             tags=["Instructions"],
         )
 
         self.router.add_api_route(
-            "/api/v1/{db_connection_id}/instructions",
+            "/api/v1/instructions",
             self.get_instructions,
             methods=["GET"],
             tags=["Instructions"],
         )
 
         self.router.add_api_route(
-            "/api/v1/{db_connection_id}/instructions/{instruction_id}",
+            "/api/v1/instructions/{instruction_id}",
             self.delete_instruction,
             methods=["DELETE"],
             tags=["Instructions"],
         )
 
         self.router.add_api_route(
-            "/api/v1/{db_connection_id}/instructions/{instruction_id}",
+            "/api/v1/instructions/{instruction_id}",
             self.update_instruction,
-            methods=["PATCH"],
+            methods=["PUT"],
             tags=["Instructions"],
         )
 
@@ -261,11 +262,11 @@ class FastAPI(dataherald.server.Server):
         return self._api.get_golden_records(page, limit)
 
     def add_instruction(
-        self, db_connection_id: str, instruction_request: InstructionRequest
+        self, instruction_request: InstructionRequest
     ) -> Instruction:
         """Adds an instruction"""
         created_records = self._api.add_instruction(
-            db_connection_id, instruction_request
+            instruction_request
         )
 
         # Return a JSONResponse with status code 201 and the location header.
@@ -276,22 +277,21 @@ class FastAPI(dataherald.server.Server):
         )
 
     def get_instructions(
-        self, db_connection_id: str, page: int = 1, limit: int = 10
+        self, db_connection_id: str = "", page: int = 1, limit: int = 10
     ) -> List[Instruction]:
         """Gets instructions"""
         return self._api.get_instructions(db_connection_id, page, limit)
 
-    def delete_instruction(self, db_connection_id: str, instruction_id: str) -> dict:
+    def delete_instruction(self, instruction_id: str) -> dict:
         """Deletes an instruction"""
-        return self._api.delete_instruction(db_connection_id, instruction_id)
+        return self._api.delete_instruction(instruction_id)
 
     def update_instruction(
         self,
-        db_connection_id: str,
         instruction_id: str,
-        instruction_request: InstructionRequest,
+        instruction_request: UpdateInstruction,
     ) -> Instruction:
         """Updates an instruction"""
         return self._api.update_instruction(
-            db_connection_id, instruction_id, instruction_request
+            instruction_id, instruction_request
         )
