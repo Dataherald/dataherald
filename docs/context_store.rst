@@ -33,7 +33,7 @@ This abstract class provides a consistent interface for working with context ret
    :param system: The system object.
    :type system: System
 
-.. py:method:: retrieve_context_for_question(self, nl_question: str, number_of_samples: int = 3) -> List[dict] | None
+.. py:method:: retrieve_context_for_question(self, nl_question: str, number_of_samples: int = 3) -> Tuple[List[dict] | None, List[dict] | None]
    :noindex:
 
    Given a natural language question, this method retrieves a single string containing information about relevant data stores, tables, and columns necessary for building the SQL query. This information includes example questions, corresponding SQL queries, and metadata about the tables (e.g., categorical columns). The retrieved string is then passed to the text-to-SQL generator.
@@ -42,8 +42,8 @@ This abstract class provides a consistent interface for working with context ret
    :type nl_question: str
    :param number_of_samples: The number of context samples to retrieve.
    :type number_of_samples: int
-   :return: A list of dictionaries containing context information for generating SQL.
-   :rtype: List[dict] | None
+   :return: A list of dictionaries containing context information for generating SQL (contain few-shot samples and instructions).
+   :rtype: Tuple[List[dict] | None, List[dict] | None]
 
 .. py:method:: add_golden_records(self, golden_records: List[GoldenRecordRequest]) -> List[GoldenRecord]
    :noindex:
