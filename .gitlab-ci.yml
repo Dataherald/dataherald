@@ -8,8 +8,7 @@ build_and_deploy_to_local:
   script:
     - echo "Deploying to local environment"
     - echo "-----------------------------------------------------------------"
-    - export API_SERVER=$API_SERVER
-    - export CONTEXT_STORE=$CONTEXT_STORE
+    - cp $ENV_FILE .env
     - docker network inspect backendnetwork >/dev/null 2>&1 || docker network create backendnetwork
     - docker-compose down
     - docker-compose up --build -d
