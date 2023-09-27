@@ -9,8 +9,7 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 COPY . /app
-
-COPY .env .env
+COPY .env.production /app/.env.production
 
 EXPOSE 80
 
