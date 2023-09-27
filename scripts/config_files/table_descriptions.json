@@ -189,7 +189,7 @@
     "table_name": "t02WorkDay",
     "description": "A table which holds a list of work days and their respective previous work days for different countries. Weekends and public holidays in the respective countries are skipped. This is to be used to calculate the previous work day for a given country. There are also a few flags to indicate if the day is the start or end of the month or week.",
     "columns": [
-      { "name": "workDayID", "description": "The primary unique ID" },
+      { "name": "workDayID", "description": "The primary unique ID. No intrinsic value" },
       { "name": "workday", "description": "The work day date" },
       { "name": "prevWorkDay", "description": "The previous work day date" },
       { "name": "countryID", "description": "A Foreign Key into the hkg02p.t07Country table" },
@@ -214,10 +214,45 @@
   },
   {
     "alias": "hkg02p",
+    "table_name": "t02Currency",
+    "description": "Contains mapping from currencyID and the currency code, currency name",
+    "columns": [
+      { "name": "currencyID", "description": "The primary ID. This id is referenced by many tables including the hkg02p.t05PortfolioResponsibilities" },
+      { "name": "currencyCode", "description": "The 3 letter currency Code. This should be the same as the ISO4217 code" },
+      { "name": "name", "description": "The name of the currency in words" },
+      { "name": "ISO4217", "description": "The 3 letter standard" },
+      { "name": "symbol", "description": "the currency symbol used when displaying the currency" },
+      { "name": "status", "description": "A: if entry is active, I: if entry is inactive"}
+    ]
+  },
+  {
+    "alias": "hkg02p",
+    "table_name": "t02Exchange",
+    "description": "Contains mapping from exchangeID to more information related to exchanges such as name, country, currency",
+    "columns": [
+      { "name": "exchangeID", "description": "The primary ID. Used to join with many other tables to get further information about stock exchanges"},
+      { "name": "exchangeCode", "description": "The exchange code"},
+      { "name": "name", "description": "The name of the exchange"},
+      { "name": "bbgCode", "description": "Bloomberg code for the exchange"},
+      { "name": "exchangeMapping", "description": ""},
+      { "name": "settleDatePlus", "description": "The number of days it takes to settle stocks/instruments"},
+      { "name": "commission", "description": "Not used"},
+      { "name": "countryID", "description": "Foreign Key into the hkg02p.t07Country table"},
+      { "name": "currencyID", "description": "Foreign Key into the hkg02p.t02Currency table"},
+      { "name": "relIndexID", "description": "Foreign Key into the hkg02p.t07Index table. Indicates the main index of that exchange"},
+      { "name": "crdate", "description": "The creation date of this entry in the database" },
+      { "name": "cruser", "description": "The user who originally created this entry" },
+      { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
+      { "name": "luser", "description": "The username who updated this entry" },
+      { "name": "status", "description": "A: if entry is active, I: if entry is inactive"}
+    ]
+  },
+  {
+    "alias": "hkg02p",
     "table_name": "t18Trade",
     "description": "Contains daily Trades of instruments done by the firm via Enfusion. Enfusion is the firm's OMS. Each entry is an individual trade with execution details. Trades are aggreated into positions. Position information is stored in other tables including t05PortfolioResponsibilities, t05PortfolioPositionCCY, t05PortfolioPosition",
     "columns": [
-      { "name": "tradeID", "description": "The primary ID" },
+      { "name": "tradeID", "description": "The primary ID. No intrinsic value" },
       { "name": "orderID", "description": "The Order ID in Enfusion." },
       { "name": "bbgTicketNumber", "description": "The order ID in Enfusion. (same as Order ID)" },
       { "name": "insertDate", "description": "Timestamp of when the trade was done" },
@@ -296,9 +331,9 @@
   {
     "alias": "hkg02p",
     "table_name": "t05PortfolioPositionCCY",
-    "description": "Contains daily positions per portfolio at the instrument level. Positions are a daily snapshot of the portfolio at the instrument level",
+    "description": "Contains daily positions per portfolio at the instrument level. The Positions are a daily snapshot of the portfolio at the instrument level in the local currency",
     "columns": [
-      { "name": "portfolioPositionCCYID", "description": "The primary unique ID" },
+      { "name": "portfolioPositionCCYID", "description": "The primary unique ID. No intrinsic value" },
       { "name": "portfolioPositionCCYID_LOCAL", "description": "" },
       { "name": "portfolioID", "description": "The ID of the portfolio. 1 = Rockhampton(RH), 2 = Yaraka(YA), 3 = RPA(RPA), 16 = Canoona(CA)" },
       { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" },
@@ -320,5 +355,139 @@
       { "name": "swap", "description": "Flag indicating whether this trade is a SWAP trade or not. Swap trades are have value SWAP" },
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" }
     ]
+  },
+  {
+    "alias": "hkg02p",
+    "table_name": "t08PBVoteComment",
+    "description": "Stores details of Broker comments (comments about brokers and PBs) for a particular broker/PB (via PBOTID), Vote Date, and a region. Voting happens usually 2 times a year",
+    "columns": [
+      { "name": "PBVoteCommentID", "description": "The primary unique ID. No intrinsic value"},
+      { "name": "brokerVoteDate", "description": "The date for which this vote is for. Voting is done 2 times a year"},
+      { "name": "personID", "description": "A foreign key into the person table (hkg02p.t01Person.personID)" },
+      { "name": "regionIDOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the region which the comment is for" },
+      { "name": "PBOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the PB which the comment is for" },
+      { "name": "categoryIDOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the category which the comment is for" },
+      { "name": "comment", "description": "The comment made about the PB/Broker by the person with person ID, for the given brokerVoteDate and region" },
+      { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" }   
+    ]
+  },
+  {
+    "alias": "hkg02p",
+    "table_name": "t01Person",
+    "description": "Stores information about people. This includes the person's name, email, phone number, and other information. This table is joined to other tables to get more information about the person",
+    "columns": [
+      { "name": "personID", "description": "The primary unique ID. Use to join with many other tables to get further information about people" },
+      { "name": "personCode", "description": "Usually used for Analysts to identify them via a shorter code. Note this is the same as the Analyst code and Analyst Advisor tag." },
+      { "name": "analystCode", "description": "Not used anymore" },
+      { "name": "firstName", "description": "The first name of the person" },
+      { "name": "lastName", "description": "The last name of the person" },
+      { "name": "personType", "description": "Indicates the type/role of person. Only AN: Analyst means the person is an Analyst, which is important because only Analysts are attributed Profit & Loss (PL). For hedging purposes AD/BA is used. Other types rougly map OP: Operations, TD: Trading, FM: Fund Managers, DB: IT, AR: Archer team" },
+      { "name": "region", "description": "The region the person is in. Usually TKY for Tokyo, HKG for Hong Kong" },
+      { "name": "email", "description": "The email address of the person" },
+      { "name": "comment", "description": "Not really Used. Was used to identify those users part of the ASIA Strategy but doesn't exist anymore" },
+      { "name": "rwlMonitorRank", "description": "Indicates where the user stands on the RWL page. The lower the number the higher at the top." },
+      { "name": "crdate", "description": "The creation date of this entry in the database" },
+      { "name": "cruser", "description": "The user who originally created this entry" },
+      { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
+      { "name": "luser", "description": "The username who updated this entry" },
+      { "name": "status", "description": "I: If the user has left the firm. A: if the user is a current employee" }
+    ]
+  },
+  {
+    "alias": "hkg02p",
+    "table_name": "t10ObjectText",
+    "description": "Multipurpose table that stores text data referenced by other tables via the objectTextID. The objectTextID is a foreign key into this table. The tableName column indicates which table the objectTextID is referenced by. The columnName indicates which column in the table the objectTextID is referenced by. The objKey/groupType are used to find the value to reference",
+    "columns": [
+      { "name": "objectTextID", "description": "The primary unique ID. This id is used often join onto to get the final value" },
+      { "name": "tableName", "description": "The tableName column indicates which table the objectTextID is referenced by" },
+      { "name": "columnName", "description": "The columnName indicates which column in the table the objectTextID is referenced by" },
+      { "name": "objKey", "description": "Used to identify the data needed by the referencer" },
+      { "name": "groupType", "description": "Used to further identify data needed by the referenced" },
+      { "name": "ISO639", "description": "Identifies the language. e.g. en for English and jp for Japanese." },
+      { "name": "objValue", "description": "The value stored by this entry" },
+      { "name": "priority", "description": "Can be used to store a ranking between items with the same inputs" },
+      { "name": "caption", "description": "Can be used to add further context/meaning/description to what the data represents" },
+      { "name": "description", "description": "A description about what the data is" },
+      { "name": "crdate", "description": "The creation date of this entry in the database" },
+      { "name": "cruser", "description": "The user who originally created this entry" },
+      { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
+      { "name": "luser", "description": "The username who updated this entry" },
+      { "name": "status", "description": "I: If the entry item is inactive/invalid. A: if the entry is active" }
+    ]
+  },
+  {
+    "alias": "hkg02p",
+    "table_name": "t05PortfolioFactorFlag",
+    "description": "Contains mapping for factor names referenced by hkg02p.t05PortfolioFactor table",
+    "columns": [
+      { "name": "portfolioFactorFlagID", "description": "The primary ID"},
+      { "name": "name", "description": "The name of the Portfolio Factor"},
+      { "name": "value", "description": "The value of the Porfolio Factor for the associated Value"},
+      { "name": "priority", "description": "Priority/Ranking of this Factor"},
+      { "name": "accessSectorMap", "description": "Short code"},
+      { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
+      { "name": "status", "description": "A: if entry is active, I: if entry is inactive"}
+    ]
+  },
+  {
+    "alias": "hkg02p",
+    "table_name": "t05PortfolioFactor",
+    "description": "Daily factor weights per day and instrument",
+    "columns": [
+      { "name": "portfolioFactorID", "description": "The primary ID"},
+      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" },
+      { "name": "processDate", "description": "The day which the snapshot was processed for" },
+      { "name": "portfolioFactorFlagID", "description": "Foreign key into the hkg02p.portfolioFactorFlagID to get the factor Name"},
+      { "name": "factorWeight", "description": "The factor weighting for this instrument / date"},
+      { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" }
+    ]
+  },
+  {
+    "alias": "hkg02p",
+    "table_name": "t05PositionData",
+    "description": "Stores daily static data for all postion per instrument",
+    "columns": [
+      { "name": "positionDataID", "description": "The primary ID"},
+      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" },
+      { "name": "processDate", "description": "The day which the snapshot was processed for" },
+      { "name": "codeType", "description": ""},
+      { "name": "groupType", "description": "The group type of data but usually = BBSTATIC. Bloomberg static data"},
+      { "name": "dataType", "description": "The position data type"},
+      { "name": "value", "description": "The value of this static data entry"},
+      { "name": "crdate", "description": "The creation date of this entry in the database" },
+      { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
+      { "name": "status", "description": "A: if entry is active, I: if entry is inactive"}
+    ]
+  },
+  {
+    "alias": "hkg02p",
+    "table_name": "t10WebLog",
+    "description": "Stores intranet websites access information. This is for the laravel website",
+    "columns": [
+      { "name": "webLogID", "description": "The primary ID"},
+      { "name": "loginCode", "description": "Login user ID"},
+      { "name": "webPage", "description": "The url of the page accessed"},
+      { "name": "ip", "description": "The IP of the user access"},
+      { "name": "sessionID", "description": "Session ID"},
+      { "name": "eventTime", "description": "Time of access"},
+      { "name": "actionType", "description": "action type"},
+      { "name": "actionValue", "description": "Any flags sent to the page"}
+    ]
+  },
+  {
+    "alias": "hkg02p",
+    "table_name": "t05PortfolioReport",
+    "description": "Contains daily computed portfolio level data for various data types such as YTD, MTD,WTD etc.",
+    "columns": [
+      { "name": "portfolioReportID", "description": "The primary ID"},
+      { "name": "portfolioID", "description": "The ID of the portfolio. 1 = Rockhampton(RH), 2 = Yaraka(YA), 3 = RPA(RPA), 16 = Canoona(CA)"},
+      { "name": "processDate", "description": "The date which the data was processed for" },
+      { "name": "dataType", "description": "The type of the data being stored. The following datatypes are defined: FSFYTD : Fund Year to Date,JSDA_SI : JSDA % change Since Inception,NKY_SI : Nikkei % change Since Inception,PSCYI : Cash (Yen Term),PSDPL : Daily PL,PSDPLL : Daily PL Long,PSDPLS : Daily PL Short,PSFD : Daily Return,PSFDL : Daily Return Long,PSFDS : Daily Return Short,PSFMTD : Return MTD,PSFSI : Fund Since,Inception,PSFW : Median Weekly Return,PSGROSS : Gross,PSLEX : Long Exposure,PSLG : Long ????,PSMVL : MV Long*,PSMVN : Net MV*,PSMVS : MV Short*,PSNB : Net Beta,PSNET : Net,GROSS_LONG_POSITION : Total Long positions includes box,GROSS_SHORT_POSITION : Total Short positions includes box,BOX_POSITION :,Total Box positions,LONG_POSITION_MINUS_BOX : Total Long positions minus box positions,SHORT_POSITION_MINUS_BOX : Total Short positions minus box positions,PSPBNAV : Prime Broker Total Portfolio Value (USD),PSPBYEN : Prime Broker Yen/USD,PSSEX : Short Exposure,PSSG : Short ????,PSSR :,Subscription/Redemption*,PSTJNAV : Total JP NAV,TPX_SI : Topix % Change Since Inception"},
+      { "name": "value", "description": "The Value of the data"},
+      { "name": "crdate", "description": "The creation date of this entry in the database" },
+      { "name": "cruser", "description": "The user who originally created this entry" },
+      { "name": "status", "description": "I: If the entry item is inactive/invalid. A: if the entry is active" }
+    ]
+
   }
 ]

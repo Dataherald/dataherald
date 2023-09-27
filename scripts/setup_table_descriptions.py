@@ -48,7 +48,7 @@ def scan_table(db_connection_id: str, table_name: str):
         table_name (str): the table name to scan
     """
 
-    scanner_endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/table-descriptions/scan"
+    scanner_endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/table-descriptions/sync-schemas"
     scanner_request_body: dict = {
         "db_connection_id": db_connection_id,
         "table_names": [table_name]
