@@ -10,6 +10,8 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 COPY . /app
 
+COPY .env .env
+
 EXPOSE 80
 
 CMD ["uvicorn", "dataherald.app:app", "--host", "0.0.0.0", "--port", "80"]
