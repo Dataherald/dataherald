@@ -12,7 +12,7 @@ image_build:
   tags:
     - dockerexecutor
   only:
-    - main
+    - dev
 
 deploy_to_local:
   stage: deploy_to_local
@@ -23,7 +23,7 @@ deploy_to_local:
   tags:
     - dockerexecutor
   only:
-    - main
+    - dev
 
 deploy_to_local_staging:
   stage: deploy_to_local_staging
