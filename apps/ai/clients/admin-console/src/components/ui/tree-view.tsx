@@ -168,7 +168,7 @@ const TreeNodeComponent: FC<TreeProps> = ({
               onClick={(e) => e.stopPropagation()}
             />
           ) : (
-            !isRoot && <div className="w-5"></div>
+            !isRoot && <div className="w-7"></div>
           )}
           <div className="w-4">
             {nodeHasChildren &&

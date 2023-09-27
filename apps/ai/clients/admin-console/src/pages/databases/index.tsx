@@ -52,7 +52,7 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
           slot: (
             <div
               className={cn(
-                'flex items-center gap-2 text-sm',
+                'flex items-center gap-2',
                 getDomainSchemaStatusColor(table.status),
               )}
             >
