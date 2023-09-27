@@ -339,7 +339,7 @@ You can get database level instructions from the `GET /api/v1/instructions` endp
 
 ```
 curl -X 'GET' \
-  '<host>/api/v1/instructions?page=1&limit=10' \
+  '<host>/api/v1/instructions?page=1&limit=10&db_connection_id=12312312' \
   -H 'accept: application/json'
 ```
 
