@@ -1,0 +1,37 @@
+stages:
+  - build_to_image
+  - deploy_to_local
+  - deploy_to_local_staging
+
+image_build:
+  stage: build_to_image
+  script:
+    - echo "Stage build, docker-compose"
+    - echo "-----------------------------------------------------------------"
+    - docker-compose build
+  tags:
+    - dockerexecutor
+  only:
+    - main
+
+deploy_to_local:
+  stage: deploy_to_local
+  script:
+    - echo "Deploying to local environment"
+    - echo "-----------------------------------------------------------------"
+    - docker-compose up -d
+  tags:
+    - dockerexecutor
+  only:
+    - main
+
+deploy_to_local_staging:
+  stage: deploy_to_local_staging
+  script:
+    - echo "Deploying to local staging environment"
+    - echo "-----------------------------------------------------------------"
+    - docker-compose -f docker-compose.staging.yml up -d
+  tags:
+    - dockerexecutor
+  only:
+    - staging
