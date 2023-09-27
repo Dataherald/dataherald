@@ -1,5 +1,5 @@
-import { ESchemaStatus, SchemaStatus } from '@/models/api'
-import { EDomainSchemaStatusTextColor } from '@/models/domain'
+import { ETableSyncStatus, TableSyncStatus } from '@/models/api'
+import { EDomainTableSyncStatusTextColor } from '@/models/domain'
 import {
   Check,
   CircleSlash,
@@ -11,38 +11,38 @@ import {
 
 export const formatDriver = (driver: string) => `${driver}://`
 
-export const getDomainSchemaStatusColor = (
-  status: SchemaStatus,
-): EDomainSchemaStatusTextColor => {
-  return EDomainSchemaStatusTextColor[status]
+export const getDomainTableSyncStatusColor = (
+  sync_status: TableSyncStatus,
+): EDomainTableSyncStatusTextColor => {
+  return EDomainTableSyncStatusTextColor[sync_status]
 }
 
-export const isSelectableByStatus = (status: SchemaStatus): boolean =>
+export const isSelectableByStatus = (sync_status: TableSyncStatus): boolean =>
   [
-    ESchemaStatus.NOT_SYNCHRONIZED,
-    ESchemaStatus.FAILED,
-    ESchemaStatus.SYNCHRONIZED,
-  ].includes(ESchemaStatus[status])
+    ETableSyncStatus.NOT_SYNCHRONIZED,
+    ETableSyncStatus.FAILED,
+    ETableSyncStatus.SYNCHRONIZED,
+  ].includes(ETableSyncStatus[sync_status])
 
-export const getDomainSchemaStatusIcon = (
-  status: SchemaStatus,
+export const getDomainTableSyncStatusIcon = (
+  sync_status: TableSyncStatus,
 ): LucideIcon | null => {
-  switch (status) {
-    case ESchemaStatus.SYNCHRONIZED:
+  switch (sync_status) {
+    case ETableSyncStatus.SYNCHRONIZED:
       return Check
-    case ESchemaStatus.SYNCHRONIZING:
+    case ETableSyncStatus.SYNCHRONIZING:
       return RefreshCcw
-    case ESchemaStatus.NOT_SYNCHRONIZED:
+    case ETableSyncStatus.NOT_SYNCHRONIZED:
       return CircleSlash
-    case ESchemaStatus.DEPRECATED:
+    case ETableSyncStatus.DEPRECATED:
       return ShieldAlert
-    case ESchemaStatus.FAILED:
+    case ETableSyncStatus.FAILED:
       return XCircle
     default:
       return null
   }
 }
 
-export const formatSchemaStatus = (status: SchemaStatus): string => {
-  return status?.replace('_', ' ').toLowerCase()
+export const formatTableSyncStatus = (sync_status: TableSyncStatus): string => {
+  return sync_status?.replace('_', ' ').toLowerCase()
 }

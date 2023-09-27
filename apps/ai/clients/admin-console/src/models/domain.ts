@@ -21,7 +21,7 @@ export enum EDomainQueryStatusTextColor {
   VERIFIED = 'text-green-700',
 }
 
-export enum EDomainSchemaStatusTextColor {
+export enum EDomainTableSyncStatusTextColor {
   NOT_SYNCHRONIZED = 'text-gray-500',
   SYNCHRONIZING = 'text-yellow-600',
   SYNCHRONIZED = 'text-green-700',

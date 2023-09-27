@@ -6,9 +6,8 @@ from modules.table_description.models.entities import BaseTableDescription, Sche
 class TableDescriptionResponse(BaseTableDescription):
     id: str | None
     table_name: str
-    status: str | None
-    status: SchemaStatus
-    last_schemas_sync: str | None
+    status: SchemaStatus | None
+    last_schema_sync: str | None
 
     class Config:
         extra = Extra.ignore
@@ -18,8 +17,8 @@ class BasicTableDescriptionResponse(BaseModel):
     id: str | None
     name: str | None
     columns: list[str] | None
-    status: SchemaStatus
-    last_schemas_sync: str | None
+    sync_status: SchemaStatus | None
+    last_sync: str | None
 
 
 class DatabaseDescriptionResponse(BaseModel):

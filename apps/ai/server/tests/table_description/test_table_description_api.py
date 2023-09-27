@@ -53,7 +53,7 @@ class TestTableDescriptionAPI(TestCase):
             }
         ],
         "examples": ["example1"],
-        "last_schemas_sync": None,
+        "last_schema_sync": None,
         "status": SchemaStatus.NOT_SYNCHRONIZED.value,
     }
 
@@ -63,7 +63,7 @@ class TestTableDescriptionAPI(TestCase):
         "description": test_1["description"],
         "columns": test_1["columns"],
         "examples": test_1["examples"],
-        "last_schemas_sync": None,
+        "last_schema_sync": None,
         "status": SchemaStatus.NOT_SYNCHRONIZED.value,
     }
 
@@ -76,8 +76,8 @@ class TestTableDescriptionAPI(TestCase):
                 "id": "666f6f2d6261722d71757578",
                 "name": "test_table",
                 "columns": ["column1"],
-                "last_schemas_sync": None,
-                "status": SchemaStatus.NOT_SYNCHRONIZED.value,
+                "last_sync": None,
+                "sync_status": SchemaStatus.NOT_SYNCHRONIZED.value,
             }
         ],
         "db_connection_id": "0123456789ab0123456789ab",

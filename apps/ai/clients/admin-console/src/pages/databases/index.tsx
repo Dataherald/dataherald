@@ -12,9 +12,9 @@ import { toast } from '@/components/ui/use-toast'
 import useDatabases from '@/hooks/api/useDatabases'
 import useSynchronizeSchemas from '@/hooks/api/useSynchronizeSchemas'
 import {
-  formatSchemaStatus,
-  getDomainSchemaStatusColor,
-  getDomainSchemaStatusIcon,
+  formatTableSyncStatus,
+  getDomainTableSyncStatusColor,
+  getDomainTableSyncStatusIcon,
   isSelectableByStatus,
 } from '@/lib/domain/database'
 import { cn, renderIcon } from '@/lib/utils'
@@ -37,7 +37,7 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
     name: database.alias,
     icon: DatabaseIcon,
     selectable: database.tables.some((table) =>
-      isSelectableByStatus(table.status),
+      isSelectableByStatus(table.sync_status),
     ),
     defaultOpen: true,
     children: [
@@ -50,29 +50,27 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
           id: table.name,
           name: table.name,
           icon: Table2,
-          selectable: isSelectableByStatus(table.status),
+          selectable: isSelectableByStatus(table.sync_status),
           slot: (
             <div
               className={cn(
                 'flex items-center gap-2',
-                getDomainSchemaStatusColor(table.status),
+                getDomainTableSyncStatusColor(table.sync_status),
               )}
             >
               <div className="flex items-center gap-3 min-w-fit px-5">
-                {renderIcon(getDomainSchemaStatusIcon(table.status), {
+                {renderIcon(getDomainTableSyncStatusIcon(table.sync_status), {
                   size: 16,
                   strokeWidth: 2,
                 })}
                 <span className="capitalize">
-                  {formatSchemaStatus(table.status)}
+                  {formatTableSyncStatus(table.sync_status)}
                 </span>
-                {table.last_schemas_sync && (
+                {table.last_sync && (
                   <span className="text-gray-400">
-                    {formatDistance(
-                      new Date(table.last_schemas_sync),
-                      new Date(),
-                      { addSuffix: true },
-                    )}
+                    {formatDistance(new Date(table.last_sync), new Date(), {
+                      addSuffix: true,
+                    })}
                   </span>
                 )}
               </div>
