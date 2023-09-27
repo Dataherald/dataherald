@@ -17,7 +17,7 @@ const Checkbox = React.forwardRef<
       checked === true
         ? 'bg-black/90 text-white'
         : checked === 'indeterminate'
-        ? 'bg-black/40 text-gray-50'
+        ? 'bg-gray-400 text-white'
         : '',
       className,
     )}

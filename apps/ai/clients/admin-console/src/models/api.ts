@@ -100,6 +100,7 @@ export enum ESchemaStatus {
 }
 
 export interface Database {
+  db_connection_id: string
   alias: string
   tables: {
     id?: string

@@ -18,6 +18,7 @@ interface TreeContextProps {
   setRootNode: React.Dispatch<React.SetStateAction<TreeNode | null>>
   selectableRootNode: SelectableTreeNode | null
   selectedNodes: Set<string>
+  setSelectedNodes: React.Dispatch<React.SetStateAction<Set<string>>>
   handleCheckboxChange: (nodeName: string) => void
 }
 
@@ -61,11 +62,6 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
     setSelectedNodes(newSelectedNodes)
   }
 
-  // TODO remove this log
-  useEffect(() => {
-    console.log('Current selected nodes:', selectedNodes)
-  }, [selectedNodes])
-
   useEffect(() => {
     if (rootNode) {
       const newSelectableRootNode = createSelectableTree(rootNode, null, true)
@@ -78,6 +74,7 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
     setRootNode,
     selectableRootNode,
     selectedNodes,
+    setSelectedNodes,
     handleCheckboxChange,
   }
 
