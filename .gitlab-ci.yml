@@ -1,26 +1,15 @@
 stages:
-  - build_to_image
   - deploy_to_local
   - deploy_to_local_staging
 
-image_build:
-  stage: build_to_image
-  script:
-    - echo "Stage build, docker-compose"
-    - echo "-----------------------------------------------------------------"
-    - docker-compose build
-  tags:
-    - dockerexecutor
-  only:
-    - dev
 
-deploy_to_local:
+build_and_deploy_to_local:
   stage: deploy_to_local
   script:
     - echo "Deploying to local environment"
     - echo "-----------------------------------------------------------------"
     - docker network create backendnetwork
-    - docker-compose up -d
+    - docker-compose up --build -d
   tags:
     - dockerexecutor
   only:
@@ -32,7 +21,7 @@ deploy_to_local_staging:
     - echo "Deploying to local staging environment"
     - echo "-----------------------------------------------------------------"
     - docker network create backendnetwork
-    - docker-compose -f docker-compose.staging.yml up -d
+    - docker-compose -f docker-compose.staging.yml up --build -d
   tags:
     - dockerexecutor
   only:
