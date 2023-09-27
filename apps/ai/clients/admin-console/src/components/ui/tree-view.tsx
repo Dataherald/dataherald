@@ -75,6 +75,7 @@ export interface TreeNode {
   name: string
   icon: LucideIcon
   children?: TreeNode[]
+  defaultOpen?: boolean
   selectable?: boolean
   slot?: JSX.Element
 }
@@ -89,7 +90,7 @@ const TreeNodeComponent: FC<TreeProps> = ({
   isRoot = false,
 }: TreeProps) => {
   const { selectedNodes, selectableRootNode, handleCheckboxChange } = useTree()
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(node.defaultOpen || false)
   const nodeHasChildren = !!node.children?.length
 
   const [checkboxState, setCheckboxState] = useState<'indeterminate' | boolean>(

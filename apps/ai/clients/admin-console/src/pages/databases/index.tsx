@@ -39,11 +39,13 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
     selectable: database.tables.some((table) =>
       isSelectableByStatus(table.status),
     ),
+    defaultOpen: true,
     children: [
       {
         name: 'Tables',
         id: 'tables-root',
         icon: Table2,
+        defaultOpen: true,
         children: database.tables.map((table) => ({
           id: table.name,
           name: table.name,
