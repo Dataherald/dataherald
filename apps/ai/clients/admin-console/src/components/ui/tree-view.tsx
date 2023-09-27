@@ -146,7 +146,12 @@ const TreeNodeComponent: FC<TreeProps> = ({
 
   return (
     <div className={isRoot ? 'pl-0' : 'pl-7'}>
-      <div className="w-full flex items-center justify-between gap-2 rounded-lg hover:bg-gray-200">
+      <div
+        className={cn(
+          checkboxState === true && 'bg-blue-100',
+          'w-full flex items-center justify-between gap-2 rounded-lg hover:bg-gray-200 my-1',
+        )}
+      >
         <div
           className={cn(
             'flex items-center w-full px-3 py-2',
