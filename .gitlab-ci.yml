@@ -10,7 +10,7 @@ build_container:
     - echo "Building the app"
     - echo "-----------------------------------------------------------------"
     - echo $ENV_FILE | sed 's/ /\n/g'
-    - echo $ENV_FILE | sed 's/ /\n/g' > .env.production
+    - echo $ENV_FILE | sed 's/ /\n/g' > .env
     - docker network inspect backendnetwork >/dev/null 2>&1 || docker network create backendnetwork
     - docker-compose down
     - docker-compose build

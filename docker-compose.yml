@@ -13,6 +13,8 @@ services:
       - ./dataherald:/app/dataherald
     depends_on:
       - mongodb
+    env_file:
+      - .env
     networks:
       - backendnetwork
   mongodb:
@@ -25,6 +27,8 @@ services:
       - ./initdb.d/:/docker-entrypoint-initdb.d/
       - ./dbdata/mongo_data/data:/data/db/
       - ./dbdata/mongo_data/db_config:/data/configdb/
+    env_file:
+      - .env
     environment:
       MONGO_INITDB_ROOT_USERNAME: "${MONGODB_DB_USERNAME}"
       MONGO_INITDB_ROOT_PASSWORD: "${MONGODB_DB_PASSWORD}"
