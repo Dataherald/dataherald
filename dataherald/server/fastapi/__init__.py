@@ -261,13 +261,9 @@ class FastAPI(dataherald.server.Server):
         """Gets golden records"""
         return self._api.get_golden_records(page, limit)
 
-    def add_instruction(
-        self, instruction_request: InstructionRequest
-    ) -> Instruction:
+    def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
         """Adds an instruction"""
-        created_records = self._api.add_instruction(
-            instruction_request
-        )
+        created_records = self._api.add_instruction(instruction_request)
 
         # Return a JSONResponse with status code 201 and the location header.
         instruction_as_dict = created_records.dict()
@@ -292,6 +288,4 @@ class FastAPI(dataherald.server.Server):
         instruction_request: UpdateInstruction,
     ) -> Instruction:
         """Updates an instruction"""
-        return self._api.update_instruction(
-            instruction_id, instruction_request
-        )
+        return self._api.update_instruction(instruction_id, instruction_request)

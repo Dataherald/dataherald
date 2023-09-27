@@ -318,9 +318,7 @@ class FastAPI(API):
         return all_records[start_idx:end_idx]
 
     @override
-    def add_instruction(
-        self, instruction_request: InstructionRequest
-    ) -> Instruction:
+    def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
         instruction_repository = InstructionRepository(self.storage)
         instruction = Instruction(
             instruction=instruction_request.instruction,
@@ -342,7 +340,7 @@ class FastAPI(API):
         return instruction_repository.find_all()
 
     @override
-    def delete_instruction(self,instruction_id: str) -> dict:
+    def delete_instruction(self, instruction_id: str) -> dict:
         instruction_repository = InstructionRepository(self.storage)
         deleted = instruction_repository.delete_by_id(instruction_id)
         if deleted == 0:

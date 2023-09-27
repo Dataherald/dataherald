@@ -102,9 +102,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def add_instruction(
-        self, instruction_request: InstructionRequest
-    ) -> Instruction:
+    def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
         pass
 
     @abstractmethod

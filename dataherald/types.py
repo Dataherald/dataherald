@@ -39,8 +39,10 @@ class NLQuery(BaseModel):
     question: str
     db_connection_id: str
 
+
 class UpdateInstruction(BaseModel):
     instruction: str
+
 
 class InstructionRequest(DBConnectionValidation):
     instruction: str
