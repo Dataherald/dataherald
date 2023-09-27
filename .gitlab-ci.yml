@@ -1,18 +1,32 @@
 stages:
+  - build_container
   - deploy_to_local
   - deploy_to_local_staging
 
 
-build_and_deploy_to_local:
-  stage: deploy_to_local
+build_container:
+  stage: build_container
   script:
-    - echo "Deploying to local environment"
+    - echo "Building the app"
     - echo "-----------------------------------------------------------------"
     - echo $ENV_FILE | sed 's/ /\n/g
     - echo $ENV_FILE | sed 's/ /\n/g' > .env
     - docker network inspect backendnetwork >/dev/null 2>&1 || docker network create backendnetwork
     - docker-compose down
-    - docker-compose up --build -d
+    - docker-compose build
+  tags:
+    - dockerexecutor
+  only:
+    - dev
+
+
+
+deploy_to_local:
+  stage: deploy_to_local
+  script:
+    - echo "Deploying to local environment"
+    - echo "-----------------------------------------------------------------"
+    - docker-compose up -d
   tags:
     - dockerexecutor
   only:
@@ -23,9 +37,7 @@ deploy_to_local_staging:
   script:
     - echo "Deploying to local staging environment"
     - echo "-----------------------------------------------------------------"
-    - docker network inspect backendnetwork >/dev/null 2>&1 || docker network create backendnetwork
-    - docker-compose down
-    - docker-compose -f docker-compose.staging.yml up --build -d
+    - docker-compose -f docker-compose.staging.yml up -d
   tags:
     - dockerexecutor
   only:
