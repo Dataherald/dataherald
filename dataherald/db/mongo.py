@@ -40,10 +40,14 @@ class MongoDB(DB):
         return self._data_store[collection].find_one({"_id": ObjectId(id)})
 
     @override
-    def find(self, collection: str, query: dict, sort: list = None) -> list:
+    def find(self, collection: str, query: dict, sort: list = None, page: int = 0, limit: int = 0) -> list:
+        skip_count = (page - 1) * limit
+        cursor = self._data_store[collection].find(query)
         if sort:
-            return self._data_store[collection].find(query).sort(sort)
-        return self._data_store[collection].find(query)
+            cursor = cursor.sort(sort)
+        if page > 0 and limit > 0:
+            cursor = cursor.skip(skip_count).limit(limit)
+        return list(cursor)
 
     @override
     def find_all(self, collection: str) -> list:

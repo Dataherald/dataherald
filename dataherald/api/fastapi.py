@@ -332,12 +332,11 @@ class FastAPI(API):
         self, db_connection_id: str, page: int = 1, limit: int = 10
     ) -> List[Instruction]:
         instruction_repository = InstructionRepository(self.storage)
-        instructions = instruction_repository.find_by(
-            {"db_connection_id": db_connection_id}
+        return instruction_repository.find_by(
+            {"db_connection_id": db_connection_id},
+            page=page,
+            limit=limit,
         )
-        start_idx = (page - 1) * limit
-        end_idx = start_idx + limit
-        return instructions[start_idx:end_idx]
 
     @override
     def delete_instruction(self, db_connection_id: str, instruction_id: str) -> dict:

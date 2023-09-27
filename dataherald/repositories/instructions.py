@@ -35,8 +35,8 @@ class InstructionRepository:
             return None
         return Instruction(**row)
 
-    def find_by(self, query: dict) -> list[Instruction]:
-        rows = self.storage.find(DB_COLLECTION, query)
+    def find_by(self, query: dict, page: int = 1, limit: int = 10) -> list[Instruction]:
+        rows = self.storage.find(DB_COLLECTION, query, page=page, limit=limit)
         result = []
         for row in rows:
             obj = Instruction(**row)
