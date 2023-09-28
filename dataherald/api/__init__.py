@@ -98,7 +98,9 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
+    def get_golden_records(
+        self, db_connection_id: str = None, page: int = 1, limit: int = 10
+    ) -> List[GoldenRecord]:
         pass
 
     @abstractmethod

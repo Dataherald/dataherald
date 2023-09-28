@@ -37,12 +37,7 @@ class InstructionRepository:
 
     def find_by(self, query: dict, page: int = 1, limit: int = 10) -> list[Instruction]:
         rows = self.storage.find(DB_COLLECTION, query, page=page, limit=limit)
-        result = []
-        for row in rows:
-            obj = Instruction(**row)
-            obj.id = str(row["_id"])
-            result.append(obj)
-        return result
+        return [Instruction(id=str(row["_id"]), **row) for row in rows]
 
     def find_all(self) -> list[Instruction]:
         rows = self.storage.find_all(DB_COLLECTION)
