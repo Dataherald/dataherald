@@ -70,7 +70,7 @@ class TestDB(DB):
         return self.insert_one(collection, obj)
 
     @override
-    def find_all(self, collection: str) -> list:
+    def find_all(self, collection: str, page: int = 0, limit: int = 0) -> list:
         return self.memory[collection]
 
     @override
