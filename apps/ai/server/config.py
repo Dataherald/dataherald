@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     load_dotenv()
 
     k2_core_url: str = os.environ.get("K2_CORE_URL")
-    default_k2_core_timeout: int = os.environ.get("DEFAULT_TIMEOUT")
+    default_k2_core_timeout: int = os.environ.get("DEFAULT_K2_TIMEOUT")
     encrypt_key: str = os.environ.get("ENCRYPT_KEY")
 
     def __getitem__(self, key: str) -> Any:

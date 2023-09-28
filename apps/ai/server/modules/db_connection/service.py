@@ -63,6 +63,7 @@ class DBConnectionService:
                     else None,
                     **db_connection_request.dict(),
                 },
+                timeout=settings.default_k2_core_timeout,
             )
 
             raise_for_status(response.status_code, response.text)
@@ -95,6 +96,7 @@ class DBConnectionService:
             response = await client.put(
                 settings.k2_core_url + f"/database-connections/{id}",
                 json=db_connection_request.dict(),
+                timeout=settings.default_k2_core_timeout,
             )
             raise_for_status(response.status_code, response.text)
             return DBConnectionResponse(**response.json())
