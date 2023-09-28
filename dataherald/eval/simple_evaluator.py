@@ -95,13 +95,19 @@ class SimpleEvaluator(Evaluator):
         system_message_prompt = SystemMessagePromptTemplate.from_template(
             SYSTEM_TEMPLATE
         )
-        human_message_prompt = HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE)
+        human_message_prompt = HumanMessagePromptTemplate.from_template(
+            HUMAN_TEMPLATE)
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_message_prompt, human_message_prompt]
         )
         user_question = question.question
         sql = generated_answer.sql_query
         dialect = database.dialect
+        print("#####################################################################################")
+        print("                           EVALUATOR  DIALECT")
+        print("#####################################################################################")
+        print("dialect: ", dialect)
+        print("#####################################################################################")
         tables = Parser(sql).tables
         database._sample_rows_in_table_info = 0
         schema = database.get_table_info_no_throw(tables)

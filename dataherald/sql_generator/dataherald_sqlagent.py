@@ -188,7 +188,8 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
         query: str,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
     ) -> str:
-        raise NotImplementedError("QuerySQLDataBaseTool does not support async")
+        raise NotImplementedError(
+            "QuerySQLDataBaseTool does not support async")
 
 
 class GetUserInstructions(BaseSQLDatabaseTool, BaseTool):
@@ -259,7 +260,8 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
             table_rep = f"Table {table.table_name} contain columns: {col_rep}, this tables has: {table.description}"
             table_representations.append([table.table_name, table_rep])
         df = pd.DataFrame(
-            table_representations, columns=["table_name", "table_representation"]
+            table_representations, columns=[
+                "table_name", "table_representation"]
         )
         df["table_embedding"] = df.table_representation.apply(
             lambda x: self.get_embedding(x)
@@ -279,7 +281,8 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         user_question: str = "",
         run_manager: AsyncCallbackManagerForToolRun | None = None,
     ) -> str:
-        raise NotImplementedError("TablesSQLDatabaseTool does not support async")
+        raise NotImplementedError(
+            "TablesSQLDatabaseTool does not support async")
 
 
 class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
@@ -386,7 +389,8 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         table_name: str,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
     ) -> str:
-        raise NotImplementedError("SchemaSQLDatabaseTool does not support async")
+        raise NotImplementedError(
+            "SchemaSQLDatabaseTool does not support async")
 
 
 class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
@@ -438,7 +442,8 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
         table_name: str,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
     ) -> str:
-        raise NotImplementedError("InfoRelevantColumnsTool does not support async")
+        raise NotImplementedError(
+            "InfoRelevantColumnsTool does not support async")
 
 
 class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
@@ -480,7 +485,8 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
         number_of_samples: str,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
     ) -> str:
-        raise NotImplementedError("GetFewShotExamplesTool does not support async")
+        raise NotImplementedError(
+            "GetFewShotExamplesTool does not support async")
 
 
 class SQLDatabaseToolkit(BaseToolkit):
@@ -495,6 +501,11 @@ class SQLDatabaseToolkit(BaseToolkit):
     @property
     def dialect(self) -> str:
         """Return string representation of SQL dialect to use."""
+        print("#####################################################################################")
+        print("                         SQL AGENT  DIALECT")
+        print("#####################################################################################")
+        print("dialect: ", self.db.dialect)
+        print("#####################################################################################")
         return self.db.dialect
 
     class Config:
@@ -505,7 +516,8 @@ class SQLDatabaseToolkit(BaseToolkit):
     def get_tools(self) -> List[BaseTool]:
         """Get the tools in the toolkit."""
         tools = []
-        query_sql_db_tool = QuerySQLDataBaseTool(db=self.db, context=self.context)
+        query_sql_db_tool = QuerySQLDataBaseTool(
+            db=self.db, context=self.context)
         tools.append(query_sql_db_tool)
         if self.instructions is not None:
             tools.append(
@@ -513,7 +525,8 @@ class SQLDatabaseToolkit(BaseToolkit):
                     db=self.db, context=self.context, instructions=self.instructions
                 )
             )
-        get_current_datetime = GetCurrentTimeTool(db=self.db, context=self.context)
+        get_current_datetime = GetCurrentTimeTool(
+            db=self.db, context=self.context)
         tools.append(get_current_datetime)
         tables_sql_db_tool = TablesSQLDatabaseTool(
             db=self.db, context=self.context, db_scan=self.db_scan
@@ -527,7 +540,8 @@ class SQLDatabaseToolkit(BaseToolkit):
             db=self.db, context=self.context, db_scan=self.db_scan
         )
         tools.append(info_relevant_tool)
-        column_sample_tool = ColumnEntityChecker(db=self.db, context=self.context)
+        column_sample_tool = ColumnEntityChecker(
+            db=self.db, context=self.context)
         tools.append(column_sample_tool)
         if self.few_shot_examples is not None:
             get_fewshot_examples_tool = GetFewShotExamples(
@@ -589,7 +603,8 @@ class DataheraldSQLAgent(SQLGenerator):
             callback_manager=callback_manager,
         )
         tool_names = [tool.name for tool in tools]
-        agent = ZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names, **kwargs)
+        agent = ZeroShotAgent(llm_chain=llm_chain,
+                              allowed_tools=tool_names, **kwargs)
         return AgentExecutor.from_agent_and_tools(
             agent=agent,
             tools=tools,
@@ -628,12 +643,14 @@ class DataheraldSQLAgent(SQLGenerator):
             user_question, number_of_samples=self.max_number_of_examples
         )
         if few_shot_examples is not None:
-            new_fewshot_examples = self.remove_duplicate_examples(few_shot_examples)
+            new_fewshot_examples = self.remove_duplicate_examples(
+                few_shot_examples)
             number_of_samples = len(new_fewshot_examples)
         else:
             new_fewshot_examples = None
             number_of_samples = 0
-        logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
+        logger.info(
+            f"Generating SQL response to question: {str(user_question.dict())}")
         self.database = SQLDatabase.get_sql_engine(database_connection)
         toolkit = SQLDatabaseToolkit(
             db=self.database,
