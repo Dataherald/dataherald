@@ -25,7 +25,7 @@ class TableDescriptionService:
             response = await client.get(
                 settings.k2_core_url + "/table-descriptions",
                 params={"db_connection_id": db_connection_id, "table_name": table_name},
-                timeout=60,
+                timeout=settings.default_k2_core_timeout,
             )
             raise_for_status(response.status_code, response.text)
             return [TableDescriptionResponse(**td) for td in response.json()]
@@ -38,7 +38,7 @@ class TableDescriptionService:
             response = await client.get(
                 settings.k2_core_url + "/table-descriptions",
                 params={"db_connection_id": db_connection_id, "table_name": ""},
-                timeout=60,
+                timeout=settings.default_k2_core_timeout,
             )
             raise_for_status(response.status_code, response.text)
             db_connection = self.db_connection_service.get_db_connection(
