@@ -16,7 +16,7 @@ echo $PYTHONPATH
 python setup_databases.py ./config_files/db_config.json
 
 # 2. setup_scanner.py
-python setup_scanner.py ./config_files/table_descriptions.json
+python setup_table_descriptions.py ./config_files/table_descriptions.json
 
 # 3. setup_golden_records.py
 python setup_golden_records.py
