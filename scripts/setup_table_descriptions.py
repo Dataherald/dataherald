@@ -41,25 +41,26 @@ from MongoDB import MongoDB
 DATAHERALD_REST_API_URL = "http://localhost"
 
 
-def scan_table(db_connection_id: str, table_name: str):
+def register_table_description(db_connection_id: str, table_name: str):
     """scan the given table in the given database
     Args:
         alias (str): the db alias to scan
         table_name (str): the table name to scan
     """
 
-    scanner_endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/table-descriptions/sync-schemas"
+    register_table_desc_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/table-descriptions/sync-schemas"
     scanner_request_body: dict = {
         "db_connection_id": db_connection_id,
         "table_names": [table_name]
     }
 
-    print("scanner request: ")
-    print(f"endpoint url: {scanner_endpoint_url}")
+    print("Table descriptions: ")
+    print("====================================================")
+    print(f"endpoint url: {register_table_desc_url}")
     print("db_connection_id: " + db_connection_id)
     print("table_name: " + table_name)
     print(json.dumps(scanner_request_body, indent=4, sort_keys=True))
-    r = requests.post(scanner_endpoint_url, json=scanner_request_body, headers={
+    r = requests.post(register_table_desc_url, json=scanner_request_body, headers={
         "Content-Type": "application/json", "Accept": "application/json"}, timeout=300)
     print(r.status_code)
     print(r.text)
@@ -139,7 +140,7 @@ def run(config_file: str):
 
             print(f"db_connection_id: {db_connection_id}")
 
-            scan_table(db_connection_id, table_name)
+            register_table_description(db_connection_id, table_name)
 
             # get the _id from the table_descriptions collection where db_connection_id = db_connection_id and table_name = table_name
 
