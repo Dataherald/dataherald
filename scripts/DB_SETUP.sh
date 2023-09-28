@@ -13,10 +13,10 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)/scripts
 echo $PYTHONPATH
 
 # 1. setup_database.py
-python setup_databases.py ./config/db_config.json
+python setup_databases.py ./config_files/db_config.json
 
 # 2. setup_scanner.py
-python setup_scanner.py ./config/scanner_config.json
+python setup_scanner.py ./config_files/scanner_config.json
 
 # 3. setup_golden_records.py
 python setup_golden_records.py
