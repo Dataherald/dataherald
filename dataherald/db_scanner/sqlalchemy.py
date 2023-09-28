@@ -60,7 +60,8 @@ class SqlAlchemyScanner(Scanner):
         )
         examples = db_engine.engine.execute(examples_query).fetchall()
         examples_dict = []
-        columns = [column["name"] for column in examples_query.column_descriptions]
+        columns = [column["name"]
+                   for column in examples_query.column_descriptions]
         for example in examples:
             temp_dict = {}
             for index, value in enumerate(columns):
@@ -90,7 +91,8 @@ class SqlAlchemyScanner(Scanner):
             cardinality_query = sqlalchemy.select(
                 [func.distinct(dynamic_meta_table.c[column["name"]])]
             ).limit(200)
-            cardinality = db_engine.engine.execute(cardinality_query).fetchall()
+            cardinality = db_engine.engine.execute(
+                cardinality_query).fetchall()
         except Exception:
             return ColumnDetail(
                 name=column["name"],
@@ -150,7 +152,8 @@ class SqlAlchemyScanner(Scanner):
         inspector = inspect(db_engine.engine)
         table_columns = []
         columns = inspector.get_columns(table_name=table)
-        columns = [column for column in columns if column["name"].find(".") < 0]
+        columns = [
+            column for column in columns if column["name"].find(".") < 0]
 
         for column in columns:
             print(f"Scanning column: {column['name']}")
@@ -186,7 +189,8 @@ class SqlAlchemyScanner(Scanner):
         repository: DBScannerRepository,
     ) -> None:
         inspector = inspect(db_engine.engine)
-        meta = MetaData(bind=db_engine.engine)
+        meta = MetaData()
+        meta.bind = db_engine.engine
         MetaData.reflect(meta, views=True)
         tables = inspector.get_table_names() + inspector.get_view_names()
         if table_names:
