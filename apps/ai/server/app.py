@@ -8,6 +8,7 @@ from config import settings
 from modules.auth import controller as auth_controller
 from modules.db_connection import controller as db_connection_controller
 from modules.golden_sql import controller as golden_sql_controller
+from modules.instruction import controller as instruction_controller
 from modules.organization import controller as organization_controller
 from modules.query import controller as query_controller
 from modules.table_description import controller as table_description_controller
@@ -43,6 +44,7 @@ app.add_middleware(
 app.include_router(auth_controller.router, tags=["Authentication"])
 app.include_router(db_connection_controller.router, tags=["Database Connection"])
 app.include_router(golden_sql_controller.router, tags=["Golden SQL"])
+app.include_router(instruction_controller.router, tags=["Instruction"])
 app.include_router(organization_controller.router, tags=["Organization"])
 app.include_router(query_controller.router, tags=["Query"])
 app.include_router(table_description_controller.router, tags=["Table Description"])

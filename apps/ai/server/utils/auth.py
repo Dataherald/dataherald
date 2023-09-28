@@ -7,6 +7,7 @@ from fastapi import HTTPException, status
 from config import (
     DATABASE_CONNECTION_REF_COL,
     GOLDEN_SQL_REF_COL,
+    INSTRUCTION_COL,
     QUERY_RESPONSE_REF_COL,
     TABLE_DESCRIPTION_COL,
     USER_COL,
@@ -130,6 +131,22 @@ class Authorize:
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized User"
             )
         return user
+
+    def instruction_in_organization(
+        self, instruction_id: str, organization: OrganizationResponse
+    ):
+        instruction = MongoDB.find_one(
+            INSTRUCTION_COL,
+            {
+                "_id": ObjectId(instruction_id),
+                "db_connection_id": organization.db_connection_id,
+            },
+        )
+
+        if not instruction:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Instruction not found"
+            )
 
     def db_connection_in_organization(self, db_connection_id: str, org_id: str):
         self._item_in_organization(

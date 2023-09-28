@@ -9,6 +9,7 @@ QUESTION_COL = "nl_questions"
 QUERY_RESPONSE_COL = "nl_query_responses"
 GOLDEN_SQL_COL = "golden_records"
 TABLE_DESCRIPTION_COL = "table_descriptions"
+INSTRUCTION_COL = "instructions"
 
 USER_COL = "users"
 ORGANIZATION_COL = "organizations"
