@@ -99,6 +99,7 @@ Request this ``GET`` endpoint::
    :header: "Name", "Type", "Description"
    :widths: 15, 10, 30
 
+   "db_connection_id", "string", "db connection id, ``Optoinal``"
    "page", "integer", "Page number, ``Optoinal``"
    "limit", "integer", "Page size, ``Optoinal``"
 
@@ -117,5 +118,5 @@ HTTP 200 code response
 .. code-block:: rst
 
    curl -X 'GET' \
-  'http://localhost/api/v1/golden-records?page=1&limit=10' \
+  'http://localhost/api/v1/golden-records?page=1&limit=10&db_connection_id=2342344' \
   -H 'accept: application/json'
