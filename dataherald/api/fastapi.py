@@ -360,7 +360,7 @@ class FastAPI(API):
                 page=page,
                 limit=limit,
             )
-        return golden_records_repository.find_all()
+        return golden_records_repository.find_all(page=page, limit=limit)
 
     @override
     def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
@@ -382,7 +382,7 @@ class FastAPI(API):
                 page=page,
                 limit=limit,
             )
-        return instruction_repository.find_all()
+        return instruction_repository.find_all(page=page, limit=limit)
 
     @override
     def delete_instruction(self, instruction_id: str) -> dict:
