@@ -35,7 +35,7 @@ import sys
 
 import requests
 
-from scripts.MongoDB import MongoDB
+from MongoDB import MongoDB
 
 # constants. TODO: move to a config file
 DATAHERALD_REST_API_URL = "http://localhost"
