@@ -17,6 +17,8 @@ services:
       - .env
     networks:
       - backendnetwork
+    extra_hosts:  # Add the intranet server's hostname and IP address here
+      - "localdb:192.168.1.140"
   mongodb:
     image: mongo:latest
     restart: always
