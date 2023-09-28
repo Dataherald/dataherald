@@ -6,10 +6,14 @@
 # 3. setup_golden_records.py
 
 # add scripts directory to the python path
+# print the pwd and add it to the python path
+echo $(pwd)
 export PYTHONPATH=$PYTHONPATH:$(pwd)/scripts
+# print the python path
+echo $PYTHONPATH
 
 # 1. setup_database.py
-python setup_database.py ./config/db_config.json
+python setup_databases.py ./config/db_config.json
 
 # 2. setup_scanner.py
 python setup_scanner.py ./config/scanner_config.json
