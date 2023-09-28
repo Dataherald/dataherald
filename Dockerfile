@@ -3,6 +3,7 @@ FROM python:3.11.4
 LABEL Author="Juan Carlos José Camacho"
 LABEL version="0.0.1b"
 
+RUN apt-get update
 RUN apt-get -y install vim
 RUN apt install tzdata -y
 ENV TZ="Asia/Tokyo"
