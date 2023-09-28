@@ -15,6 +15,8 @@ services:
       - mongodb
     env_file:
       - .env
+    networks:
+      - backendnetwork
 
   mongodb:
     image: mongo:latest
@@ -31,5 +33,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: "${MONGODB_DB_USERNAME}"
       MONGO_INITDB_ROOT_PASSWORD: "${MONGODB_DB_PASSWORD}"
       MONGO_INITDB_DATABASE: "${MONGODB_DB_NAME}"
-
-
+    networks:
+      - backendnetwork
+networks:
+  backendnetwork:
+    external: true
