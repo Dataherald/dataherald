@@ -52,6 +52,7 @@ class MongoDB:
             return None
 
         # get the first item in the list
+        print(f"result: {result}")
         db_connection_id = str(list(result)[0]["_id"])
         return db_connection_id
 
