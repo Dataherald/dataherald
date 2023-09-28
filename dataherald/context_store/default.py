@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Tuple
 
 from overrides import override
 from sql_metadata import Parser
@@ -7,6 +7,7 @@ from sql_metadata import Parser
 from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.repositories.golden_records import GoldenRecordRepository
+from dataherald.repositories.instructions import InstructionRepository
 from dataherald.types import GoldenRecord, GoldenRecordRequest, NLQuery
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ class DefaultContextStore(ContextStore):
     @override
     def retrieve_context_for_question(
         self, nl_question: NLQuery, number_of_samples: int = 3
-    ) -> List[dict] | None:
+    ) -> Tuple[List[dict] | None, List[dict] | None]:
         logger.info(f"Getting context for {nl_question.question}")
         closest_questions = self.vector_store.query(
             query_texts=[nl_question.question],
@@ -41,9 +42,21 @@ class DefaultContextStore(ContextStore):
                     }
                 )
         if len(samples) == 0:
-            return None
+            samples = None
+        instructions = []
+        instruction_repository = InstructionRepository(self.db)
+        all_instructions = instruction_repository.find_all()
+        for instruction in all_instructions:
+            if instruction.db_connection_id == nl_question.db_connection_id:
+                instructions.append(
+                    {
+                        "instruction": instruction.instruction,
+                    }
+                )
+        if len(instructions) == 0:
+            instructions = None
 
-        return samples
+        return samples, instructions
 
     @override
     def add_golden_records(

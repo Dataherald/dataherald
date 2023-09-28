@@ -22,6 +22,27 @@ MAX_SIZE_LETTERS = 50
 
 
 class SqlAlchemyScanner(Scanner):
+    @override
+    def synchronizing(
+        self, tables: list[str], db_connection_id: str, repository: DBScannerRepository
+    ) -> None:
+        # persist tables to be scanned
+        for table in tables:
+            repository.save_table_info(
+                TableSchemaDetail(
+                    db_connection_id=db_connection_id,
+                    table_name=table,
+                    status=TableDescriptionStatus.SYNCHRONIZING.value,
+                )
+            )
+
+    @override
+    def get_all_tables_and_views(self, database: SQLDatabase) -> list[str]:
+        inspector = inspect(database.engine)
+        meta = MetaData(bind=database.engine)
+        MetaData.reflect(meta, views=True)
+        return inspector.get_table_names() + inspector.get_view_names()
+
     def get_table_examples(
         self, meta: MetaData, db_engine: SQLDatabase, table: str, rows_number: int = 3
     ) -> List[Any]:
@@ -150,7 +171,7 @@ class SqlAlchemyScanner(Scanner):
                 meta=meta, db_engine=db_engine, table=table, rows_number=3
             ),
             last_schema_sync=datetime.now(),
-            status="SYNCHRONIZED",
+            status=TableDescriptionStatus.SYNCHRONIZED.value,
         )
 
         repository.save_table_info(object)
@@ -175,16 +196,6 @@ class SqlAlchemyScanner(Scanner):
             ]
         if len(tables) == 0:
             raise ValueError("No table found")
-
-        # persist tables to be scanned
-        for table in tables:
-            repository.save_table_info(
-                TableSchemaDetail(
-                    db_connection_id=db_connection_id,
-                    table_name=table,
-                    status=TableDescriptionStatus.SYNCHRONIZING.value,
-                )
-            )
 
         for table in tables:
             try:

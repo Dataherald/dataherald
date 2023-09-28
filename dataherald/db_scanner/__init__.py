@@ -1,6 +1,5 @@
 """Base class that all scanner classes inherit from."""
 from abc import ABC, abstractmethod
-from typing import Any, Union
 
 from dataherald.config import Component
 from dataherald.db_scanner.repository.base import DBScannerRepository
@@ -17,3 +16,13 @@ class Scanner(Component, ABC):
         repository: DBScannerRepository,
     ) -> None:
         """ "Scan a db"""
+
+    @abstractmethod
+    def synchronizing(
+        self, tables: list[str], db_connection_id: str, repository: DBScannerRepository
+    ) -> None:
+        """ "Update table_description status"""
+
+    @abstractmethod
+    def get_all_tables_and_views(self, database: SQLDatabase) -> list[str]:
+        """ "Retrieve all tables and views"""

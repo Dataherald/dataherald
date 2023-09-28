@@ -40,6 +40,20 @@ class NLQuery(BaseModel):
     db_connection_id: str
 
 
+class UpdateInstruction(BaseModel):
+    instruction: str
+
+
+class InstructionRequest(DBConnectionValidation):
+    instruction: str
+
+
+class Instruction(BaseModel):
+    id: Any
+    instruction: str
+    db_connection_id: str
+
+
 class GoldenRecordRequest(DBConnectionValidation):
     question: str
     sql_query: str

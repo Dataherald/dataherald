@@ -29,7 +29,14 @@ class DB(Component, ABC):
         pass
 
     @abstractmethod
-    def find(self, collection: str, query: dict, sort: list = None) -> list:
+    def find(
+        self,
+        collection: str,
+        query: dict,
+        sort: list = None,
+        page: int = 0,
+        limit: int = 0,
+    ) -> list:
         pass
 
     @abstractmethod
