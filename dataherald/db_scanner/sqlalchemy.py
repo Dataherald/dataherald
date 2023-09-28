@@ -39,8 +39,8 @@ class SqlAlchemyScanner(Scanner):
     @override
     def get_all_tables_and_views(self, database: SQLDatabase) -> list[str]:
         inspector = inspect(database.engine)
-        meta = MetaData()
-        MetaData.reflect(meta, bind=database.engine, views=True)
+        meta = MetaData(bind=database.engine)
+        MetaData.reflect(meta, views=True)
         return inspector.get_table_names() + inspector.get_view_names()
 
     def get_table_examples(
@@ -189,8 +189,8 @@ class SqlAlchemyScanner(Scanner):
         repository: DBScannerRepository,
     ) -> None:
         inspector = inspect(db_engine.engine)
-        meta = MetaData()
-        MetaData.reflect(meta, bind=db_engine.engine, views=True)
+        meta = MetaData(bind=db_engine.engine)
+        MetaData.reflect(meta, views=True)
         tables = inspector.get_table_names() + inspector.get_view_names()
         if table_names:
             table_names = [table.lower() for table in table_names]
