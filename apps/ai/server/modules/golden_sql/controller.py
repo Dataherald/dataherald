@@ -3,7 +3,6 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 from fastapi.security import HTTPBearer
 
-from modules.golden_sql.models.entities import GoldenSQLSource
 from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.models.responses import GoldenSQLResponse
 from modules.golden_sql.service import GoldenSQLService
@@ -43,13 +42,13 @@ async def get_golden_sql(
     return golden_sql_service.get_golden_sql(id)
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
-async def add_golden_sql(
+@router.post("/user-upload", status_code=status.HTTP_201_CREATED)
+async def add_user_upload_golden_sql(
     golden_sql_requests: List[GoldenSQLRequest], token: str = Depends(token_auth_scheme)
-) -> GoldenSQLResponse:
+) -> List[GoldenSQLResponse]:
     org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
-    return await golden_sql_service.add_golden_sql(
-        golden_sql_requests, org_id, GoldenSQLSource.user_upload
+    return await golden_sql_service.add_user_upload_golden_sql(
+        golden_sql_requests, org_id
     )
 
 

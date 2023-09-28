@@ -5,7 +5,6 @@ import httpx
 from bson import ObjectId
 
 from config import settings
-from modules.golden_sql.models.entities import GoldenSQLSource
 from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.service import GoldenSQLService
 from modules.organization.models.responses import OrganizationResponse
@@ -198,11 +197,10 @@ class QueryService:
                     sql_query=query_request.sql_query,
                     db_connection_id=organization.db_connection_id,
                 )
-                await self.golden_sql_service.add_golden_sql(
+                await self.golden_sql_service.add_verified_query_golden_sql(
                     golden_sql,
                     organization.id,
-                    source=GoldenSQLSource.verified_query,
-                    query_response_id=query_id,
+                    query_id,
                 )
             else:
                 golden_sql_ref = self.golden_sql_service.get_verified_golden_sql_ref(

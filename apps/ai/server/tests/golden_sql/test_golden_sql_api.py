@@ -148,7 +148,7 @@ class TestGoldenSQLAPI(TestCase):
     )
     def test_add_golden_sql(self):
         response = client.post(
-            self.url,
+            self.url + "/user-upload",
             headers=self.test_header,
             json=[
                 {
@@ -159,7 +159,7 @@ class TestGoldenSQLAPI(TestCase):
             ],
         )
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.json() == self.test_response_1
+        assert response.json() == [self.test_response_1]
 
     @patch(
         "httpx.AsyncClient.delete",

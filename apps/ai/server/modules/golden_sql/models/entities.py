@@ -10,8 +10,8 @@ class BaseGoldenSQL(BaseModel):
 
 
 class GoldenSQLSource(Enum):
-    user_upload = "USER_UPLOAD"
-    verified_query = "VERIFIED_QUERY"
+    USER_UPLOAD = "USER_UPLOAD"
+    VERIFIED_QUERY = "VERIFIED_QUERY"
 
 
 class GoldenSQLRef(BaseModel):

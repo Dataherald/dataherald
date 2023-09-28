@@ -53,43 +53,32 @@ class GoldenSQLService:
     def get_verified_golden_sql_ref(self, query_response_id: str) -> GoldenSQLRef:
         return self.repo.get_verified_golden_sql_ref(query_response_id)
 
-    async def add_golden_sql(
+    async def add_verified_query_golden_sql(
         self,
-        golden_sql_requests: List[GoldenSQLRequest],
+        golden_sql_request: GoldenSQLRequest,
         org_id: str,
-        source: GoldenSQLSource,
-        query_response_id: str = None,
+        query_response_id: str,
     ) -> GoldenSQLResponse:
+        golden_sql_ref = self.repo.get_verified_golden_sql_ref(query_response_id)
+        # if already exist, delete golden_sql_ref and call delete /golden-records
+        if golden_sql_ref:
+            await self.delete_golden_sql("", query_response_id)
         async with httpx.AsyncClient() as client:
-            if query_response_id:
-                golden_sql_ref = self.repo.get_verified_golden_sql_ref(
-                    query_response_id
-                )
-                # if already exist, delete golden_sql_ref and call delete /golden-records
-                if golden_sql_ref:
-                    await self.delete_golden_sql("", query_response_id)
-
-            # add golden_sql using core
             response = await client.post(
                 settings.k2_core_url + "/golden-records",
-                # core should have consistent request body
-                json=[
-                    golden_sql_request.dict()
-                    for golden_sql_request in golden_sql_requests
-                ],
+                json=[golden_sql_request.dict()],
                 timeout=settings.default_k2_core_timeout,
             )
             raise_for_status(response.status_code, response.text)
             response_json = response.json()[0]
-            golden_sql = GoldenSQL(**response_json)
-            golden_sql.id = ObjectId(response_json["id"])
+            golden_sql = GoldenSQL(_id=ObjectId(response_json["id"]), **response_json)
 
             display_id = self.repo.get_next_display_id(org_id)
 
             golden_sql_ref_data = GoldenSQLRef(
                 golden_sql_id=golden_sql.id,
                 organization_id=ObjectId(org_id),
-                source=source.value,
+                source=GoldenSQLSource.VERIFIED_QUERY.value,
                 query_response_id=ObjectId(query_response_id),
                 created_time=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
                 display_id=display_id,
@@ -99,6 +88,50 @@ class GoldenSQLService:
             self.repo.add_golden_sql_ref(golden_sql_ref_data.dict(exclude={"id"}))
             golden_sql_ref = self.repo.get_golden_sql_ref(str(golden_sql.id))
             return self._get_mapped_golden_sql_response(golden_sql, golden_sql_ref)
+
+    async def add_user_upload_golden_sql(
+        self, golden_sql_requests: List[GoldenSQLRequest], org_id: str
+    ) -> List[GoldenSQLResponse]:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                settings.k2_core_url + "/golden-records",
+                json=[
+                    golden_sql_request.dict()
+                    for golden_sql_request in golden_sql_requests
+                ],
+                timeout=settings.default_k2_core_timeout,
+            )
+            raise_for_status(response.status_code, response.text)
+
+            response_jsons = response.json()
+            golden_sqls = [
+                GoldenSQL(_id=ObjectId(response_json["id"]), **response_json)
+                for response_json in response_jsons
+            ]
+
+            golden_sql_responses = []
+
+            for golden_sql in golden_sqls:
+                display_id = self.repo.get_next_display_id(org_id)
+
+                golden_sql_ref_data = GoldenSQLRef(
+                    golden_sql_id=golden_sql.id,
+                    organization_id=ObjectId(org_id),
+                    source=GoldenSQLSource.USER_UPLOAD.value,
+                    created_time=datetime.now(timezone.utc).strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    ),
+                    display_id=display_id,
+                )
+
+                # add golden_sql_ref
+                self.repo.add_golden_sql_ref(golden_sql_ref_data.dict(exclude={"id"}))
+                golden_sql_ref = self.repo.get_golden_sql_ref(str(golden_sql.id))
+                golden_sql_responses.append(
+                    self._get_mapped_golden_sql_response(golden_sql, golden_sql_ref)
+                )
+
+            return golden_sql_responses
 
     async def delete_golden_sql(
         self, golden_id: str, query_response_id: str = None
