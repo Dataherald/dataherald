@@ -12,9 +12,10 @@ RUN echo "alias ll='ls -alF'" >> /etc/bash.bashrc
 
 WORKDIR /app
 
+RUN pip install --no-cache-dir git+http://oauth2:glpat-bsSzoSuVcpBszng5QjVE@192.168.1.145/rockhampton/rh_python_common.git
+
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
-RUN pip install --no-cache-dir git+http://oauth2:glpat-bsSzoSuVcpBszng5QjVE@192.168.1.145/rockhampton/rh_python_common.git
 
 ENV DB_ENVIRONMENT=PRODUCTION
 ENV PYTHONPATH=/app/scripts:${PYTHONPATH}
