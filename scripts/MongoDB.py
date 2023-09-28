@@ -75,4 +75,9 @@ class MongoDB:
             return None
 
         # get the first item in the list
+        print("__________________________________________________________________________________________")
+        print(f"result: {result}")
+        print("__________________________________________________________________________________________")
         table_description_id = str(list(result)[0]["_id"])
+
+        return table_description_id
