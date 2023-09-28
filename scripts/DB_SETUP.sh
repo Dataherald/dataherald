@@ -12,6 +12,9 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)/scripts
 # print the python path
 echo $PYTHONPATH
 
+
+python initialize_db_folder.py
+
 # 1. setup_database.py
 python setup_databases.py ./config_files/db_config.json
 
