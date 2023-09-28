@@ -190,8 +190,7 @@ class SqlAlchemyScanner(Scanner):
     ) -> None:
         inspector = inspect(db_engine.engine)
         meta = MetaData()
-        meta.bind = db_engine.engine
-        MetaData.reflect(meta, views=True)
+        MetaData.reflect(meta, bind=db_engine.engine, views=True)
         tables = inspector.get_table_names() + inspector.get_view_names()
         if table_names:
             table_names = [table.lower() for table in table_names]
