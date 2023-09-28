@@ -103,11 +103,6 @@ class SimpleEvaluator(Evaluator):
         user_question = question.question
         sql = generated_answer.sql_query
         dialect = database.dialect
-        print("#####################################################################################")
-        print("                           EVALUATOR  DIALECT")
-        print("#####################################################################################")
-        print("dialect: ", dialect)
-        print("#####################################################################################")
         tables = Parser(sql).tables
         database._sample_rows_in_table_info = 0
         schema = database.get_table_info_no_throw(tables)

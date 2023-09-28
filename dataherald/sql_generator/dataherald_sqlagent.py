@@ -501,11 +501,6 @@ class SQLDatabaseToolkit(BaseToolkit):
     @property
     def dialect(self) -> str:
         """Return string representation of SQL dialect to use."""
-        print("#####################################################################################")
-        print("                         SQL AGENT  DIALECT")
-        print("#####################################################################################")
-        print("dialect: ", self.db.dialect)
-        print("#####################################################################################")
         return self.db.dialect
 
     class Config:
