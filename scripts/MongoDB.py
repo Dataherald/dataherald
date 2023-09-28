@@ -32,6 +32,11 @@ class MongoDB:
         self.db_name = db_name
         self.db = self.client[db_name]
 
+    def drop_collection(self, collection_name):
+        print("Dropping collection: " + collection_name +
+              " from database: " + self.db_name)
+        self.db[collection_name].drop()
+
     def get_db_connection_id_for_db_alias(self, db_alias: str) -> str:
         """Given a db_alias return the db_connection_id from the database_connections collection
 

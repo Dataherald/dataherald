@@ -6,6 +6,8 @@
 import os
 import shutil
 
+from MongoDB import MongoDB
+
 if __name__ == "__main__":
     print("################################################################################")
     print("                      Initialize Database Folder")
@@ -22,3 +24,18 @@ if __name__ == "__main__":
     os.mkdir("dbdata")
     print("Created new dbdata folder in current working directory")
     print()
+
+    print("################################################################################")
+    print("                      Initialize Database collections")
+    print("################################################################################")
+    # create a MongoDB object and drop the following collections
+    # database_connections
+    # golden_records
+    # table_descriptions
+    mongo = MongoDB()
+    mongo.drop_collection("database_connections")
+    mongo.drop_collection("golden_records")
+    mongo.drop_collection("table_descriptions")
+    mongo.close()
+
+    print("################################################################################")

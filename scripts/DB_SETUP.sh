@@ -15,6 +15,13 @@ echo $PYTHONPATH
 
 python initialize_db_folder.py
 
+# drop the DB tabls
+# db.getCollection("database_connections").drop();
+# db.getCollection("golden_records").drop();
+# db.getCollection("table_descriptions").drop();
+
+
+
 # 1. setup_database.py
 python setup_databases.py ./config_files/db_config.json
 
