@@ -130,7 +130,7 @@ def run(config_file: str):
             # get the db_connection_id from the mongo database /
             mongo = MongoDB()
             db_connection_id = mongo.get_db_connection_id_for_db_alias(
-                alias, table_name)
+                alias)
             mongo.close()
 
             if db_connection_id is None:
