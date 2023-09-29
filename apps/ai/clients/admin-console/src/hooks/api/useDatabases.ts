@@ -13,14 +13,14 @@ interface DatabasesResponse {
 
 const useDatabases = (): DatabasesResponse => {
   const { token } = useAuth()
-  const { data, isLoading, error, mutate } = useSWR<Databases>(
+  const { data, isLoading, isValidating, error, mutate } = useSWR<Databases>(
     token ? [`${API_URL}/table-description/database/list`, token] : null,
     ([url, token]: [string, string]) => apiFetcher<Databases>(url, { token }),
     { revalidateIfStale: false, revalidateOnFocus: false },
   )
   return {
     databases: data,
-    isLoading: isLoading || (!data && !error),
+    isLoading: isLoading || isValidating || (!data && !error),
     error,
     mutate,
   }

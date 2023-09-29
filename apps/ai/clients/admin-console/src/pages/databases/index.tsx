@@ -97,14 +97,15 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
 
 interface DatabaseDetailsProps {
   databases: Databases
+  isRefreshing: boolean
   onRefresh: () => void
 }
 
 const DatabaseDetails: FC<DatabaseDetailsProps> = ({
   databases,
+  isRefreshing,
   onRefresh,
 }) => {
-  const [isRefreshing, setIsRefreshing] = useState(false)
   const [isSynchronizing, setIsSynchronizing] = useState(false)
   const { selectedNodes, setSelectedNodes } = useTree()
   const synchronizeSchemas = useSynchronizeSchemas()
@@ -118,9 +119,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
   const resetSyncSelection = () => setSelectedNodes(new Set())
 
   const handleRefresh = async () => {
-    setIsRefreshing(true)
     await onRefresh()
-    setIsRefreshing(false)
   }
 
   const handleSynchronization = async () => {
@@ -218,24 +217,35 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
 
 const DatabasesPage: FC = () => {
   const { databases, isLoading, error, mutate } = useDatabases()
-  const [connectingDB, setConnectingDB] = useState<boolean | null>(null)
+  const [connectingDB, setConnectingDB] = useState<boolean>(false)
+  const [isSyncRefreshing, setIsSyncRefreshing] = useState(false)
 
   const refreshDatabases = () => mutate()
+
+  const handleSyncRefresh = async () => {
+    setIsSyncRefreshing(true)
+    await refreshDatabases()
+    setIsSyncRefreshing(false)
+  }
   const handleDatabaseConnectionFinish = () => {
-    if (databases?.length !== 0) setConnectingDB(false)
+    setConnectingDB(false)
   }
 
   useEffect(() => {
-    if (databases?.length === 0 && connectingDB === null) {
-      setConnectingDB(true)
+    if (!isLoading) {
+      if (databases?.length === 0) {
+        setConnectingDB(true)
+      } else {
+        setConnectingDB(false)
+      }
     }
-  }, [databases, connectingDB])
+  }, [isLoading, databases, connectingDB])
 
   let pageContent: JSX.Element = <></>
 
   if (error) {
     pageContent = <DatabasesError />
-  } else if (isLoading) {
+  } else if (isLoading && !connectingDB && !isSyncRefreshing) {
     pageContent = <LoadingDatabases />
   } else if (connectingDB) {
     pageContent = (
@@ -249,7 +259,8 @@ const DatabasesPage: FC = () => {
       <TreeProvider>
         <DatabaseDetails
           databases={databases as Databases}
-          onRefresh={refreshDatabases}
+          isRefreshing={isSyncRefreshing}
+          onRefresh={handleSyncRefresh}
         />
       </TreeProvider>
     )
