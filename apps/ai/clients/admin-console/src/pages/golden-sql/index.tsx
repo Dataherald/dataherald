@@ -34,6 +34,7 @@ const GoldenSQLPage: FC = () => {
             'This query was removed from the Golden SQL list and will not be used in further training.',
         })
       } catch (e) {
+        console.error(e)
         toast({
           variant: 'destructive',
           title: 'Ups! Something went wrong.',

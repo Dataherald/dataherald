@@ -77,6 +77,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
         title: 'Query executed succesfully',
       })
     } catch (e) {
+      console.error(e)
       toast({
         variant: 'destructive',
         title: 'Ups! Something went wrong.',
@@ -114,6 +115,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
         })
       }
     } catch (e) {
+      console.error(e)
       toast({
         variant: 'destructive',
         title: 'Ups! Something went wrong.',

@@ -107,7 +107,7 @@ export interface Database {
     name: string
     columns: string[]
     sync_status: TableSyncStatus
-    last_sync: string
+    last_sync: string | null
   }[]
 }
 

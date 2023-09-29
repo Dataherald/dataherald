@@ -18,10 +18,10 @@ import {
   isSelectableByStatus,
 } from '@/lib/domain/database'
 import { cn, renderIcon } from '@/lib/utils'
-import { Databases } from '@/models/api'
+import { Databases, ETableSyncStatus } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { formatDistanceStrict } from 'date-fns'
-import { utcToZonedTime } from 'date-fns-tz'
+import { zonedTimeToUtc } from 'date-fns-tz'
 import {
   Columns,
   Database as DatabaseIcon,
@@ -69,11 +69,11 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
               {table.last_sync && (
                 <span className="text-gray-400">
                   {formatDistanceStrict(
-                    new Date(table.last_sync),
-                    utcToZonedTime(
-                      new Date(),
+                    zonedTimeToUtc(
+                      new Date(table.last_sync),
                       Intl.DateTimeFormat().resolvedOptions().timeZone,
                     ),
+                    new Date(),
                     {
                       addSuffix: true,
                     },
@@ -104,7 +104,7 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
 interface DatabaseDetailsProps {
   databases: Databases
   isRefreshing: boolean
-  onRefresh: () => void
+  onRefresh: (newData?: Databases) => Promise<void>
 }
 
 const DatabaseDetails: FC<DatabaseDetailsProps> = ({
@@ -124,13 +124,21 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
 
   const resetSyncSelection = () => setSelectedNodes(new Set())
 
-  const handleRefresh = async () => {
-    await onRefresh()
-  }
-
   const handleSynchronization = async () => {
+    setIsSynchronizing(true)
+    const optimisticDatabaseUpdate = databases.map((db) => ({
+      ...db,
+      tables: db.tables.map((t) => ({
+        ...t,
+        ...(selectedNodes.has(t.name)
+          ? {
+              sync_status: ETableSyncStatus.SYNCHRONIZING,
+              last_sync: null,
+            }
+          : {}),
+      })),
+    }))
     try {
-      setIsSynchronizing(true)
       await synchronizeSchemas({
         db_connection_id: databaseTree.id,
         table_names: Array.from(selectedNodes),
@@ -143,9 +151,9 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
       setIsSynchronizing(false)
       resetSyncSelection()
       try {
-        await handleRefresh()
-        resetSyncSelection()
+        await onRefresh(optimisticDatabaseUpdate)
       } catch (e) {
+        console.error(e)
         toast({
           variant: 'destructive',
           title: 'Ups! Something went wrong.',
@@ -161,16 +169,14 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
         })
       }
     } catch (e) {
+      console.error(e)
       toast({
         variant: 'destructive',
         title: 'Ups! Something went wrong.',
         description:
           'There was a problem synchronizing your Database tables schemas.',
         action: (
-          <ToastAction
-            altText="Try again"
-            onClick={() => handleSynchronization()}
-          >
+          <ToastAction altText="Try again" onClick={handleSynchronization}>
             Try again
           </ToastAction>
         ),
@@ -196,7 +202,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
             ) : (
               <UploadCloud size={18} className="mr-2" />
             )}
-            {`${!isSynchronizing ? `Synchronize` : 'Synchronizing'} ${
+            {`${isSynchronizing ? `Synchronizing` : 'Synchronize'} ${
               selectedNodes.size
             } tables schemas`}
           </Button>
@@ -204,13 +210,13 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
             variant="outline"
             className="bg-gray-50"
             disabled={isRefreshing || isSynchronizing}
-            onClick={handleRefresh}
+            onClick={() => onRefresh()}
           >
             <RefreshCw
               size={18}
               className={cn('mr-2', isRefreshing ? 'animate-spin' : '')}
             />{' '}
-            {!isRefreshing ? 'Refresh' : 'Refreshing'}
+            {isRefreshing ? 'Refreshing' : 'Refresh'}
           </Button>
         </div>
       </div>
@@ -224,15 +230,17 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
 const DatabasesPage: FC = () => {
   const { databases, isLoading, error, mutate } = useDatabases()
   const [connectingDB, setConnectingDB] = useState<boolean>(false)
-  const [isSyncRefreshing, setIsSyncRefreshing] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const refreshDatabases = () => mutate()
+  const refreshDatabases = async (optimisticData?: Databases) =>
+    mutate(optimisticData)
 
-  const handleSyncRefresh = async () => {
-    setIsSyncRefreshing(true)
-    await refreshDatabases()
-    setIsSyncRefreshing(false)
+  const handleRefresh = async (newData?: Databases) => {
+    setIsRefreshing(true)
+    await refreshDatabases(newData)
+    setIsRefreshing(false)
   }
+
   const handleDatabaseConnectionFinish = () => {
     setConnectingDB(false)
   }
@@ -251,7 +259,7 @@ const DatabasesPage: FC = () => {
 
   if (error) {
     pageContent = <DatabasesError />
-  } else if (isLoading && !connectingDB && !isSyncRefreshing) {
+  } else if (isLoading && !connectingDB && !isRefreshing) {
     pageContent = <LoadingDatabases />
   } else if (connectingDB) {
     pageContent = (
@@ -265,8 +273,8 @@ const DatabasesPage: FC = () => {
       <TreeProvider>
         <DatabaseDetails
           databases={databases as Databases}
-          isRefreshing={isSyncRefreshing}
-          onRefresh={handleSyncRefresh}
+          isRefreshing={isRefreshing}
+          onRefresh={handleRefresh}
         />
       </TreeProvider>
     )

@@ -102,26 +102,30 @@ const TreeNodeComponent: FC<TreeProps> = ({
     : null
 
   useEffect(() => {
-    if (selectionNode) {
-      if (selectionNode.children?.length) {
-        const allChildrenSelected = !selectionNode.children.some(
-          (child) => !selectedNodes.has(child.name),
-        )
-        const someChildrenSelected = selectionNode.children.some((child) =>
-          selectedNodes.has(child.name),
-        )
+    if (!selectedNodes.size) {
+      // selection was cleared
+      setCheckboxState(false)
+      return
+    }
+    if (!selectionNode) return
+    if (selectionNode.children?.length) {
+      const allChildrenSelected = !selectionNode.children.some(
+        (child) => !selectedNodes.has(child.name),
+      )
+      const someChildrenSelected = selectionNode.children.some((child) =>
+        selectedNodes.has(child.name),
+      )
 
-        if (allChildrenSelected) {
-          setCheckboxState(true)
-        } else if (someChildrenSelected) {
-          setCheckboxState('indeterminate')
-        } else {
-          setCheckboxState(false)
-        }
+      if (allChildrenSelected) {
+        setCheckboxState(true)
+      } else if (someChildrenSelected) {
+        setCheckboxState('indeterminate')
       } else {
-        // Directly set the state for leaf nodes
-        setCheckboxState(selectedNodes.has(selectionNode.name))
+        setCheckboxState(false)
       }
+    } else {
+      // Directly set the state for leaf nodes
+      setCheckboxState(selectedNodes.has(selectionNode.name))
     }
   }, [selectedNodes, selectionNode, selectableRootNode, setCheckboxState])
 
