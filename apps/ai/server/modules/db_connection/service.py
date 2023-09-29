@@ -84,7 +84,11 @@ class DBConnectionService:
             return DBConnectionResponse(**response.json())
 
     async def update_db_connection(
-        self, id, db_connection_request_json: dict, file: UploadFile = None
+        self,
+        id,
+        db_connection_request_json: dict,
+        organization: OrganizationResponse,
+        file: UploadFile = None,
     ) -> DBConnectionResponse:
         db_connection_request = DBConnectionRequest(**db_connection_request_json)
 
@@ -95,7 +99,12 @@ class DBConnectionService:
         async with httpx.AsyncClient() as client:
             response = await client.put(
                 settings.k2_core_url + f"/database-connections/{id}",
-                json=db_connection_request.dict(),
+                json={
+                    "llm_credentials": organization.llm_credentials.dict()
+                    if organization.llm_credentials
+                    else None,
+                    **db_connection_request.dict(),
+                },
                 timeout=settings.default_k2_core_timeout,
             )
             raise_for_status(response.status_code, response.text)

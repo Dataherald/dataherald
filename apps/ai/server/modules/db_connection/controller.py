@@ -59,8 +59,9 @@ async def update_db_connection(
     file: UploadFile = None,
     token: str = Depends(token_auth_scheme),
 ) -> DBConnectionResponse:
-    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
-    authorize.db_connection_in_organization(id, org_id)
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    organization = authorize.get_organization_by_user(user)
+    authorize.db_connection_in_organization(id, organization.id)
     return await db_connection_service.update_db_connection(
-        id, db_connection_request_json, file
+        id, db_connection_request_json, organization, file
     )
