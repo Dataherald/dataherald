@@ -13,7 +13,7 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)/scripts
 echo $PYTHONPATH
 
 
-python initialize_db_folder.py
+python initialize_db.py
 
 # drop the DB tabls
 # db.getCollection("database_connections").drop();
@@ -30,3 +30,6 @@ python setup_table_descriptions.py ./config_files/table_descriptions.json
 
 # 3. setup_golden_records.py
 python setup_golden_records.py
+
+# 4. setup instructions
+python setup_instructions.py

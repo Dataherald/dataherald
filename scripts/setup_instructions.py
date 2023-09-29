@@ -1,13 +1,13 @@
 """
 
-    This script is used to upload golden records to the database.
+    This script is used to upload instructions to DH.
 
-    A golden record is a record gives sample queries and their corresponding 'ideal' SQL queries.
+    Instructions are passed directly to the engine and can be used to steer the engine to generate SQL that is more in line with your business logic.
     
-    Golden records are retreived from the Database
-
+    It reads the data from the config database.
+    
     The database has the following columns
-    select id, DbsReferenced, Labels, Question, SqlQuery, luser, lupdate from darwin.marvin_config_queries;
+    select id, DB, Instructions luser, lupdate from darwin.marvin_config_instructions;
     
     The db_alias will default to 'hkg02p'
 
@@ -29,31 +29,20 @@ from MongoDB import MongoDB
 # constants. TODO: move to a config file
 DATAHERALD_REST_API_URL = "http://localhost"
 
-endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/golden-records"
+endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/instructions"
 
 
 def escape_quotes(s: str) -> str:
     return s.replace("'", "''")
 
 
-def add_golden_record(payload: list):
-    """Add a single golden record to the database
-    The db_alias needs to be added to each item in the list of questions
+def add_instruction(payload: list):
+    """Add a single instruction to the database
 
     Args:
         db_connection_id (str): the db_connection_id to apply golden record to
-        question (str): the question
-        sql_query (str): the corresponding sql query
+        instruction (str): the instruction
     """
-
-    # # escape the sql query quotes
-    # sql_query = escape_quotes(sql_query)
-
-    # print("Adding Golden Record: ")
-    # print(f"db_connection_id: {db_connection_id}")
-    # print(f"question: {question}")
-    # print(f"sql_query: {sql_query}")
-    # print(f"endpoint url: {endpoint_url}")
 
     # print the payload
     print("payload: ")
@@ -68,20 +57,20 @@ def add_golden_record(payload: list):
 
 
 def run():
-    # 1. Query the database for the list of golden records
+    # 1. Query the database for the list of Instructions
     qry = f"""
-      select Question, SqlQuery from darwin.marvin_config_queries;
+      select DB, Instruction from darwin.marvin_config_instructions;
     """
-    questions_df = db.query_hkg02p(qry)
+    instructions_df = db.query_hkg02p(qry)
 
     # 2. Loop through the database configuration file and construct the REST API call
     api_payload = []
-    for index, row in questions_df.iterrows():
+    for index, row in instructions_df.iterrows():
         print(f"index: {index}")
         print(f"row: {row}")
-        print(f"row['Question']: {row['Question']}")
-        print(f"row['SqlQuery']: {row['SqlQuery']}")
-        db_alias = "hkg02p"
+        print(f"row['DB']: {row['DB']}")
+        print(f"row['Instruction']: {row['Instruction']}")
+        db_alias = row['DB']
 
         # get the db_connection_id from the mongo database /
         mongo = MongoDB()
@@ -92,22 +81,21 @@ def run():
             print(f"db_alias: {db_alias} not found in database_connections")
             continue
 
-        question = row["Question"]
-        sql = row['SqlQuery']
+        Instruction = row["Instruction"]
 
         api_payload.append(
-            {"db_connection_id": db_id, "question": question, "sql_query": sql})
+            {"db_connection_id": db_id, "instruction": Instruction})
 
     if len(api_payload) == 0:
-        print("No golden records found in database")
+        print("No Instructions found in database")
         return
-    add_golden_record(api_payload)
+    add_instruction(api_payload)
 
 
 if __name__ == "__main__":
     # read in the database configuration file but use the default if not provided
     print("################################################################################")
-    print("                         Setup Golden Records")
+    print("                            Setup Instruction")
     print("################################################################################")
     print(f"Current working directory: {os.getcwd()}")
 

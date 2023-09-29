@@ -36,6 +36,7 @@ if __name__ == "__main__":
     mongo.drop_collection("database_connections")
     mongo.drop_collection("golden_records")
     mongo.drop_collection("table_descriptions")
+    mongo.drop_collection("instructions")
     mongo.close()
 
     print("################################################################################")
