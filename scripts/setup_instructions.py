@@ -64,7 +64,7 @@ def run():
     instructions_df = db.query_hkg02p(qry)
 
     # 2. Loop through the database configuration file and construct the REST API call
-    api_payload = []
+    api_payload = {}
     for index, row in instructions_df.iterrows():
         print(f"index: {index}")
         print(f"row: {row}")
@@ -83,10 +83,9 @@ def run():
 
         Instruction = row["Instruction"]
 
-        api_payload.append(
-            {"db_connection_id": db_id, "instruction": Instruction})
+        api_payload = {"db_connection_id": db_id, "instruction": Instruction}
 
-    if len(api_payload) == 0:
+    if "db_connection_id" not in api_payload:
         print("No Instructions found in database")
         return
     add_instruction(api_payload)
