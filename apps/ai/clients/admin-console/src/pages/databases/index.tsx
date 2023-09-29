@@ -20,7 +20,8 @@ import {
 import { cn, renderIcon } from '@/lib/utils'
 import { Databases } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
-import { formatDistance } from 'date-fns'
+import { formatDistanceStrict } from 'date-fns'
+import { utcToZonedTime } from 'date-fns-tz'
 import {
   Columns,
   Database as DatabaseIcon,
@@ -54,26 +55,31 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
           slot: (
             <div
               className={cn(
-                'flex items-center gap-2',
+                'flex items-center gap-3 min-w-fit px-5',
                 getDomainTableSyncStatusColor(table.sync_status),
               )}
             >
-              <div className="flex items-center gap-3 min-w-fit px-5">
-                {renderIcon(getDomainTableSyncStatusIcon(table.sync_status), {
-                  size: 16,
-                  strokeWidth: 2,
-                })}
-                <span className="capitalize">
-                  {formatTableSyncStatus(table.sync_status)}
-                </span>
-                {table.last_sync && (
-                  <span className="text-gray-400">
-                    {formatDistance(new Date(table.last_sync), new Date(), {
+              {renderIcon(getDomainTableSyncStatusIcon(table.sync_status), {
+                size: 16,
+                strokeWidth: 2,
+              })}
+              <span className="capitalize">
+                {formatTableSyncStatus(table.sync_status)}
+              </span>
+              {table.last_sync && (
+                <span className="text-gray-400">
+                  {formatDistanceStrict(
+                    new Date(table.last_sync),
+                    utcToZonedTime(
+                      new Date(),
+                      Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    ),
+                    {
                       addSuffix: true,
-                    })}
-                  </span>
-                )}
-              </div>
+                    },
+                  )}
+                </span>
+              )}
             </div>
           ),
           children: table.columns?.length

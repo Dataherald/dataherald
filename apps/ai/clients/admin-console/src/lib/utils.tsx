@@ -24,7 +24,11 @@ export const formatKey = (key: string): string =>
 
 export const renderIcon = (
   IconComponent: LucideIcon | null,
-  config: { size: number; strokeWidth: number } = { size: 16, strokeWidth: 2 },
+  config: { className?: string; size?: number; strokeWidth?: number } = {
+    className: '',
+    size: 16,
+    strokeWidth: 2,
+  },
 ) => {
   if (IconComponent) {
     return <IconComponent {...config} />
