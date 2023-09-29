@@ -572,7 +572,7 @@ class DataheraldSQLAgent(SQLGenerator):
         format_instructions: str = FORMAT_INSTRUCTIONS,
         input_variables: List[str] | None = None,
         max_examples: int = 20,
-        top_k: int = 13,
+        top_k: int = 100,
         max_iterations: int | None = 15,
         max_execution_time: float | None = None,
         early_stopping_method: str = "force",

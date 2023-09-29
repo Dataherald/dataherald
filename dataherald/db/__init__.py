@@ -40,7 +40,7 @@ class DB(Component, ABC):
         pass
 
     @abstractmethod
-    def find_all(self, collection: str) -> list:
+    def find_all(self, collection: str, page: int = 0, limit: int = 0) -> list:
         pass
 
     @abstractmethod

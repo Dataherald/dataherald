@@ -35,8 +35,14 @@ class GoldenRecordRepository:
             return None
         return GoldenRecord(**row)
 
-    def find_all(self) -> list[GoldenRecord]:
-        rows = self.storage.find_all(DB_COLLECTION)
+    def find_by(
+        self, query: dict, page: int = 1, limit: int = 10
+    ) -> list[GoldenRecord]:
+        rows = self.storage.find(DB_COLLECTION, query, page=page, limit=limit)
+        return [GoldenRecord(id=str(row["_id"]), **row) for row in rows]
+
+    def find_all(self, page: int = 0, limit: int = 0) -> list[GoldenRecord]:
+        rows = self.storage.find_all(DB_COLLECTION, page=page, limit=limit)
         return [GoldenRecord(id=str(row["_id"]), **row) for row in rows]
 
     def delete_by_id(self, id: str) -> int:

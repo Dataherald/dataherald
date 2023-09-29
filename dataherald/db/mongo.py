@@ -57,7 +57,12 @@ class MongoDB(DB):
         return list(cursor)
 
     @override
-    def find_all(self, collection: str) -> list:
+    def find_all(self, collection: str, page: int = 0, limit: int = 0) -> list:
+        if page > 0 and limit > 0:
+            skip_count = (page - 1) * limit
+            return list(
+                self._data_store[collection].find({}).skip(skip_count).limit(limit)
+            )
         return list(self._data_store[collection].find({}))
 
     @override

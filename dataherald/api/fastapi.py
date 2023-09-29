@@ -350,13 +350,17 @@ class FastAPI(API):
         return {"status": status}
 
     @override
-    def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
+    def get_golden_records(
+        self, db_connection_id: str = None, page: int = 1, limit: int = 10
+    ) -> List[GoldenRecord]:
         golden_records_repository = GoldenRecordRepository(self.storage)
-        all_records = golden_records_repository.find_all()
-        # Calculate the start and end indices for pagination
-        start_idx = (page - 1) * limit
-        end_idx = start_idx + limit
-        return all_records[start_idx:end_idx]
+        if db_connection_id:
+            return golden_records_repository.find_by(
+                {"db_connection_id": db_connection_id},
+                page=page,
+                limit=limit,
+            )
+        return golden_records_repository.find_all(page=page, limit=limit)
 
     @override
     def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
@@ -378,7 +382,7 @@ class FastAPI(API):
                 page=page,
                 limit=limit,
             )
-        return instruction_repository.find_all()
+        return instruction_repository.find_all(page=page, limit=limit)
 
     @override
     def delete_instruction(self, instruction_id: str) -> dict:

@@ -276,9 +276,11 @@ class FastAPI(dataherald.server.Server):
             content=golden_records_as_dicts, status_code=status.HTTP_201_CREATED
         )
 
-    def get_golden_records(self, page: int = 1, limit: int = 10) -> List[GoldenRecord]:
+    def get_golden_records(
+        self, db_connection_id: str = None, page: int = 1, limit: int = 10
+    ) -> List[GoldenRecord]:
         """Gets golden records"""
-        return self._api.get_golden_records(page, limit)
+        return self._api.get_golden_records(db_connection_id, page, limit)
 
     def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
         """Adds an instruction"""
@@ -292,7 +294,7 @@ class FastAPI(dataherald.server.Server):
         )
 
     def get_instructions(
-        self, db_connection_id: str = "", page: int = 1, limit: int = 10
+        self, db_connection_id: str = None, page: int = 1, limit: int = 10
     ) -> List[Instruction]:
         """Gets instructions"""
         return self._api.get_instructions(db_connection_id, page, limit)
