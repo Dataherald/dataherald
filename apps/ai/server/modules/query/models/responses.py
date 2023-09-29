@@ -28,7 +28,7 @@ class CoreQueryResponse(BaseModel):
 class QuerySlackResponse(BaseModel):
     id: str
     display_id: str
-    nl_response: str
+    nl_response: str | None
     sql_query: str
     exec_time: float | None = None
     is_above_confidence_threshold: bool = False
