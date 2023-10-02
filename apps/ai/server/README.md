@@ -1,4 +1,4 @@
-# K2 Server
+# K2 Enterprise
 
 This is a fastapi application that handles the business logic k2 enterprise and exposes k2-core API externally
 
@@ -27,3 +27,11 @@ docker-compose build
 ```
 docker-compose up
 ```
+
+## Testing
+To test the endpoints in the server, create your python enviornment with required packages installed and run the pytest:
+```
+python3 -m pytest test/
+```
+
+The test does not cover end to end testing and mocks authentication, authorization, and repository objects. 
