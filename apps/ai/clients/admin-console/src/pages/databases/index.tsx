@@ -21,7 +21,6 @@ import { cn, renderIcon } from '@/lib/utils'
 import { Databases, ETableSyncStatus } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { formatDistanceStrict } from 'date-fns'
-import { zonedTimeToUtc } from 'date-fns-tz'
 import {
   Columns,
   Database as DatabaseIcon,
@@ -68,16 +67,9 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
               </span>
               {table.last_sync && (
                 <span className="text-gray-400">
-                  {formatDistanceStrict(
-                    zonedTimeToUtc(
-                      new Date(table.last_sync),
-                      Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    ),
-                    new Date(),
-                    {
-                      addSuffix: true,
-                    },
-                  )}
+                  {formatDistanceStrict(new Date(table.last_sync), new Date(), {
+                    addSuffix: true,
+                  })}
                 </span>
               )}
             </div>

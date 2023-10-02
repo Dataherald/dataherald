@@ -34,7 +34,6 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
-    "date-fns-tz": "^2.0.0",
     "eslint": "8.45.0",
     "eslint-config-next": "13.4.10",
     "lucide-react": "^0.261.0",
