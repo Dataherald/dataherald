@@ -134,6 +134,7 @@ const DatabaseConnectionFormDialog: FC<{
             isSshFormDisplayed ? 'h-[90vh]' : 'h-[70vh]',
             'max-w-[70vw] lg:max-w-[700px] overflow-auto flex flex-col',
           )}
+          onInteractOutside={(e) => e.preventDefault()}
         >
           {databaseConnected ? (
             <>
