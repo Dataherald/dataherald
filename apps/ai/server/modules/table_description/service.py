@@ -71,6 +71,7 @@ class TableDescriptionService:
             response = await client.post(
                 settings.k2_core_url + "/table-descriptions/sync-schemas",
                 json=scan_request.dict(),
+                timeout=settings.default_k2_core_timeout,
             )
             raise_for_status(response.status_code, response.text)
             return response.json()
