@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import text
@@ -30,9 +30,10 @@ def create_sql_query_status(
                 for row in result:
                     modified_row = {}
                     for key, value in zip(row.keys(), row, strict=True):
-                        if (
-                            type(value) is date
-                        ):  # Check if the value is an instance of datetime.date
+                        if type(value) in [
+                            date,
+                            datetime,
+                        ]:  # Check if the value is an instance of datetime.date
                             modified_row[key] = str(value)
                         elif (
                             type(value) is Decimal
