@@ -1,11 +1,11 @@
 import { TreeNode } from '@/components/ui/tree-view'
 
-export const buildSelectableTree = (
+export const buildSelectionTree = (
   originalNode: TreeNode,
-  parentNode: SelectableTreeNode | null = null,
+  parentNode: SelectionTreeNode | null = null,
   isRoot = false,
-): SelectableTreeNode | null => {
-  let newSelectableNode: SelectableTreeNode | null = null
+): SelectionTreeNode | null => {
+  let newSelectableNode: SelectionTreeNode | null = null
 
   if (originalNode.selectable || isRoot) {
     newSelectableNode = {
@@ -20,7 +20,7 @@ export const buildSelectableTree = (
   }
 
   originalNode.children?.forEach((child) => {
-    buildSelectableTree(child, newSelectableNode || parentNode)
+    buildSelectionTree(child, newSelectableNode || parentNode)
   })
 
   return isRoot ? newSelectableNode : newSelectableNode || parentNode
@@ -28,8 +28,8 @@ export const buildSelectableTree = (
 
 export const findNodeByName = (
   nodeName: string,
-  node: SelectableTreeNode | null,
-): SelectableTreeNode | null => {
+  node: TreeNode | SelectionTreeNode | null,
+): SelectionTreeNode | null => {
   if (!node) return null
   if (node.name === nodeName) {
     return node
@@ -46,9 +46,9 @@ export const findNodeByName = (
 }
 
 export const findLeafNodes = (
-  node: SelectableTreeNode,
-  leaves: SelectableTreeNode[] = [],
-): SelectableTreeNode[] => {
+  node: TreeNode | SelectionTreeNode,
+  leaves: SelectionTreeNode[] = [],
+): SelectionTreeNode[] => {
   if (!node.children || node.children.length === 0) {
     leaves.push(node)
     return leaves
@@ -61,8 +61,8 @@ export const findLeafNodes = (
   return leaves
 }
 
-export interface SelectableTreeNode {
+export interface SelectionTreeNode {
   id: string
   name: string
-  children?: SelectableTreeNode[]
+  children?: SelectionTreeNode[]
 }

@@ -1,6 +1,6 @@
 import { TreeNode } from '@/components/ui/tree-view'
 import {
-  buildSelectableTree,
+  buildSelectionTree,
   findLeafNodes,
 } from '@/components/ui/tree-view.helpers'
 import React, {
@@ -11,19 +11,19 @@ import React, {
   useState,
 } from 'react'
 
-interface SelectableTreeNode {
+interface SelectionTreeNode {
   id: string
   name: string
-  children?: SelectableTreeNode[]
+  children?: SelectionTreeNode[]
 }
 
 interface TreeContextProps {
   rootNode: TreeNode | null
   setRootNode: React.Dispatch<React.SetStateAction<TreeNode | null>>
-  selectableRootNode: SelectableTreeNode | null
+  selectionRootNode: SelectionTreeNode | null
   selectedNodes: Set<string>
   setSelectedNodes: React.Dispatch<React.SetStateAction<Set<string>>>
-  handleCheckboxChange: (node: SelectableTreeNode | null) => void
+  handleNodeSelectionChange: (node: SelectionTreeNode | null) => void
 }
 
 const TreeContext = createContext<TreeContextProps | undefined>(undefined)
@@ -32,13 +32,13 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [rootNode, setRootNode] = useState<TreeNode | null>(null)
-  const [selectableRootNode, setSelectableRootNode] =
-    useState<SelectableTreeNode | null>(null)
+  const [selectionRootNode, setSelectionRootNode] =
+    useState<SelectionTreeNode | null>(null)
   const [selectedNodes, setSelectedNodes] = useState<Set<string>>(new Set())
 
-  const handleCheckboxChange = (node: SelectableTreeNode | null) => {
+  const handleNodeSelectionChange = (node: SelectionTreeNode | null) => {
     if (!node) return
-    if (!selectableRootNode) return
+    if (!selectionRootNode) return
 
     const newSelectedNodes = new Set(selectedNodes)
 
@@ -66,18 +66,18 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     if (rootNode) {
-      const newSelectableRootNode = buildSelectableTree(rootNode, null, true)
-      setSelectableRootNode(newSelectableRootNode)
+      const newSelectableRootNode = buildSelectionTree(rootNode, null, true)
+      setSelectionRootNode(newSelectableRootNode)
     }
   }, [rootNode])
 
   const value = {
     rootNode,
     setRootNode,
-    selectableRootNode,
+    selectionRootNode,
     selectedNodes,
     setSelectedNodes,
-    handleCheckboxChange,
+    handleNodeSelectionChange,
   }
 
   return <TreeContext.Provider value={value}>{children}</TreeContext.Provider>

@@ -24,7 +24,8 @@ const TreeNodeComponent: FC<TreeProps> = ({
   node,
   isRoot = false,
 }: TreeProps) => {
-  const { selectedNodes, selectableRootNode, handleCheckboxChange } = useTree()
+  const { selectedNodes, selectionRootNode, handleNodeSelectionChange } =
+    useTree()
   const [isOpen, setIsOpen] = useState(node.defaultOpen || false)
   const nodeHasChildren = !!node.children?.length
 
@@ -33,7 +34,7 @@ const TreeNodeComponent: FC<TreeProps> = ({
   )
 
   const selectionNode = node.selectable
-    ? findNodeByName(node.name, selectableRootNode)
+    ? findNodeByName(node.name, selectionRootNode)
     : null
 
   useEffect(() => {
@@ -62,10 +63,10 @@ const TreeNodeComponent: FC<TreeProps> = ({
       // Directly set the state for leaf nodes
       setCheckboxState(selectedNodes.has(selectionNode.name))
     }
-  }, [selectedNodes, selectionNode, selectableRootNode, setCheckboxState])
+  }, [selectedNodes, selectionNode, selectionRootNode, setCheckboxState])
 
   const toggleNode = () => {
-    handleCheckboxChange(selectionNode)
+    handleNodeSelectionChange(selectionNode)
   }
 
   return (
