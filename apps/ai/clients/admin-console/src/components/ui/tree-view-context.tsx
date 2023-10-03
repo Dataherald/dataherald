@@ -1,9 +1,8 @@
+import { TreeNode } from '@/components/ui/tree-view'
 import {
-  SelectableTreeNode,
-  TreeNode,
   buildSelectableTree,
   findLeafNodes,
-} from '@/components/ui/tree-view'
+} from '@/components/ui/tree-view.helpers'
 import React, {
   ReactNode,
   createContext,
@@ -11,6 +10,12 @@ import React, {
   useEffect,
   useState,
 } from 'react'
+
+interface SelectableTreeNode {
+  id: string
+  name: string
+  children?: SelectableTreeNode[]
+}
 
 interface TreeContextProps {
   rootNode: TreeNode | null
