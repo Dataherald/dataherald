@@ -80,6 +80,8 @@ class TestQueryAPI(TestCase):
         "id": None,
         "query_response_id": test_0["_id"],
         "question_date": "2023-09-15 21:14:29",
+        "status": "NOT_VERIFIED",
+        "custom_response": None,
         "last_updated": "2023-09-15 21:14:29",
         "updated_by": "0123456789ab0123456789ab",
         "organization_id": ObjectId(b"foo-bar-quux"),

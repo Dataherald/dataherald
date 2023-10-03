@@ -13,14 +13,14 @@ from modules.user.models.entities import User
 class CoreQueryResponse(BaseModel):
     id: Any | None = Field(alias="_id")
     nl_question_id: Any
-    nl_response: str | None = None
-    intermediate_steps: list[str] | None = None
+    nl_response: str | None
+    intermediate_steps: list[str] | None
     sql_query: str
     sql_query_result: SQLQueryResult | None
     sql_generation_status: SQLGenerationStatus = "NONE"
-    exec_time: float | None = None
-    total_tokens: int | None = None
-    total_cost: float | None = None
+    exec_time: float | None
+    total_tokens: int | None
+    total_cost: float | None
     confidence_score: confloat(ge=0, le=1) | None = None
     error_message: str | None
 
@@ -48,7 +48,7 @@ class QueryListResponse(BaseModel):
 class QueryResponse(QueryListResponse):
     sql_query_result: SQLQueryResult | None
     sql_query: str
-    ai_process: list[str] = ["process unknown"]
+    ai_process: list[str] = []
     last_updated: str | None
     updated_by: User | None
     sql_error_message: str | None

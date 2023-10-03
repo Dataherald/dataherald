@@ -16,6 +16,7 @@ class QueryStatus(Enum):
     NOT_VERIFIED = "NOT_VERIFIED"
     VERIFIED = "VERIFIED"
     SQL_ERROR = "SQL_ERROR"
+    REJECTED = "REJECTED"
 
 
 class SQLGenerationStatus(Enum):
@@ -27,12 +28,14 @@ class SQLGenerationStatus(Enum):
 class QueryRef(BaseModel):
     id: Any = Field(alias="_id")
     query_response_id: Any
+    status: str
     question_date: str
     last_updated: str
     updated_by: Any | None
     organization_id: Any
     display_id: str | None
     slack_info: SlackInfo
+    custom_response: str | None
 
 
 class SQLQueryResult(BaseModel):

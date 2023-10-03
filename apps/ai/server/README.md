@@ -35,3 +35,9 @@ python3 -m pytest test/
 ```
 
 The test does not cover end to end testing and mocks authentication, authorization, and repository objects. 
+
+## Migration
+To run a migration script use the following command:
+```
+docker-compose exec app python3 -m database.migrations.sprint_xx.script_name
+```

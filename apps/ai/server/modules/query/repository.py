@@ -52,13 +52,13 @@ class QueryRepository:
     ) -> str:
         str(MongoDB.insert_one(QUERY_RESPONSE_REF_COL, query_response_ref_data))
 
-    def update_last_updated(
-        self, query_id: str, updated_query_response_ref: dict
-    ) -> str:
+    def update_query_response_ref(
+        self, query_id: str, new_query_response_ref_data: dict
+    ) -> int:
         return MongoDB.update_one(
             QUERY_RESPONSE_REF_COL,
             {"query_response_id": ObjectId(query_id)},
-            updated_query_response_ref,
+            new_query_response_ref_data,
         )
 
     def get_next_display_id(self, org_id: str) -> str:

@@ -64,29 +64,31 @@ class QueryService:
         query_response = CoreQueryResponse(**response.json())
         query_id: str = response.json()["id"]["$oid"]
 
-        # if query ref doesn't exist, create one
-        if not self.repo.get_query_response_ref(query_id):
-            display_id = self.repo.get_next_display_id(organization.id)
+        display_id = self.repo.get_next_display_id(organization.id)
 
-            current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-            username = SlackWebClient(
-                organization.slack_installation.bot.token
-            ).get_user_real_name(question_request.slack_user_id)
-            query_ref = QueryRef(
-                query_response_id=ObjectId(query_id),
-                question_date=current_utc_time,
-                last_updated=current_utc_time,
-                organization_id=ObjectId(organization.id),
-                display_id=display_id,
-                slack_info=SlackInfo(
-                    user_id=question_request.slack_user_id,
-                    channel_id=question_request.slack_channel_id,
-                    thread_ts=question_request.slack_thread_ts,
-                    username=username,
-                ),
-            )
+        current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        username = SlackWebClient(
+            organization.slack_installation.bot.token
+        ).get_user_real_name(question_request.slack_user_id)
 
-            self.repo.add_query_response_ref(query_ref.dict(exclude={"id"}))
+        query_ref = QueryRef(
+            query_response_id=ObjectId(query_id),
+            status=QueryStatus.NOT_VERIFIED.value
+            if query_response.sql_generation_status == SQLGenerationStatus.VALID
+            else QueryStatus.SQL_ERROR.value,
+            question_date=current_utc_time,
+            last_updated=current_utc_time,
+            organization_id=ObjectId(organization.id),
+            display_id=display_id,
+            slack_info=SlackInfo(
+                user_id=question_request.slack_user_id,
+                channel_id=question_request.slack_channel_id,
+                thread_ts=question_request.slack_thread_ts,
+                username=username,
+            ),
+        )
+
+        self.repo.add_query_response_ref(query_ref.dict(exclude={"id"}))
 
         if (
             organization.confidence_threshold == 1
@@ -151,12 +153,7 @@ class QueryService:
                     ],
                     nl_response=query_response_dict[qrr.query_response_id].nl_response,
                     question_date=qrr.question_date,
-                    status=self._get_query_status(
-                        str(qrr.query_response_id),
-                        query_response_dict[
-                            qrr.query_response_id
-                        ].sql_generation_status,
-                    ),
+                    status=qrr.status,
                     evaluation_score=self._convert_confidence_score(
                         query_response_dict[qrr.query_response_id].confidence_score
                     ),
@@ -174,63 +171,69 @@ class QueryService:
         organization: OrganizationResponse,
         user: User,
     ) -> QueryResponse:
-        is_golden_record = (
-            True if query_request.query_status == QueryStatus.VERIFIED else False
-        )
-        # request update query to core
-        async with httpx.AsyncClient() as client:
-            response = await client.patch(
-                settings.k2_core_url + f"/nl-query-responses/{query_id}",
-                json={"sql_query": query_request.sql_query},
-                timeout=settings.default_k2_core_timeout,
+        if query_request.query_status != QueryStatus.REJECTED:
+            async with httpx.AsyncClient() as client:
+                response = await client.patch(
+                    settings.k2_core_url + f"/nl-query-responses/{query_id}",
+                    json={"sql_query": query_request.sql_query},
+                    timeout=settings.default_k2_core_timeout,
+                )
+                raise_for_status(response.status_code, response.text)
+
+                new_query_response = CoreQueryResponse(**response.json())
+                question = self.repo.get_question(
+                    new_query_response.nl_question_id["$oid"]
+                )
+        else:
+            question = self.repo.get_question(
+                self.repo.get_query_response(query_id).nl_question_id
             )
-            raise_for_status(response.status_code, response.text)
+            new_query_response = None
 
-            new_query_response = CoreQueryResponse(**response.json())
-            question = self.repo.get_question(new_query_response.nl_question_id["$oid"])
-            new_response_ref = self.repo.get_query_response_ref(query_id)
+        current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        updated_query_response_ref = {
+            "last_updated": current_utc_time,
+            "updated_by": user.id,
+            "status": query_request.query_status.value,
+            "custom_response": query_request.custom_response,
+        }
+        self.repo.update_query_response_ref(query_id, updated_query_response_ref)
+        new_response_ref = self.repo.get_query_response_ref(query_id)
 
-            # add/delete golden_record
-            if is_golden_record:
-                golden_sql = GoldenSQLRequest(
-                    question=question.question,
-                    sql_query=query_request.sql_query,
-                    db_connection_id=organization.db_connection_id,
+        # verified
+        if query_request.query_status == QueryStatus.VERIFIED:
+            golden_sql = GoldenSQLRequest(
+                question=question.question,
+                sql_query=query_request.sql_query,
+                db_connection_id=organization.db_connection_id,
+            )
+            await self.golden_sql_service.add_verified_query_golden_sql(
+                golden_sql,
+                organization.id,
+                query_id,
+            )
+
+            SlackWebClient(
+                organization.slack_installation.bot.token
+            ).send_verified_query_message(
+                new_response_ref,
+                new_query_response,
+                question.question,
+            )
+        # rejected or not verified
+        else:
+            if self.golden_sql_service.get_verified_golden_sql_ref(query_id):
+                await self.golden_sql_service.delete_golden_sql(
+                    "", query_response_id=query_id
                 )
-                await self.golden_sql_service.add_verified_query_golden_sql(
-                    golden_sql,
-                    organization.id,
-                    query_id,
-                )
-            else:
-                golden_sql_ref = self.golden_sql_service.get_verified_golden_sql_ref(
-                    query_id
-                )
-                if golden_sql_ref:
-                    await self.golden_sql_service.delete_golden_sql(
-                        "", query_response_id=query_id
-                    )
-
-            current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-            updated_query_response_ref = {
-                "last_updated": current_utc_time,
-                "updated_by": user.id,
-            }
-            self.repo.update_last_updated(query_id, updated_query_response_ref)
-
-            # send user verified query on slack
-            if is_golden_record:
+            if query_request.query_status == QueryStatus.REJECTED:
                 SlackWebClient(
-                    organization.slack_installation.bot.token
-                ).send_verified_query_message(
-                    new_response_ref,
-                    new_query_response,
-                    question.question,
-                )
+                    organization.slack_installation.bot.token,
+                ).send_rejected_query_message(new_response_ref)
 
-            return self._get_mapped_query_response(
-                query_id, new_response_ref, question, new_query_response
-            )
+        return self._get_mapped_query_response(
+            query_id, new_response_ref, question, new_query_response
+        )
 
     async def run_query(self, query_id: str, query_request: QueryExecutionRequest):
         async with httpx.AsyncClient() as client:
@@ -260,6 +263,15 @@ class QueryService:
         question: Question,
         query_response: CoreQueryResponse,
     ) -> QueryResponse:
+        if response_ref.status == QueryStatus.REJECTED.value:
+            query_response = CoreQueryResponse(
+                nl_question_id=None,
+                nl_response=response_ref.custom_response,
+                sql_query="",
+                confidence_score=1.0,
+                intermediate_steps=[],
+            )
+
         return QueryResponse(
             id=query_id,
             username=response_ref.slack_info.username or "unknown",
@@ -267,35 +279,19 @@ class QueryService:
             nl_response=query_response.nl_response,
             sql_query=query_response.sql_query,
             sql_query_result=query_response.sql_query_result,
-            ai_process=query_response.intermediate_steps,
+            ai_process=query_response.intermediate_steps or ["process unknown"],
             question_date=response_ref.question_date,
             last_updated=response_ref.last_updated,
             updated_by=self.user_service.get_user(str(response_ref.updated_by))
             if response_ref.updated_by
             else None,
-            status=self._get_query_status(
-                query_id, query_response.sql_generation_status
-            ),
+            status=response_ref.status,
             evaluation_score=self._convert_confidence_score(
                 query_response.confidence_score
             ),
             sql_error_message=query_response.error_message,
             display_id=response_ref.display_id,
         )
-
-    def _get_query_status(
-        self, query_id: str, sql_generation_status: SQLGenerationStatus
-    ) -> QueryStatus:
-        status = QueryStatus.NOT_VERIFIED
-        golden_sql = self.golden_sql_service.get_verified_golden_sql_ref(query_id)
-        if sql_generation_status == SQLGenerationStatus.VALID and golden_sql:
-            status = QueryStatus.VERIFIED
-        elif sql_generation_status in {
-            SQLGenerationStatus.INVALID,
-            SQLGenerationStatus.NONE,
-        }:
-            status = QueryStatus.SQL_ERROR
-        return status
 
     def _convert_confidence_score(self, confidence_score: float) -> int:
         if confidence_score > CONFIDENCE_CAP:

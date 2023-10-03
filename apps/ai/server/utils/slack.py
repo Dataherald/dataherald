@@ -64,6 +64,32 @@ class SlackWebClient:
             blocks=message_blocks,
         )
 
+    def send_rejected_query_message(
+        self,
+        query_ref: QueryRef,
+    ):
+        message_blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f":wave: Hello, <@{query_ref.slack_info.user_id}>. Your query {query_ref.display_id} could not be answered.",
+                },
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"Reason: {query_ref.custom_response}",
+                },
+            },
+        ]
+        self.client.chat_postMessage(
+            channel=query_ref.slack_info.channel_id,
+            thread_ts=query_ref.slack_info.thread_ts,
+            blocks=message_blocks,
+        )
+
 
 def remove_slack_mentions(text: str) -> str:
     slack_user_mention_pattern = r"<@(.*?)>"
