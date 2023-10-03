@@ -1,6 +1,5 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import { useTree } from '@/components/ui/tree-view-context'
-import { findNodeByName } from '@/components/ui/tree-view.helpers'
 import { cn } from '@/lib/utils'
 import { ChevronDown, ChevronRight, LucideIcon } from 'lucide-react'
 import { FC, HTMLAttributes, useEffect, useState } from 'react'
@@ -24,7 +23,7 @@ const TreeNodeComponent: FC<TreeProps> = ({
   node,
   isRoot = false,
 }: TreeProps) => {
-  const { selectedNodes, selectionRootNode, handleNodeSelectionChange } =
+  const { selectedNodes, findSelectionNodeByName, handleNodeSelectionChange } =
     useTree()
   const [isOpen, setIsOpen] = useState(node.defaultOpen || false)
   const nodeHasChildren = !!node.children?.length
@@ -34,7 +33,7 @@ const TreeNodeComponent: FC<TreeProps> = ({
   )
 
   const selectionNode = node.selectable
-    ? findNodeByName(node.name, selectionRootNode)
+    ? findSelectionNodeByName(node.name)
     : null
 
   useEffect(() => {
@@ -63,7 +62,7 @@ const TreeNodeComponent: FC<TreeProps> = ({
       // Directly set the state for leaf nodes
       setCheckboxState(selectedNodes.has(selectionNode.name))
     }
-  }, [selectedNodes, selectionNode, selectionRootNode, setCheckboxState])
+  }, [selectedNodes, selectionNode, setCheckboxState])
 
   const toggleNode = () => {
     handleNodeSelectionChange(selectionNode)

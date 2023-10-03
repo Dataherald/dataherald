@@ -2,6 +2,7 @@ import { TreeNode } from '@/components/ui/tree-view'
 import {
   buildSelectionTree,
   findLeafNodes,
+  findNodeByName,
 } from '@/components/ui/tree-view.helpers'
 import React, {
   ReactNode,
@@ -20,9 +21,9 @@ interface SelectionTreeNode {
 interface TreeContextProps {
   rootNode: TreeNode | null
   setRootNode: React.Dispatch<React.SetStateAction<TreeNode | null>>
-  selectionRootNode: SelectionTreeNode | null
   selectedNodes: Set<string>
-  setSelectedNodes: React.Dispatch<React.SetStateAction<Set<string>>>
+  findSelectionNodeByName: (nodeName: string) => SelectionTreeNode | null
+  resetSelection: () => void
   handleNodeSelectionChange: (node: SelectionTreeNode | null) => void
 }
 
@@ -64,6 +65,11 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
     setSelectedNodes(newSelectedNodes)
   }
 
+  const resetSelection = () => setSelectedNodes(new Set())
+
+  const findSelectionNodeByName = (nodeName: string) =>
+    findNodeByName(nodeName, selectionRootNode)
+
   useEffect(() => {
     if (rootNode) {
       const newSelectableRootNode = buildSelectionTree(rootNode, null, true)
@@ -74,9 +80,9 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
   const value = {
     rootNode,
     setRootNode,
-    selectionRootNode,
     selectedNodes,
-    setSelectedNodes,
+    findSelectionNodeByName,
+    resetSelection,
     handleNodeSelectionChange,
   }
 

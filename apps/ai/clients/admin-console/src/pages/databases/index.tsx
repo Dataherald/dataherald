@@ -105,7 +105,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
   onRefresh,
 }) => {
   const [isSynchronizing, setIsSynchronizing] = useState(false)
-  const { selectedNodes, setSelectedNodes } = useTree()
+  const { selectedNodes, resetSelection } = useTree()
   const synchronizeSchemas = useSynchronizeSchemas()
   const databaseTree = useMemo(
     () => (databases.length > 0 ? mapDatabaseToTreeData(databases) : null),
@@ -114,7 +114,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
 
   if (databaseTree === null) return <></>
 
-  const resetSyncSelection = () => setSelectedNodes(new Set())
+  const resetSyncSelection = resetSelection
 
   const handleSynchronization = async () => {
     setIsSynchronizing(true)
