@@ -67,7 +67,48 @@ def add_golden_record(payload: list):
     print()
 
 
+def delete_golden_record_with_id(golden_record_id: str):
+    """Delete a single golden record from the database
+
+    Args:
+        golden_record_id (str): the golden record id to delete
+    """
+
+    # print the payload
+    print(f"Deleting golden record with id: {golden_record_id}")
+
+    r = requests.delete(f"{endpoint_url}/{golden_record_id}", headers={
+        "Content-Type": "application/json", "Accept": "application/json"}, timeout=300)
+    print(r.status_code)
+    print(r.text)
+
+    print()
+
+
+def delete_all_existing_golden_record():
+    """
+    1. Query the mongodb database for the list of Golden Records
+    2. Loop through the database configuration file and construct the REST API call to delete the Golden Records
+    3. Run the REST API call to delete the golden record in Dataherald
+    """
+
+    # 1. Query the mongodb database for the list of golden records
+    db_alias = "hkg02p"
+    mongo = MongoDB()
+    db_id = mongo.get_db_connection_id_for_db_alias(db_alias)
+    golden_records = mongo.get_all_golden_records_for_connection_id(db_id)
+    mongo.close()
+
+    # 2. Loop through the database configuration file and construct the REST API call to delete the golden records
+    for golden_record in golden_records:
+        print(f"Deleting golden record: {golden_record}")
+        delete_golden_record_with_id(golden_record)
+
+
 def run():
+    # 0. Pre delete all existing golden records
+    delete_all_existing_golden_record()
+
     # 1. Query the database for the list of golden records
     qry = f"""
       select Question, SqlQuery from darwin.marvin_config_queries;
