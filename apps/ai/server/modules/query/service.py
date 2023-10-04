@@ -256,6 +256,7 @@ class QueryService:
             )
             raise_for_status(response.status_code, response.text)
             response_ref = self.repo.get_query_response_ref(query_id)
+            response_ref.custom_response = None
             new_query_response = CoreQueryResponse(**response.json())
             question = self.repo.get_question(new_query_response.nl_question_id["$oid"])
             return self._get_mapped_query_response(
