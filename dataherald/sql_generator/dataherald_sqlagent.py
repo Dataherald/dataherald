@@ -316,8 +316,11 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
         tool_input: str,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
-        schema, entity = tool_input.split(",")
-        table_name, column_name = schema.split("->")
+        try:
+            schema, entity = tool_input.split(",")
+            table_name, column_name = schema.split("->")
+        except ValueError:
+            return "Invalid input format, use following format: table_name -> column_name, entity (entity should be a string without ',')"
         search_pattern = f"%{entity.strip().lower()}%"
         meta = MetaData(bind=self.db.engine)
         table = sqlalchemy.Table(table_name.strip(), meta, autoload=True)
