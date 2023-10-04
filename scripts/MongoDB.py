@@ -37,6 +37,27 @@ class MongoDB:
               " from database: " + self.db_name)
         self.db[collection_name].drop()
 
+    def get_all_instructions_for_connection_id(self, db_connection_id: str):
+        """Given a db_connection_id return _all_ the instructions (_id) for that connection
+
+        Collection Name: instructions
+        _id: ObjectId
+        db_connection_id: str
+        instruction: str
+
+        Args:
+            db_connection_id (str): the db_connection_id to get the instructions for
+        """
+        query = {"db_connection_id": db_connection_id}
+        projection = {"_id": 1}
+        result = self.select("instructions", query, projection)
+
+        if result is None:
+            return None
+
+        # return all ids in a list
+        return [str(item["_id"]) for item in result]
+
     def get_db_connection_id_for_db_alias(self, db_alias: str) -> str:
         """Given a db_alias return the db_connection_id from the database_connections collection
 

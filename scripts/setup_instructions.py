@@ -56,7 +56,49 @@ def add_instruction(payload: list):
     print()
 
 
+def delete_instruction_with_id(instruction_id: str):
+    """Delete a single instruction from the database
+
+    Args:
+        instruction_id (str): the instruction id to delete
+    """
+
+    # print the payload
+    print(f"Deleting instruction with id: {instruction_id}")
+
+    r = requests.delete(f"{endpoint_url}/{instruction_id}", headers={
+        "Content-Type": "application/json", "Accept": "application/json"}, timeout=300)
+    print(r.status_code)
+    print(r.text)
+
+    print()
+
+
+def delete_all_existing_instructions():
+    """
+    1. Query the mongodb database for the list of Instructions
+    2. Loop through the database configuration file and construct the REST API call to delete the instructions
+    3. Run the REST API call to delete the instructions in Dataherald
+    """
+
+    # 1. Query the mongodb database for the list of Instructions
+    db_alias = "hkg02p"
+    mongo = MongoDB()
+    db_id = mongo.get_db_connection_id_for_db_alias(db_alias)
+    instructions = mongo.get_all_instructions_for_connection_id(db_id)
+    mongo.close()
+
+    # 2. Loop through the database configuration file and construct the REST API call to delete the instructions
+    for instruction in instructions:
+        print(f"Deleting instruction: {instruction}")
+        delete_instruction_with_id(instruction)
+
+
 def run():
+
+    # 0. Pre delete all existing instructions
+    delete_all_existing_instructions()
+
     # 1. Query the database for the list of Instructions
     qry = f"""
       select DB, Instruction from darwin.marvin_config_instructions;
