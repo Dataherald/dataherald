@@ -111,7 +111,11 @@ class QueryService:
         question = self.repo.get_question(str(query_response.nl_question_id))
         if question and query_response:
             return self._get_mapped_query_response(
-                query_id, response_ref, question, query_response
+                query_id,
+                response_ref,
+                question,
+                query_response,
+                response_ref.status == QueryStatus.REJECTED.value,
             )
 
         return None
@@ -151,7 +155,8 @@ class QueryService:
                     question=question_dict[
                         query_response_dict[qrr.query_response_id].nl_question_id
                     ],
-                    nl_response=query_response_dict[qrr.query_response_id].nl_response,
+                    nl_response=qrr.custom_response
+                    or query_response_dict[qrr.query_response_id].nl_response,
                     question_date=qrr.question_date,
                     status=qrr.status,
                     evaluation_score=self._convert_confidence_score(
@@ -232,7 +237,11 @@ class QueryService:
                 ).send_rejected_query_message(new_response_ref)
 
         return self._get_mapped_query_response(
-            query_id, new_response_ref, question, new_query_response
+            query_id,
+            new_response_ref,
+            question,
+            new_query_response,
+            new_response_ref.status == QueryStatus.REJECTED.value,
         )
 
     async def run_query(self, query_id: str, query_request: QueryExecutionRequest):
@@ -262,8 +271,9 @@ class QueryService:
         response_ref: QueryRef,
         question: Question,
         query_response: CoreQueryResponse,
+        is_rejected: bool = False,
     ) -> QueryResponse:
-        if response_ref.status == QueryStatus.REJECTED.value:
+        if is_rejected:
             query_response = CoreQueryResponse(
                 nl_question_id=None,
                 nl_response=response_ref.custom_response,
@@ -276,7 +286,7 @@ class QueryService:
             id=query_id,
             username=response_ref.slack_info.username or "unknown",
             question=question.question,
-            nl_response=query_response.nl_response,
+            nl_response=response_ref.custom_response or query_response.nl_response,
             sql_query=query_response.sql_query,
             sql_query_result=query_response.sql_query_result,
             ai_process=query_response.intermediate_steps or ["process unknown"],

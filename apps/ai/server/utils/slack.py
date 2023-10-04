@@ -47,7 +47,7 @@ class SlackWebClient:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Response: {query_response.nl_response}",
+                    "text": f"Response: {query_ref.custom_response or query_response.nl_response}",
                 },
             },
             {
