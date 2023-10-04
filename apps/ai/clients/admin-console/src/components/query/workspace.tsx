@@ -1,3 +1,4 @@
+import CustomResponseDialog from '@/components/query/custom-response-dialog'
 import QueryLastUpdated from '@/components/query/last-updated'
 import LoadingQueryResults from '@/components/query/loading-results'
 import QueryProcess from '@/components/query/process'
@@ -5,15 +6,19 @@ import QueryQuestion from '@/components/query/question'
 import SqlEditor from '@/components/query/sql-editor'
 import SqlResultsTable from '@/components/query/sql-results-table'
 import QueryVerifySelect from '@/components/query/verify-select'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { useToast } from '@/components/ui/use-toast'
-import { isVerified } from '@/lib/domain/query'
+import { isNotVerified, isRejected, isVerified } from '@/lib/domain/query'
 import { Query, QueryStatus } from '@/models/api'
 import {
+  AlertCircle,
+  Ban,
   Database,
+  Edit,
   ListOrdered,
   Loader,
   Play,
@@ -21,13 +26,14 @@ import {
   XOctagon,
 } from 'lucide-react'
 import Link from 'next/link'
-import { FC, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 
 export interface QueryWorkspaceProps {
   query: Query
   onExecuteQuery: (sql_query: string) => void
   onPatchQuery: (patches: {
     sql_query: string
+    custom_response: string
     query_status: QueryStatus
   }) => void
 }
@@ -55,18 +61,13 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   const lastUpdatedDate: Date = new Date(last_updated)
   const [currentSqlQuery, setCurrentSqlQuery] = useState(sql_query)
   const [verificationStatus, setVerifiedStatus] = useState<QueryStatus>(status)
+  const [textResponse, setCustomResponse] = useState<string>(nl_response)
+  const [textResponseHasChanges, setTextResponseHasChanges] = useState(false)
+  const [openEditResponseDialog, setOpenEditResponseDialog] = useState(false)
   const [savingQuery, setSavingQuery] = useState(false)
   const [loadingQueryResults, setLoadingQueryResults] = useState(false)
 
   const { toast } = useToast()
-
-  const handleSqlChange = (value: string) => {
-    setCurrentSqlQuery(value)
-  }
-
-  const handleVerifyChange = (verificationStatus: QueryStatus) => {
-    setVerifiedStatus(verificationStatus)
-  }
 
   const handleRunQuery = async () => {
     setLoadingQueryResults(true)
@@ -74,7 +75,9 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       await onExecuteQuery(currentSqlQuery)
       toast({
         variant: 'success',
-        title: 'Query executed succesfully',
+        title: 'Query executed',
+        description:
+          'The results table and the natural language answer were updated.',
       })
     } catch (e) {
       console.error(e)
@@ -98,20 +101,31 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       setSavingQuery(true)
       await onPatchQuery({
         query_status: verificationStatus,
+        custom_response: textResponse,
         sql_query: currentSqlQuery,
       })
       if (isVerified(verificationStatus)) {
         toast({
           variant: 'success',
-          title: 'Saved and Verified',
-          description:
-            'This query is added as a Golden SQL query and used to further train the model for similar questions. You can remove it by marking it as unverified or deleting it in your Golden SQL tab.',
+          title: 'Verified',
+          description: (
+            <p>
+              Response sent to the Slack thread and added to the Golden SQL
+              training set.
+            </p>
+          ),
         })
-      } else {
+      } else if (isNotVerified(verificationStatus)) {
         toast({
-          title: 'Saved and marked as Unverified',
+          title: 'Marked as Unverified',
           description:
-            'This query is removed from the Golden SQL list and is not used in further training.',
+            'Removed from the Golden SQL list and not used in further training.',
+        })
+      } else if (isRejected(verificationStatus)) {
+        toast({
+          title: 'Rejected',
+          description:
+            'Response sent to the Slack thread informing that this query could not be answered.',
         })
       }
     } catch (e) {
@@ -131,12 +145,38 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     }
   }
 
+  const handleSqlChange = (value: string) => {
+    setCurrentSqlQuery(value)
+  }
+
+  const handleVerifyChange = (verificationStatus: QueryStatus) => {
+    setVerifiedStatus(verificationStatus)
+    if (isRejected(verificationStatus) && !textResponseHasChanges) {
+      setOpenEditResponseDialog(true)
+    }
+  }
+
+  const handleCloseEditDialog = (newCustomResponse = textResponse) => {
+    setCustomResponse(newCustomResponse)
+    setOpenEditResponseDialog(false)
+  }
+
+  useEffect(() => {
+    setTextResponseHasChanges(textResponse !== nl_response)
+  }, [nl_response, textResponse])
+
+  const rejectedBanner = (
+    <div className="h-full flex items-center justify-center gap-2 text-muted-foreground">
+      <Ban size={18} strokeWidth={2} /> Rejected query
+    </div>
+  )
+
   return (
     <>
       <div className="grow flex flex-col gap-5">
         <div id="header" className="flex justify-between gap-3">
           <QueryQuestion {...{ username, question, questionDate }} />
-          <div className="flex items-center gap-5">
+          <div className="flex items-center self-start gap-5">
             <Link href="/queries">
               <Button variant="link" className="font-normal">
                 Cancel
@@ -193,7 +233,9 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                   />
                   <Button
                     onClick={handleRunQuery}
-                    disabled={loadingQueryResults}
+                    disabled={
+                      loadingQueryResults || isRejected(verificationStatus)
+                    }
                   >
                     {loadingQueryResults ? (
                       <>
@@ -215,13 +257,21 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
               </div>
             </TabsList>
             <TabsContent value="sql" className="pt-3 grow">
-              <SqlEditor
-                initialQuery={currentSqlQuery}
-                onValueChange={handleSqlChange}
-              />
+              {isRejected(verificationStatus) ? (
+                rejectedBanner
+              ) : (
+                <SqlEditor
+                  initialQuery={currentSqlQuery}
+                  onValueChange={handleSqlChange}
+                />
+              )}
             </TabsContent>
             <TabsContent value="process" className="pt-3 grow overflow-auto">
-              <QueryProcess processSteps={ai_process} />
+              {isRejected(verificationStatus) ? (
+                rejectedBanner
+              ) : (
+                <QueryProcess processSteps={ai_process} />
+              )}
             </TabsContent>
           </Tabs>
           <QueryLastUpdated
@@ -244,37 +294,92 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
-            <div
-              id="query_results"
-              className="min-h-[10rem] max-h-80 flex flex-col border bg-white"
-            >
-              {sql_query_result === null ? (
-                <div className="w-full h-44 flex items-center justify-center bg-gray-100">
-                  <div className="text-gray-600">No Results</div>
-                </div>
-              ) : (
-                <SqlResultsTable
-                  columns={sql_query_result.columns.map(
-                    (columnKey: string) => ({
-                      id: columnKey,
-                      header: columnKey,
-                      accessorKey: columnKey,
-                    }),
-                  )}
-                  data={sql_query_result.rows}
-                />
-              )}
-            </div>
-            {nl_response && (
-              <div id="nl_response">
-                <span className="font-bold mr-1">Answer:</span>
-                {nl_response}
+          <>
+            {!isRejected(verificationStatus) && (
+              <div
+                id="query_results"
+                className="min-h-[10rem] max-h-80 flex flex-col border bg-white"
+              >
+                {sql_query_result === null ? (
+                  <div className="w-full h-44 flex items-center justify-center bg-gray-100">
+                    <div className="text-gray-600">No Results</div>
+                  </div>
+                ) : (
+                  <SqlResultsTable
+                    columns={sql_query_result.columns.map(
+                      (columnKey: string) => ({
+                        id: columnKey,
+                        header: columnKey,
+                        accessorKey: columnKey,
+                      }),
+                    )}
+                    data={sql_query_result.rows}
+                  />
+                )}
               </div>
             )}
-          </div>
+            {textResponse && (
+              <>
+                <div className="flex items-start justify-between gap-3">
+                  <div id="text-response" className="pt-2">
+                    <span className="font-bold mr-1">
+                      {isRejected(verificationStatus)
+                        ? 'Rejection reason:'
+                        : 'Answer:'}
+                    </span>
+                    <span className="break-words">{textResponse}</span>
+                  </div>
+                  <Button
+                    variant="link"
+                    className="font-normal text-black flex items-center gap-1 py-2 p-0 min-w-fit"
+                    onClick={() => setOpenEditResponseDialog(true)}
+                  >
+                    <Edit size={18} strokeWidth={2}></Edit>
+                    Edit
+                  </Button>
+                </div>
+                {(isVerified(verificationStatus) ||
+                  isRejected(verificationStatus)) && (
+                  <Alert variant="info" className="flex items-center gap-2">
+                    <div>
+                      <AlertCircle size={18} />
+                    </div>
+                    <AlertDescription>
+                      {`This message will be sent as the question's response to
+                      the Slack thread each time you save.`}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </>
+            )}
+          </>
         )}
       </div>
+      {isRejected(verificationStatus) ? (
+        <CustomResponseDialog
+          title={
+            <div className="flex items-center gap-2">
+              <Ban size={18} strokeWidth={3}></Ban> Rejection Reason
+            </div>
+          }
+          description="Describe the reason for rejecting the query"
+          isOpen={openEditResponseDialog}
+          initialValue={textResponse}
+          onClose={handleCloseEditDialog}
+        ></CustomResponseDialog>
+      ) : (
+        <CustomResponseDialog
+          title={
+            <div className="flex items-center gap-2">
+              <Edit size={18} strokeWidth={3}></Edit> Edit Response
+            </div>
+          }
+          description="Compose the response for the question"
+          isOpen={openEditResponseDialog}
+          initialValue={textResponse}
+          onClose={handleCloseEditDialog}
+        ></CustomResponseDialog>
+      )}
       <Toaster />
     </>
   )

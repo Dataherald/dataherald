@@ -64,10 +64,7 @@ export const columns: ColumnDef<QueryListItem>[] = [
       const textColor = getDomainStatusColors(status, evaluation_score).text
       return (
         <div
-          className={cn(
-            textColor,
-            'flex flex-row items-center capitalize font-semibold',
-          )}
+          className={cn(textColor, 'flex flex-row items-center font-semibold')}
         >
           <div className="w-2 h-2 mr-2 rounded-full bg-current shrink-0" />
           {row.getValue('status')}

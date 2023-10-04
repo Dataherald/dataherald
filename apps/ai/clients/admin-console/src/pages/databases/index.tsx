@@ -62,9 +62,7 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
                 size: 16,
                 strokeWidth: 2,
               })}
-              <span className="capitalize">
-                {formatTableSyncStatus(table.sync_status)}
-              </span>
+              {formatTableSyncStatus(table.sync_status)}
               {table.last_sync && (
                 <span className="text-gray-400">
                   {formatDistanceStrict(new Date(table.last_sync), new Date(), {

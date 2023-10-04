@@ -1,3 +1,4 @@
+import { capitalize } from '@/lib/utils'
 import { EQueryStatus, QueryStatus } from '@/models/api'
 import {
   ColorClasses,
@@ -88,10 +89,11 @@ export const formatQueryStatus = (
   status?: DomainQueryStatus | QueryStatus,
 ): string => {
   if (status) {
-    const formattedStatus = status?.replace('_', ' ').toLowerCase()
-    return status === EQueryStatus.SQL_ERROR
-      ? formattedStatus.replace('sql', 'SQL')
-      : formattedStatus
+    const formattedStatus = capitalize(status?.replace('_', ' ').toLowerCase())
+    if (status === EQueryStatus.SQL_ERROR) {
+      return formattedStatus.replace('Sql', 'SQL')
+    }
+    return formattedStatus
   }
   return ''
 }
@@ -101,8 +103,10 @@ export const formatQueryStatusWithScore = (
   evaluation_score: number,
 ): string => {
   const formattedStatus = formatQueryStatus(status)
-  if (status === EQueryStatus.SQL_ERROR || status === EQueryStatus.REJECTED) {
+  if (status === EQueryStatus.SQL_ERROR) {
     return formattedStatus
+  } else if (status === EQueryStatus.REJECTED) {
+    return formattedStatus + ' by Admin'
   } else {
     const formattedScore =
       status === EQueryStatus.VERIFIED ? '(100%)' : `(${evaluation_score}%)`

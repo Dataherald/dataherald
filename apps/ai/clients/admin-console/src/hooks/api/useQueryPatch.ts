@@ -12,6 +12,7 @@ const usePatchQuery = () => {
       queryId: string,
       patches: {
         sql_query: string
+        custom_response: string
         query_status: QueryStatus
       },
     ): Promise<Query> =>

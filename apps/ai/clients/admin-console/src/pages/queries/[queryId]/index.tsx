@@ -33,6 +33,7 @@ const QueryPage: FC = () => {
 
   const handlePatchQuery = async (patches: {
     sql_query: string
+    custom_response: string
     query_status: QueryStatus
   }) => {
     const patchedQuery = await patchQuery(queryId as string, patches)

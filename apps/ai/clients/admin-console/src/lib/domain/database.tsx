@@ -1,3 +1,4 @@
+import { capitalize } from '@/lib/utils'
 import { ETableSyncStatus, TableSyncStatus } from '@/models/api'
 import { ColorClasses, ResourceColors } from '@/models/domain'
 import {
@@ -63,5 +64,5 @@ export const getDomainTableSyncStatusIcon = (
 }
 
 export const formatTableSyncStatus = (sync_status: TableSyncStatus): string => {
-  return sync_status?.replace('_', ' ').toLowerCase()
+  return capitalize(sync_status?.replace('_', ' ').toLowerCase())
 }

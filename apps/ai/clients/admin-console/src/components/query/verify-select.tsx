@@ -34,13 +34,13 @@ const QueryVerifySelect: FC<QueryVerifySelectProps> = ({
     (status: QueryStatus) => (
       <div
         className={cn(
-          'flex items-center gap-3 capitalize font-semibold',
+          'flex items-center gap-3 font-semibold text-base',
           QUERY_STATUS_COLORS[status].text,
         )}
       >
-        {isVerified(status) && <CheckCircle strokeWidth={2.5} />}
-        {isNotVerified(status) && <XCircle strokeWidth={2.5} />}
-        {isRejected(status) && <Ban strokeWidth={2.5} />}
+        {isVerified(status) && <CheckCircle size={20} strokeWidth={2.5} />}
+        {isNotVerified(status) && <XCircle size={20} strokeWidth={2.5} />}
+        {isRejected(status) && <Ban size={20} strokeWidth={3} />}
         {formatQueryStatus(status)}
       </div>
     ),
