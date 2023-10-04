@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { useToast } from '@/components/ui/use-toast'
-import { isVerified } from '@/lib/domain/query-status'
+import { isVerified } from '@/lib/domain/query'
 import { Query, QueryStatus } from '@/models/api'
 import {
   Database,
@@ -54,7 +54,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   const questionDate: Date = new Date(question_date)
   const lastUpdatedDate: Date = new Date(last_updated)
   const [currentSqlQuery, setCurrentSqlQuery] = useState(sql_query)
-  const [verifiedStatus, setVerifiedStatus] = useState<QueryStatus>(status)
+  const [verificationStatus, setVerifiedStatus] = useState<QueryStatus>(status)
   const [savingQuery, setSavingQuery] = useState(false)
   const [loadingQueryResults, setLoadingQueryResults] = useState(false)
 
@@ -64,8 +64,8 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     setCurrentSqlQuery(value)
   }
 
-  const handleVerifyChange = (verifiedStatus: QueryStatus) => {
-    setVerifiedStatus(verifiedStatus)
+  const handleVerifyChange = (verificationStatus: QueryStatus) => {
+    setVerifiedStatus(verificationStatus)
   }
 
   const handleRunQuery = async () => {
@@ -97,10 +97,10 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     try {
       setSavingQuery(true)
       await onPatchQuery({
-        query_status: verifiedStatus,
+        query_status: verificationStatus,
         sql_query: currentSqlQuery,
       })
-      if (isVerified(verifiedStatus)) {
+      if (isVerified(verificationStatus)) {
         toast({
           variant: 'success',
           title: 'Saved and Verified',
@@ -188,7 +188,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                 <div id="actions" className="flex items-center gap-5">
                   <span className="text-lg">Mark as </span>
                   <QueryVerifySelect
-                    verifiedStatus={verifiedStatus}
+                    verificationStatus={verificationStatus}
                     onValueChange={handleVerifyChange}
                   />
                   <Button

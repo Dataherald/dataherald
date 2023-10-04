@@ -1,5 +1,5 @@
 import { ETableSyncStatus, TableSyncStatus } from '@/models/api'
-import { EDomainTableSyncStatusTextColor } from '@/models/domain'
+import { ColorClasses, ResourceColors } from '@/models/domain'
 import {
   Check,
   CircleSlash,
@@ -9,12 +9,31 @@ import {
   XCircle,
 } from 'lucide-react'
 
+export const DOMAIN_TABLE_SYNC_STATUS_COLORS: ResourceColors<TableSyncStatus> =
+  {
+    [ETableSyncStatus.NOT_SYNCHRONIZED]: {
+      text: 'text-gray-500',
+    },
+    [ETableSyncStatus.SYNCHRONIZING]: {
+      text: 'text-yellow-600',
+    },
+    [ETableSyncStatus.SYNCHRONIZED]: {
+      text: 'text-green-700',
+    },
+    [ETableSyncStatus.DEPRECATED]: {
+      text: 'text-orange-800',
+    },
+    [ETableSyncStatus.FAILED]: {
+      text: 'text-red-600',
+    },
+  }
+
 export const formatDriver = (driver: string) => `${driver}://`
 
-export const getDomainTableSyncStatusColor = (
+export const getDomainTableSyncStatusColors = (
   sync_status: TableSyncStatus,
-): EDomainTableSyncStatusTextColor => {
-  return EDomainTableSyncStatusTextColor[sync_status]
+): ColorClasses => {
+  return DOMAIN_TABLE_SYNC_STATUS_COLORS[sync_status]
 }
 
 export const isSelectableByStatus = (sync_status: TableSyncStatus): boolean =>

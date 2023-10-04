@@ -1,8 +1,8 @@
 import {
   formatQueryStatusWithScore,
   getDomainStatus,
-  getDomainStatusColor,
-} from '@/lib/domain/query-status'
+  getDomainStatusColors,
+} from '@/lib/domain/query'
 import { cn } from '@/lib/utils'
 import { QueryListItem } from '@/models/api'
 import { ColumnDef } from '@tanstack/react-table'
@@ -61,7 +61,7 @@ export const columns: ColumnDef<QueryListItem>[] = [
     cell: ({ row }) => {
       const query = row.original
       const { status, evaluation_score } = query
-      const textColor = getDomainStatusColor(status, evaluation_score)
+      const textColor = getDomainStatusColors(status, evaluation_score).text
       return (
         <div
           className={cn(

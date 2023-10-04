@@ -5,75 +5,69 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { formatQueryStatus } from '@/lib/domain/query-status'
+import {
+  QUERY_STATUS_COLORS,
+  formatQueryStatus,
+  isNotVerified,
+  isRejected,
+  isVerified,
+} from '@/lib/domain/query'
 import { cn } from '@/lib/utils'
 import { EQueryStatus, QueryStatus } from '@/models/api'
-import { CheckCircle, XCircle } from 'lucide-react'
-import { FC } from 'react'
+import { Ban, CheckCircle, XCircle } from 'lucide-react'
+import { FC, useCallback } from 'react'
 
 export interface QueryVerifySelectProps {
-  verifiedStatus: QueryStatus
+  verificationStatus: QueryStatus
   onValueChange: (value: QueryStatus) => void
 }
 
 const QueryVerifySelect: FC<QueryVerifySelectProps> = ({
-  verifiedStatus,
+  verificationStatus,
   onValueChange,
 }) => {
   const handleValueChange = (value: QueryStatus) => {
     onValueChange(value)
   }
 
-  const verifiedOptionDisplay: JSX.Element = (
-    <div className="flex items-center gap-3 capitalize font-semibold text-green-700">
-      <CheckCircle strokeWidth={2.5} />
-      {formatQueryStatus(EQueryStatus.VERIFIED)}
-    </div>
-  )
-  const notVerifiedOptionDisplay: JSX.Element = (
-    <div className="flex items-center gap-3 capitalize font-semibold text-red-500">
-      <XCircle strokeWidth={2.5} />
-      {formatQueryStatus(EQueryStatus.NOT_VERIFIED)}
-    </div>
+  const getStatusDisplay = useCallback(
+    (status: QueryStatus) => (
+      <div
+        className={cn(
+          'flex items-center gap-3 capitalize font-semibold',
+          QUERY_STATUS_COLORS[status].text,
+        )}
+      >
+        {isVerified(status) && <CheckCircle strokeWidth={2.5} />}
+        {isNotVerified(status) && <XCircle strokeWidth={2.5} />}
+        {isRejected(status) && <Ban strokeWidth={2.5} />}
+        {formatQueryStatus(status)}
+      </div>
+    ),
+    [],
   )
   return (
     <Select onValueChange={handleValueChange}>
       <SelectTrigger
         className={cn(
           'w-[180px]',
-          verifiedStatus === EQueryStatus.VERIFIED
-            ? 'border-green-700'
-            : 'border-red-500',
+          QUERY_STATUS_COLORS[verificationStatus].border,
         )}
       >
-        {verifiedStatus === EQueryStatus.VERIFIED ? (
-          <SelectValue placeholder={verifiedOptionDisplay} />
-        ) : (
-          <SelectValue placeholder={notVerifiedOptionDisplay} />
-        )}
+        <SelectValue placeholder={getStatusDisplay(verificationStatus)} />
       </SelectTrigger>
       <SelectContent>
         {Object.values(EQueryStatus)
           .filter((qs: QueryStatus) => qs !== EQueryStatus.SQL_ERROR)
-          .map((qs: QueryStatus, idx) =>
-            qs === EQueryStatus.VERIFIED ? (
-              <SelectItem
-                key={qs + idx}
-                value={qs}
-                className="focus:bg-green-100"
-              >
-                {verifiedOptionDisplay}
-              </SelectItem>
-            ) : (
-              <SelectItem
-                key={qs + idx}
-                value={qs}
-                className="focus:bg-red-100"
-              >
-                {notVerifiedOptionDisplay}
-              </SelectItem>
-            ),
-          )}
+          .map((qs: QueryStatus, idx) => (
+            <SelectItem
+              key={qs + idx}
+              value={qs}
+              className={`focus:${QUERY_STATUS_COLORS[qs].background}`}
+            >
+              {getStatusDisplay(qs)}
+            </SelectItem>
+          ))}
       </SelectContent>
     </Select>
   )

@@ -18,12 +18,13 @@ export interface User extends UserProfile {
 }
 
 export enum EQueryStatus {
+  REJECTED = 'REJECTED',
   SQL_ERROR = 'SQL_ERROR',
   NOT_VERIFIED = 'NOT_VERIFIED',
   VERIFIED = 'VERIFIED',
 }
 
-export type QueryStatus = 'SQL_ERROR' | 'NOT_VERIFIED' | 'VERIFIED'
+export type QueryStatus = 'REJECTED' | 'SQL_ERROR' | 'NOT_VERIFIED' | 'VERIFIED'
 
 export type QuerySqlResult = {
   columns: string[]

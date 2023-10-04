@@ -13,7 +13,7 @@ import useDatabases from '@/hooks/api/useDatabases'
 import useSynchronizeSchemas from '@/hooks/api/useSynchronizeSchemas'
 import {
   formatTableSyncStatus,
-  getDomainTableSyncStatusColor,
+  getDomainTableSyncStatusColors,
   getDomainTableSyncStatusIcon,
   isSelectableByStatus,
 } from '@/lib/domain/database'
@@ -55,7 +55,7 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
             <div
               className={cn(
                 'flex items-center gap-3 min-w-fit px-5',
-                getDomainTableSyncStatusColor(table.sync_status),
+                getDomainTableSyncStatusColors(table.sync_status).text,
               )}
             >
               {renderIcon(getDomainTableSyncStatusIcon(table.sync_status), {
