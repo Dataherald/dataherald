@@ -6,7 +6,7 @@ you should be able to ask natural language questions to retrieve an accurate res
 
 Request this ``POST`` endpoint::
 
-   /api/v1/question
+   /api/v1/questions
 
 **Request body**
 
@@ -24,8 +24,8 @@ HTTP 200 code response
 
     {
       "id": "string",
-      "nl_question_id": "string",
-      "nl_response": "string",
+      "question_id": "string",
+      "response": "string",
       "intermediate_steps": [
         "string"
       ],
@@ -52,7 +52,7 @@ HTTP 200 code response
 .. code-block:: rst
 
    curl -X 'POST' \
-  '<host>/api/v1/question' \
+  '<host>/api/v1/questions' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
       -d '{
@@ -68,10 +68,8 @@ HTTP 200 code response
       "id": {
         "$oid": "64dbd8f4944f867b3c450468"
       },
-      "nl_question_id": {
-        "$oid": "64dbd8cf944f867b3c450467"
-      },
-      "nl_response": "The median rent price for single homes in Los Angeles city is approximately $2827.65.",
+      "question_id": "64dbd8cf944f867b3c450467",
+      "response": "The median rent price for single homes in Los Angeles city is approximately $2827.65.",
       "intermediate_steps": [
         "",
       ],

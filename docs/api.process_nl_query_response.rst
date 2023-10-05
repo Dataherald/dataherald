@@ -5,7 +5,7 @@ Once you made a question you can try sending a new sql query to improve the resp
 
 Request this ``POST`` endpoint::
 
-   /api/v1/nl-query-responses
+   /api/v1/responses
 
 **Request body**
 
@@ -24,8 +24,8 @@ HTTP 200 code response
 
     {
       "id": "string",
-      "nl_question_id": "string",
-      "nl_response": "string",
+      "question_id": "string",
+      "response": "string",
       "intermediate_steps": [
         "string"
       ],
@@ -52,7 +52,7 @@ HTTP 200 code response
 .. code-block:: rst
 
    curl -X 'POST' \
-  '<localhost>/api/v1/nl-query-responses' \
+  '<localhost>/api/v1/responses' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -73,10 +73,8 @@ HTTP 200 code response
       "id": {
         "$oid": "64c424fa3f4036441e882352"
       },
-      "nl_question_id": {
-        "$oid": "64dbd8cf944f867b3c450467"
-      },
-      "nl_response": "The most expensive zip to rent in Los Angeles city is 90210",
+      "question_id": "64dbd8cf944f867b3c450467",
+      "response": "The most expensive zip to rent in Los Angeles city is 90210",
       "intermediate_steps": [
         "",
       ],

@@ -6,7 +6,7 @@ from dataherald.config import Component, System
 from dataherald.model.chat_model import ChatModel
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
-from dataherald.types import NLQuery, NLQueryResponse
+from dataherald.types import Question, Response
 
 
 class Evaluation(BaseModel):
@@ -27,8 +27,8 @@ class Evaluator(Component, ABC):
 
     def get_confidence_score(
         self,
-        question: NLQuery,
-        generated_answer: NLQueryResponse,
+        question: Question,
+        generated_answer: Response,
         database_connection: DatabaseConnection,
     ) -> confloat:
         """Determines if a generated response from the engine is acceptable considering the ACCEPTANCE_THRESHOLD"""
@@ -42,8 +42,8 @@ class Evaluator(Component, ABC):
     @abstractmethod
     def evaluate(
         self,
-        question: NLQuery,
-        generated_answer: NLQueryResponse,
+        question: Question,
+        generated_answer: Response,
         database_connection: DatabaseConnection,
     ) -> Evaluation:
         """Evaluates a question with an SQL pair."""

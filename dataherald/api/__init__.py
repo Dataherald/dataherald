@@ -5,21 +5,21 @@ from fastapi import BackgroundTasks
 
 from dataherald.api.types import Query
 from dataherald.config import Component
-from dataherald.db_scanner.models.types import TableSchemaDetail
+from dataherald.db_scanner.models.types import TableDescription
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
+    CreateResponseRequest,
     DatabaseConnectionRequest,
-    ExecuteTempQueryRequest,
     GoldenRecord,
     GoldenRecordRequest,
     Instruction,
     InstructionRequest,
-    NLQueryResponse,
+    Question,
     QuestionRequest,
+    Response,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateInstruction,
-    UpdateQueryRequest,
 )
 
 
@@ -36,7 +36,11 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def answer_question(self, question_request: QuestionRequest) -> NLQueryResponse:
+    def answer_question(self, question_request: QuestionRequest) -> Response:
+        pass
+
+    @abstractmethod
+    def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
         pass
 
     @abstractmethod
@@ -62,13 +66,17 @@ class API(Component, ABC):
         self,
         table_description_id: str,
         table_description_request: TableDescriptionRequest,
-    ) -> TableSchemaDetail:
+    ) -> TableDescription:
         pass
 
     @abstractmethod
     def list_table_descriptions(
-        self, db_connection_id: str | None = None, table_name: str | None = None
-    ) -> list[TableSchemaDetail]:
+        self, db_connection_id: str, table_name: str | None = None
+    ) -> list[TableDescription]:
+        pass
+
+    @abstractmethod
+    def get_responses(self, question_id: str | None = None) -> list[Response]:
         pass
 
     @abstractmethod
@@ -82,15 +90,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def update_nl_query_response(
-        self, query_id: str, query: UpdateQueryRequest
-    ) -> NLQueryResponse:
-        pass
-
-    @abstractmethod
-    def get_nl_query_response(
-        self, query_request: ExecuteTempQueryRequest
-    ) -> NLQueryResponse:
+    def create_response(self, query_request: CreateResponseRequest) -> Response:
         pass
 
     @abstractmethod

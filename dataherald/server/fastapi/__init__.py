@@ -9,21 +9,21 @@ from fastapi.routing import APIRoute
 import dataherald
 from dataherald.api.types import Query
 from dataherald.config import Settings
-from dataherald.db_scanner.models.types import TableSchemaDetail
+from dataherald.db_scanner.models.types import TableDescription
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
+    CreateResponseRequest,
     DatabaseConnectionRequest,
-    ExecuteTempQueryRequest,
     GoldenRecord,
     GoldenRecordRequest,
     Instruction,
     InstructionRequest,
-    NLQueryResponse,
+    Question,
     QuestionRequest,
+    Response,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateInstruction,
-    UpdateQueryRequest,
 )
 
 
@@ -110,24 +110,31 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/question",
+            "/api/v1/questions",
             self.answer_question,
             methods=["POST"],
-            tags=["Question"],
+            tags=["Questions"],
         )
 
         self.router.add_api_route(
-            "/api/v1/nl-query-responses",
-            self.get_nl_query_response,
+            "/api/v1/questions",
+            self.get_questions,
+            methods=["GET"],
+            tags=["Questions"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/responses",
+            self.create_response,
             methods=["POST"],
-            tags=["NL query responses"],
+            tags=["Responses"],
         )
 
         self.router.add_api_route(
-            "/api/v1/nl-query-responses/{query_id}",
-            self.update_nl_query_response,
-            methods=["PATCH"],
-            tags=["NL query responses"],
+            "/api/v1/responses",
+            self.get_responses,
+            methods=["GET"],
+            tags=["Responses"],
         )
 
         self.router.add_api_route(
@@ -180,8 +187,11 @@ class FastAPI(dataherald.server.Server):
     ) -> bool:
         return self._api.scan_db(scanner_request, background_tasks)
 
-    def answer_question(self, question_request: QuestionRequest) -> NLQueryResponse:
+    def answer_question(self, question_request: QuestionRequest) -> Response:
         return self._api.answer_question(question_request)
+
+    def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
+        return self._api.get_questions(db_connection_id)
 
     def root(self) -> dict[str, int]:
         return {"nanosecond heartbeat": self._api.heartbeat()}
@@ -213,33 +223,29 @@ class FastAPI(dataherald.server.Server):
         self,
         table_description_id: str,
         table_description_request: TableDescriptionRequest,
-    ) -> TableSchemaDetail:
+    ) -> TableDescription:
         """Add descriptions for tables and columns"""
         return self._api.update_table_description(
             table_description_id, table_description_request
         )
 
     def list_table_descriptions(
-        self, db_connection_id: str | None = None, table_name: str | None = None
-    ) -> list[TableSchemaDetail]:
+        self, db_connection_id: str, table_name: str | None = None
+    ) -> list[TableDescription]:
         """List table descriptions"""
         return self._api.list_table_descriptions(db_connection_id, table_name)
+
+    def get_responses(self, question_id: str | None = None) -> list[Response]:
+        """List responses"""
+        return self._api.get_responses(question_id)
 
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""
         return self._api.execute_sql_query(query)
 
-    def update_nl_query_response(
-        self, query_id: str, query: UpdateQueryRequest
-    ) -> NLQueryResponse:
+    def create_response(self, query_request: CreateResponseRequest) -> Response:
         """Executes a query on the given db_connection_id"""
-        return self._api.update_nl_query_response(query_id, query)
-
-    def get_nl_query_response(
-        self, query_request: ExecuteTempQueryRequest
-    ) -> NLQueryResponse:
-        """Executes a query on the given db_connection_id"""
-        return self._api.get_nl_query_response(query_request)
+        return self._api.create_response(query_request)
 
     def delete_golden_record(self, golden_record_id: str) -> dict:
         """Deletes a golden record"""

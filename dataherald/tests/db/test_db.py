@@ -1,3 +1,4 @@
+from bson.objectid import ObjectId
 from overrides import override
 
 from dataherald.config import System
@@ -12,7 +13,7 @@ class TestDB(DB):
         self.memory = {}
         self.memory["database_connections"] = [
             {
-                "_id": "64dfa0e103f5134086f7090c",
+                "_id": ObjectId("64dfa0e103f5134086f7090c"),
                 "alias": "alias",
                 "use_ssh": False,
                 "uri": "gAAAAABkwD9Y9EpBxF1hRxhovjvedX1TeDNu-WaGqDebk_CJnpGjRlpXzDOl_puehMSbz9KDQ6OqPepl8XQpD0EchiV7he4j5tEXYE33eak87iORA7s8ko0=",  # noqa: E501
@@ -21,20 +22,21 @@ class TestDB(DB):
         ]
         self.memory["instructions"] = [
             {
-                "_id": "64dfa0e103f5134086f7090c",
+                "_id": ObjectId("64dfa0e103f5134086f7090c"),
                 "instruction": "foo",
-                "db_connection_id": "64dfa0e103f5134086f7090c",
+                "db_connection_id": ObjectId("64dfa0e103f5134086f7090c"),
             }
         ]
 
     @override
     def insert_one(self, collection: str, obj: dict) -> int:
+        obj["_id"] = ObjectId("651f2d76275132d5b65175eb")
         if collection in self.memory:
             self.memory[collection].append(obj)
         else:
             self.memory[collection] = [obj]
 
-        return len(self.memory[collection]) - 1
+        return ObjectId("651f2d76275132d5b65175eb")
 
     @override
     def find_one(self, collection: str, query: dict) -> dict:  # noqa: ARG002
@@ -88,4 +90,10 @@ class TestDB(DB):
 
     @override
     def rename(self, old_collection_name: str, new_collection_name) -> None:
+        pass
+
+    @override
+    def rename_field(
+        self, collection_name: str, old_field_name: str, new_field_name: str
+    ) -> None:
         pass

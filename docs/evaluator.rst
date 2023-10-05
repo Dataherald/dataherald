@@ -70,9 +70,9 @@ All implementations of the Evaluation component must inherit from the ``Evaluato
       Determines if a generated response from the engine is acceptable based on the ACCEPTANCE_THRESHOLD.
 
       :param question: The natural language question.
-      :type question: NLQuery
+      :type question: Question
       :param generated_answer: The generated SQL query response.
-      :type generated_answer: NLQueryResponse
+      :type generated_answer: Response
       :param database_connection: The database connection.
       :type database_connection: DatabaseConnection
       :return: The confidence score.
@@ -83,9 +83,9 @@ All implementations of the Evaluation component must inherit from the ``Evaluato
       Abstract method to evaluate a question with an SQL pair. Subclasses must implement this method.
 
       :param question: The natural language question.
-      :type question: NLQuery
+      :type question: Question
       :param generated_answer: The generated SQL query response.
-      :type generated_answer: NLQueryResponse
+      :type generated_answer: Response
       :param database_connection: The database connection.
       :type database_connection: DatabaseConnection
       :return: An Evaluation instance.
