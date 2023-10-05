@@ -2,9 +2,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { FC, HTMLAttributes } from 'react'
 
-export type LoadingQueryResultsProps = HTMLAttributes<HTMLDivElement>
+export type LoadingSqlQueryResultsProps = HTMLAttributes<HTMLDivElement>
 
-const LoadingQueryResults: FC<LoadingQueryResultsProps> = ({ className }) => {
+const LoadingSqlQueryResults: FC<LoadingSqlQueryResultsProps> = ({
+  className,
+}) => {
   return (
     <div
       className={cn(
@@ -12,10 +14,9 @@ const LoadingQueryResults: FC<LoadingQueryResultsProps> = ({ className }) => {
         className,
       )}
     >
-      <Skeleton className="h-4/5" />
-      <Skeleton className="h-1/5 w-2/3" />
+      <Skeleton className="h-full" />
     </div>
   )
 }
 
-export default LoadingQueryResults
+export default LoadingSqlQueryResults

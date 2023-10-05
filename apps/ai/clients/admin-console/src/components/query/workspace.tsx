@@ -1,6 +1,6 @@
 import CustomResponseDialog from '@/components/query/custom-response-dialog'
 import QueryLastUpdated from '@/components/query/last-updated'
-import LoadingQueryResults from '@/components/query/loading-results'
+import LoadingSqlQueryResults from '@/components/query/loading-sql-results'
 import QueryProcess from '@/components/query/process'
 import QueryQuestion from '@/components/query/question'
 import SqlEditor from '@/components/query/sql-editor'
@@ -12,7 +12,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { useToast } from '@/components/ui/use-toast'
-import { isNotVerified, isRejected, isVerified } from '@/lib/domain/query'
+import {
+  QUERY_STATUS_BUTTONS_CLASSES,
+  isNotVerified,
+  isRejected,
+  isVerified,
+} from '@/lib/domain/query'
+import { cn } from '@/lib/utils'
 import { Query, QueryStatus } from '@/models/api'
 import {
   AlertCircle,
@@ -23,8 +29,10 @@ import {
   Loader,
   Play,
   Save,
+  Send,
   XOctagon,
 } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { FC, useEffect, useState } from 'react'
 
@@ -65,7 +73,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   const [textResponseHasChanges, setTextResponseHasChanges] = useState(false)
   const [openEditResponseDialog, setOpenEditResponseDialog] = useState(false)
   const [savingQuery, setSavingQuery] = useState(false)
-  const [loadingQueryResults, setLoadingQueryResults] = useState(false)
+  const [loadingSqlQueryResults, setLoadingQueryResults] = useState(false)
 
   const { toast } = useToast()
 
@@ -74,10 +82,9 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     try {
       await onExecuteQuery(currentSqlQuery)
       toast({
-        variant: 'success',
         title: 'Query executed',
         description:
-          'The results table and the natural language answer were updated.',
+          'The query was executed successfully. Results and natural language response updated.',
       })
     } catch (e) {
       console.error(e)
@@ -107,23 +114,19 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       if (isVerified(verificationStatus)) {
         toast({
           variant: 'success',
-          title: 'Verified',
-          description: (
-            <p>
-              Response sent to the Slack thread and added to the Golden SQL
-              training set.
-            </p>
-          ),
+          title: 'Query Verified',
+          description:
+            'Response sent to the Slack thread and added to the Golden SQL training set.',
         })
       } else if (isNotVerified(verificationStatus)) {
         toast({
-          title: 'Marked as Unverified',
-          description:
-            'Removed from the Golden SQL list and not used in further training.',
+          title: 'Query Unverified',
+          description: 'The query is not part of the Golden SQL training set.',
         })
       } else if (isRejected(verificationStatus)) {
         toast({
-          title: 'Rejected',
+          variant: 'destructive-outline',
+          title: 'Query Rejected',
           description:
             'Response sent to the Slack thread informing that this query could not be answered.',
         })
@@ -183,8 +186,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
               </Button>
             </Link>
             <Button
-              variant="primary"
-              className="px-6"
+              className={cn(QUERY_STATUS_BUTTONS_CLASSES[verificationStatus])}
               onClick={handleSaveQuery}
               disabled={savingQuery}
             >
@@ -199,12 +201,74 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                 </>
               ) : (
                 <>
-                  <Save className="mr-2" size={20} strokeWidth={2.5} /> Save
+                  {isVerified(verificationStatus) && (
+                    <>
+                      <Send className="mr-2" size={20} strokeWidth={2.5} />
+                      Save and Send to Slack
+                    </>
+                  )}
+                  {isNotVerified(verificationStatus) && (
+                    <>
+                      <Save className="mr-2" size={20} strokeWidth={2.5} />
+                      Save
+                    </>
+                  )}
+                  {isRejected(verificationStatus) && (
+                    <>
+                      <Send className="mr-2" size={20} strokeWidth={2.5} />
+                      Save and Send to Slack
+                    </>
+                  )}
                 </>
               )}
             </Button>
           </div>
         </div>
+        {loadingSqlQueryResults ? (
+          <div className="shrink-0 h-24">
+            <LoadingSqlQueryResults />
+          </div>
+        ) : (
+          textResponse && (
+            <div className="bg-white flex flex-col px-5 pt-3 pb-5 rounded-xl border">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/images/slack-white.png"
+                    width={16}
+                    height={16}
+                    alt="Slack icon"
+                  />
+                  <div className="font-bold mr-1">Slack response</div>
+                </div>
+                <Button
+                  variant="link"
+                  className="font-normal text-black flex items-center gap-1"
+                  onClick={() => setOpenEditResponseDialog(true)}
+                >
+                  <Edit size={18} strokeWidth={2}></Edit>
+                  Edit
+                </Button>
+              </div>
+              <div className="break-words">{textResponse}</div>
+              {(isVerified(verificationStatus) ||
+                isRejected(verificationStatus)) && (
+                <Alert
+                  variant="info"
+                  className="flex items-center gap-2 mt-3 w-fit"
+                >
+                  <div>
+                    <AlertCircle size={18} />
+                  </div>
+                  <AlertDescription>
+                    {`This message will be sent as the question's response to
+                      the Slack thread each time you save.`}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )
+        )}
         <div
           id="tabs"
           className="shrink-0 h-80 grow flex-auto flex flex-col gap-5 bg-white border rounded-xl px-6 py-4"
@@ -234,10 +298,10 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                   <Button
                     onClick={handleRunQuery}
                     disabled={
-                      loadingQueryResults || isRejected(verificationStatus)
+                      loadingSqlQueryResults || isRejected(verificationStatus)
                     }
                   >
-                    {loadingQueryResults ? (
+                    {loadingSqlQueryResults ? (
                       <>
                         <Loader
                           className="mr-2 animate-spin"
@@ -279,9 +343,9 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
             date={lastUpdatedDate}
           />
         </div>
-        {loadingQueryResults ? (
-          <div className="shrink-0 h-60">
-            <LoadingQueryResults />
+        {loadingSqlQueryResults ? (
+          <div className="shrink-0 h-32">
+            <LoadingSqlQueryResults />
           </div>
         ) : sql_error_message ? (
           <div className="shrink-0 h-60 flex flex-col items-center bg-white border border-red-600 text-red-600">
@@ -318,68 +382,26 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                 )}
               </div>
             )}
-            {textResponse && (
-              <>
-                <div className="flex items-start justify-between gap-3">
-                  <div id="text-response" className="pt-2">
-                    <span className="font-bold mr-1">
-                      {isRejected(verificationStatus)
-                        ? 'Rejection reason:'
-                        : 'Answer:'}
-                    </span>
-                    <span className="break-words">{textResponse}</span>
-                  </div>
-                  <Button
-                    variant="link"
-                    className="font-normal text-black flex items-center gap-1 py-2 p-0 min-w-fit"
-                    onClick={() => setOpenEditResponseDialog(true)}
-                  >
-                    <Edit size={18} strokeWidth={2}></Edit>
-                    Edit
-                  </Button>
-                </div>
-                {(isVerified(verificationStatus) ||
-                  isRejected(verificationStatus)) && (
-                  <Alert variant="info" className="flex items-center gap-2">
-                    <div>
-                      <AlertCircle size={18} />
-                    </div>
-                    <AlertDescription>
-                      {`This message will be sent as the question's response to
-                      the Slack thread each time you save.`}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </>
-            )}
           </>
         )}
       </div>
-      {isRejected(verificationStatus) ? (
-        <CustomResponseDialog
-          title={
-            <div className="flex items-center gap-2">
-              <Ban size={18} strokeWidth={3}></Ban> Rejection Reason
-            </div>
-          }
-          description="Describe the reason for rejecting the query"
-          isOpen={openEditResponseDialog}
-          initialValue={textResponse}
-          onClose={handleCloseEditDialog}
-        ></CustomResponseDialog>
-      ) : (
-        <CustomResponseDialog
-          title={
-            <div className="flex items-center gap-2">
-              <Edit size={18} strokeWidth={3}></Edit> Edit Response
-            </div>
-          }
-          description="Compose the response for the question"
-          isOpen={openEditResponseDialog}
-          initialValue={textResponse}
-          onClose={handleCloseEditDialog}
-        ></CustomResponseDialog>
-      )}
+      <CustomResponseDialog
+        title={
+          <div className="flex items-center gap-2">
+            <Image
+              src="/images/slack-white.png"
+              width={20}
+              height={20}
+              alt="Slack icon"
+            />{' '}
+            Slack response
+          </div>
+        }
+        description="Compose the question's response message that will be sent to the Slack thread"
+        isOpen={openEditResponseDialog}
+        initialValue={textResponse}
+        onClose={handleCloseEditDialog}
+      ></CustomResponseDialog>
       <Toaster />
     </>
   )

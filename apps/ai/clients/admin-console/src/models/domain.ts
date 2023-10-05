@@ -1,3 +1,5 @@
+import { ClassValue } from 'clsx'
+
 export enum EDomainQueryStatus {
   REJECTED = 'REJECTED',
   SQL_ERROR = 'SQL_ERROR',
@@ -22,3 +24,5 @@ export type ColorClasses = {
 }
 
 export type ResourceColors<T extends string> = Record<T, ColorClasses>
+
+export type ResourceButtonClasses<K extends string> = Record<K, ClassValue>

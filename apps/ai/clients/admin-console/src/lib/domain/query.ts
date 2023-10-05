@@ -4,8 +4,18 @@ import {
   ColorClasses,
   DomainQueryStatus,
   EDomainQueryStatus,
+  ResourceButtonClasses,
   ResourceColors,
 } from '@/models/domain'
+
+export const QUERY_STATUS_BUTTONS_CLASSES: ResourceButtonClasses<QueryStatus> =
+  {
+    [EQueryStatus.REJECTED]:
+      'border border-red-500 bg-white text-red-500 hover:bg-red-50',
+    [EQueryStatus.SQL_ERROR]: 'bg-red-500',
+    [EQueryStatus.NOT_VERIFIED]: 'bg-primary hover:bg-blue-600',
+    [EQueryStatus.VERIFIED]: 'bg-green-700 hover:bg-green-600',
+  }
 
 export const QUERY_STATUS_COLORS: ResourceColors<QueryStatus> = {
   [EQueryStatus.REJECTED]: {
@@ -19,9 +29,9 @@ export const QUERY_STATUS_COLORS: ResourceColors<QueryStatus> = {
     background: 'bg-red-100',
   },
   [EQueryStatus.NOT_VERIFIED]: {
-    text: 'text-orange-500',
-    border: 'border-orange-500',
-    background: 'bg-orange-100',
+    text: 'text-gray-500',
+    border: 'border-gray-500',
+    background: 'bg-gray-100',
   },
   [EQueryStatus.VERIFIED]: {
     text: 'text-green-700',
