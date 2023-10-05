@@ -58,11 +58,6 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
                 getDomainTableSyncStatusColors(table.sync_status).text,
               )}
             >
-              {renderIcon(getDomainTableSyncStatusIcon(table.sync_status), {
-                size: 16,
-                strokeWidth: 2,
-              })}
-              {formatTableSyncStatus(table.sync_status)}
               {table.last_sync && (
                 <span className="text-gray-400">
                   {formatDistanceStrict(new Date(table.last_sync), new Date(), {
@@ -70,6 +65,11 @@ const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
                   })}
                 </span>
               )}
+              {renderIcon(getDomainTableSyncStatusIcon(table.sync_status), {
+                size: 16,
+                strokeWidth: 2,
+              })}
+              {formatTableSyncStatus(table.sync_status)}
             </div>
           ),
           children: table.columns?.length
@@ -222,8 +222,13 @@ const DatabasesPage: FC = () => {
   const [connectingDB, setConnectingDB] = useState<boolean>(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const refreshDatabases = async (optimisticData?: Databases) =>
-    mutate(optimisticData)
+  const refreshDatabases = async (optimisticData?: Databases) => {
+    try {
+      mutate(optimisticData)
+    } catch (e) {
+      setIsRefreshing(false)
+    }
+  }
 
   const handleRefresh = async (newData?: Databases) => {
     setIsRefreshing(true)
