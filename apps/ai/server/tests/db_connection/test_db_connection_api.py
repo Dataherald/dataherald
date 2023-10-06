@@ -17,7 +17,6 @@ client = TestClient(app)
 @patch("utils.auth.VerifyToken.verify", Mock(return_value={"email": ""}))
 @patch.multiple(
     "utils.auth.Authorize",
-    user_and_get_org_id=Mock(return_value="0123456789ab0123456789ab"),
     db_connection_in_organization=Mock(return_value=None),
     user=Mock(
         return_value=User(
@@ -27,7 +26,7 @@ client = TestClient(app)
             organization_id="0123456789ab0123456789ab",
         )
     ),
-    get_organization_by_user=Mock(
+    get_organization_by_user_response=Mock(
         return_value=Organization(
             id="123", name="test_org", db_connection_id="0123456789ab0123456789ab"
         )

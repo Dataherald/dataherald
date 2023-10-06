@@ -26,7 +26,7 @@ async def get_drivers(token: str = Depends(token_auth_scheme)) -> list[DriverRes
 async def get_db_connections(
     token: str = Depends(token_auth_scheme),
 ) -> list[DBConnectionResponse]:
-    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
+    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return db_connection_service.get_db_connections(org_id)
 
 
@@ -34,7 +34,7 @@ async def get_db_connections(
 async def get_db_connection(
     id: str, token: str = Depends(token_auth_scheme)
 ) -> DBConnectionResponse:
-    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
+    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     authorize.db_connection_in_organization(id, org_id)
     return db_connection_service.get_db_connection(id)
 
@@ -46,7 +46,7 @@ async def add_db_connection(
     token: str = Depends(token_auth_scheme),
 ) -> DBConnectionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_by_user(user)
+    organization = authorize.get_organization_by_user_response(user)
     return await db_connection_service.add_db_connection(
         db_connection_request_json, organization, file
     )
@@ -60,7 +60,7 @@ async def update_db_connection(
     token: str = Depends(token_auth_scheme),
 ) -> DBConnectionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_by_user(user)
+    organization = authorize.get_organization_by_user_response(user)
     authorize.db_connection_in_organization(id, organization.id)
     return await db_connection_service.update_db_connection(
         id, db_connection_request_json, organization, file

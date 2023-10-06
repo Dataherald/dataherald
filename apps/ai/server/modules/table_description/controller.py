@@ -28,7 +28,7 @@ async def get_table_descriptions(
     token: str = Depends(token_auth_scheme),
 ) -> list[TableDescriptionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_by_user(user)
+    organization = authorize.get_organization_by_user_response(user)
     return await table_description_service.get_table_descriptions(
         table_name, organization.db_connection_id
     )
@@ -39,7 +39,7 @@ async def get_database_table_descriptions(
     token: str = Depends(token_auth_scheme),
 ) -> list[DatabaseDescriptionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_by_user(user)
+    organization = authorize.get_organization_by_user_response(user)
     return await table_description_service.get_database_table_descriptions(
         organization.db_connection_id
     )
@@ -59,7 +59,7 @@ async def update_table_description(
     table_description_request: TableDescriptionRequest,
     token: str = Depends(token_auth_scheme),
 ) -> TableDescriptionResponse:
-    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
+    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     authorize.table_description_in_organization(id, org_id)
     return await table_description_service.update_table_description(
         id, table_description_request

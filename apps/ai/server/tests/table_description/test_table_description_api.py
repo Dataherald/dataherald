@@ -10,7 +10,7 @@ from app import app
 from modules.db_connection.models.responses import DBConnectionResponse
 from modules.organization.models.entities import Organization
 from modules.table_description.models.entities import SchemaStatus
-from modules.user.models.entities import User
+from modules.user.models.responses import UserResponse
 
 client = TestClient(app)
 
@@ -19,15 +19,14 @@ client = TestClient(app)
 @patch.multiple(
     "utils.auth.Authorize",
     user=Mock(
-        return_value=User(
+        return_value=UserResponse(
             id="123",
             email="test@gmail.com",
             username="test_user",
-            organization_id="123",
+            organization_id="0123456789ab0123456789ab",
         )
     ),
-    user_and_get_org_id=Mock(return_value="123"),
-    get_organization_by_user=Mock(
+    get_organization_by_user_response=Mock(
         return_value=Organization(
             id="123", name="test_org", db_connection_id="0123456789ab0123456789ab"
         )

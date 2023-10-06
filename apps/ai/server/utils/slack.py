@@ -2,8 +2,8 @@ import re
 
 from slack_sdk import WebClient
 
-from modules.query.models.entities import QueryRef
-from modules.query.models.responses import CoreQueryResponse
+from modules.query.models.entities import Query
+from modules.query.models.responses import EngineResponseResponse
 
 
 class SlackWebClient:
@@ -24,8 +24,8 @@ class SlackWebClient:
 
     def send_verified_query_message(
         self,
-        query_ref: QueryRef,
-        query_response: CoreQueryResponse,
+        query_ref: Query,
+        query_response: EngineResponseResponse,
         question: str,
     ):
         message_blocks = [
@@ -47,7 +47,7 @@ class SlackWebClient:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Response: {query_ref.custom_response or query_response.nl_response}",
+                    "text": f"Response: {query_ref.custom_response or query_response.response}",
                 },
             },
             {
@@ -66,7 +66,7 @@ class SlackWebClient:
 
     def send_rejected_query_message(
         self,
-        query_ref: QueryRef,
+        query_ref: Query,
     ):
         message_blocks = [
             {

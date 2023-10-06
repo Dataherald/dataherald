@@ -39,7 +39,7 @@ export interface QueryListItem {
   username: string
   question: string
   question_date: string
-  nl_response: string
+  response: string
   status: QueryStatus
   evaluation_score: number
 }
@@ -54,7 +54,7 @@ export interface Query {
   sql_query_result: QuerySqlResult | null
   sql_error_message?: string
   ai_process: string[]
-  nl_response: string
+  response: string
   status: QueryStatus
   evaluation_score: number
   username: string

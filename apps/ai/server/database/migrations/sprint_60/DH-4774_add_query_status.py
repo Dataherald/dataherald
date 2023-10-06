@@ -1,18 +1,20 @@
+import pymongo
+
 import config
-from database.mongo import MongoDB
 
 if __name__ == "__main__":
     # Update add status
-    query_refs = MongoDB.find(config.QUERY_RESPONSE_REF_COL, {})
+    data_store = pymongo.MongoClient(config.db_settings.mongodb_uri)[
+        config.db_settings.mongodb_db_name
+    ]
 
+    query_refs = data_store["nl_query_response_refs"].find({})
     for query_ref in query_refs:
         if "status" not in query_ref:
-            query_response = MongoDB.find_one(
-                config.QUERY_RESPONSE_COL,
+            query_response = data_store["nl_query_responses"].find_one(
                 {"_id": query_ref["query_response_id"]},
             )
-            golden_sql = MongoDB.find_one(
-                config.GOLDEN_SQL_REF_COL,
+            golden_sql = data_store["golden_sql_refs"].find_one(
                 {"query_response_id": query_ref["query_response_id"]},
             )
 
@@ -24,8 +26,6 @@ if __name__ == "__main__":
                 query_ref["status"] = "SQL_ERROR"
 
             # update object
-            MongoDB.update_one(
-                config.QUERY_RESPONSE_REF_COL,
-                {"_id": query_ref["_id"]},
-                query_ref,
+            data_store["nl_query_response_refs"].update_one(
+                {"_id": query_ref["_id"]}, {"$set": query_ref}
             )

@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 from pydantic import BaseSettings
 
 DATABASE_CONNECTION_COL = "database_connections"
-QUESTION_COL = "nl_questions"
-QUERY_RESPONSE_COL = "nl_query_responses"
+QUESTION_COL = "questions"
+QUERY_RESPONSE_COL = "responses"
 GOLDEN_SQL_COL = "golden_records"
 TABLE_DESCRIPTION_COL = "table_descriptions"
 INSTRUCTION_COL = "instructions"
@@ -14,7 +14,7 @@ INSTRUCTION_COL = "instructions"
 USER_COL = "users"
 ORGANIZATION_COL = "organizations"
 
-QUERY_RESPONSE_REF_COL = "nl_query_response_refs"
+QUERY_RESPONSE_REF_COL = "queries"
 DATABASE_CONNECTION_REF_COL = "database_connection_refs"
 GOLDEN_SQL_REF_COL = "golden_sql_refs"
 
@@ -53,7 +53,6 @@ class AWSS3Settings(BaseSettings):
 class AuthSettings(BaseSettings):
     load_dotenv()
 
-    auth_enabled: bool = os.environ.get("AUTH_ENABLED", True)
     auth0_domain: str = os.environ.get("AUTH0_DOMAIN")
     auth0_algorithms: str = os.environ.get("AUTH0_ALGORITHMS", "RS256")
     auth0_audience: str = os.environ.get("AUTH0_API_AUDIENCE")

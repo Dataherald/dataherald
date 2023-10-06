@@ -59,7 +59,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   const {
     question,
     question_date,
-    nl_response,
+    response,
     username,
     sql_query,
     sql_query_result,
@@ -74,7 +74,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   const lastUpdatedDate: Date = new Date(last_updated)
   const [currentSqlQuery, setCurrentSqlQuery] = useState(sql_query)
   const [verificationStatus, setVerifiedStatus] = useState<QueryStatus>(status)
-  const [textResponse, setCustomResponse] = useState<string>(nl_response)
+  const [textResponse, setCustomResponse] = useState<string>(response)
   const [textResponseHasChanges, setTextResponseHasChanges] = useState(false)
   const [openEditResponseDialog, setOpenEditResponseDialog] = useState(false)
   const [savingQuery, setSavingQuery] = useState(false)
@@ -170,8 +170,8 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   }
 
   useEffect(() => {
-    setTextResponseHasChanges(textResponse !== nl_response)
-  }, [nl_response, textResponse])
+    setTextResponseHasChanges(textResponse !== response)
+  }, [response, textResponse])
 
   const rejectedBanner = (
     <div className="h-full flex items-center justify-center gap-2 text-muted-foreground">

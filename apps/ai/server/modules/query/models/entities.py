@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, confloat
 
 from modules.user.models.entities import SlackInfo
 
@@ -9,7 +9,7 @@ from modules.user.models.entities import SlackInfo
 class Question(BaseModel):
     id: Any = Field(alias="_id")
     question: str
-    db_connection_id: str | None
+    db_connection_id: Any
 
 
 class QueryStatus(Enum):
@@ -25,13 +25,14 @@ class SQLGenerationStatus(Enum):
     NONE = "NONE"
 
 
-class QueryRef(BaseModel):
+class Query(BaseModel):
     id: Any = Field(alias="_id")
-    query_response_id: Any
     status: str
+    question_id: Any
+    response_id: Any
     question_date: str
     last_updated: str
-    updated_by: Any | None
+    updated_by: Any
     organization_id: Any
     display_id: str | None
     slack_info: SlackInfo
@@ -41,3 +42,21 @@ class QueryRef(BaseModel):
 class SQLQueryResult(BaseModel):
     columns: list[str]
     rows: list[dict]
+
+
+class BaseEngineResponse(BaseModel):
+    response: str | None
+    intermediate_steps: list[str] | None
+    sql_query: str | None
+    sql_query_result: SQLQueryResult | None
+    sql_generation_status: SQLGenerationStatus = "NONE"
+    exec_time: float | None
+    total_tokens: int | None
+    total_cost: float | None
+    confidence_score: confloat(ge=0, le=1) | None
+    error_message: str | None
+
+
+class EngineResponse(BaseEngineResponse):
+    id: Any | None = Field(alias="_id")
+    question_id: Any

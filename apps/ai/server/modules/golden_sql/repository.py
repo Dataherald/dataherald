@@ -33,9 +33,9 @@ class GoldenSQLRepository:
         )
         return [GoldenSQLRef(**gsr) for gsr in golden_sql_refs]
 
-    def get_verified_golden_sql_ref(self, query_response_id: str) -> GoldenSQLRef:
+    def get_verified_golden_sql_ref(self, query_id: str) -> GoldenSQLRef:
         golden_sql_ref = MongoDB.find_one(
-            GOLDEN_SQL_REF_COL, {"query_response_id": ObjectId(query_response_id)}
+            GOLDEN_SQL_REF_COL, {"query_id": ObjectId(query_id)}
         )
         return GoldenSQLRef(**golden_sql_ref) if golden_sql_ref else None
 
@@ -52,17 +52,15 @@ class GoldenSQLRepository:
             GOLDEN_SQL_REF_COL, {"golden_sql_id": ObjectId(golden_id)}
         )
 
-    def delete_verified_golden_sql_ref(self, query_response_id: str):
-        return MongoDB.delete_one(
-            GOLDEN_SQL_REF_COL, {"query_response_id": ObjectId(query_response_id)}
-        )
+    def delete_verified_golden_sql_ref(self, query_id: str):
+        return MongoDB.delete_one(GOLDEN_SQL_REF_COL, {"query_id": ObjectId(query_id)})
 
     def get_next_display_id(self, org_id: str) -> str:
         return get_next_display_id(GOLDEN_SQL_REF_COL, ObjectId(org_id), "GS")
 
-    def get_verified_query_display_id(self, query_response_id: str) -> str:
+    def get_verified_query_display_id(self, query_id: str) -> str:
         query_ref = MongoDB.find_one(
-            QUERY_RESPONSE_REF_COL, {"query_response_id": ObjectId(query_response_id)}
+            QUERY_RESPONSE_REF_COL, {"query_id": ObjectId(query_id)}
         )
 
         if not query_ref:

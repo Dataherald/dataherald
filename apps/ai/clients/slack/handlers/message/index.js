@@ -83,7 +83,7 @@ async function handleMessage(context, say) {
         } else {
             const data = await response.json()
             const {
-                nl_response,
+                response: response_message,
                 sql_query,
                 exec_time,
                 display_id,
@@ -98,7 +98,7 @@ async function handleMessage(context, say) {
                             type: 'section',
                             text: {
                                 type: 'mrkdwn',
-                                text: `:mag: *Response*: ${nl_response}`,
+                                text: `:mag: *Response*: ${response_message}`,
                             },
                         },
                         ...(sql_query
@@ -120,7 +120,7 @@ async function handleMessage(context, say) {
                               ]
                             : []),
                     ],
-                    text: nl_response,
+                    text: response_message,
                     thread_ts,
                 })
             } else {

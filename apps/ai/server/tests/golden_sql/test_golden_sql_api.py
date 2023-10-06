@@ -8,6 +8,7 @@ from httpx import Response
 
 from app import app
 from modules.golden_sql.models.entities import GoldenSQLRef
+from modules.user.models.responses import UserResponse
 
 client = TestClient(app)
 
@@ -16,13 +17,13 @@ client = TestClient(app)
 @patch.multiple(
     "utils.auth.Authorize",
     user=Mock(
-        return_value={
-            "id": "123",
-            "username": "test_user",
-            "organization_id": "0123456789ab0123456789ab",
-        }
+        return_value=UserResponse(
+            id="123",
+            email="test@gmail.com",
+            username="test_user",
+            organization_id="0123456789ab0123456789ab",
+        )
     ),
-    user_and_get_org_id=Mock(return_value="0123456789ab0123456789ab"),
     golden_sql_in_organization=Mock(return_value=None),
 )
 class TestGoldenSQLAPI(TestCase):
@@ -47,7 +48,7 @@ class TestGoldenSQLAPI(TestCase):
         "golden_sql_id": test_1["_id"],
         "organization_id": "test_org_id",
         "source": "VERIFIED_QUERY",
-        "query_response_id": ObjectId(b"doo-ree-miii"),
+        "query_id": ObjectId(b"doo-ree-miii"),
         "created_time": "2023-09-15 21:14:29",
         "display_id": "GS-00001",
     }
@@ -57,7 +58,7 @@ class TestGoldenSQLAPI(TestCase):
         "golden_sql_id": test_2["_id"],
         "organization_id": "test_org_id",
         "source": "VERIFIED_QUERY",
-        "query_response_id": ObjectId(b"doo-ree-miii"),
+        "query_id": ObjectId(b"doo-ree-miii"),
         "created_time": "2023-09-15 21:14:29",
         "display_id": "GS-00002",
     }
@@ -75,7 +76,7 @@ class TestGoldenSQLAPI(TestCase):
         "sql_query": test_1["sql_query"],
         "db_connection_id": test_1["db_connection_id"],
         "organization_id": str(test_ref_1["organization_id"]),
-        "verified_query_id": str(test_ref_1["query_response_id"]),
+        "verified_query_id": str(test_ref_1["query_id"]),
         "display_id": test_ref_1["display_id"],
         "verified_query_display_id": "QR-00001",
         "created_time": test_ref_1["created_time"],
@@ -88,7 +89,7 @@ class TestGoldenSQLAPI(TestCase):
         "sql_query": test_2["sql_query"],
         "db_connection_id": test_2["db_connection_id"],
         "organization_id": str(test_ref_2["organization_id"]),
-        "verified_query_id": str(test_ref_2["query_response_id"]),
+        "verified_query_id": str(test_ref_2["query_id"]),
         "display_id": test_ref_2["display_id"],
         "verified_query_display_id": "QR-00002",
         "created_time": test_ref_2["created_time"],

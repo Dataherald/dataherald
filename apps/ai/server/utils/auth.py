@@ -12,60 +12,17 @@ from config import (
     TABLE_DESCRIPTION_COL,
     USER_COL,
     auth_settings,
-    slack_settings,
 )
 from database.mongo import MongoDB
-from modules.organization.models.entities import (
-    SlackBot,
-    SlackInstallation,
-    SlackTeam,
-    SlackUser,
-)
 from modules.organization.models.responses import OrganizationResponse
 from modules.organization.service import OrganizationService
 from modules.query.service import QueryService
-from modules.user.models.entities import User
+from modules.user.models.responses import UserResponse
 from modules.user.service import UserService
 
 user_service = UserService()
 org_service = OrganizationService()
 query_service = QueryService()
-
-test_user = User(
-    _id=ObjectId(b"lao-gan-maaa"),
-    email="test@dataherald.com",
-    email_verified=True,
-    name="Test User",
-    organization_id=ObjectId(b"foo-bar-quux"),
-)
-
-test_organization = OrganizationResponse(
-    id="64ee518fadb29ccf33d51739",
-    name="Test Org",
-    db_connection_id="64ee518fadb29ccf33d51124",
-    slack_installation=SlackInstallation(
-        team=SlackTeam(id="TT1TV3MSL", name="test_org"),
-        bot=SlackBot(
-            scopes=[],
-            token=slack_settings.slack_bot_access_token,
-            user_id="test_bot_id",
-            id="test_bot_id",
-        ),
-        user=SlackUser(
-            token="test_user_token",  # noqa: S106
-            scopes="test_scopes",
-            id="test_user_id",
-        ),
-        enterprise="test_enterprise",
-        token_type="test_token_type",  # noqa: S106
-        is_enterprise_install=True,
-        app_id="test_app_id",
-        auth_version="test_auth_version",
-    ),
-    slack_workspace_id="test_slack_id",
-    slack_bot_access_token=slack_settings.slack_bot_access_token,
-    confidence_threshold=0.70,
-)
 
 
 class VerifyToken:
@@ -80,24 +37,8 @@ class VerifyToken:
         self.jwks_client = jwt.PyJWKClient(jwks_url)
 
     def verify(self):
-        if not auth_settings.auth_enabled:
-            return self._mock_authentication_data()
-
         self._fetch_signing_key()
         return self._decode_payload()
-
-    def _mock_authentication_data(self):
-        return {
-            auth_settings.auth0_issuer + "email": test_user.email,  # placeholder
-            "iss": auth_settings.auth0_issuer,
-            "sub": "foo",
-            "aud": auth_settings.auth0_audience,
-            "iat": "",
-            "exp": "",
-            "azp": "",
-            "scope": "openid profile email offline_access",
-            "gty": "client-credentials",
-        }
 
     def _fetch_signing_key(self):
         try:
@@ -139,10 +80,7 @@ class VerifyToken:
 
 
 class Authorize:
-    def user(self, payload: dict) -> User:
-        if not auth_settings.auth_enabled:
-            return test_user
-
+    def user(self, payload: dict) -> UserResponse:
         email = payload[auth_settings.auth0_issuer + "email"]
         user = user_service.get_user_by_email(email)
         if not user:
@@ -176,9 +114,7 @@ class Authorize:
         )
 
     def query_in_organization(self, query_id: str, org_id: str):
-        self._item_in_organization(
-            QUERY_RESPONSE_REF_COL, query_id, org_id, key="query_response_id"
-        )
+        self._item_in_organization(QUERY_RESPONSE_REF_COL, query_id, org_id)
 
     def golden_sql_in_organization(self, golden_sql_id: str, org_id: str):
         self._item_in_organization(
@@ -187,10 +123,6 @@ class Authorize:
 
     def user_in_organization(self, user_id: str, org_id: str):
         self._item_in_organization(USER_COL, user_id, org_id)
-
-    def user_and_get_org_id(self, payload) -> str:
-        user = self.user(payload)
-        return str(self.get_organization_by_user(user).id)
 
     def table_description_in_organization(self, table_description_id: str, org_id: str):
         organization = org_service.get_organization(org_id)
@@ -206,11 +138,10 @@ class Authorize:
                 status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
             )
 
-    def get_organization_by_user(self, user: User) -> OrganizationResponse:
-        if not auth_settings.auth_enabled:
-            return test_organization
-
-        organization = org_service.get_organization(str(user.organization_id))
+    def get_organization_by_user_response(
+        self, user: UserResponse
+    ) -> OrganizationResponse:
+        organization = org_service.get_organization(user.organization_id)
         if not organization:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -219,8 +150,6 @@ class Authorize:
         return organization
 
     def is_root_user(self, payload: dict):
-        if not auth_settings.auth_enabled:
-            return
         domain_pattern = r"@([A-Za-z0-9.-]+)"
         user = self.user(payload)
         match = re.search(domain_pattern, user.email)
@@ -236,9 +165,6 @@ class Authorize:
     def _item_in_organization(
         self, collection: str, id: str, org_id: str, key: str = None
     ):
-        if not auth_settings.auth_enabled:
-            return
-
         if key:
             item = MongoDB.find_one(
                 collection, {key: ObjectId(id), "organization_id": ObjectId(org_id)}

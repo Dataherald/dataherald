@@ -37,7 +37,7 @@ export const columns: ColumnDef<QueryListItem>[] = [
   {
     id: 'answer',
     header: 'Answer',
-    accessorKey: 'nl_response',
+    accessorKey: 'response',
     cell: ({ row }) => (
       <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
         {row.getValue('answer')}

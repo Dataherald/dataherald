@@ -9,4 +9,4 @@ class BaseInstruction(BaseModel):
 
 class Instruction(BaseInstruction):
     id: Any = Field(alias="_id")
-    db_connection_id: str
+    db_connection_id: Any

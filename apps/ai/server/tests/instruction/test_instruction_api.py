@@ -21,10 +21,10 @@ client = TestClient(app)
             id="123",
             email="test@gmail.com",
             username="test_user",
-            organization_id="123",
+            organization_id="0123456789ab0123456789ab",
         )
     ),
-    get_organization_by_user=Mock(
+    get_organization_by_user_response=Mock(
         return_value=Organization(
             id="123", name="test_org", db_connection_id="0123456789ab0123456789ab"
         )

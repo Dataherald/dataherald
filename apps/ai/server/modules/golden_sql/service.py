@@ -50,19 +50,19 @@ class GoldenSQLService:
             for gsr in golden_sql_refs
         ]
 
-    def get_verified_golden_sql_ref(self, query_response_id: str) -> GoldenSQLRef:
-        return self.repo.get_verified_golden_sql_ref(query_response_id)
+    def get_verified_golden_sql_ref(self, query_id: str) -> GoldenSQLRef:
+        return self.repo.get_verified_golden_sql_ref(query_id)
 
     async def add_verified_query_golden_sql(
         self,
         golden_sql_request: GoldenSQLRequest,
         org_id: str,
-        query_response_id: str,
+        query_id: str,
     ) -> GoldenSQLResponse:
-        golden_sql_ref = self.repo.get_verified_golden_sql_ref(query_response_id)
+        golden_sql_ref = self.repo.get_verified_golden_sql_ref(query_id)
         # if already exist, delete golden_sql_ref and call delete /golden-records
         if golden_sql_ref:
-            await self.delete_golden_sql("", query_response_id)
+            await self.delete_golden_sql("", query_id)
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.k2_core_url + "/golden-records",
@@ -79,7 +79,7 @@ class GoldenSQLService:
                 golden_sql_id=golden_sql.id,
                 organization_id=ObjectId(org_id),
                 source=GoldenSQLSource.VERIFIED_QUERY.value,
-                query_response_id=ObjectId(query_response_id),
+                query_id=ObjectId(query_id),
                 created_time=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
                 display_id=display_id,
             )
@@ -133,11 +133,9 @@ class GoldenSQLService:
 
             return golden_sql_responses
 
-    async def delete_golden_sql(
-        self, golden_id: str, query_response_id: str = None
-    ) -> dict:
-        if query_response_id:
-            golden_sql_ref = self.repo.get_verified_golden_sql_ref(query_response_id)
+    async def delete_golden_sql(self, golden_id: str, query_id: str = None) -> dict:
+        if query_id:
+            golden_sql_ref = self.repo.get_verified_golden_sql_ref(query_id)
             golden_id = golden_sql_ref.golden_sql_id
         async with httpx.AsyncClient() as client:
             response = await client.delete(
@@ -146,10 +144,8 @@ class GoldenSQLService:
             )
             raise_for_status(response.status_code, response.text)
             if response.json()["status"]:
-                if query_response_id:
-                    matched_count = self.repo.delete_verified_golden_sql_ref(
-                        query_response_id
-                    )
+                if query_id:
+                    matched_count = self.repo.delete_verified_golden_sql_ref(query_id)
                 else:
                     matched_count = self.repo.delete_golden_sql_ref(golden_id)
                 if matched_count == 1:
@@ -166,15 +162,15 @@ class GoldenSQLService:
             id=str(golden_sql.id),
             question=golden_sql.question,
             sql_query=golden_sql.sql_query,
-            db_connection_id=golden_sql.db_connection_id,
+            db_connection_id=str(golden_sql.db_connection_id),
             created_time=golden_sql_ref.created_time,
             organization_id=str(golden_sql_ref.organization_id),
             source=golden_sql_ref.source,
-            verified_query_id=str(golden_sql_ref.query_response_id),
+            verified_query_id=str(golden_sql_ref.query_id),
             display_id=golden_sql_ref.display_id,
             verified_query_display_id=self.repo.get_verified_query_display_id(
-                str(golden_sql_ref.query_response_id)
+                str(golden_sql_ref.query_id)
             )
-            if golden_sql_ref.query_response_id
+            if golden_sql_ref.query_id
             else None,
         )

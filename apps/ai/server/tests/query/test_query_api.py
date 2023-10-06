@@ -9,7 +9,8 @@ from httpx import Response
 from app import app
 from modules.organization.models.entities import SlackBot, SlackInstallation
 from modules.organization.models.responses import OrganizationResponse
-from modules.query.models.entities import QueryRef
+from modules.query.models.entities import Query
+from modules.user.models.responses import UserResponse
 
 client = TestClient(app)
 
@@ -18,15 +19,15 @@ client = TestClient(app)
 @patch.multiple(
     "utils.auth.Authorize",
     user=Mock(
-        return_value={
-            "id": "0123456789ab0123456789ab",
-            "username": "test_user",
-            "organization_id": "0123456789ab0123456789ab",
-        }
+        return_value=UserResponse(
+            id="123",
+            email="test@gmail.com",
+            username="test_user",
+            organization_id="0123456789ab0123456789ab",
+        )
     ),
-    user_and_get_org_id=Mock(return_value="0123456789ab0123456789ab"),
     query_in_organization=Mock(return_value=None),
-    get_organization_by_user=Mock(
+    get_organization_by_user_response=Mock(
         return_value=OrganizationResponse(
             id="0123456789ab0123456789ab",
             name="test_org",
@@ -45,8 +46,8 @@ class TestQueryAPI(TestCase):
 
     test_0 = {
         "_id": ObjectId(b"foo-bar-quux"),
-        "nl_question_id": test_question["_id"],
-        "nl_response": "test_response",
+        "question_id": test_question["_id"],
+        "response": "test_response",
         "sql_query": "test_query",
         "sql_query_result": {
             "columns": ["test_column"],
@@ -62,9 +63,9 @@ class TestQueryAPI(TestCase):
     }
 
     test_response_0 = {
-        "id": {"$oid": str(test_0["_id"])},
-        "nl_question_id": str(test_question["_id"]),
-        "nl_response": test_0["nl_response"],
+        "id": str(test_0["_id"]),
+        "question_id": str(test_question["_id"]),
+        "response": test_0["response"],
         "sql_query": test_0["sql_query"],
         "sql_query_result": test_0["sql_query_result"],
         "sql_generation_status": test_0["sql_generation_status"],
@@ -77,13 +78,14 @@ class TestQueryAPI(TestCase):
     }
 
     test_ref_1 = {
-        "id": None,
-        "query_response_id": test_0["_id"],
+        "_id": ObjectId(b"doo-ree-miii"),
+        "response_id": test_0["_id"],
+        "question_id": test_question["_id"],
         "question_date": "2023-09-15 21:14:29",
         "status": "NOT_VERIFIED",
         "custom_response": None,
         "last_updated": "2023-09-15 21:14:29",
-        "updated_by": "0123456789ab0123456789ab",
+        "updated_by": None,
         "organization_id": ObjectId(b"foo-bar-quux"),
         "display_id": "QR-00000",
         "slack_info": {
@@ -96,11 +98,11 @@ class TestQueryAPI(TestCase):
     }
 
     test_list_response_1 = {
-        "id": str(test_0["_id"]),
+        "id": str(test_ref_1["_id"]),
         "username": "test_user",
         "question": test_question["question"],
         "question_date": test_ref_1["question_date"],
-        "nl_response": test_response_0["nl_response"],
+        "response": test_response_0["response"],
         "status": "NOT_VERIFIED",
         "evaluation_score": test_response_0["confidence_score"] * 100.0,
         "display_id": test_ref_1["display_id"],
@@ -120,9 +122,9 @@ class TestQueryAPI(TestCase):
     }
 
     test_slack_response_1 = {
-        "id": str(test_0["_id"]),
+        "id": str(test_ref_1["_id"]),
         "display_id": test_ref_1["display_id"],
-        "nl_response": test_response_0["nl_response"],
+        "response": test_response_0["response"],
         "sql_query": test_response_1["sql_query"],
         "exec_time": test_response_0["exec_time"],
         "is_above_confidence_threshold": False,
@@ -148,9 +150,9 @@ class TestQueryAPI(TestCase):
     )
     @patch.multiple(
         "modules.query.repository.QueryRepository",
-        get_query_response_ref=Mock(return_value=None),
+        get_query=Mock(return_value=None),
         get_next_display_id=Mock(return_value="QR-00000"),
-        add_query_response_ref=Mock(return_value=test_ref_1),
+        add_query=Mock(return_value=str(test_ref_1["_id"])),
     )
     def test_answer_question(self):
         response = client.post(
@@ -181,8 +183,8 @@ class TestQueryAPI(TestCase):
         Mock(return_value=None),
     )
     @patch(
-        "modules.query.repository.QueryRepository.get_query_response_refs",
-        Mock(return_value=[QueryRef(**test_ref_1)]),
+        "modules.query.repository.QueryRepository.get_queries",
+        Mock(return_value=[Query(**test_ref_1)]),
     )
     def test_get_queries(self):
         response = client.get(self.url + "/list", headers=self.test_header)
@@ -214,10 +216,10 @@ class TestQueryAPI(TestCase):
         Mock(return_value={"id": "666f6f2d6261722d71757578"}),
     )
     @patch(
-        "modules.query.service.QueryService.patch_query",
+        "modules.query.service.QueryService.patch_response",
         AsyncMock(return_value=test_response_1),
     )
-    def test_patch_query(self):
+    def test_patch_response(self):
         response = client.patch(
             self.url + "/666f6f2d6261722d71757578",
             headers=self.test_header,
@@ -226,12 +228,12 @@ class TestQueryAPI(TestCase):
         assert response.status_code == status.HTTP_200_OK
 
     @patch(
-        "modules.query.service.QueryService.run_query",
+        "modules.query.service.QueryService.run_response",
         AsyncMock(return_value=test_response_1),
     )
-    def test_run_query(self):
+    def test_run_response(self):
         response = client.post(
-            self.url + "/666f6f2d6261722d71757578/execution",
+            self.url + "/666f6f2d6261722d71757578/answer",
             headers=self.test_header,
             json={"sql_query": "test_query"},
         )

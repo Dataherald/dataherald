@@ -18,13 +18,13 @@ authorize = Authorize()
 
 @router.get("/list")
 async def get_users(token: str = Depends(token_auth_scheme)) -> list[UserResponse]:
-    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
+    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return user_service.get_users(org_id)
 
 
 @router.get("/{id}")
 async def get_user(id: str, token: str = Depends(token_auth_scheme)) -> UserResponse:
-    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
+    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     authorize.user_in_organization(id, org_id)
     return user_service.get_user(id)
 
@@ -33,7 +33,7 @@ async def get_user(id: str, token: str = Depends(token_auth_scheme)) -> UserResp
 async def add_user(
     user_request: UserRequest, token: str = Depends(token_auth_scheme)
 ) -> UserResponse:
-    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
+    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return user_service.add_user(user_request, org_id)
 
 
@@ -41,13 +41,13 @@ async def add_user(
 async def update_user(
     id: str, user_request: UserRequest, token: str = Depends(token_auth_scheme)
 ) -> UserResponse:
-    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
+    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     authorize.user_in_organization(id, org_id)
     return user_service.update_user(id, user_request)
 
 
 @router.delete("/{id}")
 async def delete_user(id: str, token: str = Depends(token_auth_scheme)) -> dict:
-    org_id = authorize.user_and_get_org_id(VerifyToken(token.credentials).verify())
+    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     authorize.user_in_organization(id, org_id)
     return user_service.delete_user(id)

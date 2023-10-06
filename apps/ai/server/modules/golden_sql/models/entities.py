@@ -16,7 +16,7 @@ class GoldenSQLSource(Enum):
 
 class GoldenSQLRef(BaseModel):
     id: Any = Field(alias="_id")
-    query_response_id: Any | None
+    query_id: Any | None
     golden_sql_id: Any
     organization_id: Any
     source: str

@@ -37,6 +37,10 @@ class OrganizationService:
     def add_organization(
         self, org_request: OrganizationRequest
     ) -> OrganizationResponse:
+        if org_request.llm_credentials:
+            org_request.llm_credentials = self._encrypt_llm_credentials(
+                org_request.llm_credentials
+            )
         new_org_data = Organization(**org_request.dict())
         new_org_data.db_connection_id = ObjectId(new_org_data.db_connection_id)
         new_id = self.repo.add_organization(new_org_data.dict(exclude={"id"}))
