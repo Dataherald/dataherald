@@ -8,7 +8,7 @@ from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.repositories.golden_records import GoldenRecordRepository
 from dataherald.repositories.instructions import InstructionRepository
-from dataherald.types import GoldenRecord, GoldenRecordRequest, NLQuery
+from dataherald.types import GoldenRecord, GoldenRecordRequest, Question
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class DefaultContextStore(ContextStore):
 
     @override
     def retrieve_context_for_question(
-        self, nl_question: NLQuery, number_of_samples: int = 3
+        self, nl_question: Question, number_of_samples: int = 3
     ) -> Tuple[List[dict] | None, List[dict] | None]:
         logger.info(f"Getting context for {nl_question.question}")
         closest_questions = self.vector_store.query(

@@ -14,7 +14,7 @@ from overrides import override
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
-from dataherald.types import NLQuery, NLQueryResponse
+from dataherald.types import Question, Response
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +25,10 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
     @override
     def generate_response(
         self,
-        user_question: NLQuery,
+        user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-    ) -> NLQueryResponse:  # type: ignore
+    ) -> Response:  # type: ignore
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
         self.llm = self.model.get_model(
             database_connection=database_connection, temperature=0
@@ -73,9 +73,9 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
         logger.info(
             f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
         )
-        response = NLQueryResponse(
-            nl_question_id=user_question.id,
-            nl_response=result["output"],
+        response = Response(
+            question_id=user_question.id,
+            response=result["output"],
             intermediate_steps=intermediate_steps,
             exec_time=exec_time,
             total_tokens=cb.total_tokens,

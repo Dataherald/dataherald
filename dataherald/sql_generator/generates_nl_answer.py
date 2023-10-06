@@ -7,10 +7,10 @@ from langchain.prompts.chat import (
 
 from dataherald.model.chat_model import ChatModel
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
-from dataherald.repositories.nl_question import NLQuestionRepository
+from dataherald.repositories.question import QuestionRepository
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_generator.create_sql_query_status import create_sql_query_status
-from dataherald.types import NLQueryResponse
+from dataherald.types import Response
 
 SYSTEM_TEMPLATE = """ Given a Question, a Sql query and the sql query result try to answer the question
 If the sql query result doesn't answer the question just say 'I don't know'
@@ -29,23 +29,21 @@ class GeneratesNlAnswer:
         self.storage = storage
         self.model = ChatModel(self.system)
 
-    def execute(self, nl_query_response: NLQueryResponse) -> NLQueryResponse:
-        nl_question_repository = NLQuestionRepository(self.storage)
-        nl_question = nl_question_repository.find_by_id(
-            nl_query_response.nl_question_id
-        )
+    def execute(self, query_response: Response) -> Response:
+        question_repository = QuestionRepository(self.storage)
+        question = question_repository.find_by_id(query_response.question_id)
 
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         database_connection = db_connection_repository.find_by_id(
-            nl_question.db_connection_id
+            question.db_connection_id
         )
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
         )
         database = SQLDatabase.get_sql_engine(database_connection)
-        nl_query_response = create_sql_query_status(
-            database, nl_query_response.sql_query, nl_query_response
+        query_response = create_sql_query_status(
+            database, query_response.sql_query, query_response
         )
         system_message_prompt = SystemMessagePromptTemplate.from_template(
             SYSTEM_TEMPLATE
@@ -56,9 +54,9 @@ class GeneratesNlAnswer:
         )
         chain = LLMChain(llm=self.llm, prompt=chat_prompt)
         nl_resp = chain.run(
-            question=nl_question.question,
-            sql_query=nl_query_response.sql_query,
-            sql_query_result=str(nl_query_response.sql_query_result),
+            question=question.question,
+            sql_query=query_response.sql_query,
+            sql_query_result=str(query_response.sql_query_result),
         )
-        nl_query_response.nl_response = nl_resp
-        return nl_query_response
+        query_response.response = nl_resp
+        return query_response

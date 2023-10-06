@@ -12,7 +12,7 @@ from dataherald.model.chat_model import ChatModel
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator.create_sql_query_status import create_sql_query_status
-from dataherald.types import NLQuery, NLQueryResponse, SQLQueryResult
+from dataherald.types import Question, Response, SQLQueryResult
 from dataherald.utils.strings import contains_line_breaks
 
 
@@ -25,8 +25,8 @@ class SQLGenerator(Component, ABC):
         self.model = ChatModel(self.system)
 
     def create_sql_query_status(
-        self, db: SQLDatabase, query: str, response: NLQueryResponse
-    ) -> NLQueryResponse:
+        self, db: SQLDatabase, query: str, response: Response
+    ) -> Response:
         return create_sql_query_status(db, query, response)
 
     def format_intermediate_representations(
@@ -59,9 +59,9 @@ class SQLGenerator(Component, ABC):
     @abstractmethod
     def generate_response(
         self,
-        user_question: NLQuery,
+        user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-    ) -> NLQueryResponse:
+    ) -> Response:
         """Generates a response to a user question."""
         pass

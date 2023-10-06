@@ -5,7 +5,7 @@ from overrides import override
 
 from dataherald.config import Settings
 from dataherald.smart_cache import SmartCache
-from dataherald.types import NLQueryResponse
+from dataherald.types import Response
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class InMemoryCache(SmartCache):
         self.cache = {}
 
     @override
-    def add(self, key: str, value: NLQueryResponse) -> dict[str, Any]:
+    def add(self, key: str, value: Response) -> dict[str, Any]:
         logger.info(f"Adding to cache: {key}")
         self.cache[key] = value
         return {key: value}
