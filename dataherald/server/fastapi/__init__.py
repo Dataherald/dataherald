@@ -89,6 +89,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/table-descriptions/{table_description_id}",
+            self.get_table_description,
+            methods=["GET"],
+            tags=["Table descriptions"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/golden-records/{golden_record_id}",
             self.delete_golden_record,
             methods=["DELETE"],
@@ -124,6 +131,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/questions/{question_id}",
+            self.get_question,
+            methods=["GET"],
+            tags=["Questions"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/responses",
             self.create_response,
             methods=["POST"],
@@ -133,6 +147,13 @@ class FastAPI(dataherald.server.Server):
         self.router.add_api_route(
             "/api/v1/responses",
             self.get_responses,
+            methods=["GET"],
+            tags=["Responses"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/responses/{response_id}",
+            self.get_response,
             methods=["GET"],
             tags=["Responses"],
         )
@@ -193,6 +214,10 @@ class FastAPI(dataherald.server.Server):
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
         return self._api.get_questions(db_connection_id)
 
+    def get_question(self, question_id: str) -> Question:
+        """Get a question"""
+        return self._api.get_question(question_id)
+
     def root(self) -> dict[str, int]:
         return {"nanosecond heartbeat": self._api.heartbeat()}
 
@@ -235,9 +260,17 @@ class FastAPI(dataherald.server.Server):
         """List table descriptions"""
         return self._api.list_table_descriptions(db_connection_id, table_name)
 
+    def get_table_description(self, table_description_id: str) -> TableDescription:
+        """Get description"""
+        return self._api.get_table_description(table_description_id)
+
     def get_responses(self, question_id: str | None = None) -> list[Response]:
         """List responses"""
         return self._api.get_responses(question_id)
+
+    def get_response(self, response_id: str) -> Response:
+        """Get a response"""
+        return self._api.get_response(response_id)
 
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""

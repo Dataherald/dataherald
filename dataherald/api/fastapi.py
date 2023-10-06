@@ -270,6 +270,11 @@ class FastAPI(API):
         return table_descriptions
 
     @override
+    def get_table_description(self, table_description_id: str) -> TableDescription:
+        scanner_repository = TableDescriptionRepository(self.storage)
+        return scanner_repository.find_by_id(table_description_id)
+
+    @override
     def get_responses(self, question_id: str | None = None) -> list[Response]:
         response_repository = ResponseRepository(self.storage)
         query = {}
@@ -278,12 +283,22 @@ class FastAPI(API):
         return response_repository.find_by(query)
 
     @override
+    def get_response(self, response_id: str) -> Response:
+        response_repository = ResponseRepository(self.storage)
+        return response_repository.find_by_id(response_id)
+
+    @override
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
         question_repository = QuestionRepository(self.storage)
         query = {}
         if db_connection_id:
             query = {"db_connection_id": ObjectId(db_connection_id)}
         return question_repository.find_by(query)
+
+    @override
+    def get_question(self, question_id: str) -> Question:
+        question_repository = QuestionRepository(self.storage)
+        return question_repository.find_by_id(question_id)
 
     @override
     def add_golden_records(

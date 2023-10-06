@@ -44,6 +44,10 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
+    def get_question(self, question_id: str) -> Question:
+        pass
+
+    @abstractmethod
     def create_database_connection(
         self, database_connection_request: DatabaseConnectionRequest
     ) -> DatabaseConnection:
@@ -76,7 +80,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def get_responses(self, question_id: str | None = None) -> list[Response]:
+    def get_table_description(self, table_description_id: str) -> TableDescription:
         pass
 
     @abstractmethod
@@ -91,6 +95,14 @@ class API(Component, ABC):
 
     @abstractmethod
     def create_response(self, query_request: CreateResponseRequest) -> Response:
+        pass
+
+    @abstractmethod
+    def get_responses(self, question_id: str | None = None) -> list[Response]:
+        pass
+
+    @abstractmethod
+    def get_response(self, response_id: str) -> Response:
         pass
 
     @abstractmethod
