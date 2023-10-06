@@ -212,7 +212,8 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                       Save and Send to Slack
                     </>
                   )}
-                  {isNotVerified(verificationStatus) && (
+                  {(isNotVerified(verificationStatus) ||
+                    isSqlError(verificationStatus)) && (
                     <>
                       <Save className="mr-2" size={20} strokeWidth={2.5} />
                       Save

@@ -35,7 +35,7 @@ const QueryVerifySelect: FC<QueryVerifySelectProps> = ({
   }
 
   const getStatusDisplay = useCallback(
-    (status: QueryStatus) => (
+    (status: QueryWorkspaceStatus) => (
       <div
         className={cn(
           'flex items-center gap-3 font-semibold text-base',
@@ -63,7 +63,7 @@ const QueryVerifySelect: FC<QueryVerifySelectProps> = ({
       </SelectTrigger>
       <SelectContent>
         {Object.values(EDomainQueryWorkspaceStatus).map(
-          (qs: QueryStatus, idx) => (
+          (qs: QueryWorkspaceStatus, idx) => (
             <SelectItem
               key={qs + idx}
               value={qs}

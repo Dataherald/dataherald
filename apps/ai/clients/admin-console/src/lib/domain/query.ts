@@ -12,21 +12,15 @@ import {
 export const QUERY_STATUS_BUTTONS_CLASSES: ResourceButtonClasses<QueryStatus> =
   {
     [EQueryStatus.REJECTED]: 'bg-primary hover:bg-blue-600',
-    [EQueryStatus.SQL_ERROR]: 'bg-red-500',
+    [EQueryStatus.SQL_ERROR]:
+      'border border-primary bg-white text-primary hover:bg-blue-50',
     [EQueryStatus.NOT_VERIFIED]:
       'border border-primary bg-white text-primary hover:bg-blue-50',
     [EQueryStatus.VERIFIED]: 'bg-green-700 hover:bg-green-600',
   }
 
-export const QUERY_STATUS_COLORS: ResourceColors<
-  QueryStatus | QueryWorkspaceStatus
-> = {
+export const QUERY_STATUS_COLORS: ResourceColors<QueryWorkspaceStatus> = {
   [EQueryStatus.REJECTED]: {
-    text: 'text-red-500',
-    border: 'border-red-500',
-    background: 'bg-red-100',
-  },
-  [EQueryStatus.SQL_ERROR]: {
     text: 'text-red-500',
     border: 'border-red-500',
     background: 'bg-red-100',
