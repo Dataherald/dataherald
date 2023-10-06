@@ -36,8 +36,10 @@ if __name__ == "__main__":
 
             if query_response:
                 question_id = ObjectId(query_response["question_id"])
-                updated_by = ObjectId(doc["updated_by"])
-
+                if "updated_by" in doc:
+                    updated_by = ObjectId(doc["updated_by"])
+                else:
+                    updated_by = None
                 # add new field question id, change updated_by to ObjectId
                 data_store[query_collection].update_one(
                     {"_id": doc["_id"]},
