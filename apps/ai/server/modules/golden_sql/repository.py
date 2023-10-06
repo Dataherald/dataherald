@@ -60,7 +60,7 @@ class GoldenSQLRepository:
 
     def get_verified_query_display_id(self, query_id: str) -> str:
         query_ref = MongoDB.find_one(
-            QUERY_RESPONSE_REF_COL, {"query_id": ObjectId(query_id)}
+            QUERY_RESPONSE_REF_COL, {"_id": ObjectId(query_id)}
         )
 
         if not query_ref:
