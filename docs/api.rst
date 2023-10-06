@@ -49,9 +49,7 @@ The ``query-response`` object is created from the answering natural language que
 
 The related endpoints are:
 
-* :doc:`process_nl_query_response <api.process_nl_query_response>` -- ``POST api/v1/nl-query-responses``
-* :doc:`update_nl_query_response <api.update_nl_query_response>` -- ``PATCH api/v1/nl-query-responses/{query_id}``
-
+* :doc:`process_nl_query_response <api.process_nl_query_response>` -- ``POST api/v1/responses``
 
 .. code-block:: json
 
@@ -60,8 +58,8 @@ The related endpoints are:
         "error_message": "string",
         "exec_time": "float",
         "intermediate_steps":["string"],
-        "nl_question_id": "string",
-        "nl_response": "string",
+        "question_id": "string",
+        "response": "string",
         "sql_generation_status": "string",
         "sql_query": "string",
         "sql_query_result": {},
@@ -132,5 +130,4 @@ Related endpoints are:
 
     api.question
 
-    api.update_nl_query_response.rst
     api.process_nl_query_response

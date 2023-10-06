@@ -370,11 +370,11 @@ curl -X 'PUT' \
 
 
 ### Querying the Database in Natural Language
-Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse using the `POST /api/v1/question` endpoint.
+Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse using the `POST /api/v1/questions` endpoint.
 
 ```
 curl -X 'POST' \
-  '<host>/api/v1/question' \
+  '<host>/api/v1/questions' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{

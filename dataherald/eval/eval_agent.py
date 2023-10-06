@@ -27,7 +27,7 @@ from dataherald.config import System
 from dataherald.eval import Evaluation, Evaluator
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
-from dataherald.types import NLQuery, NLQueryResponse
+from dataherald.types import Question, Response
 
 logger = logging.getLogger(__name__)
 
@@ -239,8 +239,8 @@ class EvaluationAgent(Evaluator):
     @override
     def evaluate(
         self,
-        question: NLQuery,
-        generated_answer: NLQueryResponse,
+        question: Question,
+        generated_answer: Response,
         database_connection: DatabaseConnection,
     ) -> Evaluation:
         start_time = time.time()

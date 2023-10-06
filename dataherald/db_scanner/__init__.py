@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 
 from dataherald.config import Component
-from dataherald.db_scanner.repository.base import DBScannerRepository
+from dataherald.db_scanner.repository.base import TableDescriptionRepository
 from dataherald.sql_database.base import SQLDatabase
 
 
@@ -13,13 +13,16 @@ class Scanner(Component, ABC):
         db_engine: SQLDatabase,
         db_connection_id: str,
         table_names: list[str] | None,
-        repository: DBScannerRepository,
+        repository: TableDescriptionRepository,
     ) -> None:
         """ "Scan a db"""
 
     @abstractmethod
     def synchronizing(
-        self, tables: list[str], db_connection_id: str, repository: DBScannerRepository
+        self,
+        tables: list[str],
+        db_connection_id: str,
+        repository: TableDescriptionRepository,
     ) -> None:
         """ "Update table_description status"""
 
