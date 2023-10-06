@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { Info } from 'lucide-react'
-import { FC } from 'react'
+import { FC, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 
@@ -59,6 +59,11 @@ const CustomResponseDialog: FC<CustomResponseDialogProps> = ({
   const handleContinue = (formValues: CustomResponseFormValues) => {
     onClose(formValues.customResponse)
   }
+
+  useEffect(
+    () => form.reset({ customResponse: initialValue }),
+    [form, initialValue],
+  )
 
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>

@@ -74,8 +74,9 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   const lastUpdatedDate: Date = new Date(last_updated)
   const [currentSqlQuery, setCurrentSqlQuery] = useState(sql_query)
   const [verificationStatus, setVerifiedStatus] = useState<QueryStatus>(status)
-  const [textResponse, setCustomResponse] = useState<string>(response)
-  const [textResponseHasChanges, setTextResponseHasChanges] = useState(false)
+  const [customResponse, setCustomResponse] = useState<string>(response)
+  const [customResponseHasChanges, setcustomResponseHasChanges] =
+    useState(false)
   const [openEditResponseDialog, setOpenEditResponseDialog] = useState(false)
   const [savingQuery, setSavingQuery] = useState(false)
   const [loadingSqlQueryResults, setLoadingQueryResults] = useState(false)
@@ -113,7 +114,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       setSavingQuery(true)
       await onPatchQuery({
         query_status: verificationStatus,
-        custom_response: textResponse,
+        custom_response: customResponse,
         sql_query: currentSqlQuery,
       })
       if (isVerified(verificationStatus)) {
@@ -159,19 +160,23 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
 
   const handleVerifyChange = (verificationStatus: QueryWorkspaceStatus) => {
     setVerifiedStatus(verificationStatus)
-    if (isRejected(verificationStatus) && !textResponseHasChanges) {
+    if (isRejected(verificationStatus) && !customResponseHasChanges) {
       setOpenEditResponseDialog(true)
     }
   }
 
-  const handleCloseEditDialog = (newCustomResponse = textResponse) => {
+  const handleCloseEditDialog = (newCustomResponse = customResponse) => {
     setCustomResponse(newCustomResponse)
     setOpenEditResponseDialog(false)
   }
 
   useEffect(() => {
-    setTextResponseHasChanges(textResponse !== response)
-  }, [response, textResponse])
+    setcustomResponseHasChanges(customResponse !== query.response)
+  }, [query.response, customResponse])
+
+  useEffect(() => {
+    setCustomResponse(query.response)
+  }, [query])
 
   const rejectedBanner = (
     <div className="h-full flex items-center justify-center gap-2 text-muted-foreground">
@@ -235,7 +240,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
             <LoadingSqlQueryResults />
           </div>
         ) : (
-          textResponse && (
+          customResponse && (
             <div className="bg-white flex flex-col px-5 pt-3 pb-5 rounded-xl border">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -256,7 +261,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                   Edit
                 </Button>
               </div>
-              <div className="break-words">{textResponse}</div>
+              <div className="break-words">{customResponse}</div>
               {(isVerified(verificationStatus) ||
                 isRejected(verificationStatus)) && (
                 <Alert
@@ -409,7 +414,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
         }
         description="Compose the question's response message that will be sent to the Slack thread"
         isOpen={openEditResponseDialog}
-        initialValue={textResponse}
+        initialValue={customResponse}
         onClose={handleCloseEditDialog}
       ></CustomResponseDialog>
       <Toaster />
