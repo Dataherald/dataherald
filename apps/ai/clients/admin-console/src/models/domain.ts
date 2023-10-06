@@ -9,13 +9,15 @@ export enum EDomainQueryStatus {
   VERIFIED = 'VERIFIED',
 }
 
-export type DomainQueryStatus =
-  | 'REJECTED'
-  | 'SQL_ERROR'
-  | 'LOW_CONFIDENCE'
-  | 'MEDIUM_CONFIDENCE'
-  | 'HIGH_CONFIDENCE'
-  | 'VERIFIED'
+export type DomainQueryStatus = keyof typeof EDomainQueryStatus
+
+export enum EDomainQueryWorkspaceStatus {
+  REJECTED = 'REJECTED',
+  NOT_VERIFIED = 'NOT_VERIFIED',
+  VERIFIED = 'VERIFIED',
+}
+
+export type QueryWorkspaceStatus = keyof typeof EDomainQueryWorkspaceStatus
 
 export type ColorClasses = {
   text?: string

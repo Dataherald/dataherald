@@ -4,6 +4,7 @@ import {
   ColorClasses,
   DomainQueryStatus,
   EDomainQueryStatus,
+  QueryWorkspaceStatus,
   ResourceButtonClasses,
   ResourceColors,
 } from '@/models/domain'
@@ -17,7 +18,9 @@ export const QUERY_STATUS_BUTTONS_CLASSES: ResourceButtonClasses<QueryStatus> =
     [EQueryStatus.VERIFIED]: 'bg-green-700 hover:bg-green-600',
   }
 
-export const QUERY_STATUS_COLORS: ResourceColors<QueryStatus> = {
+export const QUERY_STATUS_COLORS: ResourceColors<
+  QueryStatus | QueryWorkspaceStatus
+> = {
   [EQueryStatus.REJECTED]: {
     text: 'text-red-500',
     border: 'border-red-500',
@@ -132,3 +135,6 @@ export const isNotVerified = (status?: QueryStatus): boolean =>
 
 export const isRejected = (status?: QueryStatus): boolean =>
   EQueryStatus.REJECTED === status
+
+export const isSqlError = (status?: QueryStatus): boolean =>
+  EQueryStatus.SQL_ERROR === status

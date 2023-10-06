@@ -24,7 +24,7 @@ export enum EQueryStatus {
   VERIFIED = 'VERIFIED',
 }
 
-export type QueryStatus = 'REJECTED' | 'SQL_ERROR' | 'NOT_VERIFIED' | 'VERIFIED'
+export type QueryStatus = keyof typeof EQueryStatus
 
 export type QuerySqlResult = {
   columns: string[]
@@ -85,13 +85,6 @@ export interface GoldenSqlListItem {
 
 export type GoldenSqlList = GoldenSqlListItem[]
 
-export type TableSyncStatus =
-  | 'NOT_SYNCHRONIZED'
-  | 'SYNCHRONIZING'
-  | 'SYNCHRONIZED'
-  | 'DEPRECATED'
-  | 'FAILED'
-
 export enum ETableSyncStatus {
   NOT_SYNCHRONIZED = 'NOT_SYNCHRONIZED',
   SYNCHRONIZING = 'SYNCHRONIZING',
@@ -100,6 +93,7 @@ export enum ETableSyncStatus {
   FAILED = 'FAILED',
 }
 
+export type TableSyncStatus = keyof typeof ETableSyncStatus
 export interface Database {
   db_connection_id: string
   alias: string

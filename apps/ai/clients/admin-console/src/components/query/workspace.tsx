@@ -16,10 +16,15 @@ import {
   QUERY_STATUS_BUTTONS_CLASSES,
   isNotVerified,
   isRejected,
+  isSqlError,
   isVerified,
 } from '@/lib/domain/query'
 import { cn } from '@/lib/utils'
 import { Query, QueryStatus } from '@/models/api'
+import {
+  EDomainQueryWorkspaceStatus,
+  QueryWorkspaceStatus,
+} from '@/models/domain'
 import {
   AlertCircle,
   Ban,
@@ -152,7 +157,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     setCurrentSqlQuery(value)
   }
 
-  const handleVerifyChange = (verificationStatus: QueryStatus) => {
+  const handleVerifyChange = (verificationStatus: QueryWorkspaceStatus) => {
     setVerifiedStatus(verificationStatus)
     if (isRejected(verificationStatus) && !textResponseHasChanges) {
       setOpenEditResponseDialog(true)
@@ -292,7 +297,11 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                 <div id="actions" className="flex items-center gap-5">
                   <span className="text-lg">Mark as </span>
                   <QueryVerifySelect
-                    verificationStatus={verificationStatus}
+                    verificationStatus={
+                      isSqlError(verificationStatus)
+                        ? EDomainQueryWorkspaceStatus.NOT_VERIFIED
+                        : (verificationStatus as EDomainQueryWorkspaceStatus)
+                    }
                     onValueChange={handleVerifyChange}
                   />
                   <Button

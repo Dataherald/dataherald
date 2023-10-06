@@ -13,20 +13,24 @@ import {
   isVerified,
 } from '@/lib/domain/query'
 import { cn } from '@/lib/utils'
-import { EQueryStatus, QueryStatus } from '@/models/api'
+import { QueryStatus } from '@/models/api'
+import {
+  EDomainQueryWorkspaceStatus,
+  QueryWorkspaceStatus,
+} from '@/models/domain'
 import { Ban, CheckCircle, XCircle } from 'lucide-react'
 import { FC, useCallback } from 'react'
 
 export interface QueryVerifySelectProps {
-  verificationStatus: QueryStatus
-  onValueChange: (value: QueryStatus) => void
+  verificationStatus: QueryWorkspaceStatus
+  onValueChange: (value: QueryWorkspaceStatus) => void
 }
 
 const QueryVerifySelect: FC<QueryVerifySelectProps> = ({
   verificationStatus,
   onValueChange,
 }) => {
-  const handleValueChange = (value: QueryStatus) => {
+  const handleValueChange = (value: QueryWorkspaceStatus) => {
     onValueChange(value)
   }
 
@@ -46,6 +50,7 @@ const QueryVerifySelect: FC<QueryVerifySelectProps> = ({
     ),
     [],
   )
+
   return (
     <Select onValueChange={handleValueChange}>
       <SelectTrigger
@@ -57,9 +62,8 @@ const QueryVerifySelect: FC<QueryVerifySelectProps> = ({
         <SelectValue placeholder={getStatusDisplay(verificationStatus)} />
       </SelectTrigger>
       <SelectContent>
-        {Object.values(EQueryStatus)
-          .filter((qs: QueryStatus) => qs !== EQueryStatus.SQL_ERROR)
-          .map((qs: QueryStatus, idx) => (
+        {Object.values(EDomainQueryWorkspaceStatus).map(
+          (qs: QueryStatus, idx) => (
             <SelectItem
               key={qs + idx}
               value={qs}
@@ -67,7 +71,8 @@ const QueryVerifySelect: FC<QueryVerifySelectProps> = ({
             >
               {getStatusDisplay(qs)}
             </SelectItem>
-          ))}
+          ),
+        )}
       </SelectContent>
     </Select>
   )
