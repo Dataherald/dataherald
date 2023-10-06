@@ -1,10 +1,11 @@
 import { AuthProvider } from '@/contexts/auth-context'
-import { apiFetcher } from '@/lib/api/fetcher'
+import useApiFetcher from '@/hooks/api/useApiFetcher'
 import { cn } from '@/lib/utils'
 import '@/styles/globals.css'
 import { UserProvider } from '@auth0/nextjs-auth0/client'
 import type { AppProps } from 'next/app'
 import { Lato, Source_Code_Pro } from 'next/font/google'
+import { FC, ReactNode } from 'react'
 import { SWRConfig } from 'swr'
 
 const sourceCode = Source_Code_Pro({
@@ -20,19 +21,28 @@ const lato = Lato({
   display: 'swap',
 })
 
+const SWRConfigWithAuth: FC<{ children: ReactNode }> = ({ children }) => {
+  const apiFetcher = useApiFetcher()
+  return (
+    <SWRConfig
+      value={{
+        fetcher: apiFetcher,
+      }}
+    >
+      {children}
+    </SWRConfig>
+  )
+}
+
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <UserProvider>
       <AuthProvider>
-        <SWRConfig
-          value={{
-            fetcher: apiFetcher,
-          }}
-        >
+        <SWRConfigWithAuth>
           <div className={cn(lato.variable, sourceCode.variable, 'font-lato')}>
             <Component {...pageProps} />
           </div>
-        </SWRConfig>
+        </SWRConfigWithAuth>
       </AuthProvider>
     </UserProvider>
   )

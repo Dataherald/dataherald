@@ -80,43 +80,62 @@ class VerifyToken:
         self.jwks_client = jwt.PyJWKClient(jwks_url)
 
     def verify(self):
-        # return mock authentication data
         if not auth_settings.auth_enabled:
-            return {
-                auth_settings.auth0_issuer + "email": test_user.email,  # placeholder
-                "iss": auth_settings.auth0_issuer,
-                "sub": "foo",
-                "aud": auth_settings.auth0_audience,
-                "iat": "",
-                "exp": "",
-                "azp": "",
-                "scope": "openid profile email offline_access",
-                "gty": "client-credentials",
-            }
-        # This gets the 'kid' from the passed token
+            return self._mock_authentication_data()
+
+        self._fetch_signing_key()
+        return self._decode_payload()
+
+    def _mock_authentication_data(self):
+        return {
+            auth_settings.auth0_issuer + "email": test_user.email,  # placeholder
+            "iss": auth_settings.auth0_issuer,
+            "sub": "foo",
+            "aud": auth_settings.auth0_audience,
+            "iat": "",
+            "exp": "",
+            "azp": "",
+            "scope": "openid profile email offline_access",
+            "gty": "client-credentials",
+        }
+
+    def _fetch_signing_key(self):
         try:
             self.signing_key = self.jwks_client.get_signing_key_from_jwt(self.token).key
         except jwt.exceptions.PyJWKClientError as error:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=error.__str__()
-            ) from jwt.exceptions.PyJWKClientError
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(error)
+            ) from error
         except jwt.exceptions.DecodeError as error:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=error.__str__()
-            ) from jwt.exceptions.DecodeError
+                status_code=status.HTTP_401_UNAUTHORIZED, detail=str(error)
+            ) from error
+
+    def _decode_payload(self):
         try:
-            payload = jwt.decode(
+            return jwt.decode(
                 self.token,
                 self.signing_key,
                 algorithms=auth_settings.auth0_algorithms,
                 audience=auth_settings.auth0_audience,
                 issuer=auth_settings.auth0_issuer,
             )
+        except jwt.ExpiredSignatureError as error:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired"
+            ) from error
+        except (jwt.InvalidAudienceError, jwt.InvalidIssuerError) as error:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Token is invalid"
+            ) from error
+        except (jwt.DecodeError, jwt.InvalidTokenError) as error:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is invalid"
+            ) from error
         except Exception as e:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
-            ) from Exception
-        return payload
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+            ) from e
 
 
 class Authorize:

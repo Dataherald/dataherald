@@ -1,11 +1,10 @@
 import { API_URL } from '@/config'
-import { useAuth } from '@/contexts/auth-context'
-import { apiFetcher } from '@/lib/api/fetcher'
+import useApiFetcher from '@/hooks/api/useApiFetcher'
 import { Query, QueryStatus } from '@/models/api'
 import { useCallback } from 'react'
 
 const usePatchQuery = () => {
-  const { token } = useAuth()
+  const apiFetcher = useApiFetcher()
 
   const patchQuery = useCallback(
     async (
@@ -19,9 +18,8 @@ const usePatchQuery = () => {
       apiFetcher<Query>(`${API_URL}/query/${queryId}`, {
         method: 'PATCH',
         body: JSON.stringify(patches),
-        token: token as string,
       }),
-    [token],
+    [apiFetcher],
   )
   return patchQuery
 }

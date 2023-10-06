@@ -1,12 +1,10 @@
-import { apiFetcher } from '@/lib/api/fetcher'
 import { useUser } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/navigation'
 import {
-  Dispatch,
   FC,
   ReactNode,
-  SetStateAction,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -14,7 +12,7 @@ import {
 
 interface AuthContextType {
   token: string | null
-  setToken: Dispatch<SetStateAction<string | null>>
+  fetchToken: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -28,20 +26,23 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null)
   const { user } = useUser()
 
-  useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        const token: string = await apiFetcher<string>('/api/auth/token')
-        setToken(token)
-      } catch (error) {
-        router.push('/api/auth/login')
-      }
+  const fetchToken = useCallback(async () => {
+    try {
+      const response = await fetch('/api/auth/token')
+      const token: string = await response.json()
+      setToken(token)
+    } catch (error) {
+      console.error(`Fetching token failed, redirecting to logout: ${error}`)
+      router.push('/api/auth/logout')
     }
+  }, [router])
+
+  useEffect(() => {
     !!user && fetchToken()
-  }, [user, router])
+  }, [user, fetchToken])
 
   return (
-    <AuthContext.Provider value={{ token, setToken }}>
+    <AuthContext.Provider value={{ token, fetchToken }}>
       {children}
     </AuthContext.Provider>
   )

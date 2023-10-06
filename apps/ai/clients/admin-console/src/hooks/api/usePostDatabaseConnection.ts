@@ -1,11 +1,10 @@
 import { API_URL } from '@/config'
-import { useAuth } from '@/contexts/auth-context'
-import { apiFetcher } from '@/lib/api/fetcher'
+import useApiFetcher from '@/hooks/api/useApiFetcher'
 import { DatabaseConnection } from '@/models/api'
 import { useCallback } from 'react'
 
 const usePostDatabaseConnection = () => {
-  const { token } = useAuth()
+  const apiFetcher = useApiFetcher()
 
   const connectDatabase = useCallback(
     async (dbConnection: DatabaseConnection, file?: File | null) => {
@@ -23,10 +22,9 @@ const usePostDatabaseConnection = () => {
       return apiFetcher<DatabaseConnection>(`${API_URL}/database-connection`, {
         method: 'POST',
         body: formData,
-        token: token as string,
       })
     },
-    [token],
+    [apiFetcher],
   )
 
   return connectDatabase

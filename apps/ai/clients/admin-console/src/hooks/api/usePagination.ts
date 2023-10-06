@@ -1,6 +1,5 @@
 import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
-import { apiFetcher } from '@/lib/api/fetcher'
 import { KeyedMutator } from 'swr'
 import useSWRInfinite from 'swr/infinite'
 
@@ -26,7 +25,6 @@ const usePagination = <T>(
   pageSize = DEFAULT_PAGE_SIZE,
 ): PageResponse<T> => {
   const { token } = useAuth()
-
   const {
     data: pages,
     size: page,
@@ -37,12 +35,8 @@ const usePagination = <T>(
   } = useSWRInfinite<List<T>>(
     (index) =>
       token
-        ? [
-            `${API_URL}${resourceUrl}?page=${index}&page_size=${pageSize}`,
-            token,
-          ]
+        ? `${API_URL}${resourceUrl}?page=${index}&page_size=${pageSize}`
         : null,
-    ([url, token]: [string, string]) => apiFetcher<List<T>>(url, { token }),
     { revalidateAll: true },
   )
 

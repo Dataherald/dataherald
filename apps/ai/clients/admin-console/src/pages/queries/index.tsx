@@ -45,7 +45,7 @@ const QueriesPage: FC = () => {
 
   let pageContent: JSX.Element = <></>
 
-  if (error) {
+  if (!isLoadingFirst && error) {
     pageContent = <QueriesError />
   } else if (isLoadingFirst) {
     pageContent = <LoadingTable />

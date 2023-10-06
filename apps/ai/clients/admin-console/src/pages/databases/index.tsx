@@ -252,7 +252,7 @@ const DatabasesPage: FC = () => {
 
   let pageContent: JSX.Element = <></>
 
-  if (error) {
+  if (!isLoading && error) {
     pageContent = <DatabasesError />
   } else if (isLoading && !connectingDB && !isRefreshing) {
     pageContent = <LoadingDatabases />

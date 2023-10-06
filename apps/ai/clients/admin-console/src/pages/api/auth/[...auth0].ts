@@ -1,5 +1,5 @@
 import { API_URL, AUTH } from '@/config'
-import { apiFetcher } from '@/lib/api/fetcher'
+import { serverFetcher } from '@/lib/api/server-fetcher'
 import { AuthUser, User } from '@/models/api'
 import {
   AfterCallback,
@@ -18,7 +18,7 @@ const afterCallback: AfterCallback = async (
 ) => {
   const { user: auth0User, accessToken: token } = session
   try {
-    const authUser: AuthUser = await apiFetcher<AuthUser>(
+    const authUser: AuthUser = await serverFetcher<AuthUser>(
       `${API_URL}/auth/login`,
       {
         body: JSON.stringify(auth0User),

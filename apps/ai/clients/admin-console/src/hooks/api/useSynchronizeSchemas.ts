@@ -1,10 +1,9 @@
 import { API_URL } from '@/config'
-import { useAuth } from '@/contexts/auth-context'
-import { apiFetcher } from '@/lib/api/fetcher'
+import useApiFetcher from '@/hooks/api/useApiFetcher'
 import { useCallback } from 'react'
 
 const useSynchronizeSchemas = () => {
-  const { token } = useAuth()
+  const apiFetcher = useApiFetcher()
 
   const synchronizeSchemas = useCallback(
     async (payload: {
@@ -14,9 +13,8 @@ const useSynchronizeSchemas = () => {
       apiFetcher<void>(`${API_URL}/table-description/sync-schemas`, {
         method: 'POST',
         body: JSON.stringify(payload),
-        token: token as string,
       }),
-    [token],
+    [apiFetcher],
   )
   return synchronizeSchemas
 }
