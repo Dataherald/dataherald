@@ -127,10 +127,10 @@ def run():
 
         api_payload = {"db_connection_id": db_id, "instruction": Instruction}
 
-    if "db_connection_id" not in api_payload:
-        print("No Instructions found in database")
-        return
-    add_instruction(api_payload)
+        if "db_connection_id" not in api_payload:
+            print("No Instructions found in database")
+            return
+        add_instruction(api_payload)
 
 
 if __name__ == "__main__":
