@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -16,7 +17,6 @@ import {
 } from '@/components/ui/form'
 import { Textarea } from '@/components/ui/textarea'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { DialogDescription } from '@radix-ui/react-dialog'
 import { Info } from 'lucide-react'
 import { FC, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
