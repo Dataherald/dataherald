@@ -8,6 +8,10 @@ from dataherald.db_scanner.models.types import TableDescription
 DB_COLLECTION = "table_descriptions"
 
 
+class InvalidColumnNameError(Exception):
+    pass
+
+
 class TableDescriptionRepository:
     def __init__(self, storage):
         self.storage = storage
@@ -86,3 +90,23 @@ class TableDescriptionRepository:
             obj.columns = sorted(obj.columns, key=lambda x: x.name)
             result.append(obj)
         return result
+
+    def update_fields(self, table: TableDescription, table_description_request):
+        if table_description_request.description:
+            table.description = table_description_request.description
+
+        if table_description_request.columns:
+            columns = [column.name for column in table.columns]
+
+            for column_request in table_description_request.columns:
+                if column_request.name not in columns:
+                    raise InvalidColumnNameError(
+                        f"Column {column_request.name} doesn't exist"
+                    )
+                for column in table.columns:
+                    if column_request.name == column.name:
+                        for field, value in column_request:
+                            if not value:
+                                continue
+                            setattr(column, field, value)
+        return self.update(table)

@@ -121,7 +121,12 @@ class DatabaseConnectionRequest(BaseModel):
 
 class ColumnDescriptionRequest(BaseModel):
     name: str
-    description: str
+    description: str | None
+    is_primary_key: bool | None = False
+    data_type: str | None
+    low_cardinality: bool | None
+    categories: list[str] | None
+    foreign_key: bool | None = False
 
 
 class TableDescriptionRequest(BaseModel):
