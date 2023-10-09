@@ -4,7 +4,7 @@ import time
 from typing import List
 
 from bson import json_util
-from bson.objectid import ObjectId
+from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
 from overrides import override
 
@@ -272,7 +272,15 @@ class FastAPI(API):
     @override
     def get_table_description(self, table_description_id: str) -> TableDescription:
         scanner_repository = TableDescriptionRepository(self.storage)
-        return scanner_repository.find_by_id(table_description_id)
+
+        try:
+            result = scanner_repository.find_by_id(table_description_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Table description not found")
+        return result
 
     @override
     def get_responses(self, question_id: str | None = None) -> list[Response]:
@@ -285,7 +293,16 @@ class FastAPI(API):
     @override
     def get_response(self, response_id: str) -> Response:
         response_repository = ResponseRepository(self.storage)
-        return response_repository.find_by_id(response_id)
+
+        try:
+            result = response_repository.find_by_id(response_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Question not found")
+
+        return result
 
     @override
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
@@ -293,12 +310,22 @@ class FastAPI(API):
         query = {}
         if db_connection_id:
             query = {"db_connection_id": ObjectId(db_connection_id)}
+
         return question_repository.find_by(query)
 
     @override
     def get_question(self, question_id: str) -> Question:
         question_repository = QuestionRepository(self.storage)
-        return question_repository.find_by_id(question_id)
+
+        try:
+            result = question_repository.find_by_id(question_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Question not found")
+
+        return result
 
     @override
     def add_golden_records(
