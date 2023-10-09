@@ -57,6 +57,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   onPatchQuery,
 }) => {
   const {
+    id,
     question,
     question_date,
     response,
@@ -186,7 +187,11 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
 
   return (
     <>
-      <div className="grow flex flex-col gap-5">
+      <div
+        className="grow flex flex-col gap-5"
+        data-ph-capture-attribute-query_id={id}
+        data-ph-capture-attribute-asker={username}
+      >
         <div id="header" className="flex justify-between gap-3">
           <QueryQuestion {...{ username, question, questionDate }} />
           <div className="flex items-center self-start gap-5">

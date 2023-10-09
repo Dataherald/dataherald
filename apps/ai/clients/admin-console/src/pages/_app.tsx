@@ -7,6 +7,7 @@ import type { AppProps } from 'next/app'
 import { Lato, Source_Code_Pro } from 'next/font/google'
 import { FC, ReactNode } from 'react'
 import { SWRConfig } from 'swr'
+import WithAnalytics from '@/components/hoc/WithAnalytics'
 
 const sourceCode = Source_Code_Pro({
   subsets: ['latin'],
@@ -38,11 +39,15 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <UserProvider>
       <AuthProvider>
-        <SWRConfigWithAuth>
-          <div className={cn(lato.variable, sourceCode.variable, 'font-lato')}>
-            <Component {...pageProps} />
-          </div>
-        </SWRConfigWithAuth>
+        <WithAnalytics>
+          <SWRConfigWithAuth>
+            <div
+              className={cn(lato.variable, sourceCode.variable, 'font-lato')}
+            >
+              <Component {...pageProps} />
+            </div>
+          </SWRConfigWithAuth>
+        </WithAnalytics>
       </AuthProvider>
     </UserProvider>
   )
