@@ -15,7 +15,10 @@ from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.models.types import TableDescription, TableDescriptionStatus
-from dataherald.db_scanner.repository.base import TableDescriptionRepository
+from dataherald.db_scanner.repository.base import (
+    InvalidColumnNameError,
+    TableDescriptionRepository,
+)
 from dataherald.eval import Evaluator
 from dataherald.repositories.base import ResponseRepository
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
@@ -218,22 +221,20 @@ class FastAPI(API):
         table_description_request: TableDescriptionRequest,
     ) -> TableDescription:
         scanner_repository = TableDescriptionRepository(self.storage)
-        table = scanner_repository.find_by_id(table_description_id)
+        try:
+            table = scanner_repository.find_by_id(table_description_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not table:
             raise HTTPException(
                 status_code=404, detail="Scanned database table not found"
             )
 
-        if table_description_request.description:
-            table.description = table_description_request.description
-        if table_description_request.columns:
-            for column_request in table_description_request.columns:
-                for column in table.columns:
-                    if column_request.name == column.name:
-                        column.description = column_request.description
-
-        return scanner_repository.update(table)
+        try:
+            return scanner_repository.update_fields(table, table_description_request)
+        except InvalidColumnNameError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
     @override
     def list_table_descriptions(
