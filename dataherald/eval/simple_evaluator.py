@@ -11,9 +11,11 @@ from langchain.prompts.chat import (
 )
 from overrides import override
 from sql_metadata import Parser
-from sqlalchemy.exc import SQLAlchemyError
 
 from dataherald.config import System
+from dataherald.db import DB
+from dataherald.db_scanner.models.types import TableDescriptionStatus
+from dataherald.db_scanner.repository.base import DBScannerRepository
 from dataherald.eval import Evaluation, Evaluator
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
@@ -48,6 +50,7 @@ Here is the question:
 Question: {question}
 Evaluate the following SQL query:
 SQL Query: {SQL}
+SQL Query Result: {sql_query_result}
 give me a one or two lines explanation and the score after 'Score: '.
 """
 
@@ -88,6 +91,14 @@ class SimpleEvaluator(Evaluator):
         logger.info(
             f"(Simple evaluator) Generating score for the question/sql pair: {str(question.question)}/ {str(generated_answer.sql_query)}"
         )
+        storage = self.system.instance(DB)
+        repository = DBScannerRepository(storage)
+        db_scan = repository.get_all_tables_by_db(
+            {
+                "db_connection_id": str(database_connection.id),
+                "status": TableDescriptionStatus.SYNCHRONIZED.value,
+            }
+        )
         self.llm = self.model.get_model(
             database_connection=database_connection, temperature=0
         )
@@ -103,17 +114,11 @@ class SimpleEvaluator(Evaluator):
         sql = generated_answer.sql_query
         dialect = database.dialect
         tables = Parser(sql).tables
-        database._sample_rows_in_table_info = 0
-        schema = database.get_table_info_no_throw(tables)
-        try:
-            run_result = database.run_sql(sql)[0]
-        except SQLAlchemyError as e:
-            """Format the error message"""
-            run_result = f"Error: {e}"
-        except Exception as e:
-            logger.info(f"(Simple evaluator) Error: {e}")
-            run_result = f"Error: {e}"
-        if run_result == "[]" or "Error:" in run_result:
+        schema = ""
+        for scanned_table in db_scan:
+            if scanned_table.table_name in tables:
+                schema += f"Table: {scanned_table.table_schema}\n"
+        if generated_answer.sql_query_result is None:
             logger.info(
                 f"(Simple evaluator) SQL query: {sql} is not valid. Returning score 0"
             )
@@ -126,6 +131,7 @@ class SimpleEvaluator(Evaluator):
                 "dialect": dialect,
                 "question": user_question,
                 "SQL": sql,
+                "sql_query_result": str(generated_answer.sql_query_result.json()),
                 "schema": schema,
             }
         )
