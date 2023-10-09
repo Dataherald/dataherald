@@ -25,9 +25,9 @@ class SQLGenerator(Component, ABC):
         self.model = ChatModel(self.system)
 
     def create_sql_query_status(
-        self, db: SQLDatabase, query: str, response: Response
+        self, db: SQLDatabase, query: str, response: Response, top_k: int = None
     ) -> Response:
-        return create_sql_query_status(db, query, response)
+        return create_sql_query_status(db, query, response, top_k)
 
     def format_intermediate_representations(
         self, intermediate_representation: List[Tuple[AgentAction, str]]

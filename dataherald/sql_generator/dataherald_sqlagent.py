@@ -43,9 +43,9 @@ from dataherald.types import Question, Response
 logger = logging.getLogger(__name__)
 
 
+TOP_K = 100
 AGENT_PREFIX = """You are an agent designed to interact with a SQL database.
 Given an input question, create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
-Unless the user specifies a specific number of examples they wish to obtain, always limit your query to at most {top_k} results.
 You have access to tools for interacting with the database.
 Only use the below tools. Only use the information returned by the below tools to construct your final answer.
 #
@@ -179,10 +179,11 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     def _run(
         self,
         query: str,
+        top_k: int = TOP_K,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Execute the query, return the results or an error message."""
-        return self.db.run_sql(query)[0]
+        return self.db.run_sql(query, top_k=top_k)[0]
 
     async def _arun(
         self,
@@ -567,7 +568,6 @@ class DataheraldSQLAgent(SQLGenerator):
         format_instructions: str = FORMAT_INSTRUCTIONS,
         input_variables: List[str] | None = None,
         max_examples: int = 20,
-        top_k: int = 100,
         max_iterations: int | None = 15,
         max_execution_time: float | None = None,
         early_stopping_method: str = "force",
@@ -577,9 +577,7 @@ class DataheraldSQLAgent(SQLGenerator):
     ) -> AgentExecutor:
         """Construct an SQL agent from an LLM and tools."""
         tools = toolkit.get_tools()
-        prefix = prefix.format(
-            dialect=toolkit.dialect, top_k=top_k, max_examples=max_examples
-        )
+        prefix = prefix.format(dialect=toolkit.dialect, max_examples=max_examples)
         prompt = ZeroShotAgent.create_prompt(
             tools,
             prefix=prefix,
@@ -689,4 +687,6 @@ class DataheraldSQLAgent(SQLGenerator):
             total_cost=cb.total_cost,
             sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",
         )
-        return self.create_sql_query_status(self.database, response.sql_query, response)
+        return self.create_sql_query_status(
+            self.database, response.sql_query, response, top_k=TOP_K
+        )
