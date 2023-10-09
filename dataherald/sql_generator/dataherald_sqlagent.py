@@ -577,9 +577,7 @@ class DataheraldSQLAgent(SQLGenerator):
     ) -> AgentExecutor:
         """Construct an SQL agent from an LLM and tools."""
         tools = toolkit.get_tools()
-        prefix = prefix.format(
-            dialect=toolkit.dialect, max_examples=max_examples
-        )
+        prefix = prefix.format(dialect=toolkit.dialect, max_examples=max_examples)
         prompt = ZeroShotAgent.create_prompt(
             tools,
             prefix=prefix,
@@ -689,4 +687,6 @@ class DataheraldSQLAgent(SQLGenerator):
             total_cost=cb.total_cost,
             sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",
         )
-        return self.create_sql_query_status(self.database, response.sql_query, response, top_k=TOP_K)
+        return self.create_sql_query_status(
+            self.database, response.sql_query, response, top_k=TOP_K
+        )
