@@ -60,7 +60,10 @@ class OrganizationService:
             org_request.llm_credentials = self._encrypt_llm_credentials(
                 org_request.llm_credentials
             )
-        if self.repo.update_organization(org_id, org_request.dict()) == 1:
+        if (
+            self.repo.update_organization(org_id, org_request.dict(exclude_unset=True))
+            == 1
+        ):
             new_org = self.repo.get_organization(org_id)
             return self._get_mapped_organization_response(new_org)
 

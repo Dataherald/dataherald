@@ -2,6 +2,7 @@ import httpx
 
 from config import settings
 from modules.db_connection.service import DBConnectionService
+from modules.instruction.service import InstructionService
 from modules.table_description.models.requests import (
     ScanRequest,
     TableDescriptionRequest,
@@ -17,6 +18,7 @@ from utils.exception import raise_for_status
 class TableDescriptionService:
     def __init__(self):
         self.db_connection_service = DBConnectionService()
+        self.instruction_service = InstructionService()
 
     async def get_table_descriptions(
         self, table_name: str, db_connection_id: str
@@ -30,6 +32,17 @@ class TableDescriptionService:
             raise_for_status(response.status_code, response.text)
             return [TableDescriptionResponse(**td) for td in response.json()]
 
+    async def get_table_description(
+        self, table_description_id: str
+    ) -> TableDescriptionResponse:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                settings.k2_core_url + f"/table-descriptions/{table_description_id}",
+                timeout=settings.default_k2_core_timeout,
+            )
+            raise_for_status(response.status_code, response.text)
+            return TableDescriptionResponse(**response.json())
+
     async def get_database_table_descriptions(self, db_connection_id: str):
         if not db_connection_id:
             return []
@@ -41,7 +54,11 @@ class TableDescriptionService:
                 timeout=settings.default_k2_core_timeout,
             )
             raise_for_status(response.status_code, response.text)
+
             db_connection = self.db_connection_service.get_db_connection(
+                db_connection_id
+            )
+            instructions = await self.instruction_service.get_instructions(
                 db_connection_id
             )
 
@@ -63,6 +80,7 @@ class TableDescriptionService:
                     alias=db_connection.alias,
                     tables=tables,
                     db_connection_id=db_connection_id,
+                    instructions="\n\n".join([i.instruction for i in instructions]),
                 )
             ]
 
@@ -84,7 +102,7 @@ class TableDescriptionService:
         async with httpx.AsyncClient() as client:
             response = await client.patch(
                 settings.k2_core_url + f"/table-descriptions/{table_description_id}",
-                json=table_description_request.dict(exclude={"table_name"}),
+                json=table_description_request.dict(exclude_unset=True),
             )
             raise_for_status(response.status_code, response.text)
             return TableDescriptionResponse(**response.json())

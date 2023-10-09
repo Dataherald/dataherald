@@ -37,7 +37,7 @@ class UserService:
         raise HTTPException(status_code=400, detail="User exists or cannot add user")
 
     def update_user(self, user_id: str, user_request: UserRequest) -> UserResponse:
-        if self.repo.update_user(user_id, user_request.dict()) == 1:
+        if self.repo.update_user(user_id, user_request.dict(exclude_unset=True)) == 1:
             new_user = self.repo.get_user(user_id)
             return self._get_mapped_user_response(new_user)
 

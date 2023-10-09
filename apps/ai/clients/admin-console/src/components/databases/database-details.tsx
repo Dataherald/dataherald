@@ -1,117 +1,53 @@
 import { Button } from '@/components/ui/button'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
-import { TreeNode, TreeView } from '@/components/ui/tree-view'
-import { useTree } from '@/components/ui/tree-view-context'
+import { TreeProvider, useTree } from '@/components/ui/tree-view-context'
 import { toast } from '@/components/ui/use-toast'
 import useSynchronizeSchemas from '@/hooks/api/useSynchronizeSchemas'
-import {
-  formatTableSyncStatus,
-  getDomainTableSyncStatusColors,
-  getDomainTableSyncStatusIcon,
-  isSelectableByStatus,
-} from '@/lib/domain/database'
-import { cn, renderIcon } from '@/lib/utils'
-import { Databases, ETableSyncStatus } from '@/models/api'
-import { formatDistanceStrict } from 'date-fns'
-import {
-  Columns,
-  DatabaseIcon,
-  Loader,
-  RefreshCw,
-  Table2,
-  UploadCloud,
-} from 'lucide-react'
-import { FC, useMemo, useState } from 'react'
-
-const mapDatabaseToTreeData = (databases: Databases): TreeNode =>
-  databases.map((database) => ({
-    id: database.db_connection_id,
-    name: database.alias,
-    icon: DatabaseIcon,
-    selectable: database.tables.some((table) =>
-      isSelectableByStatus(table.sync_status),
-    ),
-    defaultOpen: true,
-    children: [
-      {
-        name: 'Tables',
-        id: 'tables-root',
-        icon: Table2,
-        defaultOpen: true,
-        children: database.tables.map((table) => ({
-          id: table.name,
-          name: table.name,
-          icon: Table2,
-          selectable: isSelectableByStatus(table.sync_status),
-          slot: (
-            <div
-              className={cn(
-                'flex items-center gap-3 min-w-fit px-5',
-                getDomainTableSyncStatusColors(table.sync_status).text,
-              )}
-            >
-              {table.last_sync && (
-                <span className="text-gray-400">
-                  {formatDistanceStrict(new Date(table.last_sync), new Date(), {
-                    addSuffix: true,
-                  })}
-                </span>
-              )}
-              {renderIcon(getDomainTableSyncStatusIcon(table.sync_status), {
-                size: 16,
-                strokeWidth: 2,
-              })}
-              {formatTableSyncStatus(table.sync_status)}
-            </div>
-          ),
-          children: table.columns?.length
-            ? [
-                {
-                  id: 'columns-root',
-                  name: 'Columns',
-                  icon: Columns,
-                  children: table.columns.map((column) => ({
-                    id: column,
-                    name: column,
-                    icon: Columns,
-                  })),
-                },
-              ]
-            : [],
-        })),
-      },
-    ],
-  }))[0] // TODO: Fix this when we support multiple databases
+import { cn } from '@/lib/utils'
+import { Database, ETableSyncStatus } from '@/models/api'
+import { Loader, RefreshCw, UploadCloud } from 'lucide-react'
+import React, { ComponentType, FC, useState } from 'react'
+import DatabaseTree from './database-tree'
 
 interface DatabaseDetailsProps {
-  databases: Databases
+  database: Database
   isRefreshing: boolean
-  onRefresh: (newData?: Databases) => Promise<void>
+  onRefresh: (newData?: Database) => Promise<void>
+}
+
+type WithDatabaseSelection = (
+  Component: ComponentType<DatabaseDetailsProps>,
+) => React.FC<DatabaseDetailsProps>
+
+const withDatabaseSelection: WithDatabaseSelection = (Component) => {
+  return function WithDatabaseSelection(
+    props: DatabaseDetailsProps,
+  ): JSX.Element {
+    return (
+      <TreeProvider>
+        <Component {...props} />
+      </TreeProvider>
+    )
+  }
 }
 
 const DatabaseDetails: FC<DatabaseDetailsProps> = ({
-  databases,
+  database,
   isRefreshing,
   onRefresh,
 }) => {
   const [isSynchronizing, setIsSynchronizing] = useState(false)
   const { selectedNodes, resetSelection } = useTree()
   const synchronizeSchemas = useSynchronizeSchemas()
-  const databaseTree = useMemo(
-    () => (databases.length > 0 ? mapDatabaseToTreeData(databases) : null),
-    [databases],
-  )
-
-  if (databaseTree === null) return <></>
 
   const resetSyncSelection = resetSelection
 
   const handleSynchronization = async () => {
     setIsSynchronizing(true)
-    const optimisticDatabaseUpdate = databases.map((db) => ({
-      ...db,
-      tables: db.tables.map((t) => ({
+    const optimisticDatabaseUpdate = {
+      ...database,
+      tables: database.tables.map((t) => ({
         ...t,
         ...(selectedNodes.has(t.name)
           ? {
@@ -120,10 +56,10 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
             }
           : {}),
       })),
-    }))
+    }
     try {
       await synchronizeSchemas({
-        db_connection_id: databaseTree.id,
+        db_connection_id: database.db_connection_id,
         table_names: Array.from(selectedNodes),
       })
       toast({
@@ -204,10 +140,10 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
         </div>
       </div>
 
-      <TreeView rootNode={databaseTree} />
+      <DatabaseTree database={database}></DatabaseTree>
       <Toaster />
     </>
   )
 }
 
-export default DatabaseDetails
+export default withDatabaseSelection(DatabaseDetails)

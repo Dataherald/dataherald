@@ -4,9 +4,8 @@ import DatabasesError from '@/components/databases/error'
 import LoadingDatabases from '@/components/databases/loading'
 import PageLayout from '@/components/layout/page-layout'
 import { ContentBox } from '@/components/ui/content-box'
-import { TreeProvider } from '@/components/ui/tree-view-context'
 import useDatabases from '@/hooks/api/useDatabases'
-import { Databases } from '@/models/api'
+import { Database, Databases } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { FC, useEffect, useState } from 'react'
 
@@ -23,9 +22,9 @@ const DatabasesPage: FC = () => {
     }
   }
 
-  const handleRefresh = async (newData?: Databases) => {
+  const handleRefresh = async (newDatabase?: Database) => {
     setIsRefreshing(true)
-    await refreshDatabases(newData)
+    await refreshDatabases(newDatabase ? [newDatabase] : undefined)
     setIsRefreshing(false)
   }
 
@@ -58,13 +57,11 @@ const DatabasesPage: FC = () => {
     )
   } else {
     pageContent = (
-      <TreeProvider>
-        <DatabaseDetails
-          databases={databases as Databases}
-          isRefreshing={isRefreshing}
-          onRefresh={handleRefresh}
-        />
-      </TreeProvider>
+      <DatabaseDetails
+        database={(databases as Databases)[0]} // Assuming only one database for now
+        isRefreshing={isRefreshing}
+        onRefresh={handleRefresh}
+      />
     )
   }
   return (

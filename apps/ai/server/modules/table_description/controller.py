@@ -22,7 +22,7 @@ authorize = Authorize()
 table_description_service = TableDescriptionService()
 
 
-@router.get("/list", status_code=status.HTTP_200_OK)
+@router.get("/list")
 async def get_table_descriptions(
     table_name: str = "",
     token: str = Depends(token_auth_scheme),
@@ -34,7 +34,16 @@ async def get_table_descriptions(
     )
 
 
-@router.get("/database/list", status_code=status.HTTP_200_OK)
+@router.get("/{id}")
+async def get_table_description(
+    id: str, token: str = Depends(token_auth_scheme)
+) -> TableDescriptionResponse:
+    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
+    authorize.table_description_in_organization(id, org_id)
+    return await table_description_service.get_table_description(id)
+
+
+@router.get("/database/list")
 async def get_database_table_descriptions(
     token: str = Depends(token_auth_scheme),
 ) -> list[DatabaseDescriptionResponse]:
@@ -53,7 +62,7 @@ async def sync_table_descriptions_schemas(
     return await table_description_service.sync_table_descriptions_schemas(scan_request)
 
 
-@router.patch("/{id}", status_code=status.HTTP_200_OK)
+@router.patch("/{id}")
 async def update_table_description(
     id: str,
     table_description_request: TableDescriptionRequest,

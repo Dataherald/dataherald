@@ -52,7 +52,7 @@ class InstructionService:
                 settings.k2_core_url + f"/instructions/{instruction_id}",
                 json={
                     "db_connection_id": db_connection_id,
-                    **instruction_request.dict(),
+                    **instruction_request.dict(exclude_unset=True),
                 },
             )
             raise_for_status(response.status_code, response.text)
