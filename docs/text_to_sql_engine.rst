@@ -42,7 +42,7 @@ Base class that all SQL generation classes inherit from.
 
 This base class defines the common structure for SQL generation classes.
 
-.. method:: create_sql_query_status(db, query, response)
+.. method:: create_sql_query_status(db, query, response, top_k)
    :noindex:
 
    Creates a SQL query status using provided parameters.
@@ -53,6 +53,8 @@ This base class defines the common structure for SQL generation classes.
    :type query: str
    :param response: The Response instance.
    :type response: Response
+   :param top_k: The number of results to return.
+   :type top_k: int
    :return: The updated Response instance with the SQL query status.
    :rtype: Response
 
