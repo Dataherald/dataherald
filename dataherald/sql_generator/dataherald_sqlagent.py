@@ -1,6 +1,7 @@
 import datetime
 import difflib
 import logging
+import os
 import time
 from functools import wraps
 from typing import Any, Callable, Dict, List
@@ -37,7 +38,7 @@ from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.sql_database.models.types import (
     DatabaseConnection,
 )
-from dataherald.sql_generator import SQLGenerator
+from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
 from dataherald.types import Question, Response
 
 logger = logging.getLogger(__name__)
@@ -648,14 +649,18 @@ class DataheraldSQLAgent(SQLGenerator):
             toolkit=toolkit,
             verbose=True,
             max_examples=number_of_samples,
+            max_execution_time=os.getenv("DH_ENGINE_TIMEOUT", None),
         )
         agent_executor.return_intermediate_steps = True
         agent_executor.handle_parsing_errors = True
         with get_openai_callback() as cb:
             try:
                 result = agent_executor({"input": user_question.question})
+                result = self.check_for_time_out_or_item_limit(result)
             except SQLInjectionError as e:
-                raise SQLAlchemyError(e) from e
+                raise SQLInjectionError(e) from e
+            except EngineTimeOutORItemLimitError as e:
+                raise EngineTimeOutORItemLimitError(e) from e
             except Exception as e:
                 return Response(
                     question_id=user_question.id,
