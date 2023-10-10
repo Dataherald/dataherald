@@ -50,6 +50,7 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/database-connections",
             self.create_database_connection,
             methods=["POST"],
+            status_code=201,
             tags=["Database connections"],
         )
 
@@ -71,6 +72,7 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/table-descriptions/sync-schemas",
             self.scan_db,
             methods=["POST"],
+            status_code=201,
             tags=["Table descriptions"],
         )
 
@@ -106,6 +108,7 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/golden-records",
             self.add_golden_records,
             methods=["POST"],
+            status_code=201,
             tags=["Golden records"],
         )
 
@@ -120,6 +123,7 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/questions",
             self.answer_question,
             methods=["POST"],
+            status_code=201,
             tags=["Questions"],
         )
 
@@ -141,6 +145,7 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/responses",
             self.create_response,
             methods=["POST"],
+            status_code=201,
             tags=["Responses"],
         )
 
@@ -162,6 +167,7 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/sql-query-executions",
             self.execute_sql_query,
             methods=["POST"],
+            status_code=201,
             tags=["SQL queries"],
         )
 
@@ -169,6 +175,7 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/instructions",
             self.add_instruction,
             methods=["POST"],
+            status_code=201,
             tags=["Instructions"],
         )
 
