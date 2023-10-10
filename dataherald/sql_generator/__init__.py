@@ -28,13 +28,13 @@ class SQLGenerator(Component, ABC):
         self.system = system
         self.model = ChatModel(self.system)
 
-    def check_for_time_out_or_item_limit(self, response: dict) -> dict:
+    def check_for_time_out_or_tool_limit(self, response: dict) -> dict:
         if (
             response.get("output")
             == "Agent stopped due to iteration limit or time limit."
         ):
             raise EngineTimeOutORItemLimitError(
-                "The engine has timed out or reached the item limit."
+                "The engine has timed out or reached the tool limit."
             )
         return response
 
