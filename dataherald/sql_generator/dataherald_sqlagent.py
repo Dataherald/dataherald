@@ -656,7 +656,7 @@ class DataheraldSQLAgent(SQLGenerator):
         with get_openai_callback() as cb:
             try:
                 result = agent_executor({"input": user_question.question})
-                result = self.check_for_time_out_or_item_limit(result)
+                result = self.check_for_time_out_or_tool_limit(result)
             except SQLInjectionError as e:
                 raise SQLInjectionError(e) from e
             except EngineTimeOutORItemLimitError as e:
