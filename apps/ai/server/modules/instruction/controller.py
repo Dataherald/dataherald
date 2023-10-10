@@ -18,13 +18,13 @@ table_description_service = InstructionService()
 
 @router.get("/list")
 async def get_instructions(
+    db_connection_id: str,
     token: str = Depends(token_auth_scheme),
 ) -> list[InstructionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
     organization = authorize.get_organization_by_user_response(user)
-    return await table_description_service.get_instructions(
-        organization.db_connection_id
-    )
+    authorize.db_connection_in_organization(db_connection_id, organization.id)
+    return await table_description_service.get_instructions(db_connection_id)
 
 
 @router.get("")

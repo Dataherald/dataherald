@@ -2,7 +2,6 @@ import httpx
 
 from config import settings
 from modules.db_connection.service import DBConnectionService
-from modules.instruction.service import InstructionService
 from modules.table_description.models.requests import (
     ScanRequest,
     TableDescriptionRequest,
@@ -18,7 +17,6 @@ from utils.exception import raise_for_status
 class TableDescriptionService:
     def __init__(self):
         self.db_connection_service = DBConnectionService()
-        self.instruction_service = InstructionService()
 
     async def get_table_descriptions(
         self, table_name: str, db_connection_id: str
@@ -58,9 +56,6 @@ class TableDescriptionService:
             db_connection = self.db_connection_service.get_db_connection(
                 db_connection_id
             )
-            instructions = await self.instruction_service.get_instructions(
-                db_connection_id
-            )
 
             table_descriptions = [
                 TableDescriptionResponse(**td) for td in response.json()
@@ -80,7 +75,6 @@ class TableDescriptionService:
                     alias=db_connection.alias,
                     tables=tables,
                     db_connection_id=db_connection_id,
-                    instructions="\n\n".join([i.instruction for i in instructions]),
                 )
             ]
 

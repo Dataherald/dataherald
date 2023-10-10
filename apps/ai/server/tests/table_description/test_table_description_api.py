@@ -80,7 +80,6 @@ class TestTableDescriptionAPI(TestCase):
             }
         ],
         "db_connection_id": "0123456789ab0123456789ab",
-        "instructions": "",
     }
 
     @patch(
@@ -106,10 +105,6 @@ class TestTableDescriptionAPI(TestCase):
     @patch(
         "httpx.AsyncClient.get",
         AsyncMock(return_value=Response(status_code=200, json=[test_response_0])),
-    )
-    @patch(
-        "modules.instruction.service.InstructionService.get_instructions",
-        AsyncMock(return_value=[]),
     )
     @patch(
         "modules.db_connection.service.DBConnectionService.get_db_connection",

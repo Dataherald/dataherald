@@ -30,6 +30,7 @@ client = TestClient(app)
         )
     ),
     instruction_in_organization=Mock(return_value=None),
+    db_connection_in_organization=Mock(return_value=None),
 )
 class TestInstructionAPI(TestCase):
     url = "/instruction"
@@ -53,7 +54,11 @@ class TestInstructionAPI(TestCase):
         AsyncMock(return_value=Response(status_code=200, json=[test_response_0])),
     )
     def test_get_instructions(self):
-        response = client.get(self.url + "/list", headers=self.test_header)
+        response = client.get(
+            self.url + "/list",
+            headers=self.test_header,
+            params={"db_connection_id": "0123456789ab0123456789ab"},
+        )
         assert response.status_code == status.HTTP_200_OK
         assert response.json() == [self.test_response_1]
 
