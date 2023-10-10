@@ -6,6 +6,7 @@ from typing import List
 from bson import json_util
 from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
+from fastapi.responses import JSONResponse
 from overrides import override
 
 from dataherald.api import API
@@ -135,7 +136,13 @@ class FastAPI(API):
             question_request.db_connection_id
         )
         if not database_connection:
-            raise HTTPException(status_code=404, detail="Database connection not found")
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "question_id": user_question.id,
+                    "error_message": "Connections doesn't exist",
+                },
+            )
         context = context_store.retrieve_context_for_question(user_question)
         start_generated_answer = time.time()
         try:
@@ -146,10 +153,11 @@ class FastAPI(API):
             confidence_score = evaluator.get_confidence_score(
                 user_question, generated_answer, database_connection
             )
-        except ValueError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
-        except SQLInjectionError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
+        except Exception as e:
+            return JSONResponse(
+                status_code=400,
+                content={"question_id": user_question.id, "error_message": str(e)},
+            )
         generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
         response_repository = ResponseRepository(self.storage)
