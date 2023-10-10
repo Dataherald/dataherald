@@ -3,7 +3,7 @@ from enum import Enum
 
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, Field, validator
 
 from dataherald.sql_database.models.types import LLMCredentials, SSHSettings
 
@@ -22,7 +22,7 @@ class DBConnectionValidation(BaseModel):
 
 class CreateResponseRequest(BaseModel):
     question_id: str
-    sql_query: str
+    sql_query: str = Field(None, min_length=3)
 
 
 class SQLQueryResult(BaseModel):
@@ -41,7 +41,7 @@ class UpdateInstruction(BaseModel):
 
 
 class InstructionRequest(DBConnectionValidation):
-    instruction: str
+    instruction: str = Field(None, min_length=3)
 
 
 class Instruction(BaseModel):
@@ -51,8 +51,8 @@ class Instruction(BaseModel):
 
 
 class GoldenRecordRequest(DBConnectionValidation):
-    question: str
-    sql_query: str
+    question: str = Field(None, min_length=3)
+    sql_query: str = Field(None, min_length=3)
 
 
 class GoldenRecord(BaseModel):
@@ -103,7 +103,7 @@ class SupportedDatabase(Enum):
 
 
 class QuestionRequest(DBConnectionValidation):
-    question: str
+    question: str = Field(None, min_length=3)
 
 
 class ScannerRequest(DBConnectionValidation):
