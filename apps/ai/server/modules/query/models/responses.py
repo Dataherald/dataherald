@@ -1,15 +1,15 @@
 from pydantic import BaseModel
 
 from modules.query.models.entities import (
-    BaseEngineResponse,
+    BaseEngineAnswer,
     QueryStatus,
     SQLQueryResult,
 )
 from modules.user.models.responses import UserResponse
 
 
-class EngineResponseResponse(BaseEngineResponse):
-    id: str
+class EngineAnswerResponse(BaseEngineAnswer):
+    id: str | None
     question_id: str
 
 

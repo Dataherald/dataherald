@@ -166,7 +166,7 @@ class TestQueryAPI(TestCase):
                 "slack_thread_ts": "test_thread_ts",
             },
         )
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
         assert response.json() == self.test_slack_response_1
 
     @patch.multiple(

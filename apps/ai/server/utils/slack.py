@@ -3,7 +3,7 @@ import re
 from slack_sdk import WebClient
 
 from modules.query.models.entities import Query
-from modules.query.models.responses import EngineResponseResponse
+from modules.query.models.responses import EngineAnswerResponse
 
 
 class SlackWebClient:
@@ -25,7 +25,7 @@ class SlackWebClient:
     def send_verified_query_message(
         self,
         query_ref: Query,
-        query_response: EngineResponseResponse,
+        query_response: EngineAnswerResponse,
         question: str,
     ):
         message_blocks = [

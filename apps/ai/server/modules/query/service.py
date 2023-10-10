@@ -3,14 +3,15 @@ from typing import Dict
 
 import httpx
 from bson import ObjectId
+from fastapi import status
 
 from config import settings
 from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.service import GoldenSQLService
 from modules.organization.models.responses import OrganizationResponse
 from modules.query.models.entities import (
-    BaseEngineResponse,
-    EngineResponse,
+    BaseEngineAnswer,
+    EngineAnswer,
     Query,
     QueryStatus,
     Question,
@@ -22,7 +23,7 @@ from modules.query.models.requests import (
     QuestionRequest,
 )
 from modules.query.models.responses import (
-    EngineResponseResponse,
+    EngineAnswerResponse,
     QueryListResponse,
     QueryResponse,
     QuerySlackResponse,
@@ -31,7 +32,7 @@ from modules.query.repository import QueryRepository
 from modules.user.models.entities import SlackInfo
 from modules.user.models.responses import UserResponse
 from modules.user.service import UserService
-from utils.exception import raise_for_status
+from utils.exception import QueryEngineError, raise_for_status
 from utils.slack import SlackWebClient, remove_slack_mentions
 
 CONFIDENCE_CAP = 0.95
@@ -47,7 +48,10 @@ class QueryService:
         self, question_request: QuestionRequest, organization: OrganizationResponse
     ) -> QuerySlackResponse:
         question_string = remove_slack_mentions(question_request.question)
-
+        current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        username = SlackWebClient(
+            organization.slack_installation.bot.token
+        ).get_user_real_name(question_request.slack_user_id)
         # ask question to k2 engine
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -58,65 +62,63 @@ class QueryService:
                 },
                 timeout=settings.default_k2_core_timeout,
             )
+            response_json = response.json()
+            if not response_json["question_id"]:
+                raise_for_status(response.status_code, response.text)
 
-            raise_for_status(response.status_code, response.text)
+            answer = EngineAnswerResponse(**response_json)
 
-        query_response = EngineResponseResponse(**response.json())
-        current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-        username = SlackWebClient(
-            organization.slack_installation.bot.token
-        ).get_user_real_name(question_request.slack_user_id)
+            query = Query(
+                question_id=ObjectId(answer.question_id),
+                response_id=ObjectId(answer.id) if answer.id else None,
+                question_date=current_utc_time,
+                last_updated=current_utc_time,
+                organization_id=ObjectId(organization.id),
+                display_id=self.repo.get_next_display_id(organization.id),
+                slack_info=SlackInfo(
+                    user_id=question_request.slack_user_id,
+                    channel_id=question_request.slack_channel_id,
+                    thread_ts=question_request.slack_thread_ts,
+                    username=username,
+                ),
+                status=QueryStatus.NOT_VERIFIED.value
+                if answer.sql_generation_status == SQLGenerationStatus.VALID
+                else QueryStatus.SQL_ERROR.value,
+            )
 
-        query = Query(
-            question_id=ObjectId(query_response.question_id),
-            response_id=ObjectId(query_response.id),
-            question_date=current_utc_time,
-            last_updated=current_utc_time,
-            organization_id=ObjectId(organization.id),
-            display_id=self.repo.get_next_display_id(organization.id),
-            slack_info=SlackInfo(
-                user_id=question_request.slack_user_id,
-                channel_id=question_request.slack_channel_id,
-                thread_ts=question_request.slack_thread_ts,
-                username=username,
-            ),
-            status=QueryStatus.NOT_VERIFIED.value
-            if query_response.sql_generation_status == SQLGenerationStatus.VALID
-            else QueryStatus.SQL_ERROR.value,
-        )
+            query_id = self.repo.add_query(query.dict(exclude={"id"}))
 
-        query_id = self.repo.add_query(query.dict(exclude={"id"}))
+            if response.status_code != status.HTTP_201_CREATED:
+                raise QueryEngineError(
+                    response.status_code,
+                    query_id,
+                    query.display_id,
+                    answer.error_message,
+                )
 
-        if (
-            organization.confidence_threshold == 1
-            or query_response.confidence_score < organization.confidence_threshold
-        ):
-            is_above_confidence_threshold = False
-        else:
-            is_above_confidence_threshold = True
+            if (
+                organization.confidence_threshold == 1
+                or answer.confidence_score < organization.confidence_threshold
+            ):
+                is_above_confidence_threshold = False
+            else:
+                is_above_confidence_threshold = True
 
-        return QuerySlackResponse(
-            id=query_id,
-            display_id=query.display_id,
-            is_above_confidence_threshold=is_above_confidence_threshold,
-            **query_response.dict(exclude={"id"}),
-        )
+            return QuerySlackResponse(
+                id=query_id,
+                display_id=query.display_id,
+                is_above_confidence_threshold=is_above_confidence_threshold,
+                **answer.dict(exclude={"id"}),
+            )
 
     def get_query(self, query_id: str):
         query = self.repo.get_query(query_id)
         question = self.repo.get_question(str(query.question_id))
-        query_response = (
-            self.repo.get_response(str(query.response_id))
-            if query.response_id
-            else None
+        answer = (
+            self.repo.get_answer(str(query.response_id)) if query.response_id else None
         )
         if query:
-            return self._get_mapped_query_response(
-                query,
-                question,
-                query_response,
-                query.status == QueryStatus.REJECTED.value,
-            )
+            return self._get_mapped_query_response(query, question, answer)
 
         return None
 
@@ -154,7 +156,7 @@ class QueryService:
             skip=page * page_size, limit=page_size, order=order, org_id=org_id
         )
 
-        query_responses = self.repo.get_responses(
+        query_responses = self.repo.get_answers(
             [
                 result
                 for query in queries
@@ -172,9 +174,9 @@ class QueryService:
             if question.id not in question_dict:
                 question_dict[question.id] = question.question
 
-        query_response_dict: Dict[ObjectId, EngineResponse | None] = {}
-        for query_response in query_responses:
-            query_response_dict[query_response.id] = query_response
+        query_response_dict: Dict[ObjectId, EngineAnswer | None] = {}
+        for answer in query_responses:
+            query_response_dict[answer.id] = answer
 
         if questions:
             return [
@@ -223,7 +225,7 @@ class QueryService:
                 )
                 raise_for_status(response.status_code, response.text)
 
-                new_query_response = EngineResponseResponse(**response.json())
+                new_query_response = EngineAnswerResponse(**response.json())
         else:
             new_query_response = None
 
@@ -272,12 +274,7 @@ class QueryService:
                     organization.slack_installation.bot.token,
                 ).send_rejected_query_message(new_query)
 
-        return self._get_mapped_query_response(
-            new_query,
-            question,
-            new_query_response,
-            new_query.status == QueryStatus.REJECTED.value,
-        )
+        return self._get_mapped_query_response(new_query, question, new_query_response)
 
     async def run_response(self, query_id: str, query_request: QueryExecutionRequest):
         query = self.repo.get_query(query_id)
@@ -293,44 +290,40 @@ class QueryService:
             raise_for_status(response.status_code, response.text)
             query.custom_response = None
             question = self.repo.get_question(query.question_id)
-            new_query_response = EngineResponseResponse(**response.json())
+            new_query_response = EngineAnswerResponse(**response.json())
             return self._get_mapped_query_response(query, question, new_query_response)
 
     def _get_mapped_query_response(
         self,
         query: Query,
         question: Question,
-        query_response: BaseEngineResponse,
-        is_rejected: bool = False,
+        answer: BaseEngineAnswer = None,
     ) -> QueryResponse:
-        if is_rejected:
-            query_response = BaseEngineResponse(
+        if not answer:
+            answer = BaseEngineAnswer(
                 response_id=None,
                 question_id=query.question_id,
-                response=query.custom_response,
+                response=query.custom_response or "",
                 sql_query="",
-                confidence_score=1.0,
-                intermediate_steps=[],
+                confidence_score=0,
             )
 
         return QueryResponse(
             id=str(query.id),
             username=query.slack_info.username or "unknown",
             question=question.question,
-            response=query.custom_response or query_response.response,
-            sql_query=query_response.sql_query,
-            sql_query_result=query_response.sql_query_result,
-            ai_process=query_response.intermediate_steps or ["process unknown"],
+            response=query.custom_response or answer.response,
+            sql_query=answer.sql_query,
+            sql_query_result=answer.sql_query_result,
+            ai_process=answer.intermediate_steps or ["process unknown"],
             question_date=query.question_date,
             last_updated=query.last_updated,
             updated_by=self.user_service.get_user(str(query.updated_by))
             if query.updated_by
             else None,
             status=query.status,
-            evaluation_score=self._convert_confidence_score(
-                query_response.confidence_score
-            ),
-            sql_error_message=query_response.error_message,
+            evaluation_score=self._convert_confidence_score(answer.confidence_score),
+            sql_error_message=answer.error_message,
             display_id=query.display_id,
         )
 

@@ -2,7 +2,7 @@ from bson import ObjectId
 
 from config import QUERY_RESPONSE_COL, QUERY_RESPONSE_REF_COL, QUESTION_COL
 from database.mongo import DESCENDING, MongoDB
-from modules.query.models.entities import EngineResponse, Query, Question
+from modules.query.models.entities import EngineAnswer, Query, Question
 from utils.misc import get_next_display_id
 
 
@@ -16,16 +16,14 @@ class QueryRepository:
         questions = MongoDB.find_by_object_ids(QUESTION_COL, object_ids)
         return [Question(**question) for question in questions]
 
-    def get_response(self, response_id: str) -> EngineResponse:
-        query_response = MongoDB.find_by_object_id(
-            QUERY_RESPONSE_COL, ObjectId(response_id)
-        )
-        return EngineResponse(**query_response) if query_response else None
+    def get_answer(self, response_id: str) -> EngineAnswer:
+        answer = MongoDB.find_by_object_id(QUERY_RESPONSE_COL, ObjectId(response_id))
+        return EngineAnswer(**answer) if answer else None
 
-    def get_responses(self, response_ids: list[str]) -> list[EngineResponse]:
+    def get_answers(self, response_ids: list[str]) -> list[EngineAnswer]:
         object_ids = [ObjectId(id) for id in response_ids]
-        query_responses = MongoDB.find(QUERY_RESPONSE_COL, {"_id": {"$in": object_ids}})
-        return [EngineResponse(**qr) for qr in query_responses]
+        answers = MongoDB.find(QUERY_RESPONSE_COL, {"_id": {"$in": object_ids}})
+        return [EngineAnswer(**qr) for qr in answers]
 
     def get_query(self, query_id: str) -> Query:
         query = MongoDB.find_one(QUERY_RESPONSE_REF_COL, {"_id": ObjectId(query_id)})
@@ -42,11 +40,11 @@ class QueryRepository:
         )
         return [Query(**query) for query in queries]
 
-    def get_question_answers(self, question_id: str) -> list[EngineResponse]:
+    def get_question_answers(self, question_id: str) -> list[EngineAnswer]:
         answers = MongoDB.find(
             QUERY_RESPONSE_COL, {"question_id": ObjectId(question_id)}
         )
-        return [EngineResponse(**answer) for answer in answers]
+        return [EngineAnswer(**answer) for answer in answers]
 
     def get_query_by_question_id(self, question_id: str) -> Query:
         query = MongoDB.find_one(

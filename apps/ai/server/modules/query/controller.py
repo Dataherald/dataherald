@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi.security import HTTPBearer
 
 from modules.organization.service import OrganizationService
@@ -26,7 +26,7 @@ query_service = QueryService()
 org_service = OrganizationService()
 
 
-@router.post("/answer")
+@router.post("/answer", status_code=status.HTTP_201_CREATED)
 async def answer_question(
     question_request: QuestionRequest,
     token: str = Depends(token_auth_scheme),

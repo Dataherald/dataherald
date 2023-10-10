@@ -1,8 +1,32 @@
 import logging
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Request, status
+from fastapi.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
+
+
+class QueryEngineError(Exception):
+    def __init__(
+        self, status_code: int, query_id: str, display_id: str, error_message: str
+    ):
+        self.status_code = status_code
+        self.query_id = query_id
+        self.display_id = display_id
+        self.error_message = error_message
+
+
+async def query_engine_exception_handler(
+    request: Request, exc: QueryEngineError  # noqa: ARG001
+):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "query_id": exc.query_id,
+            "display_id": exc.display_id,
+            "error_message": exc.error_message,
+        },
+    )
 
 
 def raise_for_status(status_code: int, message: str = None):

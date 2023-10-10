@@ -13,6 +13,7 @@ from modules.organization import controller as organization_controller
 from modules.query import controller as query_controller
 from modules.table_description import controller as table_description_controller
 from modules.user import controller as user_controller
+from utils.exception import QueryEngineError, query_engine_exception_handler
 
 tags_metadata = [
     {"name": "Authentication", "description": "Login endpoints for authentication"},
@@ -40,6 +41,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_exception_handler(QueryEngineError, query_engine_exception_handler)
 
 app.include_router(auth_controller.router, tags=["Authentication"])
 app.include_router(db_connection_controller.router, tags=["Database Connection"])

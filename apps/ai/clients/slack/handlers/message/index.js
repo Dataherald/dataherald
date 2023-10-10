@@ -52,19 +52,31 @@ async function handleMessage(context, say) {
         })
         if (!response.ok) {
             try {
-                error(
-                    'API Response not ok: ',
-                    response.status,
-                    response.statusText,
+                const { query_id, display_id, error_message } =
                     await response.json()
+                error(
+                    `API Response not ok: status code ${response.status}, ${response.statusText}, error message: ${error_message}, query id: ${query_id}`
                 )
+                const responseMessage = `Sorry, something went wrong while generating response for query ${display_id}. We'll get back to you once it's been reviewed by the data-team admins.`
+                await say({
+                    blocks: [
+                        {
+                            type: 'section',
+                            text: {
+                                type: 'mrkdwn',
+                                text: `:warning: ${responseMessage}`,
+                            },
+                        },
+                    ],
+                    text: responseMessage,
+                    thread_ts,
+                })
             } catch (e) {
                 error(
                     'API Response not ok: ',
                     response.status,
                     response.statusText
                 )
-            } finally {
                 const responseMessage = `Sorry, something went wrong when I was processing your request. Please try again later.`
                 await say({
                     blocks: [
@@ -124,7 +136,7 @@ async function handleMessage(context, say) {
                     thread_ts,
                 })
             } else {
-                const responseMessage = `The generated response ${display_id} is queued for human verification because it did not exceed the confidence threshold. We'll get back to you once it's been reviewed by the data-team admins`
+                const responseMessage = `The generated response ${display_id} is queued for human verification because it did not exceed the confidence threshold. We'll get back to you once it's been reviewed by the data-team admins.`
                 await say({
                     blocks: [
                         {

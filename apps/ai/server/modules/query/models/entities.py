@@ -44,7 +44,7 @@ class SQLQueryResult(BaseModel):
     rows: list[dict]
 
 
-class BaseEngineResponse(BaseModel):
+class BaseEngineAnswer(BaseModel):
     response: str | None
     intermediate_steps: list[str] | None
     sql_query: str | None
@@ -57,6 +57,6 @@ class BaseEngineResponse(BaseModel):
     error_message: str | None
 
 
-class EngineResponse(BaseEngineResponse):
+class EngineAnswer(BaseEngineAnswer):
     id: Any | None = Field(alias="_id")
     question_id: Any
