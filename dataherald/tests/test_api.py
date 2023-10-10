@@ -5,6 +5,7 @@ from dataherald.app import app
 client = TestClient(app)
 
 HTTP_200_CODE = 200
+HTTP_201_CODE = 201
 HTTP_404_CODE = 404
 
 
@@ -18,7 +19,7 @@ def test_scan_all_tables():
         "/api/v1/table-descriptions/sync-schemas",
         json={"db_connection_id": "64dfa0e103f5134086f7090c"},
     )
-    assert response.status_code == HTTP_200_CODE
+    assert response.status_code == HTTP_201_CODE
 
 
 def test_scan_one_table():
@@ -39,4 +40,4 @@ def test_answer_question():
         "/api/v1/questions",
         json={"question": "Who am I?", "db_connection_id": "64dfa0e103f5134086f7090c"},
     )
-    assert response.status_code == HTTP_200_CODE
+    assert response.status_code == HTTP_201_CODE

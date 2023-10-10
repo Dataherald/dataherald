@@ -16,6 +16,10 @@ from dataherald.types import Question, Response, SQLQueryResult
 from dataherald.utils.strings import contains_line_breaks
 
 
+class EngineTimeOutORItemLimitError(Exception):
+    pass
+
+
 class SQLGenerator(Component, ABC):
     metadata: Any
     llm: ChatModel | None = None
@@ -23,6 +27,16 @@ class SQLGenerator(Component, ABC):
     def __init__(self, system: System):  # noqa: ARG002
         self.system = system
         self.model = ChatModel(self.system)
+
+    def check_for_time_out_or_tool_limit(self, response: dict) -> dict:
+        if (
+            response.get("output")
+            == "Agent stopped due to iteration limit or time limit."
+        ):
+            raise EngineTimeOutORItemLimitError(
+                "The engine has timed out or reached the tool limit."
+            )
+        return response
 
     def create_sql_query_status(
         self, db: SQLDatabase, query: str, response: Response, top_k: int = None
