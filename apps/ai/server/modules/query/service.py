@@ -126,8 +126,30 @@ class QueryService:
         page: int,
         page_size: int,
         ascend: bool,  # noqa: ARG002
+        question_id: str,
         org_id: str,
     ) -> list[QueryListResponse]:
+        if question_id:
+            query = self.repo.get_query_by_question_id(question_id)
+            question = self.repo.get_question(str(question_id))
+            answers = self.repo.get_question_answers(str(question_id))
+            return [
+                QueryListResponse(
+                    id=str(query.id),
+                    username=query.slack_info.username or "unknown",
+                    question=question.question,
+                    response=query.custom_response
+                    or (answer.response if query.response_id else ""),
+                    status=query.status,
+                    question_date=query.question_date,
+                    evaluation_score=self._convert_confidence_score(
+                        answer.confidence_score
+                    ),
+                    display_id=query.display_id,
+                )
+                for answer in answers
+            ]
+
         queries = self.repo.get_queries(
             skip=page * page_size, limit=page_size, order=order, org_id=org_id
         )

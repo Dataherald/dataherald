@@ -42,6 +42,18 @@ class QueryRepository:
         )
         return [Query(**query) for query in queries]
 
+    def get_question_answers(self, question_id: str) -> list[EngineResponse]:
+        answers = MongoDB.find(
+            QUERY_RESPONSE_COL, {"question_id": ObjectId(question_id)}
+        )
+        return [EngineResponse(**answer) for answer in answers]
+
+    def get_query_by_question_id(self, question_id: str) -> Query:
+        query = MongoDB.find_one(
+            QUERY_RESPONSE_REF_COL, {"question_id": ObjectId(question_id)}
+        )
+        return Query(**query) if query else None
+
     def add_query(
         self,
         new_query_data: dict,

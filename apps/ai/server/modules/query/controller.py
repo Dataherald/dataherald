@@ -44,11 +44,17 @@ async def get_queries(
     page_size: int = 20,
     order: str = "question_date",
     ascend: bool = True,
+    question_id: str = None,
     token: str = Depends(token_auth_scheme),
 ) -> list[QueryListResponse]:
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return query_service.get_queries(
-        page=page, page_size=page_size, order=order, ascend=ascend, org_id=org_id
+        page=page,
+        page_size=page_size,
+        order=order,
+        ascend=ascend,
+        question_id=question_id,
+        org_id=org_id,
     )
 
 
