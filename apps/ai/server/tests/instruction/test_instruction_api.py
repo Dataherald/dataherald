@@ -58,6 +58,15 @@ class TestInstructionAPI(TestCase):
         assert response.json() == [self.test_response_1]
 
     @patch(
+        "httpx.AsyncClient.get",
+        AsyncMock(return_value=Response(status_code=200, json=[test_response_0])),
+    )
+    def test_get_instruction(self):
+        response = client.get(self.url, headers=self.test_header)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json() == self.test_response_1
+
+    @patch(
         "httpx.AsyncClient.post",
         AsyncMock(return_value=Response(status_code=201, json=test_response_0)),
     )

@@ -18,6 +18,15 @@ class InstructionService:
             raise_for_status(response.status_code, response.text)
             return [InstructionResponse(**td) for td in response.json()]
 
+    async def get_instruction(self, db_connection_id: str) -> InstructionResponse:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                settings.k2_core_url + "/instructions",
+                params={"db_connection_id": db_connection_id},
+            )
+            raise_for_status(response.status_code, response.text)
+            return InstructionResponse(**response.json()[0])
+
     async def add_instruction(
         self, instruction_request: InstructionRequest, db_connection_id: str
     ) -> InstructionResponse:

@@ -16,13 +16,24 @@ authorize = Authorize()
 table_description_service = InstructionService()
 
 
-@router.get("/list", status_code=status.HTTP_200_OK)
+@router.get("/list")
 async def get_instructions(
     token: str = Depends(token_auth_scheme),
 ) -> list[InstructionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
     organization = authorize.get_organization_by_user_response(user)
     return await table_description_service.get_instructions(
+        organization.db_connection_id
+    )
+
+
+@router.get("")
+async def get_instruction(
+    token: str = Depends(token_auth_scheme),
+) -> InstructionResponse:
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    organization = authorize.get_organization_by_user_response(user)
+    return await table_description_service.get_instruction(
         organization.db_connection_id
     )
 
