@@ -53,6 +53,13 @@ class GoldenSQLRepository:
         )
 
     def delete_verified_golden_sql_ref(self, query_id: str):
+        # this violates the architecture, but it's a quick fix for now
+        # TODO: need to avoid cross resource dependency and avoid circular dependency
+        MongoDB.update_one(
+            QUERY_RESPONSE_REF_COL,
+            {"_id": ObjectId(query_id)},
+            {"status": "NOT_VERIFIED"},
+        )
         return MongoDB.delete_one(GOLDEN_SQL_REF_COL, {"query_id": ObjectId(query_id)})
 
     def get_next_display_id(self, org_id: str) -> str:
