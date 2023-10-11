@@ -27,13 +27,13 @@ class ChatModel(LLMModel):
                 database_connection.llm_credentials.api_key
             )
             if model_family == "openai":
-                os.environ['OPENAI_API_KEY'] = api_key
+                os.environ["OPENAI_API_KEY"] = api_key
             elif model_family == "anthropic":
-                os.environ['ANTHROPIC_API_KEY'] = api_key
+                os.environ["ANTHROPIC_API_KEY"] = api_key
             elif model_family == "google":
-                os.environ['GOOGLE_API_KEY'] = api_key
+                os.environ["GOOGLE_API_KEY"] = api_key
             elif model_family == "cohere":
-                os.environ['COHERE_API_KEY'] = api_key
+                os.environ["COHERE_API_KEY"] = api_key
         try:
             return ChatLiteLLM(model_name=self.model_name, **kwargs)
         except Exception as e:
