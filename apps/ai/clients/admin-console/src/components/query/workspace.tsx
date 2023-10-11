@@ -219,7 +219,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                   {isVerified(verificationStatus) && (
                     <>
                       <Send className="mr-2" size={20} strokeWidth={2.5} />
-                      Save and Send to Slack
+                      Save and Send
                     </>
                   )}
                   {(isNotVerified(verificationStatus) ||
@@ -232,7 +232,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                   {isRejected(verificationStatus) && (
                     <>
                       <Send className="mr-2" size={20} strokeWidth={2.5} />
-                      Save and Send to Slack
+                      Save and Send
                     </>
                   )}
                 </>
