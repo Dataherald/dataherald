@@ -1,10 +1,6 @@
 import { capitalize } from '@/lib/utils'
 import { ETableSyncStatus, TableSyncStatus } from '@/models/api'
-import {
-  ColorClasses,
-  DatabaseResourceType,
-  ResourceColors,
-} from '@/models/domain'
+import { ColorClasses, ResourceColors } from '@/models/domain'
 import {
   Check,
   CircleSlash,
@@ -71,7 +67,7 @@ export const formatTableSyncStatus = (sync_status: TableSyncStatus): string => {
   return capitalize(sync_status?.replace('_', ' ').toLowerCase())
 }
 
-export const isDatabaseResource = (type?: DatabaseResourceType): boolean =>
+export const isDatabaseResource = (type?: string): boolean =>
   type === 'database'
 export const isTableResource = (type?: string): boolean => type === 'table'
 export const isColumnResource = (type?: string): boolean => type === 'column'

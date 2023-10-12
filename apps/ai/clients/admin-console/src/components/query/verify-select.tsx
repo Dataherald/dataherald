@@ -13,7 +13,6 @@ import {
   isVerified,
 } from '@/lib/domain/query'
 import { cn } from '@/lib/utils'
-import { QueryStatus } from '@/models/api'
 import {
   EDomainQueryWorkspaceStatus,
   QueryWorkspaceStatus,

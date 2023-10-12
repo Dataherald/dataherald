@@ -32,10 +32,21 @@ export type ResourceButtonClasses<K extends string> = Record<K, ClassValue>
 
 export type DatabaseResourceType = 'database' | 'table' | 'column'
 
-export type DatabaseResource = {
+interface DatabaseResourceBase {
   id: string
   type: DatabaseResourceType
   icon: LucideIcon
   name: string
-  text: string
+}
+
+export interface DatabaseResource extends DatabaseResourceBase {
+  instructions: string
+}
+
+export interface TableResource extends DatabaseResourceBase {
+  description: string
+}
+
+export interface ColumnResource extends TableResource {
+  categories?: string[]
 }
