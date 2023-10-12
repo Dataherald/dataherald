@@ -1,35 +1,39 @@
+import { TreeNode, TreeView } from '@/components/ui/tree-view'
 import {
   formatTableSyncStatus,
   getDomainTableSyncStatusColors,
   getDomainTableSyncStatusIcon,
-  isSelectableByStatus,
+  isSyncEnabled,
 } from '@/lib/domain/database'
 import { cn, renderIcon } from '@/lib/utils'
-import { Database } from '@/models/api'
+import { Database, ETableSyncStatus } from '@/models/api'
 import { formatDistanceStrict } from 'date-fns'
 import { Columns, DatabaseIcon, Table2 } from 'lucide-react'
 import { FC, useMemo } from 'react'
-import { TreeNode, TreeView } from '../ui/tree-view'
 
 const mapDatabaseToTreeData = (database: Database): TreeNode => ({
   id: database.db_connection_id,
+  type: 'database',
   name: database.alias,
   icon: DatabaseIcon,
-  selectable: database.tables.some((table) =>
-    isSelectableByStatus(table.sync_status),
-  ),
+  clickable: true,
+  selectable: database.tables.some((table) => isSyncEnabled(table.sync_status)),
   defaultOpen: true,
   children: [
     {
-      name: 'Tables',
       id: 'tables-root',
+      name: 'Tables',
+      type: 'table',
       icon: Table2,
+      clickable: false,
       defaultOpen: true,
       children: database.tables.map((table) => ({
-        id: table.name,
+        id: table.id,
+        type: 'table',
         name: table.name,
         icon: Table2,
-        selectable: isSelectableByStatus(table.sync_status),
+        clickable: table.sync_status === ETableSyncStatus.SYNCHRONIZED,
+        selectable: isSyncEnabled(table.sync_status),
         slot: (
           <div
             className={cn(
@@ -54,13 +58,18 @@ const mapDatabaseToTreeData = (database: Database): TreeNode => ({
         children: table.columns?.length
           ? [
               {
-                id: 'columns-root',
+                id: 'column-root',
+                type: 'column',
                 name: 'Columns',
                 icon: Columns,
+                clickable: false,
                 children: table.columns.map((column) => ({
-                  id: column,
+                  id: table.id,
+                  type: 'column',
                   name: column,
                   icon: Columns,
+                  clickable:
+                    table.sync_status === ETableSyncStatus.SYNCHRONIZED,
                 })),
               },
             ]

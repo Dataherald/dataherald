@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 import httpx
 
 from config import settings
@@ -24,8 +25,12 @@ class InstructionService:
                 settings.k2_core_url + "/instructions",
                 params={"db_connection_id": db_connection_id},
             )
+            print(response)
+            instructions = response.json()
             raise_for_status(response.status_code, response.text)
-            return InstructionResponse(**response.json()[0])
+            if len(instructions) == 0:
+                raise HTTPException(404, "Instruction not found")
+            return InstructionResponse(**instructions[0])
 
     async def add_instruction(
         self, instruction_request: InstructionRequest, db_connection_id: str

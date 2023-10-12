@@ -7,10 +7,12 @@ import { FC, HTMLAttributes, useEffect, useState } from 'react'
 export interface TreeNode {
   id: string
   name: string
+  type: string
   icon: LucideIcon
   children?: TreeNode[]
   defaultOpen?: boolean
   selectable?: boolean
+  clickable?: boolean
   slot?: JSX.Element
 }
 
@@ -23,8 +25,12 @@ const TreeNodeComponent: FC<TreeProps> = ({
   node,
   isRoot = false,
 }: TreeProps) => {
-  const { selectedNodes, findSelectionNodeByName, handleNodeSelectionChange } =
-    useTree()
+  const {
+    selectedNodes,
+    findSelectionNodeByName,
+    handleNodeSelectionChange,
+    setClickedRow,
+  } = useTree()
   const [isOpen, setIsOpen] = useState(node.defaultOpen || false)
   const nodeHasChildren = !!node.children?.length
 
@@ -68,20 +74,24 @@ const TreeNodeComponent: FC<TreeProps> = ({
     handleNodeSelectionChange(selectionNode)
   }
 
+  const handleRowClick = () => {
+    if (node.clickable) {
+      setClickedRow(node)
+    }
+  }
+
   return (
     <div className={isRoot ? 'pl-0' : 'pl-7'}>
       <div
         className={cn(
           checkboxState === true && 'bg-blue-100',
+          node.clickable && 'cursor-pointer',
           'w-full flex items-center justify-between gap-2 rounded-lg hover:bg-gray-200 my-1',
         )}
+        onClick={handleRowClick}
       >
         <div
-          className={cn(
-            'flex items-center w-full px-3 py-2',
-            nodeHasChildren ? 'cursor-pointer' : 'cursor-default',
-          )}
-          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center w-full px-3 py-2 "
           aria-expanded={isOpen}
         >
           {selectionNode ? (
@@ -94,7 +104,16 @@ const TreeNodeComponent: FC<TreeProps> = ({
           ) : (
             !isRoot && <div className="w-7"></div>
           )}
-          <div className="w-4">
+          <div
+            className={cn(
+              'w-4',
+              nodeHasChildren ? 'cursor-pointer' : 'cursor-default',
+            )}
+            onClick={(e) => {
+              setIsOpen(!isOpen)
+              e.stopPropagation()
+            }}
+          >
             {nodeHasChildren &&
               (isOpen ? (
                 <ChevronDown size={20} strokeWidth={1.5} />

@@ -1,4 +1,5 @@
 import { ClassValue } from 'clsx'
+import { LucideIcon } from 'lucide-react'
 
 export enum EDomainQueryStatus {
   REJECTED = 'REJECTED',
@@ -28,3 +29,13 @@ export type ColorClasses = {
 export type ResourceColors<T extends string> = Record<T, ColorClasses>
 
 export type ResourceButtonClasses<K extends string> = Record<K, ClassValue>
+
+export type DatabaseResourceType = 'database' | 'table' | 'column'
+
+export type DatabaseResource = {
+  id: string
+  type: DatabaseResourceType
+  icon: LucideIcon
+  name: string
+  text: string
+}

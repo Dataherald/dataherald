@@ -21,6 +21,8 @@ interface SelectionTreeNode {
 interface TreeContextProps {
   rootNode: TreeNode | null
   setRootNode: React.Dispatch<React.SetStateAction<TreeNode | null>>
+  clickedRow: TreeNode | null
+  setClickedRow: React.Dispatch<React.SetStateAction<TreeNode | null>>
   selectedNodes: Set<string>
   findSelectionNodeByName: (nodeName: string) => SelectionTreeNode | null
   resetSelection: () => void
@@ -33,6 +35,7 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [rootNode, setRootNode] = useState<TreeNode | null>(null)
+  const [clickedRow, setClickedRow] = useState<TreeNode | null>(null)
   const [selectionRootNode, setSelectionRootNode] =
     useState<SelectionTreeNode | null>(null)
   const [selectedNodes, setSelectedNodes] = useState<Set<string>>(new Set())
@@ -81,6 +84,8 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
     rootNode,
     setRootNode,
     selectedNodes,
+    clickedRow,
+    setClickedRow,
     findSelectionNodeByName,
     resetSelection,
     handleNodeSelectionChange,

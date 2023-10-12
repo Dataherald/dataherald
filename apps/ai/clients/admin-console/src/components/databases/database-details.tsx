@@ -1,3 +1,5 @@
+import DatabaseResourceSheet from '@/components/databases/database-resource-sheet'
+import DatabaseTree from '@/components/databases/database-tree'
 import { Button } from '@/components/ui/button'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
@@ -8,7 +10,6 @@ import { cn } from '@/lib/utils'
 import { Database, ETableSyncStatus } from '@/models/api'
 import { Loader, RefreshCw, UploadCloud } from 'lucide-react'
 import React, { ComponentType, FC, useState } from 'react'
-import DatabaseTree from './database-tree'
 
 interface DatabaseDetailsProps {
   database: Database
@@ -141,6 +142,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
       </div>
 
       <DatabaseTree database={database}></DatabaseTree>
+      <DatabaseResourceSheet></DatabaseResourceSheet>
       <Toaster />
     </>
   )

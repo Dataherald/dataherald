@@ -1,6 +1,10 @@
 import { capitalize } from '@/lib/utils'
 import { ETableSyncStatus, TableSyncStatus } from '@/models/api'
-import { ColorClasses, ResourceColors } from '@/models/domain'
+import {
+  ColorClasses,
+  DatabaseResourceType,
+  ResourceColors,
+} from '@/models/domain'
 import {
   Check,
   CircleSlash,
@@ -37,7 +41,7 @@ export const getDomainTableSyncStatusColors = (
   return DOMAIN_TABLE_SYNC_STATUS_COLORS[sync_status]
 }
 
-export const isSelectableByStatus = (sync_status: TableSyncStatus): boolean =>
+export const isSyncEnabled = (sync_status: TableSyncStatus): boolean =>
   [
     ETableSyncStatus.NOT_SYNCHRONIZED,
     ETableSyncStatus.FAILED,
@@ -66,3 +70,8 @@ export const getDomainTableSyncStatusIcon = (
 export const formatTableSyncStatus = (sync_status: TableSyncStatus): string => {
   return capitalize(sync_status?.replace('_', ' ').toLowerCase())
 }
+
+export const isDatabaseResource = (type?: DatabaseResourceType): boolean =>
+  type === 'database'
+export const isTableResource = (type?: string): boolean => type === 'table'
+export const isColumnResource = (type?: string): boolean => type === 'column'

@@ -94,11 +94,36 @@ export enum ETableSyncStatus {
 }
 
 export type TableSyncStatus = keyof typeof ETableSyncStatus
+
+export type TableDescription = {
+  id: string
+  table_name: string
+  description: string | null
+  status: TableSyncStatus
+  last_schema_sync: string
+  columns: ColumnDescription[]
+}
+
+export type Instruction = {
+  id: string
+  instruction: string
+  db_connection_id: string
+}
+
+export type ColumnDescription = {
+  name: string
+  description: string | null
+  is_primary_key: boolean
+  data_type: string
+  low_cardinality: boolean
+  categories: string[]
+}
+
 export interface Database {
   db_connection_id: string
   alias: string
   tables: {
-    id?: string
+    id: string
     name: string
     columns: string[]
     sync_status: TableSyncStatus
