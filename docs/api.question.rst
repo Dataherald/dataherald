@@ -12,13 +12,14 @@ Request this ``POST`` endpoint::
 
 .. code-block:: rst
 
-   [
-    {"nl_question": "question", "sql": "sql_query", "db_connection_id":"db_connection_id"},
-   ]
+    {
+      "db_connection_id": "string",
+      "question": "string"
+    }
 
 **Responses**
 
-HTTP 200 code response
+HTTP 201 code response
 
 .. code-block:: rst
 
@@ -57,7 +58,7 @@ HTTP 200 code response
   -H 'Content-Type: application/json' \
       -d '{
       "question": "What is the median rent price for each property type in Los angeles city?",
-      "db_connection_id": "db_connection_id"
+      "db_connection_id": "651f2f542aa862650f3e737e"
     }'
 
 **Response example**
@@ -65,9 +66,7 @@ HTTP 200 code response
 .. code-block:: rst
 
    {
-      "id": {
-        "$oid": "64dbd8f4944f867b3c450468"
-      },
+      "id": "64dbd8f4944f867b3c450468",
       "question_id": "64dbd8cf944f867b3c450467",
       "response": "The median rent price for single homes in Los Angeles city is approximately $2827.65.",
       "intermediate_steps": [

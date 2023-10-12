@@ -1,24 +1,16 @@
-Process a NL query response
+Get a response
 =============================
 
-Once you made a question you can try sending a new sql query to improve the response, this is not stored
+Once you made a question or you created a new response you can use this endpoint to retrieve the specific resource
 
-Request this ``POST`` endpoint::
+Request this ``GET`` endpoint::
 
-   /api/v1/responses
+   /api/v1/responses/{response_id}
 
-**Request body**
-
-.. code-block:: rst
-
-    {
-      "query_id": "string", # required
-      "sql_query": "string" # required
-    }
 
 **Responses**
 
-HTTP 200 code response
+HTTP 201 code response
 
 .. code-block:: rst
 
@@ -38,41 +30,30 @@ HTTP 200 code response
           {}
         ]
       },
-      "sql_generation_status": "NONE",
+      "sql_generation_status": "INVALID",
       "error_message": "string",
       "exec_time": 0,
       "total_tokens": 0,
       "total_cost": 0,
-      "confidence_score": 0
+      "confidence_score": 0,
+      "created_at": "2023-10-12T16:26:40.951158"
     }
 
 **Request example**
 
-
 .. code-block:: rst
 
-   curl -X 'POST' \
-  '<localhost>/api/v1/responses' \
+   curl -X 'GET' \
+  '<localhost>/api/v1/responses/64c424fa3f4036441e882352' \
   -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-      "sql_query": "SELECT "dh_zip_code", MAX("metric_value") as max_rent
-        FROM db_table
-        WHERE "dh_county_name" = 'Los Angeles' AND "period_start" = '2022-05-01' AND "period_end" = '2022-05-31'
-        GROUP BY "zip_code"
-        ORDER BY max_rent DESC
-        LIMIT 1;",
-      "query_id": "64c424fa3f4036441e882352"
-    }'
+  -H 'Content-Type: application/json'
 
 **Response example**
 
 .. code-block:: rst
 
    {
-      "id": {
-        "$oid": "64c424fa3f4036441e882352"
-      },
+      "id": "64c424fa3f4036441e882352",
       "question_id": "64dbd8cf944f867b3c450467",
       "response": "The most expensive zip to rent in Los Angeles city is 90210",
       "intermediate_steps": [

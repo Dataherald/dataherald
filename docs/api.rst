@@ -19,8 +19,9 @@ Related endpoints are:
 
 * :doc:`Create database connection <api.create_database_connection>` -- ``POST api/v1/database-connections``
 * :doc:`List database connections <api.list_database_connections>` -- ``GET api/v1/database-connections``
-* :doc:`Update a database connection <api.update_database_connection>` -- ``PUT api/v1/database-connections/{alias}`` 
+* :doc:`Update a database connection <api.update_database_connection>` -- ``PUT api/v1/database-connections/{db_connection_id}``
 
+**Database connection resource example:**
 
 .. code-block:: json
 
@@ -29,6 +30,10 @@ Related endpoints are:
         "use_ssh": false,
         "connection_uri": "string",
         "path_to_credentials_file": "string",
+        "llm_credentials": {
+            "organization_id": "string",
+            "api_key": "string"
+          },
         "ssh_settings": {
             "db_name": "string",
             "host": "string",
@@ -42,30 +47,16 @@ Related endpoints are:
         }
     }
 
-
-Query Response
+Responses
 ------------------
-The ``query-response`` object is created from the answering natural language questions from the relational data.
+The ``responses`` object is created from the answering natural language questions from the relational data.
 
 The related endpoints are:
 
-* :doc:`process_nl_query_response <api.process_nl_query_response>` -- ``POST api/v1/responses``
-
-.. code-block:: json
-
-    {
-        "confidence_score": "string",
-        "error_message": "string",
-        "exec_time": "float",
-        "intermediate_steps":["string"],
-        "question_id": "string",
-        "response": "string",
-        "sql_generation_status": "string",
-        "sql_query": "string",
-        "sql_query_result": {},
-        "total_cost": "float",
-        "total_tokens": "int"
-    }
+* :doc:`add_question <api.question>` -- ``POST api/v1/questions``
+* :doc:`add_responses <api.add_responses>` -- ``POST api/v1/responses``
+* :doc:`list_responses <api.list_responses>` -- ``GET api/v1/responses``
+* :doc:`get_response <api.get_response>` -- ``GET api/v1/responses/{response_id}``
 
 
 Table Descriptions
@@ -76,8 +67,11 @@ These are then used to help the LLM build valid SQL to answer natural language q
 Related endpoints are:
 
 * :doc:`Scan table description <api.scan_table_description>` -- ``POST api/v1/table-descriptions/sync-schemas``
-* :doc:`Add table description <api.add_descriptions>` -- ``PATCH api/v1/table-descriptions/{table_description_id}``
+* :doc:`Update a table description <api.update_table_descriptions>` -- ``PATCH api/v1/table-descriptions/{table_description_id}``
 * :doc:`List table description <api.list_table_description>` -- ``GET api/v1/table-descriptions``
+* :doc:`Get a description <api.get_table_description>` -- ``GET api/v1/table-descriptions/{table_description_id}``
+
+**Table description resource example:**
 
 .. code-block:: json
 
@@ -102,6 +96,8 @@ Related endpoints are:
 * :doc:`Update database instructions <api.update_instructions>` -- ``PUT api/v1/{db_connection_id}/instructions/{instruction_id}``
 * :doc:`Delete database instructions <api.delete_instructions>` -- ``DELETE api/v1/{db_connection_id}/instructions/{instruction_id}``
 
+**Instruction resource example:**
+
 .. code-block:: json
 
     {
@@ -118,8 +114,9 @@ Related endpoints are:
     api.update_database_connection
 
     api.scan_table_description
-    api.add_descriptions
     api.list_table_description
+    api.get_table_description
+    api.update_table_descriptions
 
     api.add_instructions
     api.list_instructions
@@ -129,5 +126,9 @@ Related endpoints are:
     api.golden_record
 
     api.question
+    api.list_questions
+    api.get_question
 
-    api.process_nl_query_response
+    api.add_responses
+    api.list_responses
+    api.get_response

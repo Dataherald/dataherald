@@ -1,9 +1,9 @@
-.. _api.add_descriptions:
+.. _api.update_table_descriptions:
 
-Set descriptions
+Update table descriptions
 =======================
 
-To return an accurate response set descriptions per table and column.
+To return an accurate response set descriptions or update the columns per table and column. All request body fields are optional, and only the fields that are explicitly set will be used to update the resource.
 
 Request this ``PATCH`` endpoint::
 
@@ -22,12 +22,19 @@ Request this ``PATCH`` endpoint::
 
 .. code-block:: rst
 
-   {
-      "description": "string", #optional
-      "columns": [ #optional
+    {
+      "description": "string", # Optional
+      "columns": [ # Optional
         {
-          "name": "string",
-          "description": "string"
+          "name": "string", # Optional
+          "description": "string", # Optional
+          "is_primary_key": false, # Optional
+          "data_type": "string", # Optional
+          "low_cardinality": true, # Optional
+          "categories": [ # Optional
+            "string"
+          ],
+          "foreign_key": false # Optional
         }
       ]
     }
@@ -99,5 +106,3 @@ Only set columns descriptions
         }
       ]
     }'
-
-
