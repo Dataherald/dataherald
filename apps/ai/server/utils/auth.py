@@ -96,7 +96,7 @@ class Authorize:
             INSTRUCTION_COL,
             {
                 "_id": ObjectId(instruction_id),
-                "db_connection_id": organization.db_connection_id,
+                "db_connection_id": ObjectId(organization.db_connection_id),
             },
         )
 
@@ -130,7 +130,7 @@ class Authorize:
             TABLE_DESCRIPTION_COL,
             {
                 "_id": ObjectId(table_description_id),
-                "db_connection_id": organization.db_connection_id,
+                "db_connection_id": ObjectId(organization.db_connection_id),
             },
         )
         if not table_description:
