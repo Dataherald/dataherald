@@ -60,7 +60,7 @@ You can find additional details on how to connect to each of the supported data 
 
 **Responses**
 
-HTTP 200 code response
+HTTP 201 code response
 
 .. code-block:: rst
 

@@ -27,7 +27,7 @@ Request this ``POST`` endpoint::
 
 **Responses**
 
-HTTP 200 code response
+HTTP 201 code response
 
 .. code-block:: rst
 
