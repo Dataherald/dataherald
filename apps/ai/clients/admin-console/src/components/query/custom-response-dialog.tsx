@@ -22,9 +22,14 @@ import { FC, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 
+const CUSTOM_RESPONSE_MAX_LENGTH = 3000
+
 export const customResponseFormSchema = Yup.object({
   customResponse: Yup.string()
-    .max(300, 'The response must be less than 300 characters')
+    .max(
+      CUSTOM_RESPONSE_MAX_LENGTH,
+      `The response can't be longer than 3000 characters`,
+    )
     .required('Please enter a response for the query'),
 })
 
@@ -85,7 +90,7 @@ const CustomResponseDialog: FC<CustomResponseDialogProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Textarea className="resize-none" {...field} />
+                    <Textarea {...field} />
                   </FormControl>
                   <FormMessage />
                   <FormDescription className="flex items-start gap-1 pt-2">

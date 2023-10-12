@@ -194,7 +194,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       >
         <div id="header" className="flex justify-between gap-3">
           <QueryQuestion {...{ username, question, questionDate }} />
-          <div className="flex items-center self-start gap-5">
+          <div className="flex items-center self-start gap-5 min-w-fit">
             <Link href="/queries">
               <Button variant="link" className="font-normal">
                 Cancel
