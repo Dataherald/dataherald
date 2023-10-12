@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { renderIcon } from '@/lib/utils'
 import { ColumnResource } from '@/models/domain'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Loader } from 'lucide-react'
+import { Brackets, Loader } from 'lucide-react'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as Yup from 'yup'
@@ -40,7 +40,7 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
   onCancel,
   onSave,
 }) => {
-  const { icon, name } = resource
+  const { icon, name, categories } = resource
 
   const [isSaving, setIsSaving] = useState(false)
 
@@ -60,7 +60,7 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSave)}
-        className="space-y-6 grow flex flex-col"
+        className="space-y-6 grow flex flex-col px-1 overflow-auto"
       >
         <SheetHeader>
           <SheetTitle>Add Text Description</SheetTitle>
@@ -75,18 +75,39 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
             column.
           </SheetDescription>
         </SheetHeader>
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem className="grow">
-              <FormControl>
-                <Textarea className="resize-none" rows={10} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+        <div className="grow flex flex-col gap-3">
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Textarea className="resize-none" rows={10} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {categories?.length && (
+            <div className="py-3 flex flex-col gap-3">
+              <h1 className="font-semibold flex items-center gap-2">
+                <Brackets size={20} strokeWidth={2} />
+                Categorical Column detected
+              </h1>
+              <p className="text-sm">
+                The AI has identified this as a categorical column with the
+                following categories:
+              </p>
+              <ul className="grow list-disc list-inside space-y-2">
+                {categories.map((category) => (
+                  <li key={category} className="pl-3 text-sm font-source-code">
+                    {category}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
-        />
+        </div>
         <SheetFooter className="w-full flex sm:justify-between">
           <Button variant="outline" type="button" onClick={onCancel}>
             Cancel
