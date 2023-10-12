@@ -35,6 +35,7 @@ These documents will cover how to get started, how to set up an API from your da
    tutorial.sample_database
    tutorial.finetune_sql_generator
    tutorial.chatgpt_plugin
+   tutorial.streamlit_app
 
 
 .. toctree::
