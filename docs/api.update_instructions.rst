@@ -28,7 +28,7 @@ Request this ``PUT`` endpoint::
 
 **Responses**
 
-HTTP 201 code response
+HTTP 200 code response
 
 .. code-block:: rst
 

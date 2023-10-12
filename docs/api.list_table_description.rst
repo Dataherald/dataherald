@@ -15,7 +15,7 @@ Request this ``GET`` endpoint::
    :header: "Name", "Type", "Description"
    :widths: 20, 20, 60
 
-   "db_connection_id", "string", "Filter by connection id, ``Optional``. By configuring this field, it establishes a connection with the database to fetch table names and subsequently merges this data with the pre-existing rows in our MongoDB."
+   "db_connection_id", "string", "Filter by connection id, ``Required``. By configuring this field, it establishes a connection with the database to fetch table names and subsequently merges this data with the pre-existing rows in our MongoDB."
    "table_name", "string", "Filter by table name, ``Optional``"
 
 **Responses**

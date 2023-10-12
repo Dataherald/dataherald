@@ -34,7 +34,8 @@ provided in the .env.example file with the default values.
 
     S3_AWS_ACCESS_KEY_ID =
     S3_AWS_SECRET_ACCESS_KEY =
-    `
+
+    DH_ENGINE_TIMEOUT =
 
 
 .. csv-table::
@@ -60,4 +61,5 @@ provided in the .env.example file with the default values.
    "MONGODB_DB_PASSWORD", "The password of the MongoDB database", "``admin``", "Yes"
    "ENCRYPT_KEY", "The key that will be used to encrypt data at rest before storing", "None", "Yes"
    "S3_AWS_ACCESS_KEY_ID", "The key used to access credential files if saved to S3", "None", "No"
-   "S3_AWS_SECRET_ACCESS_KEY", "The key used to access credential files if saved to S3", "None", "No  " 
+   "S3_AWS_SECRET_ACCESS_KEY", "The key used to access credential files if saved to S3", "None", "No"
+   "DH_ENGINE_TIMEOUT", "This is used to set the max seconds the process will wait for the response to be generate. If the specified time limit is exceeded, it will trigger an exception", "None", "No"
