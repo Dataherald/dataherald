@@ -58,6 +58,33 @@ The related endpoints are:
 * :doc:`list_responses <api.list_responses>` -- ``GET api/v1/responses``
 * :doc:`get_response <api.get_response>` -- ``GET api/v1/responses/{response_id}``
 
+**Response resource example:**
+
+.. code-block:: json
+
+    {
+      "question_id": "string",
+      "response": "string",
+      "intermediate_steps": [
+        "string"
+      ],
+      "sql_query": "string",
+      "sql_query_result": {
+        "columns": [
+          "string"
+        ],
+        "rows": [
+          {}
+        ]
+      },
+      "sql_generation_status": "INVALID",
+      "error_message": "string",
+      "exec_time": 0,
+      "total_tokens": 0,
+      "total_cost": 0,
+      "confidence_score": 0,
+      "created_at": "2023-10-12T16:26:40.951158"
+    }
 
 Table Descriptions
 ---------------------

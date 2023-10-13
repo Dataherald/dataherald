@@ -1,6 +1,6 @@
 .. api.scan_database:
 
-Scan a Database
+Create a table description
 =======================
 
 Once you have set your db credentials request this endpoint to scan your database. It maps
