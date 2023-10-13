@@ -155,7 +155,8 @@ We currently support connections to Postgres, BigQuery, Databricks, Snowflake an
 
 #### Connecting through the API
 
-You can define a DB connection through a call to the following API endpoint `POST /api/v1/database-connections`. For example:
+You can define a DB connection through a call to the following API endpoint `POST /api/v1/database-connections`. 
+For example:
 
 Example 1. Without a SSH connection
 ```
