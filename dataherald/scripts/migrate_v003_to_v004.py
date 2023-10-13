@@ -41,4 +41,5 @@ if __name__ == "__main__":
     update_object_id_fields("db_connection_id", "table_descriptions")
     update_object_id_fields("db_connection_id", "golden_records")
     update_object_id_fields("db_connection_id", "questions")
+    update_object_id_fields("db_connection_id", "instructions")
     update_object_id_fields("question_id", "responses")
