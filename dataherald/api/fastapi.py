@@ -166,7 +166,9 @@ class FastAPI(API):
         return response_repository.insert(generated_answer)
 
     @override
-    def answer_question_with_timeout(self, question_request: QuestionRequest) -> Response:
+    def answer_question_with_timeout(
+        self, question_request: QuestionRequest
+    ) -> Response:
         result = None
         exception = None
         user_question = Question(
@@ -174,10 +176,12 @@ class FastAPI(API):
             db_connection_id=question_request.db_connection_id,
         )
         stop_event = threading.Event()
+
         def run_and_catch_exceptions():
             nonlocal result, exception
             if not stop_event.is_set():
                 result = self.answer_question(question_request)
+
         thread = threading.Thread(target=run_and_catch_exceptions)
         thread.start()
         thread.join(timeout=int(os.getenv("DH_ENGINE_TIMEOUT")))
@@ -185,7 +189,10 @@ class FastAPI(API):
             stop_event.set()
             return JSONResponse(
                 status_code=400,
-                content={"question_id": user_question.id, "error_message": "Timeout Error"},
+                content={
+                    "question_id": user_question.id,
+                    "error_message": "Timeout Error",
+                },
             )
         return result
 

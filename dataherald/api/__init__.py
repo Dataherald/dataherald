@@ -40,7 +40,9 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def answer_question_with_timeout(self, question_request: QuestionRequest) -> Response:
+    def answer_question_with_timeout(
+        self, question_request: QuestionRequest
+    ) -> Response:
         pass
 
     @abstractmethod
