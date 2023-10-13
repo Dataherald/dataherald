@@ -1,3 +1,4 @@
+import os
 from typing import Any, List
 
 import fastapi
@@ -216,6 +217,8 @@ class FastAPI(dataherald.server.Server):
         return self._api.scan_db(scanner_request, background_tasks)
 
     def answer_question(self, question_request: QuestionRequest) -> Response:
+        if os.getenv("DH_ENGINE_TIMEOUT", None):
+            return self._api.answer_question_with_timeout(question_request)
         return self._api.answer_question(question_request)
 
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
