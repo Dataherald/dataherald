@@ -57,7 +57,7 @@ class TableDescriptionService:
                     sorted(column.categories) if column.categories else None
                 )
 
-            return TableDescriptionResponse(**response.json())
+            return table_description
 
     async def get_database_table_descriptions(self, db_connection_id: str):
         if not db_connection_id:
