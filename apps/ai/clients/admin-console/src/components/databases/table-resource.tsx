@@ -63,23 +63,24 @@ const TableResourceComponent: FC<TableResourceComponentProps> = ({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSave)}
-        className="space-y-6 grow flex flex-col"
+        className="space-y-3 grow flex flex-col"
       >
-        <SheetHeader>
-          <SheetTitle>Add Text Description</SheetTitle>
-          <div className="flex items-center gap-3 py-2">
-            {renderIcon(icon, {
-              size: 20,
-            })}
-            <span className="font-medium">{name}</span>
-          </div>
+        <div className="grow flex flex-col">
+          <SheetHeader>
+            <SheetTitle>Add Text Description</SheetTitle>
+            <div className="flex items-center gap-3 py-2">
+              {renderIcon(icon, {
+                size: 20,
+              })}
+              <span className="font-medium">{name}</span>
+            </div>
+          </SheetHeader>
           <SheetDescription>
             Text descriptions help instruct the AI on how to use a specific
             table.
           </SheetDescription>
-        </SheetHeader>
-        <div className="grow flex flex-col">
-          <div className="flex items-center justify-between gap-2">
+
+          <div className="mt-2 flex items-center justify-between gap-2">
             <FormLabel>Table description</FormLabel>
             <Button
               variant="link"
