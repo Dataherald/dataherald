@@ -85,7 +85,7 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
               <Button
                 variant="link"
                 type="button"
-                className="text-sm text-black flex items-center gap-1"
+                className="text-sm text-black flex items-center gap-1 px-0"
                 onClick={() => setEditEnabled(true)}
               >
                 <Edit size={14} strokeWidth={2}></Edit>
