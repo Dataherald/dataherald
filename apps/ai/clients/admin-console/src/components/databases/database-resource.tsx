@@ -4,6 +4,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from '@/components/ui/form'
 import {
@@ -16,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { renderIcon } from '@/lib/utils'
 import { DatabaseResource } from '@/models/domain'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Loader } from 'lucide-react'
+import { Edit, Loader } from 'lucide-react'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as Yup from 'yup'
@@ -42,8 +43,8 @@ const DatabaseResourceComponent: FC<DatabaseResourceProps> = ({
   onSave,
 }) => {
   const { icon, name } = resource
-
   const [isSaving, setIsSaving] = useState(false)
+  const [editEnabled, setEditEnabled] = useState(!resource.instructions)
 
   const form = useForm<{ instructions?: string }>({
     resolver: yupResolver(formSchema),
@@ -77,18 +78,37 @@ const DatabaseResourceComponent: FC<DatabaseResourceProps> = ({
             give to the engine that will improve the agent’s performance.
           </SheetDescription>
         </SheetHeader>
-        <FormField
-          control={form.control}
-          name="instructions"
-          render={({ field }) => (
-            <FormItem className="grow">
-              <FormControl>
-                <Textarea className="resize-none" rows={15} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grow flex flex-col">
+          <div className="flex items-center justify-between gap-2">
+            <FormLabel>Database instructions</FormLabel>
+            <Button
+              variant="link"
+              type="button"
+              className="text-sm text-black flex items-center gap-1"
+              onClick={() => setEditEnabled(true)}
+            >
+              <Edit size={14} strokeWidth={2}></Edit>
+              Edit
+            </Button>
+          </div>
+          <FormField
+            control={form.control}
+            name="instructions"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Textarea
+                    className="resize-none"
+                    rows={15}
+                    {...field}
+                    disabled={!editEnabled}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <SheetFooter className="w-full flex sm:justify-between">
           <Button variant="outline" type="button" onClick={onCancel}>
             Cancel

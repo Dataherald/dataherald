@@ -4,6 +4,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from '@/components/ui/form'
 import {
@@ -16,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { renderIcon } from '@/lib/utils'
 import { ColumnResource } from '@/models/domain'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Brackets, Loader } from 'lucide-react'
+import { Brackets, Edit, Loader } from 'lucide-react'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as Yup from 'yup'
@@ -43,6 +44,7 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
   const { icon, name, categories } = resource
 
   const [isSaving, setIsSaving] = useState(false)
+  const [editEnabled, setEditEnabled] = useState(!resource.description)
 
   const form = useForm<{ description?: string }>({
     resolver: yupResolver(formSchema),
@@ -56,6 +58,7 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
     await onSave(data.description || '')
     setIsSaving(false)
   }
+
   return (
     <Form {...form}>
       <form
@@ -76,18 +79,37 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
             Text descriptions help instruct the AI on how to use a specific
             column.
           </SheetDescription>
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Textarea className="resize-none" rows={10} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between gap-2">
+              <FormLabel>Table description</FormLabel>
+              <Button
+                variant="link"
+                type="button"
+                className="text-sm text-black flex items-center gap-1"
+                onClick={() => setEditEnabled(true)}
+              >
+                <Edit size={14} strokeWidth={2}></Edit>
+                Edit
+              </Button>
+            </div>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Textarea
+                      className="resize-none"
+                      rows={10}
+                      {...field}
+                      disabled={!editEnabled}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           {categories?.length && (
             <div className="py-3 flex flex-col gap-3">
               <h1 className="font-semibold flex items-center gap-2">
