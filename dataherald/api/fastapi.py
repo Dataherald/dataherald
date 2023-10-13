@@ -1,5 +1,7 @@
 import json
 import logging
+import os
+import threading
 import time
 from typing import List
 
@@ -162,6 +164,30 @@ class FastAPI(API):
         generated_answer.exec_time = time.time() - start_generated_answer
         response_repository = ResponseRepository(self.storage)
         return response_repository.insert(generated_answer)
+
+    @override
+    def answer_question_with_timeout(self, question_request: QuestionRequest) -> Response:
+        result = None
+        exception = None
+        user_question = Question(
+            question=question_request.question,
+            db_connection_id=question_request.db_connection_id,
+        )
+        stop_event = threading.Event()
+        def run_and_catch_exceptions():
+            nonlocal result, exception
+            if not stop_event.is_set():
+                result = self.answer_question(question_request)
+        thread = threading.Thread(target=run_and_catch_exceptions)
+        thread.start()
+        thread.join(timeout=int(os.getenv("DH_ENGINE_TIMEOUT")))
+        if thread.is_alive():
+            stop_event.set()
+            return JSONResponse(
+                status_code=400,
+                content={"question_id": user_question.id, "error_message": "Timeout Error"},
+            )
+        return result
 
     @override
     def create_database_connection(
