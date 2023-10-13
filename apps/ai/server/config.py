@@ -71,8 +71,20 @@ class SlackSettings(BaseSettings):
         return getattr(self, key)
 
 
+class AnalyticSettings(BaseSettings):
+    load_dotenv()
+
+    posthog_api_key: str = os.environ.get("POSTHOG_API_KEY", None)
+    posthog_host: str = os.environ.get("POSTHOG_HOST", None)
+    posthog_disabled: bool = os.environ.get("POSTHOG_DISABLED", False)
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
+
+
 settings = Settings()
 db_settings = DBSettings()
 auth_settings = AuthSettings()
 slack_settings = SlackSettings()
 aws_s3_settings = AWSS3Settings()
+analytic_settings = AnalyticSettings()

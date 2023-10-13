@@ -32,6 +32,7 @@ from modules.query.repository import QueryRepository
 from modules.user.models.entities import SlackInfo
 from modules.user.models.responses import UserResponse
 from modules.user.service import UserService
+from utils.analytics import Analytics
 from utils.exception import QueryEngineError, raise_for_status
 from utils.slack import SlackWebClient, remove_slack_mentions
 
@@ -43,6 +44,7 @@ class QueryService:
         self.repo = QueryRepository()
         self.golden_sql_service = GoldenSQLService()
         self.user_service = UserService()
+        self.analytics = Analytics()
 
     async def answer_question(
         self, question_request: QuestionRequest, organization: OrganizationResponse
@@ -52,6 +54,7 @@ class QueryService:
         username = SlackWebClient(
             organization.slack_installation.bot.token
         ).get_user_real_name(question_request.slack_user_id)
+
         # ask question to k2 engine
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -87,6 +90,20 @@ class QueryService:
             )
 
             query_id = self.repo.add_query(query.dict(exclude={"id"}))
+
+            self.analytics.track(
+                question_request.slack_user_id,
+                "query_asked",
+                {
+                    "query_id": query_id,
+                    "display_id": query.display_id,
+                    "question_id": str(query.question_id),
+                    "response_id": str(query.response_id),
+                    "organization_id": organization.id,
+                    "status": query.status,
+                    "username": username,
+                },
+            )
 
             if response.status_code != status.HTTP_201_CREATED:
                 raise QueryEngineError(
@@ -274,9 +291,29 @@ class QueryService:
                     organization.slack_installation.bot.token,
                 ).send_rejected_query_message(new_query)
 
+        self.analytics.track(
+            user.email,
+            "query_saved",
+            {
+                "query_id": query_id,
+                "question_id": str(new_query.question_id),
+                "response_id": str(new_query.response_id)
+                if new_query.response_id
+                else None,
+                "organization_id": organization.id,
+                "display_id": new_query.display_id,
+                "status": query_request.query_status.value,
+                "confidence_score": new_query_response.confidence_score
+                if new_query_response
+                else None,
+            },
+        )
+
         return self._get_mapped_query_response(new_query, question, new_query_response)
 
-    async def run_response(self, query_id: str, query_request: QueryExecutionRequest):
+    async def run_response(
+        self, query_id: str, query_request: QueryExecutionRequest, user: UserResponse
+    ):
         query = self.repo.get_query(query_id)
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -291,6 +328,20 @@ class QueryService:
             query.custom_response = None
             question = self.repo.get_question(query.question_id)
             new_query_response = EngineAnswerResponse(**response.json())
+
+            self.analytics.track(
+                user.email,
+                "query_executed",
+                {
+                    "query_id": query_id,
+                    "question_id": new_query_response.id,
+                    "response_id": new_query_response.id,
+                    "organization_id": user.organization_id,
+                    "sql_generation_status": new_query_response.sql_generation_status.value,
+                    "confidence_score": new_query_response.confidence_score,
+                },
+            )
+
             return self._get_mapped_query_response(query, question, new_query_response)
 
     def _get_mapped_query_response(

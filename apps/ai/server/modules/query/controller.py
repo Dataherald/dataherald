@@ -83,6 +83,6 @@ async def run_response(
     sql_query: QueryExecutionRequest,
     token: str = Depends(token_auth_scheme),
 ) -> QueryResponse:
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
-    authorize.query_in_organization(id, org_id)
-    return await query_service.run_response(id, sql_query)
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    authorize.query_in_organization(id, user.organization_id)
+    return await query_service.run_response(id, sql_query, user)

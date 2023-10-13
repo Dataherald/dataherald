@@ -5,12 +5,14 @@ from modules.auth.models.responses import AuthUserResponse
 from modules.organization.service import OrganizationService
 from modules.user.models.requests import UserRequest
 from modules.user.service import UserService
+from utils.analytics import Analytics
 
 
 class AuthService:
     def __init__(self):
         self.user_service = UserService()
         self.org_service = OrganizationService()
+        self.analytics = Analytics()
 
     def login(self, user_request: AuthUserRequest) -> AuthUserResponse:
         # check if user exists or not
@@ -33,5 +35,15 @@ class AuthService:
         new_user.organization_name = self.org_service.get_organization(
             str(new_user.organization_id)
         ).name
+
+        self.analytics.identify(
+            str(new_user.email),
+            {
+                "email": new_user.email,
+                "name": new_user.name,
+                "organization_id": str(new_user.organization_id),
+                "organization_name": new_user.organization_name,
+            },
+        )
 
         return new_user
