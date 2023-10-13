@@ -28,7 +28,18 @@ class TableDescriptionService:
                 timeout=settings.default_k2_core_timeout,
             )
             raise_for_status(response.status_code, response.text)
-            return [TableDescriptionResponse(**td) for td in response.json()]
+
+            table_descriptions = [
+                TableDescriptionResponse(**td) for td in response.json()
+            ]
+
+            for table_description in table_descriptions:
+                for column in table_description.columns:
+                    column.categories = (
+                        sorted(column.categories) if column.categories else None
+                    )
+
+            return table_descriptions
 
     async def get_table_description(
         self, table_description_id: str
@@ -39,6 +50,13 @@ class TableDescriptionService:
                 timeout=settings.default_k2_core_timeout,
             )
             raise_for_status(response.status_code, response.text)
+
+            table_description = TableDescriptionResponse(**response.json())
+            for column in table_description.columns:
+                column.categories = (
+                    sorted(column.categories) if column.categories else None
+                )
+
             return TableDescriptionResponse(**response.json())
 
     async def get_database_table_descriptions(self, db_connection_id: str):

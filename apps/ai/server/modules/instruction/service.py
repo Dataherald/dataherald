@@ -1,5 +1,5 @@
-from fastapi import HTTPException
 import httpx
+from fastapi import HTTPException
 
 from config import settings
 from modules.instruction.models.requests import InstructionRequest
@@ -25,7 +25,6 @@ class InstructionService:
                 settings.k2_core_url + "/instructions",
                 params={"db_connection_id": db_connection_id},
             )
-            print(response)
             instructions = response.json()
             raise_for_status(response.status_code, response.text)
             if len(instructions) == 0:
