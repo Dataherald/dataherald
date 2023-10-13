@@ -60,10 +60,12 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSave)}
-        className="space-y-6 grow flex flex-col px-1 overflow-auto"
+        className="space-y-6 grow flex flex-col overflow-auto"
       >
         <SheetHeader>
           <SheetTitle>Add Text Description</SheetTitle>
+        </SheetHeader>
+        <div className="grow flex flex-col gap-3 pl-2 pr-4 overflow-auto">
           <div className="flex items-center gap-3 py-2">
             {renderIcon(icon, {
               size: 20,
@@ -74,8 +76,6 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
             Text descriptions help instruct the AI on how to use a specific
             column.
           </SheetDescription>
-        </SheetHeader>
-        <div className="grow flex flex-col gap-3">
           <FormField
             control={form.control}
             name="description"
@@ -100,7 +100,10 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
               </p>
               <ul className="grow list-disc list-inside space-y-2">
                 {categories.map((category) => (
-                  <li key={category} className="pl-3 text-sm font-source-code">
+                  <li
+                    key={category}
+                    className="pl-3 text-sm font-source-code font-semibold"
+                  >
                     {category}
                   </li>
                 ))}
