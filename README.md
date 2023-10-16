@@ -155,7 +155,7 @@ We currently support connections to Postgres, BigQuery, Databricks, Snowflake an
 
 #### Connecting through the API
 
-You can define a DB connection through a call to the following API endpoint `/api/v1/database`. For example 
+You can define a DB connection through a call to the following API endpoint `POST /api/v1/database-connections`. For example:
 
 Example 1. Without a SSH connection
 ```
@@ -295,7 +295,8 @@ curl -X 'POST' \
 ```
 
 #### Adding string descriptions
-In addition to database table_info and golden_sql, you can add strings describing tables and/or columns to the context store manually from the `PATCH /api/v1/table-descriptions/{table_description_id}` endpoint
+In addition to database table_info and golden_sql, you can set descriptions or update the columns per table and column. 
+All request body fields are optional, and only the fields that are explicitly set will be used to update the resource.
 
 ```
 curl -X 'PATCH' \
@@ -307,17 +308,31 @@ curl -X 'PATCH' \
   "columns": [
     {
       "name": "column1",
-      "description": "Column1 description"
+      "description": "string",
+      "is_primary_key": false,
+      "data_type": "string",
+      "low_cardinality": true,
+      "categories": [
+        "string"
+      ],
+      "foreign_key": false
     },
     {
       "name": "column2",
-      "description": "Column2 description"
+      "description": "string",
+      "is_primary_key": false,
+      "data_type": "string",
+      "low_cardinality": true,
+      "categories": [
+        "string"
+      ],
+      "foreign_key": false
     }
   ]
 }'
 ```
 
-#### adding database level instructions
+#### Adding database level instructions
 
 You can add database level instructions to the context store manually from the `POST /api/v1/instructions` endpoint
 These instructions are passed directly to the engine and can be used to steer the engine to generate SQL that is more in line with your business logic.
@@ -333,7 +348,7 @@ curl -X 'POST' \
 }'
 ```
 
-#### getting database level instructions
+#### Getting database level instructions
 
 You can get database level instructions from the `GET /api/v1/instructions` endpoint
 
@@ -343,7 +358,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
-#### deleting database level instructions
+#### Deleting database level instructions
 
 You can delete database level instructions from the `DELETE /api/v1/instructions/{instruction_id}` endpoint
 
@@ -353,7 +368,7 @@ curl -X 'DELETE' \
   -H 'accept: application/json'
 ```
 
-#### updating database level instructions
+#### Updating database level instructions
 
 You can update database level instructions from the `PUT /api/v1/instructions/{instruction_id}` endpoint
 Try different instructions to see how the engine generates SQL
@@ -370,11 +385,11 @@ curl -X 'PUT' \
 
 
 ### Querying the Database in Natural Language
-Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse using the `POST /api/v1/question` endpoint.
+Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse using the `POST /api/v1/questions` endpoint.
 
 ```
 curl -X 'POST' \
-  '<host>/api/v1/question' \
+  '<host>/api/v1/questions' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{

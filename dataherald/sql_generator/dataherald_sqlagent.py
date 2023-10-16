@@ -1,6 +1,7 @@
 import datetime
 import difflib
 import logging
+import os
 import time
 from functools import wraps
 from typing import Any, Callable, Dict, List
@@ -9,6 +10,7 @@ import numpy as np
 import openai
 import pandas as pd
 import sqlalchemy
+from bson.objectid import ObjectId
 from google.api_core.exceptions import GoogleAPIError
 from langchain.agents.agent import AgentExecutor
 from langchain.agents.agent_toolkits.base import BaseToolkit
@@ -30,21 +32,21 @@ from sqlalchemy.sql import func
 
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
-from dataherald.db_scanner.models.types import TableDescriptionStatus, TableSchemaDetail
-from dataherald.db_scanner.repository.base import DBScannerRepository
+from dataherald.db_scanner.models.types import TableDescription, TableDescriptionStatus
+from dataherald.db_scanner.repository.base import TableDescriptionRepository
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.sql_database.models.types import (
     DatabaseConnection,
 )
-from dataherald.sql_generator import SQLGenerator
-from dataherald.types import NLQuery, NLQueryResponse
+from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
+from dataherald.types import Question, Response
 
 logger = logging.getLogger(__name__)
 
 
+TOP_K = 100
 AGENT_PREFIX = """You are an agent designed to interact with a SQL database.
 Given an input question, create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
-Unless the user specifies a specific number of examples they wish to obtain, always limit your query to at most {top_k} results.
 You have access to tools for interacting with the database.
 Only use the below tools. Only use the information returned by the below tools to construct your final answer.
 #
@@ -178,10 +180,11 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     def _run(
         self,
         query: str,
+        top_k: int = TOP_K,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Execute the query, return the results or an error message."""
-        return self.db.run_sql(query)[0]
+        return self.db.run_sql(query, top_k=top_k)[0]
 
     async def _arun(
         self,
@@ -231,7 +234,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     Output: Comma-separated list of tables with their relevance scores, indicating their relevance to the question.
     Use this tool to identify the relevant tables for the given question.
     """
-    db_scan: List[TableSchemaDetail]
+    db_scan: List[TableDescription]
 
     def get_embedding(
         self, text: str, model: str = "text-embedding-ada-002"
@@ -367,7 +370,7 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
 
     Example Input: table1, table2, table3
     """
-    db_scan: List[TableSchemaDetail]
+    db_scan: List[TableDescription]
 
     @catch_exceptions()
     def _run(
@@ -407,7 +410,7 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
 
     Example Input: table1 -> column1, table1 -> column2, table2 -> column1
     """
-    db_scan: List[TableSchemaDetail]
+    db_scan: List[TableDescription]
 
     @catch_exceptions()
     def _run(
@@ -499,7 +502,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     context: List[dict] | None = Field(exclude=True, default=None)
     few_shot_examples: List[dict] | None = Field(exclude=True, default=None)
     instructions: List[dict] | None = Field(exclude=True, default=None)
-    db_scan: List[TableSchemaDetail] = Field(exclude=True)
+    db_scan: List[TableDescription] = Field(exclude=True)
 
     @property
     def dialect(self) -> str:
@@ -575,7 +578,6 @@ class DataheraldSQLAgent(SQLGenerator):
         format_instructions: str = FORMAT_INSTRUCTIONS,
         input_variables: List[str] | None = None,
         max_examples: int = 20,
-        top_k: int = 100,
         max_iterations: int | None = 15,
         max_execution_time: float | None = None,
         early_stopping_method: str = "force",
@@ -585,9 +587,7 @@ class DataheraldSQLAgent(SQLGenerator):
     ) -> AgentExecutor:
         """Construct an SQL agent from an LLM and tools."""
         tools = toolkit.get_tools()
-        prefix = prefix.format(
-            dialect=toolkit.dialect, top_k=top_k, max_examples=max_examples
-        )
+        prefix = prefix.format(dialect=toolkit.dialect, max_examples=max_examples)
         prompt = ZeroShotAgent.create_prompt(
             tools,
             prefix=prefix,
@@ -617,10 +617,10 @@ class DataheraldSQLAgent(SQLGenerator):
     @override
     def generate_response(
         self,
-        user_question: NLQuery,
+        user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-    ) -> NLQueryResponse:
+    ) -> Response:
         start_time = time.time()
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
@@ -628,10 +628,10 @@ class DataheraldSQLAgent(SQLGenerator):
             database_connection=database_connection,
             temperature=0,
         )
-        repository = DBScannerRepository(storage)
+        repository = TableDescriptionRepository(storage)
         db_scan = repository.get_all_tables_by_db(
             {
-                "db_connection_id": str(database_connection.id),
+                "db_connection_id": ObjectId(database_connection.id),
                 "status": TableDescriptionStatus.SYNCHRONIZED.value,
             }
         )
@@ -661,17 +661,21 @@ class DataheraldSQLAgent(SQLGenerator):
             toolkit=toolkit,
             verbose=True,
             max_examples=number_of_samples,
+            max_execution_time=os.getenv("DH_ENGINE_TIMEOUT", None),
         )
         agent_executor.return_intermediate_steps = True
         agent_executor.handle_parsing_errors = True
         with get_openai_callback() as cb:
             try:
                 result = agent_executor({"input": user_question.question})
+                result = self.check_for_time_out_or_tool_limit(result)
             except SQLInjectionError as e:
-                raise SQLAlchemyError(e) from e
+                raise SQLInjectionError(e) from e
+            except EngineTimeOutORItemLimitError as e:
+                raise EngineTimeOutORItemLimitError(e) from e
             except Exception as e:
-                return NLQueryResponse(
-                    nl_question_id=user_question.id,
+                return Response(
+                    question_id=user_question.id,
                     total_tokens=cb.total_tokens,
                     total_cost=cb.total_cost,
                     sql_query="",
@@ -691,13 +695,15 @@ class DataheraldSQLAgent(SQLGenerator):
         logger.info(
             f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
         )
-        response = NLQueryResponse(
-            nl_question_id=user_question.id,
-            nl_response=result["output"],
+        response = Response(
+            question_id=user_question.id,
+            response=result["output"],
             intermediate_steps=intermediate_steps,
             exec_time=exec_time,
             total_tokens=cb.total_tokens,
             total_cost=cb.total_cost,
             sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",
         )
-        return self.create_sql_query_status(self.database, response.sql_query, response)
+        return self.create_sql_query_status(
+            self.database, response.sql_query, response, top_k=TOP_K
+        )

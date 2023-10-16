@@ -4,12 +4,12 @@ from decimal import Decimal
 from sqlalchemy import text
 
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
-from dataherald.types import NLQueryResponse, SQLQueryResult
+from dataherald.types import Response, SQLQueryResult
 
 
 def create_sql_query_status(
-    db: SQLDatabase, query: str, response: NLQueryResponse
-) -> NLQueryResponse:
+    db: SQLDatabase, query: str, response: Response, top_k: int = None
+) -> Response:
     """Find the sql query status and populate the fields sql_query_result, sql_generation_status, and error_message"""
     if query == "":
         response.sql_generation_status = "NONE"
@@ -21,7 +21,10 @@ def create_sql_query_status(
             with db._engine.connect() as connection:
                 execution = connection.execute(text(query))
                 columns = execution.keys()
-                result = execution.fetchall()
+                if top_k:
+                    result = execution.fetchmany(top_k)
+                else:
+                    result = execution.fetchall()
             if len(result) == 0:
                 response.sql_query_result = None
             else:

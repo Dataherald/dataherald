@@ -42,7 +42,7 @@ Base class that all SQL generation classes inherit from.
 
 This base class defines the common structure for SQL generation classes.
 
-.. method:: create_sql_query_status(db, query, response)
+.. method:: create_sql_query_status(db, query, response, top_k)
    :noindex:
 
    Creates a SQL query status using provided parameters.
@@ -51,10 +51,12 @@ This base class defines the common structure for SQL generation classes.
    :type db: SQLDatabase
    :param query: The SQL query.
    :type query: str
-   :param response: The NLQueryResponse instance.
-   :type response: NLQueryResponse
-   :return: The updated NLQueryResponse instance with the SQL query status.
-   :rtype: NLQueryResponse
+   :param response: The Response instance.
+   :type response: Response
+   :param top_k: The number of results to return.
+   :type top_k: int
+   :return: The updated Response instance with the SQL query status.
+   :rtype: Response
 
 .. method:: generate_response(user_question, database_connection, context=None)
    :noindex:
@@ -62,13 +64,13 @@ This base class defines the common structure for SQL generation classes.
    Generates a response to a user question based on the given user question, database connection, and optional context.
 
    :param user_question: The user's natural language question.
-   :type user_question: NLQuery
+   :type user_question: Question
    :param database_connection: The database connection information.
    :type database_connection: DatabaseConnection
    :param context: (Optional) Additional context information.
    :type context: List[dict], optional
-   :return: The NLQueryResponse containing the generated response.
-   :rtype: NLQueryResponse
+   :return: The Response containing the generated response.
+   :rtype: Response
 
 
 

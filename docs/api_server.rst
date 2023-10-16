@@ -31,15 +31,15 @@ All implementations of the API module must inherit and implement the abstract :c
    :return: True if the scanning was initiated successfully; otherwise, False.
    :rtype: bool
 
-.. method:: answer_question(self, question_request: QuestionRequest) -> NLQueryResponse
+.. method:: answer_question(self, question_request: QuestionRequest) -> Response
    :noindex:
 
    Provides a response to a user's question based on the provided question request.
 
    :param question_request: The question request.
    :type question_request: QuestionRequest
-   :return: The NLQueryResponse containing the response to the user's question.
-   :rtype: NLQueryResponse
+   :return: The Response containing the response to the user's question.
+   :rtype: Response
 
 .. method:: create_database_connection(self, database_connection_request: DatabaseConnectionRequest) -> bool
    :noindex:
@@ -85,7 +85,7 @@ All implementations of the API module must inherit and implement the abstract :c
    :return: A tuple containing the query status and result.
    :rtype: tuple[str, dict]
 
-.. method:: update_query(self, query_id: str, query: UpdateQueryRequest) -> NLQueryResponse
+.. method:: update_query(self, query_id: str, query: UpdateQueryRequest) -> Response
    :noindex:
 
    Updates a query using the provided query ID and UpdateQueryRequest.
@@ -94,20 +94,20 @@ All implementations of the API module must inherit and implement the abstract :c
    :type query_id: str
    :param query: The update query request.
    :type query: UpdateQueryRequest
-   :return: The NLQueryResponse containing the result of the query update.
-   :rtype: NLQueryResponse
+   :return: The Response containing the result of the query update.
+   :rtype: Response
 
-.. method:: execute_temp_query(self, query_id: str, query: ExecuteTempQueryRequest) -> NLQueryResponse
+.. method:: execute_temp_query(self, query_id: str, query: CreateResponseRequest) -> Response
    :noindex:
 
-   Executes a temporary query using the provided query ID and ExecuteTempQueryRequest.
+   Executes a temporary query using the provided query ID and CreateResponseRequest.
 
-   :param query_id: The ID of the temporary query to execute.
-   :type query_id: str
-   :param query: The temporary query request.
-   :type query: ExecuteTempQueryRequest
-   :return: The NLQueryResponse containing the result of the temporary query execution.
-   :rtype: NLQueryResponse
+   :param question_id: The ID of the question to execute.
+   :type question_id: str
+   :param query: The query request.
+   :type query: CreateResponseRequest
+   :return: The Response containing the result.
+   :rtype: Response
 
 .. method:: get_scanned_databases(self, db_connection_id: str) -> ScannedDBResponse
    :noindex:

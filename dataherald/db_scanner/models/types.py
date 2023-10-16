@@ -28,8 +28,8 @@ class TableDescriptionStatus(Enum):
     FAILED = "FAILED"
 
 
-class TableSchemaDetail(BaseModel):
-    id: Any
+class TableDescription(BaseModel):
+    id: str | None
     db_connection_id: str
     table_name: str
     description: str | None

@@ -1,10 +1,14 @@
 import json
 import logging
+import os
+import threading
 import time
 from typing import List
 
 from bson import json_util
+from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
+from fastapi.responses import JSONResponse
 from overrides import override
 
 from dataherald.api import API
@@ -13,14 +17,17 @@ from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.db_scanner import Scanner
-from dataherald.db_scanner.models.types import TableDescriptionStatus, TableSchemaDetail
-from dataherald.db_scanner.repository.base import DBScannerRepository
+from dataherald.db_scanner.models.types import TableDescription, TableDescriptionStatus
+from dataherald.db_scanner.repository.base import (
+    InvalidColumnNameError,
+    TableDescriptionRepository,
+)
 from dataherald.eval import Evaluator
-from dataherald.repositories.base import NLQueryResponseRepository
+from dataherald.repositories.base import ResponseRepository
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.golden_records import GoldenRecordRepository
 from dataherald.repositories.instructions import InstructionRepository
-from dataherald.repositories.nl_question import NLQuestionRepository
+from dataherald.repositories.question import QuestionRepository
 from dataherald.sql_database.base import (
     InvalidDBConnectionError,
     SQLDatabase,
@@ -30,19 +37,18 @@ from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
 from dataherald.sql_generator.generates_nl_answer import GeneratesNlAnswer
 from dataherald.types import (
+    CreateResponseRequest,
     DatabaseConnectionRequest,
-    ExecuteTempQueryRequest,
     GoldenRecord,
     GoldenRecordRequest,
     Instruction,
     InstructionRequest,
-    NLQuery,
-    NLQueryResponse,
+    Question,
     QuestionRequest,
+    Response,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateInstruction,
-    UpdateQueryRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -53,7 +59,7 @@ def async_scanning(scanner, database, scanner_request, storage):
         database,
         scanner_request.db_connection_id,
         scanner_request.table_names,
-        DBScannerRepository(storage),
+        TableDescriptionRepository(storage),
     )
 
 
@@ -103,7 +109,7 @@ class FastAPI(API):
         scanner.synchronizing(
             scanner_request.table_names,
             scanner_request.db_connection_id,
-            DBScannerRepository(self.storage),
+            TableDescriptionRepository(self.storage),
         )
 
         background_tasks.add_task(
@@ -112,27 +118,33 @@ class FastAPI(API):
         return True
 
     @override
-    def answer_question(self, question_request: QuestionRequest) -> NLQueryResponse:
+    def answer_question(self, question_request: QuestionRequest) -> Response:
         """Takes in an English question and answers it based on content from the registered databases"""
         logger.info(f"Answer question: {question_request.question}")
         sql_generation = self.system.instance(SQLGenerator)
         evaluator = self.system.instance(Evaluator)
         context_store = self.system.instance(ContextStore)
 
-        user_question = NLQuery(
+        user_question = Question(
             question=question_request.question,
             db_connection_id=question_request.db_connection_id,
         )
 
-        nl_question_repository = NLQuestionRepository(self.storage)
-        user_question = nl_question_repository.insert(user_question)
+        question_repository = QuestionRepository(self.storage)
+        user_question = question_repository.insert(user_question)
 
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         database_connection = db_connection_repository.find_by_id(
             question_request.db_connection_id
         )
         if not database_connection:
-            raise HTTPException(status_code=404, detail="Database connection not found")
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "question_id": user_question.id,
+                    "error_message": "Connections doesn't exist",
+                },
+            )
         context = context_store.retrieve_context_for_question(user_question)
         start_generated_answer = time.time()
         try:
@@ -143,15 +155,46 @@ class FastAPI(API):
             confidence_score = evaluator.get_confidence_score(
                 user_question, generated_answer, database_connection
             )
-        except ValueError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
-        except SQLInjectionError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
+        except Exception as e:
+            return JSONResponse(
+                status_code=400,
+                content={"question_id": user_question.id, "error_message": str(e)},
+            )
         generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
-        nl_query_response_repository = NLQueryResponseRepository(self.storage)
-        nl_query_response = nl_query_response_repository.insert(generated_answer)
-        return json.loads(json_util.dumps(nl_query_response))
+        response_repository = ResponseRepository(self.storage)
+        return response_repository.insert(generated_answer)
+
+    @override
+    def answer_question_with_timeout(
+        self, question_request: QuestionRequest
+    ) -> Response:
+        result = None
+        exception = None
+        user_question = Question(
+            question=question_request.question,
+            db_connection_id=question_request.db_connection_id,
+        )
+        stop_event = threading.Event()
+
+        def run_and_catch_exceptions():
+            nonlocal result, exception
+            if not stop_event.is_set():
+                result = self.answer_question(question_request)
+
+        thread = threading.Thread(target=run_and_catch_exceptions)
+        thread.start()
+        thread.join(timeout=int(os.getenv("DH_ENGINE_TIMEOUT")))
+        if thread.is_alive():
+            stop_event.set()
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "question_id": user_question.id,
+                    "error_message": "Timeout Error",
+                },
+            )
+        return result
 
     @override
     def create_database_connection(
@@ -217,32 +260,30 @@ class FastAPI(API):
         self,
         table_description_id: str,
         table_description_request: TableDescriptionRequest,
-    ) -> TableSchemaDetail:
-        scanner_repository = DBScannerRepository(self.storage)
-        table = scanner_repository.find_by_id(table_description_id)
+    ) -> TableDescription:
+        scanner_repository = TableDescriptionRepository(self.storage)
+        try:
+            table = scanner_repository.find_by_id(table_description_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not table:
             raise HTTPException(
                 status_code=404, detail="Scanned database table not found"
             )
 
-        if table_description_request.description:
-            table.description = table_description_request.description
-        if table_description_request.columns:
-            for column_request in table_description_request.columns:
-                for column in table.columns:
-                    if column_request.name == column.name:
-                        column.description = column_request.description
-
-        return scanner_repository.update(table)
+        try:
+            return scanner_repository.update_fields(table, table_description_request)
+        except InvalidColumnNameError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
     @override
     def list_table_descriptions(
-        self, db_connection_id: str | None = None, table_name: str | None = None
-    ) -> list[TableSchemaDetail]:
-        scanner_repository = DBScannerRepository(self.storage)
+        self, db_connection_id: str, table_name: str | None = None
+    ) -> list[TableDescription]:
+        scanner_repository = TableDescriptionRepository(self.storage)
         table_descriptions = scanner_repository.find_by(
-            {"db_connection_id": db_connection_id, "table_name": table_name}
+            {"db_connection_id": ObjectId(db_connection_id), "table_name": table_name}
         )
 
         if db_connection_id:
@@ -260,7 +301,7 @@ class FastAPI(API):
                     all_tables.remove(table_description.table_name)
             for table in all_tables:
                 table_descriptions.append(
-                    TableSchemaDetail(
+                    TableDescription(
                         table_name=table,
                         status=TableDescriptionStatus.NOT_SYNCHRONIZED.value,
                         db_connection_id=db_connection_id,
@@ -269,6 +310,64 @@ class FastAPI(API):
                 )
 
         return table_descriptions
+
+    @override
+    def get_table_description(self, table_description_id: str) -> TableDescription:
+        scanner_repository = TableDescriptionRepository(self.storage)
+
+        try:
+            result = scanner_repository.find_by_id(table_description_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Table description not found")
+        return result
+
+    @override
+    def get_responses(self, question_id: str | None = None) -> list[Response]:
+        response_repository = ResponseRepository(self.storage)
+        query = {}
+        if question_id:
+            query = {"question_id": ObjectId(question_id)}
+        return response_repository.find_by(query)
+
+    @override
+    def get_response(self, response_id: str) -> Response:
+        response_repository = ResponseRepository(self.storage)
+
+        try:
+            result = response_repository.find_by_id(response_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Question not found")
+
+        return result
+
+    @override
+    def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
+        question_repository = QuestionRepository(self.storage)
+        query = {}
+        if db_connection_id:
+            query = {"db_connection_id": ObjectId(db_connection_id)}
+
+        return question_repository.find_by(query)
+
+    @override
+    def get_question(self, question_id: str) -> Question:
+        question_repository = QuestionRepository(self.storage)
+
+        try:
+            result = question_repository.find_by_id(question_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Question not found")
+
+        return result
 
     @override
     def add_golden_records(
@@ -295,53 +394,39 @@ class FastAPI(API):
         return result
 
     @override
-    def update_nl_query_response(
-        self, query_id: str, query: UpdateQueryRequest  # noqa: ARG002
-    ) -> NLQueryResponse:
-        nl_query_response_repository = NLQueryResponseRepository(self.storage)
-        nl_question_repository = NLQuestionRepository(self.storage)
-        nl_query_response = nl_query_response_repository.find_by_id(query_id)
-        nl_question = nl_question_repository.find_by_id(
-            nl_query_response.nl_question_id
+    def create_response(
+        self, query_request: CreateResponseRequest  # noqa: ARG002
+    ) -> Response:
+        evaluator = self.system.instance(Evaluator)
+        question_repository = QuestionRepository(self.storage)
+        user_question = question_repository.find_by_id(query_request.question_id)
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        database_connection = db_connection_repository.find_by_id(
+            user_question.db_connection_id
         )
-        if nl_query_response.sql_query.strip() != query.sql_query.strip():
-            nl_query_response.sql_query = query.sql_query
-            evaluator = self.system.instance(Evaluator)
-            db_connection_repository = DatabaseConnectionRepository(self.storage)
-            database_connection = db_connection_repository.find_by_id(
-                nl_question.db_connection_id
-            )
-            if not database_connection:
-                raise HTTPException(
-                    status_code=404, detail="Database connection not found"
-                )
-            try:
-                confidence_score = evaluator.get_confidence_score(
-                    nl_question, nl_query_response, database_connection
-                )
-                nl_query_response.confidence_score = confidence_score
-                generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
-                nl_query_response = generates_nl_answer.execute(nl_query_response)
-            except SQLInjectionError as e:
-                raise HTTPException(status_code=404, detail=str(e)) from e
-            nl_query_response_repository.update(nl_query_response)
-        return json.loads(json_util.dumps(nl_query_response))
+        if not database_connection:
+            raise HTTPException(status_code=404, detail="Database connection not found")
 
-    @override
-    def get_nl_query_response(
-        self, query_request: ExecuteTempQueryRequest  # noqa: ARG002
-    ) -> NLQueryResponse:
-        nl_query_response_repository = NLQueryResponseRepository(self.storage)
-        nl_query_response = nl_query_response_repository.find_by_id(
-            query_request.query_id
+        response = Response(
+            question_id=query_request.question_id, sql_query=query_request.sql_query
         )
-        nl_query_response.sql_query = query_request.sql_query
+        response_repository = ResponseRepository(self.storage)
+        response_repository.insert(response)
+        start_generated_answer = time.time()
         try:
             generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
-            nl_query_response = generates_nl_answer.execute(nl_query_response)
+            response = generates_nl_answer.execute(response)
+            confidence_score = evaluator.get_confidence_score(
+                user_question, response, database_connection
+            )
+            response.confidence_score = confidence_score
+            response.exec_time = time.time() - start_generated_answer
+            response_repository.update(response)
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLInjectionError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
-        return json.loads(json_util.dumps(nl_query_response))
+        return response
 
     @override
     def delete_golden_record(self, golden_record_id: str) -> dict:
@@ -356,7 +441,7 @@ class FastAPI(API):
         golden_records_repository = GoldenRecordRepository(self.storage)
         if db_connection_id:
             return golden_records_repository.find_by(
-                {"db_connection_id": db_connection_id},
+                {"db_connection_id": ObjectId(db_connection_id)},
                 page=page,
                 limit=limit,
             )
@@ -378,7 +463,7 @@ class FastAPI(API):
         instruction_repository = InstructionRepository(self.storage)
         if db_connection_id:
             return instruction_repository.find_by(
-                {"db_connection_id": db_connection_id},
+                {"db_connection_id": ObjectId(db_connection_id)},
                 page=page,
                 limit=limit,
             )

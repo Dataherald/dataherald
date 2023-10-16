@@ -20,7 +20,7 @@ from sqlalchemy import MetaData
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
-from dataherald.types import NLQuery, NLQueryResponse
+from dataherald.types import Question, Response
 
 logger = logging.getLogger(__name__)
 
@@ -31,10 +31,10 @@ class LlamaIndexSQLGenerator(SQLGenerator):
     @override
     def generate_response(
         self,
-        user_question: NLQuery,
+        user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-    ) -> NLQueryResponse:
+    ) -> Response:
         start_time = time.time()
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
         self.llm = self.model.get_model(
@@ -97,9 +97,9 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             f"total cost: {str(total_cost)} {str(token_counter.total_llm_token_count)}"
         )
         exec_time = time.time() - start_time
-        response = NLQueryResponse(
-            nl_question_id=user_question.id,
-            nl_response=result.response,
+        response = Response(
+            question_id=user_question.id,
+            response=result.response,
             exec_time=exec_time,
             total_tokens=token_counter.total_llm_token_count,
             total_cost=total_cost,

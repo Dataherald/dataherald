@@ -12,8 +12,12 @@ from dataherald.model.chat_model import ChatModel
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator.create_sql_query_status import create_sql_query_status
-from dataherald.types import NLQuery, NLQueryResponse, SQLQueryResult
+from dataherald.types import Question, Response, SQLQueryResult
 from dataherald.utils.strings import contains_line_breaks
+
+
+class EngineTimeOutORItemLimitError(Exception):
+    pass
 
 
 class SQLGenerator(Component, ABC):
@@ -24,10 +28,20 @@ class SQLGenerator(Component, ABC):
         self.system = system
         self.model = ChatModel(self.system)
 
+    def check_for_time_out_or_tool_limit(self, response: dict) -> dict:
+        if (
+            response.get("output")
+            == "Agent stopped due to iteration limit or time limit."
+        ):
+            raise EngineTimeOutORItemLimitError(
+                "The engine has timed out or reached the tool limit."
+            )
+        return response
+
     def create_sql_query_status(
-        self, db: SQLDatabase, query: str, response: NLQueryResponse
-    ) -> NLQueryResponse:
-        return create_sql_query_status(db, query, response)
+        self, db: SQLDatabase, query: str, response: Response, top_k: int = None
+    ) -> Response:
+        return create_sql_query_status(db, query, response, top_k)
 
     def format_intermediate_representations(
         self, intermediate_representation: List[Tuple[AgentAction, str]]
@@ -59,9 +73,9 @@ class SQLGenerator(Component, ABC):
     @abstractmethod
     def generate_response(
         self,
-        user_question: NLQuery,
+        user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-    ) -> NLQueryResponse:
+    ) -> Response:
         """Generates a response to a user question."""
         pass

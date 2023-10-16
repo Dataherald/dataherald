@@ -21,7 +21,9 @@ class DatabaseConnectionRepository:
         row = self.storage.find_one(DB_COLLECTION, query)
         if not row:
             return None
-        return DatabaseConnection(**row)
+        obj = DatabaseConnection(**row)
+        obj.id = str(row["_id"])
+        return obj
 
     def update(self, database_connection: DatabaseConnection) -> DatabaseConnection:
         self.storage.update_or_create(

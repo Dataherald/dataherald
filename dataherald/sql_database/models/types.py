@@ -52,7 +52,7 @@ class SSHSettings(BaseSettings):
 
 
 class DatabaseConnection(BaseModel):
-    id: Any
+    id: str | None
     alias: str
     use_ssh: bool = False
     uri: str | None

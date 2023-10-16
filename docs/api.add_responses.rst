@@ -1,38 +1,32 @@
-Update a NL query response
-============================
+Create a new response
+=============================
 
-Once you ask a question, you can give feedback to improve the queries
+Once you made a question you can try sending a new sql query to improve the response, this creates a new
+`response` resource related to the `question` resource.
 
-Request this ``PATCH`` endpoint::
+Request this ``POST`` endpoint::
 
-   /api/v1/nl-query-responses/{query_id}
-
-**Parameters**
-
-.. csv-table::
-   :header: "Name", "Type", "Description"
-   :widths: 15, 10, 30
-
-   "query_id", "string", "Generated query id, ``Required``"
+   /api/v1/responses
 
 **Request body**
 
 .. code-block:: rst
 
-   {
-      "sql_query": "string", # required
+    {
+      "question_id": "string", # required
+      "sql_query": "string" # required
     }
 
 **Responses**
 
-HTTP 200 code response
+HTTP 201 code response
 
 .. code-block:: rst
 
     {
       "id": "string",
-      "nl_question_id": "string",
-      "nl_response": "string",
+      "question_id": "string",
+      "response": "string",
       "intermediate_steps": [
         "string"
       ],
@@ -59,7 +53,7 @@ HTTP 200 code response
 .. code-block:: rst
 
    curl -X 'POST' \
-  '<localhost>/api/v1/nl-query-responses/64c424fa3f4036441e882352' \
+  '<localhost>/api/v1/responses' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -68,7 +62,8 @@ HTTP 200 code response
         WHERE "dh_county_name" = 'Los Angeles' AND "period_start" = '2022-05-01' AND "period_end" = '2022-05-31'
         GROUP BY "zip_code"
         ORDER BY max_rent DESC
-        LIMIT 1;"
+        LIMIT 1;",
+      "question_id": "64dbd8cf944f867b3c450467"
     }'
 
 **Response example**
@@ -76,13 +71,9 @@ HTTP 200 code response
 .. code-block:: rst
 
    {
-      "id": {
-        "$oid": "64c424fa3f4036441e882352"
-      },
-      "nl_question_id": {
-        "$oid": "64dbd8cf944f867b3c450467"
-      },
-      "nl_response": "The most expensive zip to rent in Los Angeles city is 90210",
+      "id": "64c424fa3f4036441e882352",
+      "question_id": "64dbd8cf944f867b3c450467",
+      "response": "The most expensive zip to rent in Los Angeles city is 90210",
       "intermediate_steps": [
         "",
       ],

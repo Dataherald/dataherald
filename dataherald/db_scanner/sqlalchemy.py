@@ -10,10 +10,10 @@ from sqlalchemy.sql import func
 from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.models.types import (
     ColumnDetail,
+    TableDescription,
     TableDescriptionStatus,
-    TableSchemaDetail,
 )
-from dataherald.db_scanner.repository.base import DBScannerRepository
+from dataherald.db_scanner.repository.base import TableDescriptionRepository
 from dataherald.sql_database.base import SQLDatabase
 
 MIN_CATEGORY_VALUE = 1
@@ -24,12 +24,15 @@ MAX_SIZE_LETTERS = 50
 class SqlAlchemyScanner(Scanner):
     @override
     def synchronizing(
-        self, tables: list[str], db_connection_id: str, repository: DBScannerRepository
+        self,
+        tables: list[str],
+        db_connection_id: str,
+        repository: TableDescriptionRepository,
     ) -> None:
         # persist tables to be scanned
         for table in tables:
             repository.save_table_info(
-                TableSchemaDetail(
+                TableDescription(
                     db_connection_id=db_connection_id,
                     table_name=table,
                     status=TableDescriptionStatus.SYNCHRONIZING.value,
@@ -146,8 +149,8 @@ class SqlAlchemyScanner(Scanner):
         table: str,
         db_engine: SQLDatabase,
         db_connection_id: str,
-        repository: DBScannerRepository,
-    ) -> TableSchemaDetail:
+        repository: TableDescriptionRepository,
+    ) -> TableDescription:
         print(f"Scanning table: {table}")
         inspector = inspect(db_engine.engine)
         table_columns = []
@@ -163,7 +166,7 @@ class SqlAlchemyScanner(Scanner):
                 )
             )
 
-        object = TableSchemaDetail(
+        object = TableDescription(
             db_connection_id=db_connection_id,
             table_name=table,
             columns=table_columns,
@@ -186,7 +189,7 @@ class SqlAlchemyScanner(Scanner):
         db_engine: SQLDatabase,
         db_connection_id: str,
         table_names: list[str] | None,
-        repository: DBScannerRepository,
+        repository: TableDescriptionRepository,
     ) -> None:
         inspector = inspect(db_engine.engine)
         meta = MetaData(bind=db_engine.engine)
@@ -211,7 +214,7 @@ class SqlAlchemyScanner(Scanner):
                 )
             except Exception as e:
                 repository.save_table_info(
-                    TableSchemaDetail(
+                    TableDescription(
                         db_connection_id=db_connection_id,
                         table_name=table,
                         status=TableDescriptionStatus.FAILED.value,
