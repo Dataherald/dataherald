@@ -175,6 +175,8 @@ class FastAPI(API):
             question=question_request.question,
             db_connection_id=question_request.db_connection_id,
         )
+        question_repository = QuestionRepository(self.storage)
+        user_question = question_repository.insert(user_question)
         stop_event = threading.Event()
 
         def run_and_catch_exceptions():

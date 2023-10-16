@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from langchain.chat_models import ChatLiteLLM
+from langchain.chat_models import ChatAnthropic, ChatCohere, ChatGooglePalm, ChatOpenAI
 from overrides import override
 
 from dataherald.model import LLMModel
@@ -34,7 +34,12 @@ class ChatModel(LLMModel):
                 os.environ["GOOGLE_API_KEY"] = api_key
             elif model_family == "cohere":
                 os.environ["COHERE_API_KEY"] = api_key
-        try:
-            return ChatLiteLLM(model_name=self.model_name, **kwargs)
-        except Exception as e:
-            raise ValueError("No valid API key environment variable found") from e
+        if os.environ.get("OPENAI_API_KEY") is not None:
+            return ChatOpenAI(model_name=self.model_name, **kwargs)
+        if os.environ.get("ANTHROPIC_API_KEY") is not None:
+            return ChatAnthropic(model_name=self.model_name, **kwargs)
+        if os.environ.get("GOOGLE_API_KEY") is not None:
+            return ChatGooglePalm(model_name=self.model_name, **kwargs)
+        if os.environ.get("COHERE_API_KEY") is not None:
+            return ChatCohere(model_name=self.model_name, **kwargs)
+        raise ValueError("No valid API key environment variable found")
