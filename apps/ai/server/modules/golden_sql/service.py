@@ -62,7 +62,7 @@ class GoldenSQLService:
         golden_sql_ref = self.repo.get_verified_golden_sql_ref(query_id)
         # if already exist, delete golden_sql_ref and call delete /golden-records
         if golden_sql_ref:
-            await self.delete_golden_sql("", query_id)
+            await self.delete_golden_sql(golden_sql_ref.golden_sql_id)
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.k2_core_url + "/golden-records",
