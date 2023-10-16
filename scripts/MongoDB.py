@@ -155,9 +155,9 @@ class MongoDB:
     # print the values from the pymongo.cursor.Cursor object
     for item in list(result):
       print(f"item: {item}")
-      print(f"item['_id']: {item['_id']}")
+      print(f"item['id']: {item['id']}")
     print("__________________________________________________________________________________________")
 
-    table_description_id = str(list(result)[0]["_id"])
+    table_description_id = str(list(result)[0]["id"])
 
     return table_description_id

@@ -172,7 +172,7 @@ def run(config_file: str):
       table_description_id: str = None
       for table in existing_tables:
         if table["table_name"] == table_name:
-          table_description_id = table["_id"]
+          table_description_id = table["id"]
           table_found = True
           break
 
