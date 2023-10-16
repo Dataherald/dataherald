@@ -258,7 +258,7 @@ class QueryService:
             "custom_response": query_request.custom_response,
         }
         self.repo.update_query(str(query.id), updated_query)
-        new_query = self.repo.get_query(str(query.id))
+        updated_query = self.repo.get_query(str(query.id))
 
         # verified
         if query_request.query_status == QueryStatus.VERIFIED:
@@ -270,38 +270,41 @@ class QueryService:
             await self.golden_sql_service.add_verified_query_golden_sql(
                 golden_sql,
                 organization.id,
-                new_query.id,
+                updated_query.id,
             )
 
             SlackWebClient(
                 organization.slack_installation.bot.token
             ).send_verified_query_message(
-                new_query,
+                updated_query,
                 new_query_response,
                 question.question,
             )
         # rejected or not verified
         else:
-            if self.golden_sql_service.get_verified_golden_sql_ref(new_query.id):
+            golden_sql_ref = self.golden_sql_service.get_verified_golden_sql_ref(
+                updated_query.id
+            )
+            if golden_sql_ref:
                 await self.golden_sql_service.delete_golden_sql(
-                    "", query_id=new_query.id
+                    str(golden_sql_ref.golden_sql_id)
                 )
             if query_request.query_status == QueryStatus.REJECTED:
                 SlackWebClient(
                     organization.slack_installation.bot.token,
-                ).send_rejected_query_message(new_query)
+                ).send_rejected_query_message(updated_query)
 
         self.analytics.track(
             user.email,
             "query_saved",
             {
                 "query_id": query_id,
-                "question_id": str(new_query.question_id),
-                "response_id": str(new_query.response_id)
-                if new_query.response_id
+                "question_id": str(updated_query.question_id),
+                "response_id": str(updated_query.response_id)
+                if updated_query.response_id
                 else None,
                 "organization_id": organization.id,
-                "display_id": new_query.display_id,
+                "display_id": updated_query.display_id,
                 "status": query_request.query_status.value,
                 "confidence_score": new_query_response.confidence_score
                 if new_query_response
@@ -309,7 +312,9 @@ class QueryService:
             },
         )
 
-        return self._get_mapped_query_response(new_query, question, new_query_response)
+        return self._get_mapped_query_response(
+            updated_query, question, new_query_response
+        )
 
     async def run_response(
         self, query_id: str, query_request: QueryExecutionRequest, user: UserResponse

@@ -168,9 +168,12 @@ class TestGoldenSQLAPI(TestCase):
     )
     @patch.multiple(
         "modules.golden_sql.repository.GoldenSQLRepository",
-        delete_verified_golden_sql_ref=Mock(return_value=None),
+        get_golden_sql_ref=Mock(return_value=GoldenSQLRef(**test_ref_1)),
+        delete_verified_golden_sql_ref=Mock(return_value=1),
         delete_golden_sql_ref=Mock(return_value=1),
     )
     def test_delete_golden_sql(self):
-        response = client.delete(self.url + "/123", headers=self.test_header)
+        response = client.delete(
+            self.url + "/0123456789ab0123456789ab", headers=self.test_header
+        )
         assert response.status_code == status.HTTP_200_OK

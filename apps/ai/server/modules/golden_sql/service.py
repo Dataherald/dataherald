@@ -133,23 +133,25 @@ class GoldenSQLService:
 
             return golden_sql_responses
 
-    async def delete_golden_sql(self, golden_id: str, query_id: str = None) -> dict:
-        if query_id:
-            golden_sql_ref = self.repo.get_verified_golden_sql_ref(query_id)
-            golden_id = golden_sql_ref.golden_sql_id
-        async with httpx.AsyncClient() as client:
-            response = await client.delete(
-                settings.k2_core_url + f"/golden-records/{golden_id}",
-                timeout=settings.default_k2_core_timeout,
-            )
-            raise_for_status(response.status_code, response.text)
-            if response.json()["status"]:
-                if query_id:
-                    matched_count = self.repo.delete_verified_golden_sql_ref(query_id)
-                else:
-                    matched_count = self.repo.delete_golden_sql_ref(golden_id)
-                if matched_count == 1:
-                    return {"id": golden_id}
+    async def delete_golden_sql(self, golden_id: str) -> dict:
+        golden_sql_ref = self.repo.get_golden_sql_ref(golden_id)
+
+        if golden_sql_ref:
+            async with httpx.AsyncClient() as client:
+                response = await client.delete(
+                    settings.k2_core_url + f"/golden-records/{golden_id}",
+                    timeout=settings.default_k2_core_timeout,
+                )
+                raise_for_status(response.status_code, response.text)
+                if response.json()["status"]:
+                    if golden_sql_ref.query_id:
+                        matched_count = self.repo.delete_verified_golden_sql_ref(
+                            golden_sql_ref.query_id
+                        )
+                    else:
+                        matched_count = self.repo.delete_golden_sql_ref(golden_id)
+                    if matched_count == 1:
+                        return {"id": golden_id}
 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
