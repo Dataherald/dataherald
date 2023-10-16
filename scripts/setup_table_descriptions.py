@@ -88,8 +88,9 @@ def get_all_tables_for_db_connection_id(db_connection_id: str) -> list[dict]:
   print("tables: ")
   print("====================================================")
   for table in tables:
-    # print only the table name and id
-    print(f"table_name: {table['table_name']}, id: {table['id']}")
+    # print only the table name and id and id is not None
+    if table["id"] is not None:
+      print(f"table_name: {table['table_name']}, id: {table['id']}")
   return tables
 
 
@@ -172,7 +173,7 @@ def run(config_file: str):
       table_found = False
       table_description_id: str = None
       for table in existing_tables:
-        if table["table_name"] == table_name:
+        if table["table_name"] == table_name and table["id"] is not None:
           table_description_id = table["id"]
           table_found = True
           break
