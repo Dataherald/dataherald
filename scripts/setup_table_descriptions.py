@@ -68,6 +68,30 @@ def register_table_description(db_connection_id: str, table_name: str):
   print()
 
 
+def get_all_tables_for_db_connection_id(db_connection_id: str) -> list[dict]:
+  """given a db_connection_id return all the tables for that database
+
+  Args:
+      db_connection_id (str): the db_connection_id to get the tables for
+
+  Returns:
+      list[dict]: the list of tables for the given database
+  """
+  payload = {"db_connection_id": db_connection_id}
+  endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/table-descriptions"
+  r = requests.get(endpoint_url, params=payload, headers={
+      "Content-Type": "application/json", "Accept": "application/json"}, timeout=300)
+  print(r.status_code)
+  print(r.text)
+  print()
+  tables = r.json()
+  print("tables: ")
+  print("====================================================")
+  print(json.dumps(tables, indent=4, sort_keys=True))
+  # convert to a list of dictionaries
+  return tables
+
+
 def add_table_meta_data(db_connection_id: str, table_description_id: str, description: str, columns: list):
   """This function adds meta data to the given table in the given database
 
@@ -141,12 +165,18 @@ def run(config_file: str):
 
       print(f"db_connection_id: {db_connection_id}")
 
-      # first check if the table exists in the database
-      # if so delete it first
+      existing_tables = get_all_tables_for_db_connection_id(db_connection_id)
 
-      mongo = MongoDB()
-      table_description_id: str = mongo.get_table_desc_id_for_dblias_tablename(db_connection_id, table_name)
-      if not table_description_id:
+      # check this table is not already in the database
+      table_found = False
+      table_description_id: str = None
+      for table in existing_tables:
+        if table["table_name"] == table_name:
+          table_description_id = table["_id"]
+          table_found = True
+          break
+
+      if not table_found:
         register_table_description(db_connection_id, table_name)
         time.sleep(3)
         table_description_id = mongo.get_table_desc_id_for_dblias_tablename(db_connection_id, table_name)
