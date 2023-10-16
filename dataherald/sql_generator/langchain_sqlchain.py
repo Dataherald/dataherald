@@ -1,6 +1,7 @@
 """A wrapper for the SQL generation functions in langchain"""
 
 import logging
+import os
 import time
 from typing import Any, List
 
@@ -49,7 +50,9 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
     ) -> Response:
         start_time = time.time()
         self.llm = self.model.get_model(
-            database_connection=database_connection, temperature=0
+            database_connection=database_connection,
+            model_name = os.environ.get("LLM_MODEL", "gpt-4-32k"),
+            temperature=0
         )
         self.database = SQLDatabase.get_sql_engine(database_connection)
         logger.info(

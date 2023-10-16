@@ -1,3 +1,5 @@
+import os
+
 from langchain.chains import LLMChain
 from langchain.prompts.chat import (
     ChatPromptTemplate,
@@ -39,6 +41,7 @@ class GeneratesNlAnswer:
         )
         self.llm = self.model.get_model(
             database_connection=database_connection,
+            model_name = os.environ.get("RESPONSE_GENERATOR_LLM_MODEL", "gpt-3.5-turbo-16k"),
             temperature=0,
         )
         database = SQLDatabase.get_sql_engine(database_connection)

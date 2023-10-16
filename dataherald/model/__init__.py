@@ -16,7 +16,8 @@ class LLMModel(Component, ABC):
     def get_model(
         self,
         database_connection: DatabaseConnection,
-        model_family="openai",
+        model_family: str ="openai",
+        model_name: str = "gpt-4-32k",
         **kwargs: Any
     ) -> Any:
         pass

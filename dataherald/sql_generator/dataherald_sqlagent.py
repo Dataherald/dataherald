@@ -616,6 +616,7 @@ class DataheraldSQLAgent(SQLGenerator):
         storage = self.system.instance(DB)
         self.llm = self.model.get_model(
             database_connection=database_connection,
+            model_name = os.environ.get("LLM_MODEL", "gpt-4-32k"),
             temperature=0,
         )
         repository = TableDescriptionRepository(storage)
