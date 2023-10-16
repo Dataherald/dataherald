@@ -58,7 +58,7 @@ def register_table_description(db_connection_id: str, table_name: str):
   print("====================================================")
   print(f"endpoint url: {register_table_desc_url}")
   print("db_connection_id: " + db_connection_id)
-  print("table_name: " + table_name)
+  print("table_names: [" + table_name + "]")
   print(json.dumps(scanner_request_body, indent=4, sort_keys=True))
   r = requests.post(register_table_desc_url, json=scanner_request_body, headers={
       "Content-Type": "application/json", "Accept": "application/json"}, timeout=300)
@@ -146,7 +146,7 @@ def run(config_file: str):
 
       mongo = MongoDB()
       table_description_id = mongo.get_table_desc_id_for_dblias_tablename(
-          alias, table_name)
+          db_connection_id, table_name)
       mongo.close()
 
       if table_description_id is None:
