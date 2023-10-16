@@ -107,54 +107,54 @@ class MongoDB:
     db_connection_id = str(list(result)[0]["_id"])
     return db_connection_id
 
-  def get_table_desc_id_for_dblias_tablename(self, db_connection_id: str, table_name: str) -> str:
-    """ Given a db_connection_id and table_name return the table_description_id from the table_descriptions collection
+  # def get_table_desc_id_for_dblias_tablename(self, db_connection_id: str, table_name: str) -> str:
+  #   """ Given a db_connection_id and table_name return the table_description_id from the table_descriptions collection
 
-    Args:
-        db_connection_id (str): the db_connection_id to get the table_description_id for
-        table_name (str): The table_name to get the table_description_id for
+  #   Args:
+  #       db_connection_id (str): the db_connection_id to get the table_description_id for
+  #       table_name (str): The table_name to get the table_description_id for
 
-    Returns:
-        str: The table_description_id or None if not found
-    """
+  #   Returns:
+  #       str: The table_description_id or None if not found
+  #   """
 
-    query = {"db_connection_id": db_connection_id,
-             "table_name": table_name}
-    projection = {"_id": 1}
+  #   query = {"db_connection_id": db_connection_id,
+  #            "table_name": table_name}
+  #   projection = {"_id": 1}
 
-    # try to get the result up to 3 times
-    # sometimes the connection times out and sometimes the value is not ready
-    # this is a hack to get around that
-    count = 0
-    while count < 3:
-      time.sleep(1)
-      result = self.select("table_descriptions", query, projection)
-      # check if the result is empty
-      if result is None:
-        count += 1
-        continue
+  #   # try to get the result up to 3 times
+  #   # sometimes the connection times out and sometimes the value is not ready
+  #   # this is a hack to get around that
+  #   count = 0
+  #   while count < 3:
+  #     time.sleep(1)
+  #     result = self.select("table_descriptions", query, projection)
+  #     # check if the result is empty
+  #     if result is None:
+  #       count += 1
+  #       continue
 
-      # check the number of results
-      if len(list(result)) == 0:
-        count += 1
-        continue
-      else:
-        break
+  #     # check the number of results
+  #     if len(list(result)) == 0:
+  #       count += 1
+  #       continue
+  #     else:
+  #       break
 
-    if result is None:
-      return None
+  #   if result is None:
+  #     return None
 
-    # get the first item in the list
-    print("__________________________________________________________________________________________")
-    print(f"result: {result}")
-    print("__________________________________________________________________________________________")
-    print(f"{list(result)}")
-    # print the values from the pymongo.cursor.Cursor object
-    for item in list(result):
-      print(f"item: {item}")
-      print(f"item['id']: {item['id']}")
-    print("__________________________________________________________________________________________")
+  #   # get the first item in the list
+  #   print("__________________________________________________________________________________________")
+  #   print(f"result: {result}")
+  #   print("__________________________________________________________________________________________")
+  #   print(f"{list(result)}")
+  #   # print the values from the pymongo.cursor.Cursor object
+  #   for item in list(result):
+  #     print(f"item: {item}")
+  #     print(f"item['id']: {item['id']}")
+  #   print("__________________________________________________________________________________________")
 
-    table_description_id = str(list(result)[0]["id"])
+  #   table_description_id = str(list(result)[0]["id"])
 
-    return table_description_id
+  #   return table_description_id

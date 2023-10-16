@@ -186,6 +186,23 @@
   },
   {
     "alias": "hkg02p",
+    "table_name": "t05PositionData",
+    "description": "Stores daily static data for all postion per instrument",
+    "columns": [
+      { "name": "positionDataID", "description": "The primary ID"},
+      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" },
+      { "name": "processDate", "description": "The day which the snapshot was processed for" },
+      { "name": "codeType", "description": ""},
+      { "name": "groupType", "description": "The group type of data but usually = BBSTATIC. Bloomberg static data"},
+      { "name": "dataType", "description": "The position data type"},
+      { "name": "value", "description": "The value of this static data entry"},
+      { "name": "crdate", "description": "The creation date of this entry in the database" },
+      { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
+      { "name": "status", "description": "A: if entry is active, I: if entry is inactive"}
+    ]
+  },
+  {
+    "alias": "hkg02p",
     "table_name": "t02WorkDay",
     "description": "A table which holds a list of work days and their respective previous work days for different countries. Weekends and public holidays in the respective countries are skipped. This is to be used to calculate the previous work day for a given country. There are also a few flags to indicate if the day is the start or end of the month or week.",
     "columns": [
@@ -444,23 +461,6 @@
   },
   {
     "alias": "hkg02p",
-    "table_name": "t05PositionData",
-    "description": "Stores daily static data for all postion per instrument",
-    "columns": [
-      { "name": "positionDataID", "description": "The primary ID"},
-      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" },
-      { "name": "processDate", "description": "The day which the snapshot was processed for" },
-      { "name": "codeType", "description": ""},
-      { "name": "groupType", "description": "The group type of data but usually = BBSTATIC. Bloomberg static data"},
-      { "name": "dataType", "description": "The position data type"},
-      { "name": "value", "description": "The value of this static data entry"},
-      { "name": "crdate", "description": "The creation date of this entry in the database" },
-      { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
-      { "name": "status", "description": "A: if entry is active, I: if entry is inactive"}
-    ]
-  },
-  {
-    "alias": "hkg02p",
     "table_name": "t10WebLog",
     "description": "Stores intranet websites access information. This is for the laravel website",
     "columns": [
@@ -488,6 +488,5 @@
       { "name": "cruser", "description": "The user who originally created this entry" },
       { "name": "status", "description": "I: If the entry item is inactive/invalid. A: if the entry is active" }
     ]
-
   }
 ]
