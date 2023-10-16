@@ -193,8 +193,8 @@ def run(config_file: str):
 
       if table_description_id is None:
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print(f"table_description_id not found for db: {alias} and table: {table_name}")
-        print("Skipping entry.")
+        print(f">> table_description_id not found for db: {alias} and table: {table_name}")
+        print(">> Skipping entry.")
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         continue
 
