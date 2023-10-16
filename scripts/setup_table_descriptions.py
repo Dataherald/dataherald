@@ -87,8 +87,9 @@ def get_all_tables_for_db_connection_id(db_connection_id: str) -> list[dict]:
   tables = r.json()
   print("tables: ")
   print("====================================================")
-  print(json.dumps(tables, indent=4, sort_keys=True))
-  # convert to a list of dictionaries
+  for table in tables:
+    # print only the table name and id
+    print(f"table_name: {table['table_name']}, id: {table['id']}")
   return tables
 
 
