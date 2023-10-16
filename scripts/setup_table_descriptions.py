@@ -145,13 +145,11 @@ def run(config_file: str):
       # get the _id from the table_descriptions collection where db_connection_id = db_connection_id and table_name = table_name
 
       mongo = MongoDB()
-      table_description_id = mongo.get_table_desc_id_for_dblias_tablename(
-          db_connection_id, table_name)
+      table_description_id = mongo.get_table_desc_id_for_dblias_tablename(db_connection_id, table_name)
       mongo.close()
 
       if table_description_id is None:
-        print(
-            f"table_description_id not found for db: {alias} and table: {table_name}")
+        print(f"table_description_id not found for db: {alias} and table: {table_name}")
         continue
 
       # second add meta data to the table

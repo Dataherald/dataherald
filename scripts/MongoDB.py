@@ -1,3 +1,4 @@
+import time
 from pymongo import MongoClient
 from urllib.parse import quote_plus
 from dotenv import load_dotenv
@@ -120,10 +121,35 @@ class MongoDB:
     query = {"db_connection_id": db_connection_id,
              "table_name": table_name}
     projection = {"_id": 1}
-    result = self.select("table_descriptions", query, projection)
-    # check if the result is empty
+
+    # try to get the result up to 3 times
+    # sometimes the connection times out and sometimes the value is not ready
+    # this is a hack to get around that
+    count = 0
+    while count < 3:
+      result = self.select("table_descriptions", query, projection)
+      # check if the result is empty
+      if result is None:
+        count += 1
+        # wait 1 second
+        time.sleep(1)
+        continue
+
+      # check the number of results
+      if len(list(result)) == 0:
+        time.sleep(1)
+        count += 1
+        continue
+      else:
+        break
+
     if result is None:
       return None
+    if len(list(result)) == 0:
+      return None
+
+    # get the first item in the list
+    table_description_id = str(list(result)[0]["_id"])
 
     # get the first item in the list
     print("__________________________________________________________________________________________")
