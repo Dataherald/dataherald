@@ -142,6 +142,7 @@ class TestQueryAPI(TestCase):
                 name="test_org",
                 db_connection_id="0123456789ab0123456789ab",
                 slack_installation=SlackInstallation(bot=SlackBot(token="test_token")),
+                confidence_threshold=1.0,
             )
         ),
     )

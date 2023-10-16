@@ -42,8 +42,18 @@ class OrganizationService:
                 org_request.llm_credentials
             )
         new_org_data = Organization(**org_request.dict())
-        new_org_data.db_connection_id = ObjectId(new_org_data.db_connection_id)
-        new_id = self.repo.add_organization(new_org_data.dict(exclude={"id"}))
+        new_org_data.db_connection_id = (
+            ObjectId(new_org_data.db_connection_id)
+            if new_org_data.db_connection_id
+            else None
+        )
+        new_org_data.confidence_threshold = (
+            1.0
+            if new_org_data.confidence_threshold is None
+            else new_org_data.confidence_threshold
+        )
+
+        new_id = self.repo.add_organization(new_org_data.dict(exclude_unset=True))
         if new_id:
             new_org = self.repo.get_organization(new_id)
             return self._get_mapped_organization_response(new_org)
@@ -60,8 +70,16 @@ class OrganizationService:
             org_request.llm_credentials = self._encrypt_llm_credentials(
                 org_request.llm_credentials
             )
+        updated_org_data = Organization(**org_request.dict(exclude_unset=True))
+        updated_org_data.db_connection_id = (
+            ObjectId(updated_org_data.db_connection_id)
+            if updated_org_data.db_connection_id
+            else None
+        )
         if (
-            self.repo.update_organization(org_id, org_request.dict(exclude_unset=True))
+            self.repo.update_organization(
+                org_id, updated_org_data.dict(exclude_unset=True)
+            )
             == 1
         ):
             new_org = self.repo.get_organization(org_id)
@@ -87,6 +105,7 @@ class OrganizationService:
         new_org_data = Organization(
             name=slack_installation_request.team.name,
             slack_installation=slack_installation_request,
+            confidence_threshold=1.0,
         )
 
         new_id = self.repo.add_organization(new_org_data.dict(exclude={"id"}))
@@ -115,7 +134,12 @@ class OrganizationService:
     def update_db_connection_id(
         self, org_id: str, db_connection_id: str
     ) -> OrganizationResponse:
-        if self.repo.update_db_connection_id(org_id, db_connection_id) == 1:
+        if (
+            self.repo.update_organization(
+                org_id, {"db_connection_id": ObjectId(db_connection_id)}
+            )
+            == 1
+        ):
             new_org = self.repo.get_organization(org_id)
             return self._get_mapped_organization_response(new_org)
 

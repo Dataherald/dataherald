@@ -35,8 +35,8 @@ class SlackInstallation(BaseModel):
 
 
 class BaseOrganization(BaseModel):
-    name: str
-    confidence_threshold: confloat(ge=0, le=1) = 1.0
+    name: str | None
+    confidence_threshold: confloat(ge=0, le=1) | None
     slack_installation: SlackInstallation | None
     llm_credentials: LLMCredentials | None
 
