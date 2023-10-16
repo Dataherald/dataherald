@@ -32,6 +32,7 @@
 import json
 import os
 import sys
+import time
 
 import requests
 
@@ -140,12 +141,18 @@ def run(config_file: str):
 
       print(f"db_connection_id: {db_connection_id}")
 
-      register_table_description(db_connection_id, table_name)
-
-      # get the _id from the table_descriptions collection where db_connection_id = db_connection_id and table_name = table_name
+      # first check if the table exists in the database
+      # if so delete it first
 
       mongo = MongoDB()
-      table_description_id = mongo.get_table_desc_id_for_dblias_tablename(db_connection_id, table_name)
+      table_description_id: str = mongo.get_table_desc_id_for_dblias_tablename(db_connection_id, table_name)
+      if not table_description_id:
+        register_table_description(db_connection_id, table_name)
+        time.sleep(2)
+        table_description_id = mongo.get_table_desc_id_for_dblias_tablename(db_connection_id, table_name)
+        print(f"NEW table_description_id created for db: '{alias}' and table: '{table_name}', with id: '{table_description_id}'")
+      else:
+        print(f"table_description_id already exists for db: '{alias}' and table: '{table_name}', with id: '{table_description_id}'")
       mongo.close()
 
       if table_description_id is None:

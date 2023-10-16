@@ -127,17 +127,15 @@ class MongoDB:
     # this is a hack to get around that
     count = 0
     while count < 3:
+      time.sleep(1)
       result = self.select("table_descriptions", query, projection)
       # check if the result is empty
       if result is None:
         count += 1
-        # wait 1 second
-        time.sleep(1)
         continue
 
       # check the number of results
       if len(list(result)) == 0:
-        time.sleep(1)
         count += 1
         continue
       else:
