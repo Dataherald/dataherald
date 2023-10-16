@@ -143,8 +143,6 @@ class MongoDB:
 
     if result is None:
       return None
-    if len(list(result)) == 0:
-      return None
 
     # get the first item in the list
     table_description_id = str(list(result)[0]["_id"])

@@ -148,8 +148,9 @@ def run(config_file: str):
       table_description_id: str = mongo.get_table_desc_id_for_dblias_tablename(db_connection_id, table_name)
       if not table_description_id:
         register_table_description(db_connection_id, table_name)
-        time.sleep(2)
+        time.sleep(3)
         table_description_id = mongo.get_table_desc_id_for_dblias_tablename(db_connection_id, table_name)
+        time.sleep(1)
         print(f"NEW table_description_id created for db: '{alias}' and table: '{table_name}', with id: '{table_description_id}'")
       else:
         print(f"table_description_id already exists for db: '{alias}' and table: '{table_name}', with id: '{table_description_id}'")
