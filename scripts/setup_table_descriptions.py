@@ -150,7 +150,7 @@ def add_table_meta_data(db_connection_id: str, table_description_id: str, descri
   # print(json.dumps(request_body, indent=4, sort_keys=True))
   # print the endpoint url
   print(f"endpoint url: {endpoint_url}")
-  r = requests.patch(endpoint_url, request_body, headers={
+  r = requests.patch(endpoint_url, data=json.dumps(request_body), headers={
       "Content-Type": "application/json", "Accept": "application/json"}, timeout=300)
   print(r.status_code)
   print(r.text)
