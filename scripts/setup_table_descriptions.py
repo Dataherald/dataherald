@@ -92,9 +92,6 @@ def check_table_name_exists(db_connection_id: str, table_name: str) -> str:
   r = requests.get(endpoint_url, params=payload, headers={
       "Content-Type": "application/json", "Accept": "application/json"}, timeout=300)
   print(r.status_code)
-  print(r.text)
-  print()
-  print(r.json())
   print()
   # check if list is empty or not
   if len(r.json()) == 0:
@@ -103,8 +100,9 @@ def check_table_name_exists(db_connection_id: str, table_name: str) -> str:
     # loop through the list and check if the table_name exists
     for table in r.json():
       if table["table_name"] == table_name:
+        print(f"FOUND table_name: '{table_name}' in db_connection_id: '{db_connection_id}'")
         # check if the id is not None
-        if table["id"] is not None:
+        if table["id"]:
           return table["id"]
 
     return None
