@@ -54,9 +54,11 @@ def register_table_description(db_connection_id: str, table_name: str):
       "db_connection_id": db_connection_id,
       "table_names": [table_name]
   }
-
-  print("Table descriptions: ")
-  print("====================================================")
+  print()
+  print("=" * 80)
+  print("Register Table Description Request: ")
+  print("=" * 80)
+  print()
   print(f"endpoint url: {register_table_desc_url}")
   print("db_connection_id: " + db_connection_id)
   print("table_names: [" + table_name + "]")
@@ -96,7 +98,7 @@ def get_all_tables_for_db_connection_id(db_connection_id: str) -> dict:
   return ret
 
 
-def add_table_meta_data(db_connection_id: str, table_description_id: str, description: str, columns: list):
+def add_table_meta_data(db_connection_id: str, table_description_id: str, description: str, columns: list[dict]):
   """This function adds meta data to the given table in the given database
 
   Args:
@@ -108,6 +110,12 @@ def add_table_meta_data(db_connection_id: str, table_description_id: str, descri
   # construct the REST API call
   # construct the URL
   endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/table-descriptions/{table_description_id}"
+
+  print()
+  print("=" * 80)
+  print("Meta Data Add Request: ")
+  print("=" * 80)
+  print()
 
   # construct the request body
   request_body: dict = {
@@ -153,6 +161,8 @@ def run(config_file: str):
       table_name = config["table_name"]
       description = config["description"]
       columns = config["columns"]
+      # deserialize the columns from string
+      print(f"Type of columns: {type(columns)}")
 
       # first execute the scanner to add the table to the database
       # construct the URL
