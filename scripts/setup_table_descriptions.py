@@ -42,7 +42,7 @@ from MongoDB import MongoDB
 DATAHERALD_REST_API_URL = "http://localhost"
 
 
-def register_table_description(db_connection_id: str, table_name: str):
+def run_sync_schemas_for_table(db_connection_id: str, table_name: str):
   """scan the given table in the given database
   Args:
       alias (str): the db alias to scan
@@ -95,6 +95,8 @@ def check_table_name_exists(db_connection_id: str, table_name: str) -> str:
   print()
   # check if list is empty or not
   if len(r.json()) == 0:
+    print(' NO Data found in db_connection_id')
+    print('-' * 80)
     return None
   else:
     # loop through the list and check if the table_name exists
@@ -103,8 +105,12 @@ def check_table_name_exists(db_connection_id: str, table_name: str) -> str:
         print(f"FOUND table_name: '{table_name}' in db_connection_id: '{db_connection_id}'")
         # check if the id is not None
         if table["id"]:
+          print(f'  :D table_name FOUND in db_connection_id: {table["id"]}')
+          print('-' * 80)
           return table["id"]
 
+    print('  :( table_name not found in db_connection_id')
+    print('-' * 80)
     return None
 
 
@@ -189,21 +195,21 @@ def run(config_file: str):
 
       print(f"db_connection_id: {db_connection_id}")
 
+      # 1. Scan the DB
+      run_sync_schemas_for_table(db_connection_id, table_name)
+      time.sleep(10)
+
       table_description_id: str = check_table_name_exists(db_connection_id, table_name)
       print(f"table_id: {table_description_id}")
 
       if table_description_id is None:
-        register_table_description(db_connection_id, table_name)
+        # try syncing the schema again
+        run_sync_schemas_for_table(db_connection_id, table_name)
         time.sleep(10)
-        existing_tables: dict = check_table_name_exists(db_connection_id, table_name)
-        if table_name in existing_tables:
-          table_description_id = existing_tables[table_name]
-          print(f"NEW table_description_id created for db: '{alias}' and table: '{table_name}', with id: '{table_description_id}'")
-        else:
-          table_description_id = None
-          print(f"NEW table_description_id not found for db: '{alias}' and table: '{table_name}'")
+        table_description_id = check_table_name_exists(db_connection_id, table_name)
+
       else:
-        print(f"table_description_id already exists for db: '{alias}' and table: '{table_name}', with id: '{table_description_id}'")
+        print(f"table_description_id already EXISTS for db: '{alias}' and table: '{table_name}', with id: '{table_description_id}'")
 
       if table_description_id is None:
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
