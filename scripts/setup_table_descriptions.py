@@ -197,7 +197,7 @@ def run(config_file: str):
       if table_description_id is None:
         register_table_description(db_connection_id, table_name)
         time.sleep(10)
-        existing_tables: dict = check_table_name_exists(db_connection_id)
+        existing_tables: dict = check_table_name_exists(db_connection_id, table_name)
         if table_name in existing_tables:
           table_description_id = existing_tables[table_name]
           print(f"NEW table_description_id created for db: '{alias}' and table: '{table_name}', with id: '{table_description_id}'")
