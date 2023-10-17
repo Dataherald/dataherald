@@ -56,13 +56,13 @@ def run_sync_schemas_for_table(db_connection_id: str, table_name: str):
   }
   print()
   print("=" * 80)
-  print("Register Table Description Request: ")
+  print(f"Running Sync Schemas for table: {table_name}")
   print("=" * 80)
   print()
   print(f"endpoint url: {register_table_desc_url}")
   print("db_connection_id: " + db_connection_id)
   print("table_names: [" + table_name + "]")
-  print(json.dumps(scanner_request_body, indent=4, sort_keys=True))
+  # print(json.dumps(scanner_request_body, indent=4, sort_keys=True))
   r = requests.post(register_table_desc_url, json=scanner_request_body, headers={
       "Content-Type": "application/json", "Accept": "application/json"}, timeout=300)
   print(r.status_code)
@@ -82,10 +82,9 @@ def check_table_name_exists(db_connection_id: str, table_name: str) -> str:
       str: the table_description_id or None if not found
   """
   print()
-  print('*' * 160)
-  print('*' * 160)
+  print('*' * 80)
   print(f"Checking if table_name: '{table_name}' exists in db_connection_id: '{db_connection_id}'")
-  print('*' * 160)
+  print('*' * 80)
   # construct the REST API call
   payload = {"db_connection_id": db_connection_id, "table_name": table_name}
   print(f"payload: {payload}")
@@ -148,7 +147,7 @@ def add_table_meta_data(db_connection_id: str, table_description_id: str, descri
   print("table_description_id : " + table_description_id)
   print("table_description: " + description)
   print("request body: ")
-  print(json.dumps(request_body, indent=4, sort_keys=True))
+  # print(json.dumps(request_body, indent=4, sort_keys=True))
   # print the endpoint url
   print(f"endpoint url: {endpoint_url}")
   r = requests.patch(endpoint_url, data=json.dumps(request_body), headers={
@@ -173,6 +172,13 @@ def run(config_file: str):
         print("alias not found in config. Skipping entry.")
         # skip this entry
         continue
+
+      print()
+      print('*' * 160)
+      print('*' * 160)
+      print(f"Processing entry for db: {config['alias']} and table: {config['table_name']}")
+      print('*' * 160)
+      print('*' * 160)
 
       alias = config["alias"]
       table_name = config["table_name"]

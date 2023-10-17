@@ -2,10 +2,10 @@
   {
     "alias": "hkg02p",
     "table_name": "t05PortfolioResponsibilities",
-    "description": "The purpose of this table is to record a daily snapshot of the firm's positions along with PL (Profit and Loss), Attribution, Exposure, Alpha and advisor tags and other factors. There are 4 funds in the firm Rockhampton, Yaraka and Canoona, with the following respective codes RH, YA and CA. Some columns like Attribution, Alpha, SectorAlpha and Exposure are prefixed with the fund codes. Unless a value column augmentd with _USD the value is assumed to be in JPY. Some performance indicators: TPX Sector Alpha: Attribution - (Exposure * TPX Sector return), Alpha: Attribution - (Exposure * Beta * TPX return), Outperformance (Outperform/OP): Attribution - (Exposure * TPX return). If side is S then values will need to be multiplied by -1 if calculating the net but not for gross. If someone asked what is the attribution, alpha or exposure without specifying fund, the values per fund should be returned. If someone mentions (fund) RPA they are referring to LR.",
+    "description": "The purpose of this table is to record a daily snapshot of the firms positions along with PL (Profit and Loss), Attribution, Exposure, Alpha and advisor tags and other factors. There are 4 funds in the firm Rockhampton, Yaraka and Canoona, with the following respective codes RH, YA and CA. Some columns like Attribution, Alpha, SectorAlpha and Exposure are prefixed with the fund codes. Unless a value column augmentd with _USD the value is assumed to be in JPY. Some performance indicators: TPX Sector Alpha: Attribution - (Exposure * TPX Sector return), Alpha: Attribution - (Exposure * Beta * TPX return), Outperformance (Outperform/OP): Attribution - (Exposure * TPX return). If side is S then values will need to be multiplied by -1 if calculating the net but not for gross. If someone asked what is the attribution, alpha or exposure without specifying fund, the values per fund should be returned. If someone mentions (fund) RPA they are referring to LR.",
     "columns": [
-      { "name": "portfolioResponsibilitiesID", "description": "a unique identifier (Primary Index)"},
-      { "name": "instrumentID", "description": "A foreign key into the instrument table (hkg02p.t01Instrument.instrumentID)"},
+      { "name": "portfolioResponsibilitiesID", "description": "a unique identifier (Primary Index)", "is_primary_key": true },
+      { "name": "instrumentID", "description": "A foreign key into the instrument table (hkg02p.t01Instrument.instrumentID)", "is_primary_key": false},
       {
         "name": "blp",
         "description": "An instrument identifier. Equal to the Bloomberg Ticker but assumes the instrument is JP so doesnt have the country code in the case of Japan instruments"
@@ -13,10 +13,10 @@
       { "name": "quick", "description": "An instrument identifier. The 4 digit QUICK code" },
       { "name": "name", "description": "The name of the instrument in English" },
       { "name": "processDate", "description": "The day which the snapshot was processed for" },
-      { "name": "CCY", "description": "The currency which the instrument can be purchased in. Relates to the exchange where the instrument is listed" },
+      { "name": "CCY", "description": "The currency which the instrument can be purchased in. Relates to the exchange where the instrument is listed", "is_primary_key": false, "low_cardinality": true },
       { "name": "rate", "description": "Not used" },
-      { "name": "groupName", "description": "The TOPIX group identifier name" },
-      { "name": "side", "description": "The Side of the position. Either S or L for Short or Long" },
+      { "name": "groupName", "description": "The TOPIX group identifier name", "is_primary_key": false, "low_cardinality": true },
+      { "name": "side", "description": "The Side of the position. Either S or L for Short or Long", "is_primary_key": false, "low_cardinality": true },
       { "name": "quantity", "description": "The quantity of the position. The number of shares" },
       { "name": "sessionID", "description": "Not used" },
       { "name": "firstTradeDateLong", "description": "The first trade date for Long positions" },
@@ -33,11 +33,11 @@
       { "name": "YAExposure", "description": "The exposure of the position in the YA (Yaraka) fund" },
       { "name": "LRExposure", "description": "The exposure of the position in the LR (RPA) fund" },
       { "name": "CAExposure", "description": "The exposure of the position in the CA (Canoona) fund" },
-      { "name": "advisor", "description": "An advisor tag. Specifies the position analyst" },
-      { "name": "strategy", "description": "An advisor tag. Specifies the position strategy" },
-      { "name": "sensitivity", "description": "An advisor tag. Specifies the position sensitivity" },
-      { "name": "sector", "description": "An advisor tag. Specifies the position sector" },
-      { "name": "catalyst", "description": "An advisor tag. Specifies the position catalyst"},
+      { "name": "advisor", "description": "An advisor tag. Specifies the position analyst", "is_primary_key": false, "low_cardinality": true },
+      { "name": "strategy", "description": "An advisor tag. Specifies the position strategy", "is_primary_key": false, "low_cardinality": true },
+      { "name": "sensitivity", "description": "An advisor tag. Specifies the position sensitivity", "is_primary_key": false, "low_cardinality": true },
+      { "name": "sector", "description": "An advisor tag. Specifies the position sector", "is_primary_key": false, "low_cardinality": true },
+      { "name": "catalyst", "description": "An advisor tag. Specifies the position catalyst", "is_primary_key": false, "low_cardinality": true},
       { "name": "weight", "description": "The weighting that this position attributes its PL to" },
       { "name": "liquidity", "description": "The liquidity of the stock" },
       { "name": "volatility_10D", "description": "The 10D moving average stock price volatility" },
@@ -71,8 +71,8 @@
       { "name": "YAAttribution", "description": "The daily Attribution for the YA (Yaraka) fund in JPY" },
       { "name": "LRAttribution", "description": "The daily Attribution for the LR (RPA) fund in JPY" },
       { "name": "CAAttribution", "description": "The daily Attribution for the CA (Canoona) fund in JPY" },
-      { "name": "attributionStatus", "description": "The frequency at which the attribution is computed at. Most stocks/positions set to DAILY" },
-      { "name": "relIndexID", "description": "A Foreign key into the Index table. (hkg02p.t07Index.indexID)" },
+      { "name": "attributionStatus", "description": "The frequency at which the attribution is computed at. Most stocks/positions set to DAILY","is_primary_key": false, "low_cardinality": true },
+      { "name": "relIndexID", "description": "A Foreign key into the Index table. (hkg02p.t07Index.indexID)", "is_primary_key": false },
       { "name": "relIndexChange", "description": "The percentage change relative Index being used as referenced by relIndexID" },
       {
         "name": "RHMktOutPerformance",
@@ -117,20 +117,20 @@
     "table_name": "t01Instrument",
     "description": "This table stores individual instrument information. Most of the instruments are single stocks/equities. There are also indices and baskets. There are a few foreign keys pointing to different tables including exchangeID (hkg02p.t02Exchange.exchangeID), currencyID (hkg02p.t02Currency.currencyID), indexID (hkg02p.t07Index.indexID). The InstrumentID is local unique primary key. There are other unique identifiers tied to vendors or exchanges including quick, isin, sedol, enfusionInstrumentID. The table also contains other static data such as GIC (GICS sector), TPX (Topix sector), lotsize and instrument name. This table is joined to other tables to get more information about the instrument",
     "columns": [
-      { "name": "instrumentID", "description": "The primary ID of this instrument. Used to join with other tables to get Instrument information" },
-      { "name": "enfusionInstrumentID", "description": "The primary ID of this instrument in the Enfusion System"},
+      { "name": "instrumentID", "description": "The primary ID of this instrument. Used to join with other tables to get Instrument information", "is_primary_key": true },
+      { "name": "enfusionInstrumentID", "description": "The primary ID of this instrument in the Enfusion System", "is_primary_key": false},
       { "name": "companyID", "description": "Not Used" },
       {
         "name": "exchangeID",
-        "description": "Foreign Key into the hkg02p.t02Exchange table which contains information on the trading exchange this instrument is traded on"
+        "description": "Foreign Key into the hkg02p.t02Exchange table which contains information on the trading exchange this instrument is traded on", "is_primary_key": false
       },
       {
         "name": "currencyID",
-        "description": "Foreign Key into the hkg02p.t02Currency table which contains information on the currency this instrument is traded in"
+        "description": "Foreign Key into the hkg02p.t02Currency table which contains information on the currency this instrument is traded in", "is_primary_key": false
       },
       {
         "name": "indexID",
-        "description": "Foreign Key into the hkg02p.t07Index table which contains information on the index this instrument is included in"
+        "description": "Foreign Key into the hkg02p.t07Index table which contains information on the index this instrument is included in", "is_primary_key": false
       },
       {
         "name": "instrumentCode",
@@ -148,10 +148,10 @@
       { "name": "name", "description": "The name of the (English) company" },
       { "name": "sortName", "description": "Same as the 'name'/'longName' columns" },
       { "name": "shortName", "description": "Short version of the company (English) name" },
-      { "name": "longName", "description": "The name of the (English) company. Same as the 'name' column" },
+      { "name": "longName", "description": "The name of the (English) company. Same as the 'name' column", "is_primary_key": false, "low_cardinality": true },
       { "name": "groupName", "description": "The topix sector group name" },
-      { "name": "TPX", "description": "The topix sector group name. For Stock baskets this is set to 'Stock Basket'" },
-      { "name": "GICS", "description": "The GICs sector name. For Stock baskets this is set to 'Stock Basket'" },
+      { "name": "TPX", "description": "The topix sector group name. For Stock baskets this is set to 'Stock Basket'", "is_primary_key": false, "low_cardinality": true },
+      { "name": "GICS", "description": "The GICs sector name. For Stock baskets this is set to 'Stock Basket'", "is_primary_key": false, "low_cardinality": true },
       { "name": "BroadSector", "description": "The GICs broad sector name" },
       { "name": "SubSector", "description": "The GICs subsector name" },
       { "name": "lotSize", "description": "The trading lot size of the instrument" },
@@ -180,8 +180,8 @@
       { "name": "crdate", "description": "A timestamp when this entry was originally created" },
       { "name": "cruser", "description": "The user who originally created this entry" },
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
-      { "name": "luser", "description": "The username who updated this entry" },
-      { "name": "status", "description": "I: If the instrument is inactively being updated. A: if the instrument is being activately updated" }
+      { "name": "luser", "description": "The username who updated this entry", "is_primary_key": false, "low_cardinality": true },
+      { "name": "status", "description": "I: If the instrument is inactively being updated. A: if the instrument is being activately updated", "is_primary_key": false, "low_cardinality": true }
     ]
   },
   {
@@ -189,12 +189,12 @@
     "table_name": "t05PositionData",
     "description": "Stores daily static data for all postion per instrument",
     "columns": [
-      { "name": "positionDataID", "description": "The primary ID"},
-      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table"},
+      { "name": "positionDataID", "description": "The primary ID", "is_primary_key": true},
+      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table", "is_primary_key": false},
       { "name": "processDate", "description": "The day which the snapshot was processed for" },
       { "name": "codeType", "description": ""},
-      { "name": "groupType", "description": "The group type of data but usually = BBSTATIC. Bloomberg static data"},
-      { "name": "dataType", "description": "The position data type"},
+      { "name": "groupType", "description": "The group type of data but usually = BBSTATIC. Bloomberg static data", "is_primary_key": false, "low_cardinality": true},
+      { "name": "dataType", "description": "The position data type", "is_primary_key": false, "low_cardinality": true},
       { "name": "value", "description": "The value of this static data entry"},
       { "name": "crdate", "description": "The creation date of this entry in the database" },
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
@@ -206,14 +206,14 @@
     "table_name": "t02WorkDay",
     "description": "A table which holds a list of work days and their respective previous work days for different countries. Weekends and public holidays in the respective countries are skipped. This is to be used to calculate the previous work day for a given country. There are also a few flags to indicate if the day is the start or end of the month or week.",
     "columns": [
-      { "name": "workDayID", "description": "The primary unique ID. No intrinsic value" },
-      { "name": "workday", "description": "The work day date" },
+      { "name": "workDayID", "description": "The primary unique ID. No intrinsic value", "is_primary_key": true },
+      { "name": "workday", "description": "The work day date", "is_primary_key": false, "low_cardinality": true },
       { "name": "prevWorkDay", "description": "The previous work day date" },
-      { "name": "countryID", "description": "A Foreign Key into the hkg02p.t07Country table"},
-      { "name": "endOfMonth", "description": "A Flag indicating if this date is the end of the month or not" },
-      { "name": "startOfMonth", "description": "A Flag indicating if this date is the start of the month or not" },
-      { "name": "endOfWeek", "description": "A Flag indicating if this date is the end of the week or not" },
-      { "name": "startOfWeek", "description": "A Flag indicating if this date is the start of the week or not" }
+      { "name": "countryID", "description": "A Foreign Key into the hkg02p.t07Country table", "is_primary_key": false},
+      { "name": "endOfMonth", "description": "A Flag indicating if this date is the end of the month or not", "is_primary_key": false, "low_cardinality": true },
+      { "name": "startOfMonth", "description": "A Flag indicating if this date is the start of the month or not", "is_primary_key": false, "low_cardinality": true },
+      { "name": "endOfWeek", "description": "A Flag indicating if this date is the end of the week or not", "is_primary_key": false, "low_cardinality": true },
+      { "name": "startOfWeek", "description": "A Flag indicating if this date is the start of the week or not", "is_primary_key": false, "low_cardinality": true }
     ]
   },
   {
@@ -221,10 +221,10 @@
     "table_name": "t06DailyCrossRate",
     "description": "Contains daily foreign exchange rates between 2 currencies. The base currency is the currency which the rate is denoted in. The quote currency is the currency which the rate is relative to. For example if the base currency is JPY and the quote currency is USD then the rate is the numer of JPY per USD.",
     "columns": [
-      { "name": "dailyCrossRateID", "description": "The primary unique ID" },
+      { "name": "dailyCrossRateID", "description": "The primary unique ID", "is_primary_key": true },
       { "name": "priceDate", "description": "The reference date of this rate" },
-      { "name": "base", "description": "The base currency (denoted by 3 letters). The currency in the denominator" },
-      { "name": "quote", "description": "The quote currency (denoted by 3 letters). The currency in the numerator" },
+      { "name": "base", "description": "The base currency (denoted by 3 letters). The currency in the denominator", "is_primary_key": false, "low_cardinality": true },
+      { "name": "quote", "description": "The quote currency (denoted by 3 letters). The currency in the numerator", "is_primary_key": false, "low_cardinality": true },
       { "name": "rate", "description": "The foreign exchange (FX) rate." },
       { "name": "crdate", "description": "The creation date of this entry in the database" }
     ]
@@ -234,12 +234,12 @@
     "table_name": "t02Currency",
     "description": "Contains mapping from currencyID and the currency code, currency name",
     "columns": [
-      { "name": "currencyID", "description": "The primary ID. This id is referenced by many tables including the hkg02p.t05PortfolioResponsibilities" },
+      { "name": "currencyID", "description": "The primary ID. This id is referenced by many tables including the hkg02p.t05PortfolioResponsibilities", "is_primary_key": true },
       { "name": "currencyCode", "description": "The 3 letter currency Code. This should be the same as the ISO4217 code" },
-      { "name": "name", "description": "The name of the currency in words" },
-      { "name": "ISO4217", "description": "The 3 letter standard" },
-      { "name": "symbol", "description": "the currency symbol used when displaying the currency" },
-      { "name": "status", "description": "A: if entry is active, I: if entry is inactive"}
+      { "name": "name", "description": "The name of the currency in words", "is_primary_key": false, "low_cardinality": true },
+      { "name": "ISO4217", "description": "The 3 letter standard", "is_primary_key": false, "low_cardinality": true },
+      { "name": "symbol", "description": "the currency symbol used when displaying the currency", "is_primary_key": false, "low_cardinality": true },
+      { "name": "status", "description": "A: if entry is active, I: if entry is inactive", "is_primary_key": false, "low_cardinality": true}
     ]
   },
   {
@@ -247,16 +247,16 @@
     "table_name": "t02Exchange",
     "description": "Contains mapping from exchangeID to more information related to exchanges such as name, country, currency",
     "columns": [
-      { "name": "exchangeID", "description": "The primary ID. Used to join with many other tables to get further information about stock exchanges"},
+      { "name": "exchangeID", "description": "The primary ID. Used to join with many other tables to get further information about stock exchanges", "is_primary_key": true},
       { "name": "exchangeCode", "description": "The exchange code"},
       { "name": "name", "description": "The name of the exchange"},
       { "name": "bbgCode", "description": "Bloomberg code for the exchange"},
       { "name": "exchangeMapping", "description": ""},
       { "name": "settleDatePlus", "description": "The number of days it takes to settle stocks/instruments"},
       { "name": "commission", "description": "Not used"},
-      { "name": "countryID", "description": "Foreign Key into the hkg02p.t07Country table"},
-      { "name": "currencyID", "description": "Foreign Key into the hkg02p.t02Currency table"},
-      { "name": "relIndexID", "description": "Foreign Key into the hkg02p.t07Index table. Indicates the main index of that exchange"},
+      { "name": "countryID", "description": "Foreign Key into the hkg02p.t07Country table", "is_primary_key": false},
+      { "name": "currencyID", "description": "Foreign Key into the hkg02p.t02Currency table", "is_primary_key": false},
+      { "name": "relIndexID", "description": "Foreign Key into the hkg02p.t07Index table. Indicates the main index of that exchange", "is_primary_key": false},
       { "name": "crdate", "description": "The creation date of this entry in the database" },
       { "name": "cruser", "description": "The user who originally created this entry" },
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
@@ -269,12 +269,12 @@
     "table_name": "t18Trade",
     "description": "Contains daily Trades of instruments done by the firm via Enfusion. Enfusion is the firm's OMS. Each entry is an individual trade with execution details. Trades are aggreated into positions. Position information is stored in other tables including t05PortfolioResponsibilities, t05PortfolioPositionCCY, t05PortfolioPosition",
     "columns": [
-      { "name": "tradeID", "description": "The primary ID. No intrinsic value" },
+      { "name": "tradeID", "description": "The primary ID. No intrinsic value", "is_primary_key": true },
       { "name": "orderID", "description": "The Order ID in Enfusion." },
       { "name": "bbgTicketNumber", "description": "The order ID in Enfusion. (same as Order ID)" },
       { "name": "insertDate", "description": "Timestamp of when the trade was done" },
-      { "name": "portfolioID", "description": "The ID of the portfolio. 1 = Rockhampton(RH), 2 = Yaraka(YA), 3 = RPA(RPA), 16 = Canoona(CA)" },
-      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" },
+      { "name": "portfolioID", "description": "The ID of the portfolio. 1 = Rockhampton(RH), 2 = Yaraka(YA), 3 = RPA(RPA), 16 = Canoona(CA)", "is_primary_key": false, "low_cardinality": true },
+      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" , "is_primary_key": false},
       { "name": "fundCode", "description": "The Fund unique code" },
       { "name": "code", "description": "the instrument Code of the trade. Same as instrumentCode/Quick in the t01Instrument table" },
       { "name": "bbgTicker", "description": "The Bloomberg Ticker of the instrument" },
@@ -285,14 +285,14 @@
       { "name": "AIMTradeType", "description": "Not Used" },
       { "name": "limitPrice", "description": "Not Used" },
       { "name": "TIF", "description": "Not Used" },
-      { "name": "side", "description": "Trade Side: L for Long, S for Short" },
+      { "name": "side", "description": "Trade Side: L for Long, S for Short", "is_primary_key": false, "low_cardinality": true },
       { "name": "processDate", "description": "The date the trade was processed on" },
       { "name": "tradeDate", "description": "The trade date of the trade. Trades are usually settled 2 days after the trade date" },
       { "name": "settleDate", "description": "The settlement date of the trade" },
       { "name": "settleCurrency", "description": "The currency that the trade is settled in." },
       { "name": "SSBorrowRate", "description": "Not Used" },
       { "name": "spotFXRate", "description": "Not Used" },
-      { "name": "CCY", "description": "The Currency the instrument price is denominated in" },
+      { "name": "CCY", "description": "The Currency the instrument price is denominated in", "is_primary_key": false, "low_cardinality": true },
       { "name": "totalRequested", "description": "Not Used" },
       { "name": "requested", "description": "Total quantity requested in the order" },
       { "name": "quantity", "description": "The actual quantity traded. Should be equal or less than in size to the 'requested'" },
@@ -350,25 +350,25 @@
     "table_name": "t05PortfolioPositionCCY",
     "description": "Contains daily positions per portfolio at the instrument level. The Positions are a daily snapshot of the portfolio at the instrument level in the local currency",
     "columns": [
-      { "name": "portfolioPositionCCYID", "description": "The primary unique ID. No intrinsic value" },
+      { "name": "portfolioPositionCCYID", "description": "The primary unique ID. No intrinsic value", "is_primary_key": true },
       { "name": "portfolioPositionCCYID_LOCAL", "description": "" },
-      { "name": "portfolioID", "description": "The ID of the portfolio. 1 = Rockhampton(RH), 2 = Yaraka(YA), 3 = RPA(RPA), 16 = Canoona(CA)" },
-      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table"  },
+      { "name": "portfolioID", "description": "The ID of the portfolio. 1 = Rockhampton(RH), 2 = Yaraka(YA), 3 = RPA(RPA), 16 = Canoona(CA)", "is_primary_key": false, "low_cardinality": true },
+      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" , "is_primary_key": false },
       { "name": "processDate", "description": "The date the position was processed on" },
       { "name": "quantity", "description": "The position quantity" },
-      { "name": "localbase", "description": "The denomination of the position. Either LOCAL or BASE. BASE can be either JPY or USD." },
-      { "name": "CCY", "description": "The currency which the price, commission and net are converted to" },
+      { "name": "localbase", "description": "The denomination of the position. Either LOCAL or BASE. BASE can be either JPY or USD.", "is_primary_key": false, "low_cardinality": true },
+      { "name": "CCY", "description": "The currency which the price, commission and net are converted to", "is_primary_key": false, "low_cardinality": true },
       { "name": "price", "description": "The market price of the instrument as of the processDate" },
       { "name": "gross", "description": "Not Used" },
       { "name": "commission", "description": "The commission incurred on the position denominated in the 'CCY' currency" },
       { "name": "net", "description": "The net amount incurred for this position denominated in the 'CCY' currency" },
-      { "name": "side", "description": "The position side. L for Long, S for Short" },
+      { "name": "side", "description": "The position side. L for Long, S for Short", "is_primary_key": false, "low_cardinality": true },
       {
         "name": "equityType",
-        "description": "The type of position. EQ for equities and equity baskets, FU for futures including future options, CM for commodities futures. DIV for dividend"
+        "description": "The type of position. EQ for equities and equity baskets, FU for futures including future options, CM for commodities futures. DIV for dividend", "is_primary_key": false, "low_cardinality": true
       },
       { "name": "broker", "description": "The broker this position was made with" },
-      { "name": "PB", "description": "The Prime Broker with which this position is with" },
+      { "name": "PB", "description": "The Prime Broker with which this position is with", "is_primary_key": false, "low_cardinality": true },
       { "name": "swap", "description": "Flag indicating whether this trade is a SWAP trade or not. Swap trades are have value SWAP" },
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" }
     ]
@@ -378,12 +378,12 @@
     "table_name": "t08PBVoteComment",
     "description": "Stores details of Broker comments (comments about brokers and PBs) for a particular broker/PB (via PBOTID), Vote Date, and a region. Voting happens usually 2 times a year",
     "columns": [
-      { "name": "PBVoteCommentID", "description": "The primary unique ID. No intrinsic value"},
+      { "name": "PBVoteCommentID", "description": "The primary unique ID. No intrinsic value", "is_primary_key": true},
       { "name": "brokerVoteDate", "description": "The date for which this vote is for. Voting is done 2 times a year"},
-      { "name": "personID", "description": "A foreign key into the person table (hkg02p.t01Person.personID)" },
-      { "name": "regionIDOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the region which the comment is for" },
-      { "name": "PBOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the PB which the comment is for"  },
-      { "name": "categoryIDOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the category which the comment is for" },
+      { "name": "personID", "description": "A foreign key into the person table (hkg02p.t01Person.personID)" , "is_primary_key": false},
+      { "name": "regionIDOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the region which the comment is for" , "is_primary_key": false},
+      { "name": "PBOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the PB which the comment is for" , "is_primary_key": false },
+      { "name": "categoryIDOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the category which the comment is for" , "is_primary_key": false},
       { "name": "comment", "description": "The comment made about the PB/Broker by the person with person ID, for the given brokerVoteDate and region" },
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" }   
     ]
@@ -393,12 +393,12 @@
     "table_name": "t01Person",
     "description": "Stores information about people. This includes the person's name, email, phone number, and other information. This table is joined to other tables to get more information about the person",
     "columns": [
-      { "name": "personID", "description": "The primary unique ID. Use to join with many other tables to get further information about people" },
+      { "name": "personID", "description": "The primary unique ID. Use to join with many other tables to get further information about people", "is_primary_key": true },
       { "name": "personCode", "description": "Usually used for Analysts to identify them via a shorter code. Note this is the same as the Analyst code and Analyst Advisor tag." },
       { "name": "analystCode", "description": "Not used anymore" },
       { "name": "firstName", "description": "The first name of the person" },
       { "name": "lastName", "description": "The last name of the person" },
-      { "name": "personType", "description": "Indicates the type/role of person. Only AN: Analyst means the person is an Analyst, which is important because only Analysts are attributed Profit & Loss (PL). For hedging purposes AD/BA is used. Other types rougly map OP: Operations, TD: Trading, FM: Fund Managers, DB: IT, AR: Archer team" },
+      { "name": "personType", "description": "Indicates the type/role of person. Only AN: Analyst means the person is an Analyst, which is important because only Analysts are attributed Profit & Loss (PL). For hedging purposes AD/BA is used. Other types rougly map OP: Operations, TD: Trading, FM: Fund Managers, DB: IT, AR: Archer team" , "is_primary_key": false, "low_cardinality": true},
       { "name": "region", "description": "The region the person is in. Usually TKY for Tokyo, HKG for Hong Kong" },
       { "name": "email", "description": "The email address of the person" },
       { "name": "comment", "description": "Not really Used. Was used to identify those users part of the ASIA Strategy but doesn't exist anymore" },
@@ -407,7 +407,7 @@
       { "name": "cruser", "description": "The user who originally created this entry" },
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
       { "name": "luser", "description": "The username who updated this entry" },
-      { "name": "status", "description": "I: If the user has left the firm. A: if the user is a current employee" }
+      { "name": "status", "description": "I: If the user has left the firm. A: if the user is a current employee", "is_primary_key": false, "low_cardinality": true }
     ]
   },
   {
@@ -415,12 +415,12 @@
     "table_name": "t10ObjectText",
     "description": "Multipurpose table that stores text data referenced by other tables via the objectTextID. The objectTextID is a foreign key into this table. The tableName column indicates which table the objectTextID is referenced by. The columnName indicates which column in the table the objectTextID is referenced by. The objKey/groupType are used to find the value to reference",
     "columns": [
-      { "name": "objectTextID", "description": "The primary unique ID. This id is used often join onto to get the final value" },
+      { "name": "objectTextID", "description": "The primary unique ID. This id is used often join onto to get the final value", "is_primary_key": true },
       { "name": "tableName", "description": "The tableName column indicates which table the objectTextID is referenced by" },
       { "name": "columnName", "description": "The columnName indicates which column in the table the objectTextID is referenced by" },
       { "name": "objKey", "description": "Used to identify the data needed by the referencer" },
       { "name": "groupType", "description": "Used to further identify data needed by the referenced" },
-      { "name": "ISO639", "description": "Identifies the language. e.g. en for English and jp for Japanese." },
+      { "name": "ISO639", "description": "Identifies the language. e.g. en for English and jp for Japanese.", "is_primary_key": false, "low_cardinality": true },
       { "name": "objValue", "description": "The value stored by this entry" },
       { "name": "priority", "description": "Can be used to store a ranking between items with the same inputs" },
       { "name": "caption", "description": "Can be used to add further context/meaning/description to what the data represents" },
@@ -429,7 +429,7 @@
       { "name": "cruser", "description": "The user who originally created this entry" },
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
       { "name": "luser", "description": "The username who updated this entry" },
-      { "name": "status", "description": "I: If the entry item is inactive/invalid. A: if the entry is active" }
+      { "name": "status", "description": "I: If the entry item is inactive/invalid. A: if the entry is active", "is_primary_key": false, "low_cardinality": true }
     ]
   },
   {
@@ -437,13 +437,13 @@
     "table_name": "t05PortfolioFactorFlag",
     "description": "Contains mapping for factor names referenced by hkg02p.t05PortfolioFactor table",
     "columns": [
-      { "name": "portfolioFactorFlagID", "description": "The primary ID"},
+      { "name": "portfolioFactorFlagID", "description": "The primary ID", "is_primary_key": true},
       { "name": "name", "description": "The name of the Portfolio Factor"},
       { "name": "value", "description": "The value of the Porfolio Factor for the associated Value"},
       { "name": "priority", "description": "Priority/Ranking of this Factor"},
       { "name": "accessSectorMap", "description": "Short code"},
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
-      { "name": "status", "description": "A: if entry is active, I: if entry is inactive"}
+      { "name": "status", "description": "A: if entry is active, I: if entry is inactive", "is_primary_key": false, "low_cardinality": true}
     ]
   },
   {
@@ -451,10 +451,10 @@
     "table_name": "t05PortfolioFactor",
     "description": "Daily factor weights per day and instrument",
     "columns": [
-      { "name": "portfolioFactorID", "description": "The primary ID"},
-      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" },
+      { "name": "portfolioFactorID", "description": "The primary ID", "is_primary_key": true},
+      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" , "is_primary_key": false},
       { "name": "processDate", "description": "The day which the snapshot was processed for" },
-      { "name": "portfolioFactorFlagID", "description": "Foreign key into the hkg02p.t05PortfolioFactorFlag.portfolioFactorFlagID to get the factor Name"},
+      { "name": "portfolioFactorFlagID", "description": "Foreign key into the hkg02p.t05PortfolioFactorFlag.portfolioFactorFlagID to get the factor Name", "is_primary_key": false},
       { "name": "factorWeight", "description": "The factor weighting for this instrument / date"},
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" }
     ]
@@ -464,13 +464,13 @@
     "table_name": "t10WebLog",
     "description": "Stores intranet websites access information. This is for the laravel website",
     "columns": [
-      { "name": "webLogID", "description": "The primary ID"},
+      { "name": "webLogID", "description": "The primary ID", "is_primary_key": true},
       { "name": "loginCode", "description": "Login user ID"},
       { "name": "webPage", "description": "The url of the page accessed"},
       { "name": "ip", "description": "The IP of the user access"},
       { "name": "sessionID", "description": "Session ID"},
       { "name": "eventTime", "description": "Time of access"},
-      { "name": "actionType", "description": "action type"},
+      { "name": "actionType", "description": "action type", "is_primary_key": false, "low_cardinality": true},
       { "name": "actionValue", "description": "Any flags sent to the page"}
     ]
   },
@@ -479,14 +479,14 @@
     "table_name": "t05PortfolioReport",
     "description": "Contains daily computed portfolio level data for various data types such as YTD, MTD,WTD etc.",
     "columns": [
-      { "name": "portfolioReportID", "description": "The primary ID"},
-      { "name": "portfolioID", "description": "The ID of the portfolio. 1 = Rockhampton(RH), 2 = Yaraka(YA), 3 = RPA(RPA), 16 = Canoona(CA)"},
+      { "name": "portfolioReportID", "description": "The primary ID", "is_primary_key": true},
+      { "name": "portfolioID", "description": "The ID of the portfolio. 1 = Rockhampton(RH), 2 = Yaraka(YA), 3 = RPA(RPA), 16 = Canoona(CA)", "is_primary_key": false, "low_cardinality": true},
       { "name": "processDate", "description": "The date which the data was processed for" },
-      { "name": "dataType", "description": "The type of the data being stored. The following datatypes are defined: FSFYTD : Fund Year to Date,JSDA_SI : JSDA % change Since Inception,NKY_SI : Nikkei % change Since Inception,PSCYI : Cash (Yen Term),PSDPL : Daily PL,PSDPLL : Daily PL Long,PSDPLS : Daily PL Short,PSFD : Daily Return,PSFDL : Daily Return Long,PSFDS : Daily Return Short,PSFMTD : Return MTD,PSFSI : Fund Since,Inception,PSFW : Median Weekly Return,PSGROSS : Gross,PSLEX : Long Exposure,PSLG : Long ????,PSMVL : MV Long*,PSMVN : Net MV*,PSMVS : MV Short*,PSNB : Net Beta,PSNET : Net,GROSS_LONG_POSITION : Total Long positions includes box,GROSS_SHORT_POSITION : Total Short positions includes box,BOX_POSITION :,Total Box positions,LONG_POSITION_MINUS_BOX : Total Long positions minus box positions,SHORT_POSITION_MINUS_BOX : Total Short positions minus box positions,PSPBNAV : Prime Broker Total Portfolio Value (USD),PSPBYEN : Prime Broker Yen/USD,PSSEX : Short Exposure,PSSG : Short ????,PSSR :,Subscription/Redemption*,PSTJNAV : Total JP NAV,TPX_SI : Topix % Change Since Inception"},
+      { "name": "dataType", "description": "The type of the data being stored. The following datatypes are defined: FSFYTD : Fund Year to Date,JSDA_SI : JSDA % change Since Inception,NKY_SI : Nikkei % change Since Inception,PSCYI : Cash (Yen Term),PSDPL : Daily PL,PSDPLL : Daily PL Long,PSDPLS : Daily PL Short,PSFD : Daily Return,PSFDL : Daily Return Long,PSFDS : Daily Return Short,PSFMTD : Return MTD,PSFSI : Fund Since,Inception,PSFW : Median Weekly Return,PSGROSS : Gross,PSLEX : Long Exposure,PSLG : Long ????,PSMVL : MV Long*,PSMVN : Net MV*,PSMVS : MV Short*,PSNB : Net Beta,PSNET : Net,GROSS_LONG_POSITION : Total Long positions includes box,GROSS_SHORT_POSITION : Total Short positions includes box,BOX_POSITION :,Total Box positions,LONG_POSITION_MINUS_BOX : Total Long positions minus box positions,SHORT_POSITION_MINUS_BOX : Total Short positions minus box positions,PSPBNAV : Prime Broker Total Portfolio Value (USD),PSPBYEN : Prime Broker Yen/USD,PSSEX : Short Exposure,PSSG : Short ????,PSSR :,Subscription/Redemption*,PSTJNAV : Total JP NAV,TPX_SI : Topix % Change Since Inception", "is_primary_key": false, "low_cardinality": true},
       { "name": "value", "description": "The Value of the data"},
       { "name": "crdate", "description": "The creation date of this entry in the database" },
       { "name": "cruser", "description": "The user who originally created this entry" },
-      { "name": "status", "description": "I: If the entry item is inactive/invalid. A: if the entry is active" }
+      { "name": "status", "description": "I: If the entry item is inactive/invalid. A: if the entry is active", "is_primary_key": false, "low_cardinality": true }
     ]
   }
 ]
