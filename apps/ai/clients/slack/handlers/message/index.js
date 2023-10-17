@@ -57,14 +57,17 @@ async function handleMessage(context, say) {
                 error(
                     `API Response not ok: status code ${response.status}, ${response.statusText}, error message: ${error_message}, query id: ${query_id}`
                 )
-                const responseMessage = `Sorry, something went wrong while generating response for query ${display_id}. We'll get back to you once it's been reviewed by the data-team admins.`
+                const responseMessage =
+                    query_id == undefined || display_id == undefined
+                        ? `:exclamation: Sorry, something went wrong when I was processing your request. Please try again later.`
+                        : `:warning: Sorry, something went wrong while generating response for query ${display_id}. We'll get back to you once it's been reviewed by the data-team admins.`
                 await say({
                     blocks: [
                         {
                             type: 'section',
                             text: {
                                 type: 'mrkdwn',
-                                text: `:warning: ${responseMessage}`,
+                                text: responseMessage,
                             },
                         },
                     ],
