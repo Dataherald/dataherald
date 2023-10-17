@@ -82,9 +82,10 @@ def check_table_name_exists(db_connection_id: str, table_name: str) -> str:
       str: the table_description_id or None if not found
   """
   print()
-  print('*' * 80)
+  print('*' * 160)
+  print('*' * 160)
   print(f"Checking if table_name: '{table_name}' exists in db_connection_id: '{db_connection_id}'")
-  print('*' * 80)
+  print('*' * 160)
   # construct the REST API call
   payload = {"db_connection_id": db_connection_id, "table_name": table_name}
   print(f"payload: {payload}")
