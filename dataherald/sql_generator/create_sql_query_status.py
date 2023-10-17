@@ -12,7 +12,8 @@ def create_sql_query_status(
 ) -> Response:
     """Find the sql query status and populate the fields sql_query_result, sql_generation_status, and error_message"""
     if query == "":
-        response.sql_generation_status = "NONE"
+        response.sql_generation_status = "INVALID"
+        response.response = ""
         response.sql_query_result = None
         response.error_message = None
     else:
@@ -54,6 +55,7 @@ def create_sql_query_status(
             ) from e
         except Exception as e:
             response.sql_generation_status = "INVALID"
+            response.response = ""
             response.sql_query_result = None
             response.error_message = str(e)
     return response

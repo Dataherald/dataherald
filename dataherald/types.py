@@ -119,14 +119,19 @@ class DatabaseConnectionRequest(BaseModel):
     ssh_settings: SSHSettings | None
 
 
+class ForeignKeyDetail(BaseModel):
+    field_name: str
+    reference_table: str
+
+
 class ColumnDescriptionRequest(BaseModel):
     name: str
     description: str | None
-    is_primary_key: bool | None = False
+    is_primary_key: bool | None
     data_type: str | None
     low_cardinality: bool | None
     categories: list[str] | None
-    foreign_key: bool | None = False
+    foreign_key: ForeignKeyDetail | None
 
 
 class TableDescriptionRequest(BaseModel):
