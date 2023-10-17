@@ -5,7 +5,7 @@
     "description": "The purpose of this table is to record a daily snapshot of the firm's positions along with PL (Profit and Loss), Attribution, Exposure, Alpha and advisor tags and other factors. There are 4 funds in the firm Rockhampton, Yaraka and Canoona, with the following respective codes RH, YA and CA. Some columns like Attribution, Alpha, SectorAlpha and Exposure are prefixed with the fund codes. Unless a value column augmentd with _USD the value is assumed to be in JPY. Some performance indicators: TPX Sector Alpha: Attribution - (Exposure * TPX Sector return), Alpha: Attribution - (Exposure * Beta * TPX return), Outperformance (Outperform/OP): Attribution - (Exposure * TPX return). If side is S then values will need to be multiplied by -1 if calculating the net but not for gross. If someone asked what is the attribution, alpha or exposure without specifying fund, the values per fund should be returned. If someone mentions (fund) RPA they are referring to LR.",
     "columns": [
       { "name": "portfolioResponsibilitiesID", "description": "a unique identifier (Primary Index)", "is_primary_key": true },
-      { "name": "instrumentID", "description": "A foreign key into the instrument table (hkg02p.t01Instrument.instrumentID)", "is_primary_key": false, "foreign_key": true },
+      { "name": "instrumentID", "description": "A foreign key into the instrument table (hkg02p.t01Instrument.instrumentID)", "is_primary_key": false, "foreign_key": {"field_name": "instrumentID", "reference_table": "t01Instrument" } },
       {
         "name": "blp",
         "description": "An instrument identifier. Equal to the Bloomberg Ticker but assumes the instrument is JP so doesnt have the country code in the case of Japan instruments"
@@ -72,7 +72,7 @@
       { "name": "LRAttribution", "description": "The daily Attribution for the LR (RPA) fund in JPY" },
       { "name": "CAAttribution", "description": "The daily Attribution for the CA (Canoona) fund in JPY" },
       { "name": "attributionStatus", "description": "The frequency at which the attribution is computed at. Most stocks/positions set to DAILY","is_primary_key": false, "low_cardinality": true },
-      { "name": "relIndexID", "description": "A Foreign key into the Index table. (hkg02p.t07Index.indexID)", "is_primary_key": false, "foreign_key": true },
+      { "name": "relIndexID", "description": "A Foreign key into the Index table. (hkg02p.t07Index.indexID)", "is_primary_key": false, "foreign_key": {"field_name": "indexID", "reference_table": "t07Index"} },
       { "name": "relIndexChange", "description": "The percentage change relative Index being used as referenced by relIndexID" },
       {
         "name": "RHMktOutPerformance",
@@ -118,19 +118,19 @@
     "description": "This table stores individual instrument information. Most of the instruments are single stocks/equities. There are also indices and baskets. There are a few foreign keys pointing to different tables including exchangeID (hkg02p.t02Exchange.exchangeID), currencyID (hkg02p.t02Currency.currencyID), indexID (hkg02p.t07Index.indexID). The InstrumentID is local unique primary key. There are other unique identifiers tied to vendors or exchanges including quick, isin, sedol, enfusionInstrumentID. The table also contains other static data such as GIC (GICS sector), TPX (Topix sector), lotsize and instrument name. This table is joined to other tables to get more information about the instrument",
     "columns": [
       { "name": "instrumentID", "description": "The primary ID of this instrument. Used to join with other tables to get Instrument information", "is_primary_key": true },
-      { "name": "enfusionInstrumentID", "description": "The primary ID of this instrument in the Enfusion System", "is_primary_key": false, "foreign_key": true },
+      { "name": "enfusionInstrumentID", "description": "The primary ID of this instrument in the Enfusion System", "is_primary_key": false, "foreign_key": {"field_name": "enfusionInstrumentID", "reference_table": "t01Instrument"} },
       { "name": "companyID", "description": "Not Used" },
       {
         "name": "exchangeID",
-        "description": "Foreign Key into the hkg02p.t02Exchange table which contains information on the trading exchange this instrument is traded on", "is_primary_key": false, "foreign_key": true
+        "description": "Foreign Key into the hkg02p.t02Exchange table which contains information on the trading exchange this instrument is traded on", "is_primary_key": false, "foreign_key": {"field_name": "exchangeID", "reference_table": "t02Exchange"}
       },
       {
         "name": "currencyID",
-        "description": "Foreign Key into the hkg02p.t02Currency table which contains information on the currency this instrument is traded in", "is_primary_key": false, "foreign_key": true
+        "description": "Foreign Key into the hkg02p.t02Currency table which contains information on the currency this instrument is traded in", "is_primary_key": false, "foreign_key": {"field_name": "currencyID", "reference_table": "t02Currency"}
       },
       {
         "name": "indexID",
-        "description": "Foreign Key into the hkg02p.t07Index table which contains information on the index this instrument is included in", "is_primary_key": false, "foreign_key": true
+        "description": "Foreign Key into the hkg02p.t07Index table which contains information on the index this instrument is included in", "is_primary_key": false, "foreign_key": {"field_name": "indexID", "reference_table": "t07Index"}
       },
       {
         "name": "instrumentCode",
@@ -190,7 +190,7 @@
     "description": "Stores daily static data for all postion per instrument",
     "columns": [
       { "name": "positionDataID", "description": "The primary ID", "is_primary_key": true},
-      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table", "is_primary_key": false, "foreign_key": true },
+      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table", "is_primary_key": false, "foreign_key": {"field_name": "instrumentID", "reference_table": "t01Instrument" } },
       { "name": "processDate", "description": "The day which the snapshot was processed for" },
       { "name": "codeType", "description": ""},
       { "name": "groupType", "description": "The group type of data but usually = BBSTATIC. Bloomberg static data", "is_primary_key": false, "low_cardinality": true},
@@ -209,7 +209,7 @@
       { "name": "workDayID", "description": "The primary unique ID. No intrinsic value", "is_primary_key": true },
       { "name": "workday", "description": "The work day date", "is_primary_key": false, "low_cardinality": true },
       { "name": "prevWorkDay", "description": "The previous work day date" },
-      { "name": "countryID", "description": "A Foreign Key into the hkg02p.t07Country table", "is_primary_key": false, "foreign_key": true },
+      { "name": "countryID", "description": "A Foreign Key into the hkg02p.t07Country table", "is_primary_key": false, "foreign_key": {"field_name": "countryID", "reference_table": "t07Country"} },
       { "name": "endOfMonth", "description": "A Flag indicating if this date is the end of the month or not", "is_primary_key": false, "low_cardinality": true },
       { "name": "startOfMonth", "description": "A Flag indicating if this date is the start of the month or not", "is_primary_key": false, "low_cardinality": true },
       { "name": "endOfWeek", "description": "A Flag indicating if this date is the end of the week or not", "is_primary_key": false, "low_cardinality": true },
@@ -254,9 +254,9 @@
       { "name": "exchangeMapping", "description": ""},
       { "name": "settleDatePlus", "description": "The number of days it takes to settle stocks/instruments"},
       { "name": "commission", "description": "Not used"},
-      { "name": "countryID", "description": "Foreign Key into the hkg02p.t07Country table", "is_primary_key": false, "foreign_key": true},
-      { "name": "currencyID", "description": "Foreign Key into the hkg02p.t02Currency table", "is_primary_key": false, "foreign_key": true},
-      { "name": "relIndexID", "description": "Foreign Key into the hkg02p.t07Index table. Indicates the main index of that exchange", "is_primary_key": false, "foreign_key": true},
+      { "name": "countryID", "description": "Foreign Key into the hkg02p.t07Country table", "is_primary_key": false, "foreign_key": {"field_name": "countryID", "reference_table": "t07Country"}},
+      { "name": "currencyID", "description": "Foreign Key into the hkg02p.t02Currency table", "is_primary_key": false, "foreign_key": {"field_name": "currencyID", "reference_table": "t02Currency"}},
+      { "name": "relIndexID", "description": "Foreign Key into the hkg02p.t07Index table. Indicates the main index of that exchange", "is_primary_key": false, "foreign_key": {"field_name": "indexID", "reference_table": "t07Index"}},
       { "name": "crdate", "description": "The creation date of this entry in the database" },
       { "name": "cruser", "description": "The user who originally created this entry" },
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
@@ -274,7 +274,7 @@
       { "name": "bbgTicketNumber", "description": "The order ID in Enfusion. (same as Order ID)" },
       { "name": "insertDate", "description": "Timestamp of when the trade was done" },
       { "name": "portfolioID", "description": "The ID of the portfolio. 1 = Rockhampton(RH), 2 = Yaraka(YA), 3 = RPA(RPA), 16 = Canoona(CA)", "is_primary_key": false, "low_cardinality": true },
-      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" , "is_primary_key": false, "foreign_key": true},
+      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" , "is_primary_key": false, "foreign_key": {"field_name": "instrumentID", "reference_table": "t01Instrument" }},
       { "name": "fundCode", "description": "The Fund unique code" },
       { "name": "code", "description": "the instrument Code of the trade. Same as instrumentCode/Quick in the t01Instrument table" },
       { "name": "bbgTicker", "description": "The Bloomberg Ticker of the instrument" },
@@ -353,7 +353,7 @@
       { "name": "portfolioPositionCCYID", "description": "The primary unique ID. No intrinsic value", "is_primary_key": true },
       { "name": "portfolioPositionCCYID_LOCAL", "description": "" },
       { "name": "portfolioID", "description": "The ID of the portfolio. 1 = Rockhampton(RH), 2 = Yaraka(YA), 3 = RPA(RPA), 16 = Canoona(CA)", "is_primary_key": false, "low_cardinality": true },
-      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" , "is_primary_key": false, "foreign_key": true},
+      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" , "is_primary_key": false, "foreign_key": {"field_name": "instrumentID", "reference_table": "t01Instrument" }},
       { "name": "processDate", "description": "The date the position was processed on" },
       { "name": "quantity", "description": "The position quantity" },
       { "name": "localbase", "description": "The denomination of the position. Either LOCAL or BASE. BASE can be either JPY or USD.", "is_primary_key": false, "low_cardinality": true },
@@ -381,9 +381,9 @@
       { "name": "PBVoteCommentID", "description": "The primary unique ID. No intrinsic value", "is_primary_key": true},
       { "name": "brokerVoteDate", "description": "The date for which this vote is for. Voting is done 2 times a year"},
       { "name": "personID", "description": "A foreign key into the person table (hkg02p.t01Person.personID)" , "is_primary_key": false, "foreign_key": true},
-      { "name": "regionIDOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the region which the comment is for" , "is_primary_key": false, "foreign_key": true},
-      { "name": "PBOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the PB which the comment is for" , "is_primary_key": false, "foreign_key": true},
-      { "name": "categoryIDOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the category which the comment is for" , "is_primary_key": false, "foreign_key": true},
+      { "name": "regionIDOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the region which the comment is for" , "is_primary_key": false, "foreign_key": {"field_name": "objectTextID", "reference_table": "t10ObjectText" }},
+      { "name": "PBOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the PB which the comment is for" , "is_primary_key": false, "foreign_key": {"field_name": "objectTextID", "reference_table": "t10ObjectText" }},
+      { "name": "categoryIDOTID", "description": "A foreign key into the hkg02p.t10ObjectText table. This is the category which the comment is for" , "is_primary_key": false, "foreign_key": {"field_name": "objectTextID", "reference_table": "t10ObjectText" }},
       { "name": "comment", "description": "The comment made about the PB/Broker by the person with person ID, for the given brokerVoteDate and region" },
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" }   
     ]
@@ -452,9 +452,9 @@
     "description": "Daily factor weights per day and instrument",
     "columns": [
       { "name": "portfolioFactorID", "description": "The primary ID", "is_primary_key": true},
-      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" , "is_primary_key": false, "foreign_key": true},
+      { "name": "instrumentID", "description": "The instrumentID. Foreign Key into the t01Instrument table" , "is_primary_key": false, "foreign_key": {"field_name": "instrumentID", "reference_table": "t01Instrument" }},
       { "name": "processDate", "description": "The day which the snapshot was processed for" },
-      { "name": "portfolioFactorFlagID", "description": "Foreign key into the hkg02p.portfolioFactorFlagID to get the factor Name", "is_primary_key": false, "foreign_key": true},
+      { "name": "portfolioFactorFlagID", "description": "Foreign key into the hkg02p.t05PortfolioFactorFlag.portfolioFactorFlagID to get the factor Name", "is_primary_key": false, "foreign_key": {"field_name": "portfolioFactorFlagID", "reference_table": "t05PortfolioFactorFlag" }},
       { "name": "factorWeight", "description": "The factor weighting for this instrument / date"},
       { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" }
     ]
