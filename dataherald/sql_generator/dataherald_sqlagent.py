@@ -548,7 +548,7 @@ class SQLDatabaseToolkit(BaseToolkit):
 class DataheraldSQLAgent(SQLGenerator):
     """Dataherald SQL agent"""
 
-    max_number_of_examples: int = 100  # maximum number of question/SQL pairs
+    max_number_of_examples: int = 20  # maximum number of question/SQL pairs
     llm: Any = None
 
     def remove_duplicate_examples(self, fewshot_exmaples: List[dict]) -> List[dict]:
