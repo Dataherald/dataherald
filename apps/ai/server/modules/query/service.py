@@ -38,6 +38,7 @@ from utils.slack import SlackWebClient, remove_slack_mentions
 
 CONFIDENCE_CAP = 0.95
 CORRECT_RESPONSE_COUNT = 2
+SLACK_CHARACTER_LIMIT = 2700
 
 
 class QueryService:
@@ -121,6 +122,17 @@ class QueryService:
                 is_above_confidence_threshold = False
             else:
                 is_above_confidence_threshold = True
+
+            # error handling for response longer than character limit
+            if len(answer.response + answer.sql_query) >= SLACK_CHARACTER_LIMIT:
+                answer.response = (
+                    ":warning: The generated response has been truncated due to exceeding character limit. "
+                    + "A full response will be returned once reviewed by the data-team admins: \n\n"
+                    + answer.response[
+                        : max(SLACK_CHARACTER_LIMIT - len(answer.sql_query), 0)
+                    ]
+                    + "..."
+                )
 
             return QuerySlackResponse(
                 id=query_id,
