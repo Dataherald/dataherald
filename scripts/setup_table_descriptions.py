@@ -247,4 +247,8 @@ if __name__ == "__main__":
   else:
     config_file_to_use = sys.argv[1]
 
+  mongo = MongoDB()
+  mongo.drop_collection("table_descriptions")
+  mongo.close()
+
   run(config_file_to_use)
