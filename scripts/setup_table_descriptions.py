@@ -70,17 +70,24 @@ def register_table_description(db_connection_id: str, table_name: str):
   print()
 
 
-def check_table_name_exists(db_connection_id: str, table_name: str) -> bool:
+def check_table_name_exists(db_connection_id: str, table_name: str) -> str:
   """given a db_connection_id and table_name, check if the table_name exists in the database
+  And return the table_description_id if found otherwise return None
 
   Args:
       db_connection_id (str): the db_connection_id to check the table in
       table_name (str): the table_name to check      
 
   Returns:
-      bool: indicates if the table_name exists in the database
+      str: the table_description_id or None if not found
   """
+  print()
+  print('*' * 80)
+  print(f"Checking if table_name: '{table_name}' exists in db_connection_id: '{db_connection_id}'")
+  print('*' * 80)
+  # construct the REST API call
   payload = {"db_connection_id": db_connection_id, "table_name": table_name}
+  print(f"payload: {payload}")
   endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/table-descriptions"
   r = requests.get(endpoint_url, params=payload, headers={
       "Content-Type": "application/json", "Accept": "application/json"}, timeout=300)
@@ -91,9 +98,16 @@ def check_table_name_exists(db_connection_id: str, table_name: str) -> bool:
   print()
   # check if list is empty or not
   if len(r.json()) == 0:
-    return False
+    return None
   else:
-    return True
+    # loop through the list and check if the table_name exists
+    for table in r.json():
+      if table["table_name"] == table_name:
+        # check if the id is not None
+        if table["id"] is not None:
+          return table["id"]
+
+    return None
 
 
 def add_table_meta_data(db_connection_id: str, table_description_id: str, description: str, columns: list[dict]):
@@ -177,10 +191,10 @@ def run(config_file: str):
 
       print(f"db_connection_id: {db_connection_id}")
 
-      table_found: bool = check_table_name_exists(db_connection_id, table_name)
-      print(f"table_found: {table_found}")
+      table_description_id: str = check_table_name_exists(db_connection_id, table_name)
+      print(f"table_id: {table_description_id}")
 
-      if not table_found:
+      if table_description_id is None:
         register_table_description(db_connection_id, table_name)
         time.sleep(10)
         existing_tables: dict = check_table_name_exists(db_connection_id)
