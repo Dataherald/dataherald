@@ -114,7 +114,7 @@ def check_table_name_exists(db_connection_id: str, table_name: str) -> str:
     return None
 
 
-def add_table_meta_data(db_connection_id: str, table_description_id: str, description: str, columns: list[dict]):
+def add_table_meta_data(db_connection_id: str, table_description_id: str, description: str, columns: list[dict], table_name: str):
   """This function adds meta data to the given table in the given database
 
   Args:
@@ -129,7 +129,7 @@ def add_table_meta_data(db_connection_id: str, table_description_id: str, descri
 
   print()
   print("=" * 80)
-  print("Meta Data Add Request: ")
+  print(f"Meta Data Add Request for table: {table_name}: {table_description_id}")
   print("=" * 80)
   print()
 
@@ -150,7 +150,7 @@ def add_table_meta_data(db_connection_id: str, table_description_id: str, descri
   # print(json.dumps(request_body, indent=4, sort_keys=True))
   # print the endpoint url
   print(f"endpoint url: {endpoint_url}")
-  r = requests.patch(endpoint_url, data=json.dumps(request_body), headers={
+  r = requests.patch(endpoint_url, request_body, headers={
       "Content-Type": "application/json", "Accept": "application/json"}, timeout=300)
   print(r.status_code)
   print(r.text)
@@ -166,7 +166,7 @@ def run(config_file: str):
     # get next item in the list
     for config in data:
       # print the config
-      print(json.dumps(config, indent=4, sort_keys=True))
+      # print(json.dumps(config, indent=4, sort_keys=True))
       if "alias" not in config:
         # print error message
         print("alias not found in config. Skipping entry.")
@@ -227,7 +227,7 @@ def run(config_file: str):
 
       # second add meta data to the table
       add_table_meta_data(db_connection_id,
-                          table_description_id, description, columns)
+                          table_description_id, description, columns, table_name)
 
 
 if __name__ == "__main__":
