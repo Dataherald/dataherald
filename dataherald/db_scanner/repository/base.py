@@ -92,7 +92,7 @@ class TableDescriptionRepository:
         return result
 
     def update_fields(self, table: TableDescription, table_description_request):
-        if table_description_request.description:
+        if table_description_request.description is not None:
             table.description = table_description_request.description
 
         if table_description_request.columns:
@@ -106,7 +106,7 @@ class TableDescriptionRepository:
                 for column in table.columns:
                     if column_request.name == column.name:
                         for field, value in column_request:
-                            if not value:
+                            if value is None:
                                 continue
                             setattr(column, field, value)
         return self.update(table)
