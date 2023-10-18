@@ -1,3 +1,4 @@
+import json
 import os
 
 from bson.objectid import ObjectId
@@ -127,6 +128,14 @@ class MongoDbLocalClient:
         # print the result
         print(
             f"        result from checking table {table_name} sync'd: {list(result)}. Length: {len(list(result))}")
+        print(f"Type of result: {type(result)}")
+        print(f"Type of list(result): {type(list(result))}")
+
+        results_json = json.dumps(result)
+        print(f"type of results_json: {type(results_json)}")
+        # pretty print the json
+        print(f"        results_json: length = {len(results_json)}")
+        print(json.dumps(json.loads(results_json), indent=4, sort_keys=True))
 
         # check the status
         if result is None:
