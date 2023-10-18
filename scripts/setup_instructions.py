@@ -2,7 +2,8 @@
 
     This script is used to upload instructions to DH.
 
-    Instructions are passed directly to the engine and can be used to steer the engine to generate SQL that is more in line with your business logic.
+    Instructions are passed directly to the engine and can be used to steer the engine to generate SQL
+    that is more in line with your business logic.
 
     It reads the data from the config database.
 
@@ -21,7 +22,7 @@ import json
 import os
 
 import requests
-from MongoDB import MongoDB
+from mongodb import MongoDbClient
 from rh_python_common import db
 
 # constants. TODO: move to a config file
@@ -81,7 +82,7 @@ def delete_all_existing_instructions():
 
     # 1. Query the mongodb database for the list of Instructions
     db_alias = "hkg02p"
-    mongo = MongoDB()
+    mongo = MongoDbClient()
     db_id = mongo.get_db_connection_id_for_db_alias(db_alias)
     instructions = mongo.get_all_instructions_for_connection_id(db_id)
     mongo.close()
@@ -113,7 +114,7 @@ def run():
         db_alias = row['DB']
 
         # get the db_connection_id from the mongo database /
-        mongo = MongoDB()
+        mongo = MongoDbClient()
         db_id = mongo.get_db_connection_id_for_db_alias(db_alias)
         mongo.close()
 
@@ -121,9 +122,9 @@ def run():
             print(f"db_alias: {db_alias} not found in database_connections")
             continue
 
-        Instruction = row["Instruction"]
+        instruction = row["Instruction"]
 
-        api_payload = {"db_connection_id": db_id, "instruction": Instruction}
+        api_payload = {"db_connection_id": db_id, "instruction": instruction}
 
         if "db_connection_id" not in api_payload:
             print("No Instructions found in database")

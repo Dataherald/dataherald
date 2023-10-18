@@ -35,7 +35,7 @@ import sys
 import time
 
 import requests
-from MongoDB import MongoDB
+from mongodb import MongoDbClient
 
 # constants. TODO: move to a config file
 DATAHERALD_REST_API_URL = "http://localhost"
@@ -98,22 +98,22 @@ def check_table_name_exists(db_connection_id: str, table_name: str) -> str:
         print(' NO Data found in db_connection_id')
         print('-' * 80)
         return None
-    else:
-        # loop through the list and check if the table_name exists
-        for table in r.json():
-            if table["table_name"] == table_name:
-                print(
-                    f"FOUND table_name: '{table_name}' in db_connection_id: '{db_connection_id}'")
-                # check if the id is not None
-                if table["id"]:
-                    print(
-                        f'  :D table_name FOUND in db_connection_id: {table["id"]}')
-                    print('-' * 80)
-                    return table["id"]
 
-        print('  :( table_name not found in db_connection_id')
-        print('-' * 80)
-        return None
+    # loop through the list and check if the table_name exists
+    for table in r.json():
+        if table["table_name"] == table_name:
+            print(
+                f"FOUND table_name: '{table_name}' in db_connection_id: '{db_connection_id}'")
+            # check if the id is not None
+            if table["id"]:
+                print(
+                    f'  :D table_name FOUND in db_connection_id: {table["id"]}')
+                print('-' * 80)
+                return table["id"]
+
+    print('  :( table_name not found in db_connection_id')
+    print('-' * 80)
+    return None
 
 
 def add_table_meta_data(db_connection_id: str, table_description_id: str, description: str, columns: list[dict], table_name: str):
@@ -195,7 +195,7 @@ def run(config_file: str):
             # construct the URL
 
             # get the db_connection_id from the mongo database /
-            mongo = MongoDB()
+            mongo = MongoDbClient()
             db_connection_id = mongo.get_db_connection_id_for_db_alias(
                 alias)
             mongo.close()
@@ -257,7 +257,7 @@ if __name__ == "__main__":
     else:
         config_file_to_use = sys.argv[1]
 
-    mongo = MongoDB()
+    mongo = MongoDbClient()
     mongo.drop_collection("table_descriptions")
     mongo.close()
 
