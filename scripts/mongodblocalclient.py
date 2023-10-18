@@ -129,13 +129,6 @@ class MongoDbLocalClient:
         results_list: list = list(result)
         print(
             f"        result from checking table {table_name} sync'd: {results_list}. Length: {len(results_list)}")
-        print(f"Type of list(result): {type(results_list)}")
-        results_json = json.dumps(results_list)
-        print(f"type of results_json: {type(results_json)}")
-
-        # pretty print the json
-        print(f"        results_json: length = {len(results_json)}")
-        print(json.dumps(json.loads(results_json), indent=4, sort_keys=True))
 
         # check the status
         if result is None:
