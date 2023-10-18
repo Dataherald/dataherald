@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import time
 from typing import Any
@@ -101,7 +102,9 @@ class SimpleEvaluator(Evaluator):
             }
         )
         self.llm = self.model.get_model(
-            database_connection=database_connection, temperature=0
+            database_connection=database_connection,
+            temperature=0,
+            model_name=os.getenv("LLM_MODEL", "gpt-4"),
         )
         start_time = time.time()
         system_message_prompt = SystemMessagePromptTemplate.from_template(

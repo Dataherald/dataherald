@@ -12,7 +12,6 @@ from dataherald.utils.encrypt import FernetEncrypt
 class BaseModel(LLMModel):
     def __init__(self, system):
         super().__init__(system)
-        self.model_name = os.environ.get("LLM_MODEL", "text-davinci-003")
         self.openai_api_key = os.environ.get("OPENAI_API_KEY")
         self.aleph_alpha_api_key = os.environ.get("ALEPH_ALPHA_API_KEY")
         self.anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -23,6 +22,7 @@ class BaseModel(LLMModel):
         self,
         database_connection: DatabaseConnection,
         model_family="openai",
+        model_name="davinci-003",
         **kwargs: Any
     ) -> Any:
         if database_connection.llm_credentials is not None:
@@ -37,13 +37,13 @@ class BaseModel(LLMModel):
             elif model_family == "google":
                 self.google_api_key = api_key
         if self.openai_api_key:
-            self.model = OpenAI(model_name=self.model_name, **kwargs)
+            self.model = OpenAI(model_name=model_name, **kwargs)
         elif self.aleph_alpha_api_key:
-            self.model = AlephAlpha(model=self.model_name, **kwargs)
+            self.model = AlephAlpha(model=model_name, **kwargs)
         elif self.anthropic_api_key:
-            self.model = Anthropic(model=self.model, **kwargs)
+            self.model = Anthropic(model=model_name, **kwargs)
         elif self.cohere_api_key:
-            self.model = Cohere(model=self.model, **kwargs)
+            self.model = Cohere(model=model_name, **kwargs)
         else:
             raise ValueError("No valid API key environment variable found")
         return self.model
