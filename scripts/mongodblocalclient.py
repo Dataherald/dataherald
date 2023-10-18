@@ -126,12 +126,14 @@ class MongoDbLocalClient:
 
         # print the result
         print(
-            f"        result from checking table {table_name} sync'd: {list(result)}")
+            f"        result from checking table {table_name} sync'd: {list(result)}. Length: {len(list(result))}")
 
         # check the status
         if result is None:
+            print("        result is None")
             return False
         if len(list(result)) == 0:
+            print("        result is empty")
             return False
 
         print("        result[0]: " + str(list(result)[0]))
