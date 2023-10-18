@@ -6,7 +6,7 @@
 import os
 import shutil
 
-from .mongodb import MongoDbClient
+from mongodb import MongoDbClient
 
 if __name__ == "__main__":
     print("################################################################################")

@@ -36,7 +36,7 @@ import time
 
 import requests
 
-from .mongodb import MongoDbClient
+from scripts.mongodb import MongoDbClient
 
 # constants. TODO: move to a config file
 DATAHERALD_REST_API_URL = "http://localhost"
