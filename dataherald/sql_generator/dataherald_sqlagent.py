@@ -44,7 +44,7 @@ from dataherald.types import Question, Response
 logger = logging.getLogger(__name__)
 
 
-TOP_K = 100
+TOP_K = 50
 AGENT_PREFIX = """You are an agent designed to interact with a SQL database.
 Given an input question, create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
 You have access to tools for interacting with the database.
@@ -548,7 +548,7 @@ class SQLDatabaseToolkit(BaseToolkit):
 class DataheraldSQLAgent(SQLGenerator):
     """Dataherald SQL agent"""
 
-    max_number_of_examples: int = 20  # maximum number of question/SQL pairs
+    max_number_of_examples: int = 5  # maximum number of question/SQL pairs
     llm: Any = None
 
     def remove_duplicate_examples(self, fewshot_exmaples: List[dict]) -> List[dict]:
