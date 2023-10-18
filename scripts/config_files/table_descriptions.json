@@ -197,7 +197,6 @@
       { "name": "dataType", "description": "The position data type", "is_primary_key": false, "low_cardinality": true},
       { "name": "value", "description": "The value of this static data entry"},
       { "name": "crdate", "description": "The creation date of this entry in the database" },
-      { "name": "lupdate", "description": "A timestamp when this entry was updated in the DB" },
       { "name": "status", "description": "A: if entry is active, I: if entry is inactive"}
     ]
   },

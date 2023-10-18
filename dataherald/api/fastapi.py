@@ -277,17 +277,6 @@ class FastAPI(API):
             )
 
         try:
-            # pretty print the table_description_request
-            print("Table description request:")
-            print("==================================================")
-            print(json.dumps(json.loads(json_util.dumps(
-                table_description_request)), indent=4))
-
-            # print the table definition
-            print("Table definition:")
-            print("==================================================")
-            print(json.dumps(json.loads(json_util.dumps(
-                table)), indent=4))
             return scanner_repository.update_fields(table, table_description_request)
         except InvalidColumnNameError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e

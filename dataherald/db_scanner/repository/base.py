@@ -97,7 +97,11 @@ class TableDescriptionRepository:
 
     def update_fields(self, table: TableDescription, table_description_request):
         if table_description_request.description is not None:
+            print(f"Updating description for table {table.table_name}")
             table.description = table_description_request.description
+        else:
+            print(
+                f"!!!!!!!!!! Description for table {table.table_name} is None")
 
         if table_description_request.columns:
             columns = [column.name for column in table.columns]
@@ -110,6 +114,8 @@ class TableDescriptionRepository:
             print(f"Missing columns: {missing_columns}")
             for column_request in table_description_request.columns:
                 if column_request.name not in columns:
+                    table.error_message = f"Column {column_request.name} doesn't exist"
+                    self.update(table)
                     raise InvalidColumnNameError(
                         f"Column {column_request.name} doesn't exist"
                     )
