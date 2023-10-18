@@ -103,14 +103,14 @@ class MongoDbLocalClient:
         projection = {"_id": 1}
         result = self.select("database_connections", query, projection)
 
-        # check if the result is empty
-        if result is None:
-            return None
-
         results_list: list = list(result)
 
+        # check if the result is empty
+        if len(results_list) == 0:
+            return None
+
         # get the first item in the list
-        return str(results_list["_id"])
+        return str(results_list[0]["_id"])
 
     def check_table_is_synced(self, db_connection_id, table_name) -> bool:
         """Check if a table is synced in the MongoDB
