@@ -78,7 +78,7 @@ class EntityFinder(BaseSQLDatabaseTool, BaseTool):
     Example Input: David, name, singer
     """
     similarity_threshold: confloat(ge=0, le=1) = 0.7
-    number_similar_items: int = 5
+    number_similar_items: int = 10
 
     def similarity(self, first_string: str, second_string: str) -> float:
         return SequenceMatcher(None, first_string, second_string).ratio()
