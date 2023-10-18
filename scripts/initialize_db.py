@@ -6,7 +6,7 @@
 import os
 import shutil
 
-from mongodb import MongoDbClient
+from mongodb import MongoDbLocalClient
 
 if __name__ == "__main__":
     print("################################################################################")
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     # database_connections
     # golden_records
     # table_descriptions
-    mongo = MongoDbClient()
+    mongo = MongoDbLocalClient()
     mongo.drop_collection("database_connections")
     mongo.drop_collection("golden_records")
     mongo.drop_collection("table_descriptions")

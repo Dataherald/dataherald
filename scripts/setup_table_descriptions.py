@@ -35,8 +35,7 @@ import sys
 import time
 
 import requests
-
-from scripts.mongodb import MongoDbClient
+from mongodb import MongoDbLocalClient
 
 # constants. TODO: move to a config file
 DATAHERALD_REST_API_URL = "http://localhost"
@@ -196,7 +195,7 @@ def run(config_file: str):
             # construct the URL
 
             # get the db_connection_id from the mongo database /
-            mongo = MongoDbClient()
+            mongo = MongoDbLocalClient()
             db_connection_id = mongo.get_db_connection_id_for_db_alias(
                 alias)
             mongo.close()
@@ -258,7 +257,7 @@ if __name__ == "__main__":
     else:
         config_file_to_use = sys.argv[1]
 
-    mongo = MongoDbClient()
+    mongo = MongoDbLocalClient()
     mongo.drop_collection("table_descriptions")
     mongo.close()
 

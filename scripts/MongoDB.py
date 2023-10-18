@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 
 
-class MongoDbClient:
+class MongoDbLocalClient:
     def __init__(self):
         load_dotenv()
         uri = os.getenv('MONGODB_URI_LOCAL')

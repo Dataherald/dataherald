@@ -21,7 +21,7 @@ import json
 import os
 
 import requests
-from mongodb import MongoDbClient
+from mongodb import MongoDbLocalClient
 from rh_python_common import db
 
 # constants. TODO: move to a config file
@@ -83,7 +83,7 @@ def delete_all_existing_golden_record():
 
     # 1. Query the mongodb database for the list of golden records
     db_alias = "hkg02p"
-    mongo = MongoDbClient()
+    mongo = MongoDbLocalClient()
     db_id = mongo.get_db_connection_id_for_db_alias(db_alias)
     golden_records = mongo.get_all_golden_records_for_connection_id(db_id)
     mongo.close()
@@ -114,7 +114,7 @@ def run():
         db_alias = "hkg02p"
 
         # get the db_connection_id from the mongo database /
-        mongo = MongoDbClient()
+        mongo = MongoDbLocalClient()
         db_id = mongo.get_db_connection_id_for_db_alias(db_alias)
         mongo.close()
 
