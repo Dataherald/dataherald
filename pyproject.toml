@@ -1,5 +1,6 @@
 [tool.ruff]
 line-length = 140
+tab-size = 4
 select = [
     "A",
     "ARG",

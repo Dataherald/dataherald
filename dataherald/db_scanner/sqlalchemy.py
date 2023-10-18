@@ -181,6 +181,7 @@ class SqlAlchemyScanner(Scanner):
         )
 
         repository.save_table_info(object)
+        print(f"Finished SYNCHRONIZING table: {table}")
         return object
 
     @override

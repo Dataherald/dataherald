@@ -3,12 +3,12 @@
     This script is used to upload instructions to DH.
 
     Instructions are passed directly to the engine and can be used to steer the engine to generate SQL that is more in line with your business logic.
-    
+
     It reads the data from the config database.
-    
+
     The database has the following columns
     select id, DB, Instructions luser, lupdate from darwin.marvin_config_instructions;
-    
+
     The db_alias will default to 'hkg02p'
 
     1. Query the database for the list of golden records
@@ -19,12 +19,10 @@
 
 import json
 import os
-import sys
 
 import requests
-from rh_python_common import db
-
 from MongoDB import MongoDB
+from rh_python_common import db
 
 # constants. TODO: move to a config file
 DATAHERALD_REST_API_URL = "http://localhost"
@@ -100,7 +98,7 @@ def run():
     delete_all_existing_instructions()
 
     # 1. Query the database for the list of Instructions
-    qry = f"""
+    qry = """
       select DB, Instruction from darwin.marvin_config_instructions;
     """
     instructions_df = db.query_hkg02p(qry)

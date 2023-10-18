@@ -3,12 +3,12 @@
     This script is used to upload golden records to the database.
 
     A golden record is a record gives sample queries and their corresponding 'ideal' SQL queries.
-    
+
     Golden records are retreived from the Database
 
     The database has the following columns
     select id, DbsReferenced, Labels, Question, SqlQuery, luser, lupdate from darwin.marvin_config_queries;
-    
+
     The db_alias will default to 'hkg02p'
 
     1. Query the database for the list of golden records
@@ -19,12 +19,10 @@
 
 import json
 import os
-import sys
 
 import requests
-from rh_python_common import db
-
 from MongoDB import MongoDB
+from rh_python_common import db
 
 # constants. TODO: move to a config file
 DATAHERALD_REST_API_URL = "http://localhost"
@@ -45,15 +43,6 @@ def add_golden_record(payload: list):
         question (str): the question
         sql_query (str): the corresponding sql query
     """
-
-    # # escape the sql query quotes
-    # sql_query = escape_quotes(sql_query)
-
-    # print("Adding Golden Record: ")
-    # print(f"db_connection_id: {db_connection_id}")
-    # print(f"question: {question}")
-    # print(f"sql_query: {sql_query}")
-    # print(f"endpoint url: {endpoint_url}")
 
     # print the payload
     print("payload: ")
@@ -110,7 +99,7 @@ def run():
     delete_all_existing_golden_record()
 
     # 1. Query the database for the list of golden records
-    qry = f"""
+    qry = """
       select Question, SqlQuery from darwin.marvin_config_queries;
     """
     questions_df = db.query_hkg02p(qry)
