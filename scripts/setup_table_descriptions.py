@@ -127,6 +127,7 @@ def add_table_meta_data(db_connection_id: str, table_description_id: str, descri
     """
     # construct the REST API call
     # construct the URL
+    time.sleep(5)
     endpoint_url: str = f"{DATAHERALD_REST_API_URL}/api/v1/table-descriptions/{table_description_id}"
 
     print()
