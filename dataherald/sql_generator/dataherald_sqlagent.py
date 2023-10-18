@@ -557,7 +557,7 @@ class SQLDatabaseToolkit(BaseToolkit):
 class DataheraldSQLAgent(SQLGenerator):
     """Dataherald SQL agent"""
 
-    max_number_of_examples: int = 20  # maximum number of question/SQL pairs
+    max_number_of_examples: int = 10  # maximum number of question/SQL pairs
     llm: Any = None
 
     def remove_duplicate_examples(self, fewshot_exmaples: List[dict]) -> List[dict]:
@@ -587,7 +587,8 @@ class DataheraldSQLAgent(SQLGenerator):
     ) -> AgentExecutor:
         """Construct an SQL agent from an LLM and tools."""
         tools = toolkit.get_tools()
-        prefix = prefix.format(dialect=toolkit.dialect, max_examples=max_examples)
+        prefix = prefix.format(dialect=toolkit.dialect,
+                               max_examples=max_examples)
         prompt = ZeroShotAgent.create_prompt(
             tools,
             prefix=prefix,
