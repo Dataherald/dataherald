@@ -119,6 +119,10 @@ class MongoDbLocalClient:
         projection = {"_id": 0, "status": 1}
         result = self.select("table_descriptions", query, projection)
 
+        # print the result
+        print(
+            f"        result from checking table {table_name} sync'd: {list(result)}")
+
         # check the status
         if result is None:
             return False
