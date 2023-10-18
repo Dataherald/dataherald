@@ -9,7 +9,7 @@ class BaseGoldenSQL(BaseModel):
     sql_query: str
 
 
-class GoldenSQLSource(Enum):
+class GoldenSQLSource(str, Enum):
     USER_UPLOAD = "USER_UPLOAD"
     VERIFIED_QUERY = "VERIFIED_QUERY"
 
@@ -19,7 +19,7 @@ class GoldenSQLRef(BaseModel):
     query_id: Any | None
     golden_sql_id: Any
     organization_id: Any
-    source: str
+    source: GoldenSQLSource
     created_time: str
     display_id: str | None
 

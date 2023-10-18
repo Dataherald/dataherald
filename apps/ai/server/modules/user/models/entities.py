@@ -1,10 +1,15 @@
+from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
+class Roles(str, Enum):
+    admin = "ADMIN"
+
+
 class BaseUser(BaseModel):
-    email: str
+    email: str | None
     email_verified: bool | None
     name: str | None
     nickname: str | None
@@ -16,6 +21,7 @@ class BaseUser(BaseModel):
 class User(BaseUser):
     id: Any = Field(alias="_id")
     organization_id: Any
+    role: Roles | None
 
 
 class SlackInfo(BaseModel):

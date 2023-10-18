@@ -1,5 +1,3 @@
-import re
-
 import jwt
 from bson import ObjectId
 from fastapi import HTTPException, status
@@ -17,6 +15,7 @@ from database.mongo import MongoDB
 from modules.organization.models.responses import OrganizationResponse
 from modules.organization.service import OrganizationService
 from modules.query.service import QueryService
+from modules.user.models.entities import Roles
 from modules.user.models.responses import UserResponse
 from modules.user.service import UserService
 
@@ -149,18 +148,11 @@ class Authorize:
             )
         return organization
 
-    def is_root_user(self, payload: dict):
-        domain_pattern = r"@([A-Za-z0-9.-]+)"
-        user = self.user(payload)
-        match = re.search(domain_pattern, user.email)
-        if match:
-            domain = match.group(1)
-            if domain == "dataherald.com":
-                return
-
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authorized"
-        )
+    def is_admin_user(self, user: UserResponse):
+        if user.role != Roles.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authorized"
+            )
 
     def _item_in_organization(
         self, collection: str, id: str, org_id: str, key: str = None

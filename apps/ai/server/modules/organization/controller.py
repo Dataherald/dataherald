@@ -24,7 +24,7 @@ org_service = OrganizationService()
 async def get_organizations(
     token: str = Depends(token_auth_scheme),
 ) -> list[OrganizationResponse]:
-    authorize.is_root_user(VerifyToken(token.credentials).verify())
+    authorize.is_admin_user(authorize.user(VerifyToken(token.credentials).verify()))
     return org_service.get_organizations()
 
 
@@ -32,7 +32,7 @@ async def get_organizations(
 async def get_organization(
     id: str, token: str = Depends(token_auth_scheme)
 ) -> OrganizationResponse:
-    authorize.is_root_user(VerifyToken(token.credentials).verify())
+    authorize.is_admin_user(authorize.user(VerifyToken(token.credentials).verify()))
     return org_service.get_organization(id)
 
 
@@ -40,7 +40,7 @@ async def get_organization(
 async def add_organization(
     org_request: OrganizationRequest, token: str = Depends(token_auth_scheme)
 ) -> OrganizationResponse:
-    authorize.is_root_user(VerifyToken(token.credentials).verify())
+    authorize.is_admin_user(authorize.user(VerifyToken(token.credentials).verify()))
     return org_service.add_organization(org_request)
 
 
@@ -48,13 +48,13 @@ async def add_organization(
 async def update_organization(
     id: str, org_request: OrganizationRequest, token: str = Depends(token_auth_scheme)
 ) -> OrganizationResponse:
-    authorize.is_root_user(VerifyToken(token.credentials).verify())
+    authorize.is_admin_user(authorize.user(VerifyToken(token.credentials).verify()))
     return org_service.update_organization(id, org_request)
 
 
 @router.delete("/{id}")
 async def delete_organization(id: str, token: str = Depends(token_auth_scheme)):
-    authorize.is_root_user(VerifyToken(token.credentials).verify())
+    authorize.is_admin_user(authorize.user(VerifyToken(token.credentials).verify()))
     return org_service.delete_organization(id)
 
 

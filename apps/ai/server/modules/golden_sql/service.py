@@ -78,7 +78,7 @@ class GoldenSQLService:
             golden_sql_ref_data = GoldenSQLRef(
                 golden_sql_id=golden_sql.id,
                 organization_id=ObjectId(org_id),
-                source=GoldenSQLSource.VERIFIED_QUERY.value,
+                source=GoldenSQLSource.VERIFIED_QUERY,
                 query_id=ObjectId(query_id),
                 created_time=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
                 display_id=display_id,

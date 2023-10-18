@@ -6,6 +6,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from app import app
+from modules.user.models.entities import User
 from modules.user.models.responses import UserResponse
 
 client = TestClient(app)
@@ -22,7 +23,7 @@ client = TestClient(app)
             organization_id="0123456789ab0123456789ab",
         )
     ),
-    user_in_organization=Mock(return_value=None),
+    is_admin_user=Mock(return_value=None),
 )
 class TestUserAPI(TestCase):
     url = "/user"
@@ -37,6 +38,7 @@ class TestUserAPI(TestCase):
         "picture": "test",
         "sub": "test",
         "updated_at": "test",
+        "role": "ADMIN",
     }
 
     test_response_1 = {
@@ -49,6 +51,7 @@ class TestUserAPI(TestCase):
         "picture": "test",
         "sub": "test",
         "updated_at": "test",
+        "role": "ADMIN",
     }
 
     @patch("database.mongo.MongoDB.find", Mock(return_value=[test_1]))
@@ -57,7 +60,7 @@ class TestUserAPI(TestCase):
         assert response.status_code == status.HTTP_200_OK
         assert response.json() == [self.test_response_1]
 
-    @patch("database.mongo.MongoDB.find_by_id", Mock(return_value=test_1))
+    @patch("database.mongo.MongoDB.find_one", Mock(return_value=test_1))
     def test_get_user(self):
         response = client.get(
             self.url + "/666f6f2d6261722d71757578", headers=self.test_header
@@ -71,6 +74,10 @@ class TestUserAPI(TestCase):
         insert_one=Mock(return_value=test_1["_id"]),
         find_by_id=Mock(return_value=test_1),
     )
+    @patch(
+        "modules.user.repository.UserRepository.get_user",
+        Mock(return_value=User(**test_1)),
+    )
     def test_add_user(self):
         response = client.post(
             self.url,
@@ -83,7 +90,7 @@ class TestUserAPI(TestCase):
     @patch.multiple(
         "database.mongo.MongoDB",
         update_one=Mock(return_value=1),
-        find_by_id=Mock(return_value=test_1),
+        find_one=Mock(return_value=test_1),
     )
     def test_update_user(self):
         response = client.put(

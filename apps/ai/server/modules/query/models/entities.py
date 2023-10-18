@@ -12,7 +12,7 @@ class Question(BaseModel):
     db_connection_id: Any
 
 
-class QueryStatus(Enum):
+class QueryStatus(str, Enum):
     NOT_VERIFIED = "NOT_VERIFIED"
     VERIFIED = "VERIFIED"
     SQL_ERROR = "SQL_ERROR"
@@ -27,7 +27,7 @@ class SQLGenerationStatus(Enum):
 
 class Query(BaseModel):
     id: Any = Field(alias="_id")
-    status: str
+    status: QueryStatus
     question_id: Any
     response_id: Any
     question_date: str

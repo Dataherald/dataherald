@@ -11,7 +11,11 @@ client = TestClient(app)
 
 
 @patch("utils.auth.VerifyToken.verify", Mock(return_value={"email": ""}))
-@patch("utils.auth.Authorize.is_root_user", Mock(return_value=None))
+@patch.multiple(
+    "utils.auth.Authorize",
+    user=Mock(return_value=None),
+    is_admin_user=Mock(return_value=None),
+)
 class TestOrganizationAPI(TestCase):
     url = "/organization"
     test_header = {"Authorization": "Bearer some-token"}

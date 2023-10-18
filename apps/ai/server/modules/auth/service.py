@@ -19,7 +19,9 @@ class AuthService:
         user = self.user_service.get_user_by_email(user_request.email)
         if user:
             self.user_service.update_user(
-                str(user.id), UserRequest(**user_request.dict())
+                str(user.id),
+                UserRequest(**user_request.dict()),
+                str(user.organization_id),
             )
         else:
             raise HTTPException(

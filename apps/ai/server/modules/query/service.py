@@ -86,9 +86,9 @@ class QueryService:
                     thread_ts=question_request.slack_thread_ts,
                     username=username,
                 ),
-                status=QueryStatus.NOT_VERIFIED.value
+                status=QueryStatus.NOT_VERIFIED
                 if answer.sql_generation_status == SQLGenerationStatus.VALID
-                else QueryStatus.SQL_ERROR.value,
+                else QueryStatus.SQL_ERROR,
             )
 
             query_id = self.repo.add_query(query.dict(exclude={"id"}))
@@ -242,7 +242,11 @@ class QueryService:
         user: UserResponse,
     ) -> QueryResponse:
         query = self.repo.get_query(query_id)
-        prev_sql_query = self.repo.get_answer(str(query.response_id)).sql_query
+        prev_sql_query = (
+            self.repo.get_answer(str(query.response_id)).sql_query
+            if query.response_id
+            else None
+        )
 
         if query_request.query_status != QueryStatus.REJECTED:
             async with httpx.AsyncClient() as client:
@@ -412,7 +416,9 @@ class QueryService:
             ai_process=answer.intermediate_steps or ["process unknown"],
             question_date=query.question_date,
             last_updated=query.last_updated,
-            updated_by=self.user_service.get_user(str(query.updated_by))
+            updated_by=self.user_service.get_user(
+                str(query.updated_by), str(query.organization_id)
+            )
             if query.updated_by
             else None,
             status=query.status,
