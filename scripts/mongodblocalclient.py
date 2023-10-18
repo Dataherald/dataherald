@@ -116,7 +116,7 @@ class MongoDbLocalClient:
         # set up the query
         query = {"db_connection_id": db_connection_id,
                  "table_name": table_name}
-        projection = {"_id": 0, "status": 1}
+        projection = {"status": 1}
         result = self.select("table_descriptions", query, projection)
 
         # print the result
