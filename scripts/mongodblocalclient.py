@@ -56,11 +56,13 @@ class MongoDbLocalClient:
         projection = {"_id": 1}
         result = self.select("instructions", query, projection)
 
-        if result is None:
+        results_list: list = list(result)
+
+        if len(results_list) == 0:
             return None
 
         # return all ids in a list
-        return [str(item["_id"]) for item in result]
+        return [str(item["_id"]) for item in results_list]
 
     def get_all_golden_records_for_connection_id(self, db_connection_id: str):
         """Given a db_connection_id return _all_ the golden records (_id) for that connection
@@ -78,11 +80,13 @@ class MongoDbLocalClient:
         projection = {"_id": 1}
         result = self.select("golden_records", query, projection)
 
-        if result is None:
+        results_list: list = list(result)
+
+        if len(results_list) == 0:
             return None
 
         # return all ids in a list
-        return [str(item["_id"]) for item in result]
+        return [str(item["_id"]) for item in results_list]
 
     def get_db_connection_id_for_db_alias(self, db_alias: str) -> str:
         """Given a db_alias return the db_connection_id from the database_connections collection
@@ -103,8 +107,10 @@ class MongoDbLocalClient:
         if result is None:
             return None
 
+        results_list: list = list(result)
+
         # get the first item in the list
-        return str(list(result)[0]["_id"])
+        return str(results_list["_id"])
 
     def check_table_is_synced(self, db_connection_id, table_name) -> bool:
         """Check if a table is synced in the MongoDB
@@ -132,14 +138,9 @@ class MongoDbLocalClient:
 
         # check the status
         if result is None:
-            print("        result is None")
             return False
         if len(results_list) == 0:
-            print("        result is empty")
             return False
-
-        print("        result[0]: " + str(results_list[0]))
-        print("        result[0]['status']: " + results_list[0]["status"])
         if results_list[0]["status"] == "SYNCHRONIZED":
             return True
 

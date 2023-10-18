@@ -85,7 +85,8 @@ class FastAPI(API):
             scanner_request.db_connection_id
         )
         if not db_connection:
-            raise HTTPException(status_code=404, detail="Database connection not found")
+            raise HTTPException(
+                status_code=404, detail="Database connection not found")
 
         try:
             database = SQLDatabase.get_sql_engine(db_connection)
@@ -158,7 +159,8 @@ class FastAPI(API):
         except Exception as e:
             return JSONResponse(
                 status_code=400,
-                content={"question_id": user_question.id, "error_message": str(e)},
+                content={"question_id": user_question.id,
+                         "error_message": str(e)},
             )
         generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
@@ -275,6 +277,17 @@ class FastAPI(API):
             )
 
         try:
+            # pretty print the table_description_request
+            print("Table description request:")
+            print("==================================================")
+            print(json.dumps(json.loads(json_util.dumps(
+                table_description_request)), indent=4))
+
+            # print the table definition
+            print("Table definition:")
+            print("==================================================")
+            print(json.dumps(json.loads(json_util.dumps(
+                table)), indent=4))
             return scanner_repository.update_fields(table, table_description_request)
         except InvalidColumnNameError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
@@ -285,12 +298,15 @@ class FastAPI(API):
     ) -> list[TableDescription]:
         scanner_repository = TableDescriptionRepository(self.storage)
         table_descriptions = scanner_repository.find_by(
-            {"db_connection_id": ObjectId(db_connection_id), "table_name": table_name}
+            {"db_connection_id": ObjectId(
+                db_connection_id), "table_name": table_name}
         )
 
         if db_connection_id:
-            db_connection_repository = DatabaseConnectionRepository(self.storage)
-            db_connection = db_connection_repository.find_by_id(db_connection_id)
+            db_connection_repository = DatabaseConnectionRepository(
+                self.storage)
+            db_connection = db_connection_repository.find_by_id(
+                db_connection_id)
             database = SQLDatabase.get_sql_engine(db_connection)
 
             scanner = self.system.instance(Scanner)
@@ -323,7 +339,8 @@ class FastAPI(API):
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not result:
-            raise HTTPException(status_code=404, detail="Table description not found")
+            raise HTTPException(
+                status_code=404, detail="Table description not found")
         return result
 
     @override
@@ -387,7 +404,8 @@ class FastAPI(API):
             query.db_connection_id
         )
         if not database_connection:
-            raise HTTPException(status_code=404, detail="Database connection not found")
+            raise HTTPException(
+                status_code=404, detail="Database connection not found")
         database = SQLDatabase.get_sql_engine(database_connection)
         try:
             result = database.run_sql(query.sql_query)
@@ -401,13 +419,15 @@ class FastAPI(API):
     ) -> Response:
         evaluator = self.system.instance(Evaluator)
         question_repository = QuestionRepository(self.storage)
-        user_question = question_repository.find_by_id(query_request.question_id)
+        user_question = question_repository.find_by_id(
+            query_request.question_id)
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         database_connection = db_connection_repository.find_by_id(
             user_question.db_connection_id
         )
         if not database_connection:
-            raise HTTPException(status_code=404, detail="Database connection not found")
+            raise HTTPException(
+                status_code=404, detail="Database connection not found")
 
         response = Response(
             question_id=query_request.question_id, sql_query=query_request.sql_query
@@ -476,7 +496,8 @@ class FastAPI(API):
         instruction_repository = InstructionRepository(self.storage)
         deleted = instruction_repository.delete_by_id(instruction_id)
         if deleted == 0:
-            raise HTTPException(status_code=404, detail="Instruction not found")
+            raise HTTPException(
+                status_code=404, detail="Instruction not found")
         return {"status": "success"}
 
     @override
@@ -488,7 +509,8 @@ class FastAPI(API):
         instruction_repository = InstructionRepository(self.storage)
         instruction = instruction_repository.find_by_id(instruction_id)
         if not instruction:
-            raise HTTPException(status_code=404, detail="Instruction not found")
+            raise HTTPException(
+                status_code=404, detail="Instruction not found")
         updated_instruction = Instruction(
             id=instruction_id,
             instruction=instruction_request.instruction,
