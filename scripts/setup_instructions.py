@@ -22,8 +22,9 @@ import json
 import os
 
 import requests
-from mongodb import MongoDbClient
 from rh_python_common import db
+
+from .mongodb import MongoDbClient
 
 # constants. TODO: move to a config file
 DATAHERALD_REST_API_URL = "http://localhost"
