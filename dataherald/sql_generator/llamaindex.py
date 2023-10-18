@@ -1,6 +1,7 @@
 """A wrapper for the SQL generation functions in langchain"""
 
 import logging
+import os
 import time
 from typing import Any, List
 
@@ -38,7 +39,9 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         start_time = time.time()
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
         self.llm = self.model.get_model(
-            database_connection=database_connection, temperature=0
+            database_connection=database_connection,
+            temperature=0,
+            model_name=os.getenv("AGENT_LLM_MODEL", "gpt-4-32k"),
         )
         token_counter = TokenCountingHandler(
             tokenizer=tiktoken.encoding_for_model(self.llm.model_name).encode,

@@ -1,6 +1,7 @@
 """A wrapper for the SQL generation functions in langchain"""
 
 import logging
+import os
 import time
 from typing import Any, List
 
@@ -31,7 +32,9 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
     ) -> Response:  # type: ignore
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
         self.llm = self.model.get_model(
-            database_connection=database_connection, temperature=0
+            database_connection=database_connection,
+            temperature=0,
+            model_name=os.getenv("AGENT_LLM_MODEL", "gpt-4-32k"),
         )
         self.database = SQLDatabase.get_sql_engine(database_connection)
         tools = SQLDatabaseToolkit(db=self.database, llm=self.llm).get_tools()
