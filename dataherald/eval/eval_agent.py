@@ -78,7 +78,7 @@ class EntityFinder(BaseSQLDatabaseTool, BaseTool):
     Example Input: David, name, singer
     """
     similarity_threshold: confloat(ge=0, le=1) = 0.7
-    number_similar_items: int = 20
+    number_similar_items: int = 5
 
     def similarity(self, first_string: str, second_string: str) -> float:
         return SequenceMatcher(None, first_string, second_string).ratio()
@@ -110,7 +110,8 @@ class EntityFinder(BaseSQLDatabaseTool, BaseTool):
             for row in rows:
                 pair_similarity = self.similarity(entity, str(row[0]))
                 if pair_similarity > self.similarity_threshold:
-                    similar_items.append({"row": str(row[0]), "score": pair_similarity})
+                    similar_items.append(
+                        {"row": str(row[0]), "score": pair_similarity})
             similar_items = sorted(
                 similar_items, key=lambda x: x["score"], reverse=True
             )[: self.number_similar_items]
@@ -224,7 +225,8 @@ class EvaluationAgent(Evaluator):
             callback_manager=callback_manager,
         )
         tool_names = [tool.name for tool in tools]
-        agent = ZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names, **kwargs)
+        agent = ZeroShotAgent(llm_chain=llm_chain,
+                              allowed_tools=tool_names, **kwargs)
         return AgentExecutor.from_agent_and_tools(
             agent=agent,
             tools=tools,
@@ -261,7 +263,8 @@ class EvaluationAgent(Evaluator):
             verbose=True,
             input_variables=["question", "SQL"],
         )
-        answer = agent_executor({"question": user_question, "SQL": sql})["output"]
+        answer = agent_executor(
+            {"question": user_question, "SQL": sql})["output"]
         score = self.answer_parser(answer=answer) / 100
         end_time = time.time()
         logger.info(f"Evaluation time elapsed: {str(end_time - start_time)}")
