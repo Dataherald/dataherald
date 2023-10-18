@@ -133,6 +133,9 @@ class MongoDbLocalClient:
             return False
         if len(list(result)) == 0:
             return False
+
+        print("        result[0]: " + str(list(result)[0]))
+        print("        result[0]['status']: " + list(result)[0]["status"])
         if list(result)[0]["status"] == "SYNCHRONIZED":
             return True
 
