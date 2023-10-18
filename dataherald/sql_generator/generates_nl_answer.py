@@ -43,7 +43,7 @@ class GeneratesNlAnswer:
         )
         database = SQLDatabase.get_sql_engine(database_connection)
         query_response = create_sql_query_status(
-            database, query_response.sql_query, query_response
+            database, query_response.sql_query, query_response, top_k=50
         )
         system_message_prompt = SystemMessagePromptTemplate.from_template(
             SYSTEM_TEMPLATE
