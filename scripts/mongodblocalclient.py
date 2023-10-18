@@ -134,13 +134,13 @@ class MongoDbLocalClient:
         if result is None:
             print("        result is None")
             return False
-        if len(list(result)) == 0:
+        if len(results_list) == 0:
             print("        result is empty")
             return False
 
-        print("        result[0]: " + str(list(result)[0]))
-        print("        result[0]['status']: " + list(result)[0]["status"])
-        if list(result)[0]["status"] == "SYNCHRONIZED":
+        print("        result[0]: " + str(results_list[0]))
+        print("        result[0]['status']: " + results_list[0]["status"])
+        if results_list[0]["status"] == "SYNCHRONIZED":
             return True
 
         return False
