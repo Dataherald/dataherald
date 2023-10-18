@@ -126,13 +126,13 @@ class MongoDbLocalClient:
         result = self.select("table_descriptions", query, projection)
 
         # print the result
+        results_list: list = list(result)
         print(
-            f"        result from checking table {table_name} sync'd: {list(result)}. Length: {len(list(result))}")
-        print(f"Type of result: {type(result)}")
-        print(f"Type of list(result): {type(list(result))}")
-
-        results_json = json.dumps(result)
+            f"        result from checking table {table_name} sync'd: {results_list}. Length: {len(results_list)}")
+        print(f"Type of list(result): {type(results_list)}")
+        results_json = json.dumps(results_list)
         print(f"type of results_json: {type(results_json)}")
+
         # pretty print the json
         print(f"        results_json: length = {len(results_json)}")
         print(json.dumps(json.loads(results_json), indent=4, sort_keys=True))
