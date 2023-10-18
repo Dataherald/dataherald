@@ -1,5 +1,6 @@
 import os
 
+from bson.objectid import ObjectId
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
@@ -22,6 +23,10 @@ class MongoDbLocalClient:
     def select(self, collection_name, query=None, projection=None):
         collection = self.db[collection_name]
         return collection.find(query, projection)
+
+    def select_one(self, collection_name, query=None, projection=None):
+        collection = self.db[collection_name]
+        return collection.find_one(query, projection)
 
     def close(self):
         self.client.close()
@@ -46,7 +51,7 @@ class MongoDbLocalClient:
         Args:
             db_connection_id (str): the db_connection_id to get the instructions for
         """
-        query = {"db_connection_id": db_connection_id}
+        query = {"db_connection_id": ObjectId(db_connection_id)}
         projection = {"_id": 1}
         result = self.select("instructions", query, projection)
 
@@ -68,7 +73,7 @@ class MongoDbLocalClient:
         Args:
             db_connection_id (str): the db_connection_id to get the golden records for
         """
-        query = {"db_connection_id": db_connection_id}
+        query = {"db_connection_id": ObjectId(db_connection_id)}
         projection = {"_id": 1}
         result = self.select("golden_records", query, projection)
 
@@ -114,7 +119,7 @@ class MongoDbLocalClient:
         """
 
         # set up the query
-        query = {"db_connection_id": db_connection_id,
+        query = {"db_connection_id": ObjectId(db_connection_id),
                  "table_name": table_name}
         projection = {"status": 1}
         result = self.select("table_descriptions", query, projection)
