@@ -21,7 +21,7 @@ import json
 import os
 
 import requests
-from mongodb import MongoDbLocalClient
+from mongodblocalclient import MongoDbLocalClient
 from rh_python_common import db
 
 # constants. TODO: move to a config file
