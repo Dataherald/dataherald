@@ -99,3 +99,32 @@ class MongoDbLocalClient:
 
         # get the first item in the list
         return str(list(result)[0]["_id"])
+
+    def check_table_is_synced(self, db_connection_id, table_name) -> bool:
+        """Check if a table is synced in the MongoDB
+        The collection name is table_descriptions
+        The column to check is status where table_name = table_name
+
+        Args:
+            db_connection_id (str): the db_connection_id to get the table descriptions for
+            table_name (str): the table name to check if it is synced
+
+        Returns:
+            bool: True if the table is synced, False otherwise
+        """
+
+        # set up the query
+        query = {"db_connection_id": db_connection_id,
+                 "table_name": table_name}
+        projection = {"_id": 0, "status": 1}
+        result = self.select("table_descriptions", query, projection)
+
+        # check the status
+        if result is None:
+            return False
+        if len(list(result)) == 0:
+            return False
+        if list(result)[0]["status"] == "SYNCHRONIZED":
+            return True
+
+        return False

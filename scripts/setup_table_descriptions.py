@@ -208,7 +208,14 @@ def run(config_file: str):
 
             # 1. Scan the DB
             run_sync_schemas_for_table(db_connection_id, table_name)
-            time.sleep(10)
+            time.sleep(5)
+            # check if the table has been synced in the database
+            mongo = MongoDbLocalClient()
+            while mongo.check_table_is_synced(db_connection_id, table_name) is False:
+                print(
+                    f"    >> Table: {table_name} has NOT been synced yet. Waiting 5 seconds before trying again.")
+                time.sleep(5)
+            mongo.close()
 
             table_description_id: str = check_table_name_exists(
                 db_connection_id, table_name)
