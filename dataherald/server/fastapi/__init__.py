@@ -165,6 +165,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/responses/{response_id}",
+            self.update_response,
+            methods=["PATCH"],
+            tags=["Responses"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/sql-query-executions",
             self.execute_sql_query,
             methods=["POST"],
@@ -282,13 +289,21 @@ class FastAPI(dataherald.server.Server):
         """Get a response"""
         return self._api.get_response(response_id)
 
+    def update_response(self, response_id: str) -> Response:
+        """Update a response"""
+        return self._api.update_response(response_id)
+
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""
         return self._api.execute_sql_query(query)
 
-    def create_response(self, query_request: CreateResponseRequest) -> Response:
+    def create_response(
+        self,
+        sql_response_only: bool = False,
+        query_request: CreateResponseRequest = None,
+    ) -> Response:
         """Executes a query on the given db_connection_id"""
-        return self._api.create_response(query_request)
+        return self._api.create_response(sql_response_only, query_request)
 
     def delete_golden_record(self, golden_record_id: str) -> dict:
         """Deletes a golden record"""

@@ -349,6 +349,29 @@ class FastAPI(API):
         return result
 
     @override
+    def update_response(self, response_id: str) -> Response:
+        response_repository = ResponseRepository(self.storage)
+
+        try:
+            response = response_repository.find_by_id(response_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        if not response:
+            raise HTTPException(status_code=404, detail="Question not found")
+
+        start_generated_answer = time.time()
+        try:
+            generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
+            response = generates_nl_answer.execute(response)
+            response.exec_time = time.time() - start_generated_answer
+            response_repository.update(response)
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
+        except SQLInjectionError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
+        return response
+
+    @override
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
         question_repository = QuestionRepository(self.storage)
         query = {}
@@ -397,7 +420,9 @@ class FastAPI(API):
 
     @override
     def create_response(
-        self, query_request: CreateResponseRequest  # noqa: ARG002
+        self,
+        sql_response_only: bool = False,
+        query_request: CreateResponseRequest = None,  # noqa: ARG002
     ) -> Response:
         evaluator = self.system.instance(Evaluator)
         question_repository = QuestionRepository(self.storage)
@@ -417,7 +442,7 @@ class FastAPI(API):
         start_generated_answer = time.time()
         try:
             generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
-            response = generates_nl_answer.execute(response)
+            response = generates_nl_answer.execute(response, sql_response_only)
             confidence_score = evaluator.get_confidence_score(
                 user_question, response, database_connection
             )
