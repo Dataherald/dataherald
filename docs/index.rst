@@ -32,6 +32,7 @@ These documents will cover how to get started, how to set up an API from your da
    :caption: Tutorials
    :hidden:
 
+   tutorial.run_scripts
    tutorial.sample_database
    tutorial.finetune_sql_generator
    tutorial.chatgpt_plugin
