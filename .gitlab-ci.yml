@@ -9,6 +9,7 @@ build_container:
   script:
     - echo "Building the app"
     - echo "-----------------------------------------------------------------"
+    - echo "NOTE THAT ENV_FILE is a variable set up in the gitlab project settings CI/CD section Variables"
     - echo $ENV_FILE | sed 's/ /\n/g'
     - echo $ENV_FILE | sed 's/ /\n/g' > .env
     - docker network inspect backendnetwork >/dev/null 2>&1 || docker network create backendnetwork
