@@ -7,6 +7,20 @@ from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.types import Response, SQLQueryResult
 
 
+def format_error_message(response: Response, error_message: str) -> Response:
+    # Remove the complete query
+    if error_message.find("[") > 0 and error_message.find("]") > 0:
+        error_message = (
+            error_message[0 : error_message.find("[")]
+            + error_message[error_message.rfind("]") + 1 :]
+        )
+    response.sql_generation_status = "INVALID"
+    response.response = ""
+    response.sql_query_result = None
+    response.error_message = error_message
+    return response
+
+
 def create_sql_query_status(
     db: SQLDatabase, query: str, response: Response, top_k: int = None
 ) -> Response:
@@ -54,8 +68,6 @@ def create_sql_query_status(
                 "Sensitive SQL keyword detected in the query."
             ) from e
         except Exception as e:
-            response.sql_generation_status = "INVALID"
-            response.response = ""
-            response.sql_query_result = None
-            response.error_message = str(e)
+            response = format_error_message(response, str(e))
+
     return response

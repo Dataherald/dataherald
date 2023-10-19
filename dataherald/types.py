@@ -81,7 +81,7 @@ class Response(BaseModel):
     total_tokens: int | None = None
     total_cost: float | None = None
     confidence_score: float | None = None
-    created_at: datetime = datetime.now()
+    created_at: datetime = Field(default_factory=datetime.now)
 
     @validator("created_at", pre=True)
     def parse_datetime_with_timezone(cls, value):
