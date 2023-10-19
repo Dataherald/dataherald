@@ -100,7 +100,11 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def create_response(self, query_request: CreateResponseRequest) -> Response:
+    def create_response(
+        self,
+        sql_response_only: bool = False,
+        query_request: CreateResponseRequest = None,
+    ) -> Response:
         pass
 
     @abstractmethod
@@ -109,6 +113,10 @@ class API(Component, ABC):
 
     @abstractmethod
     def get_response(self, response_id: str) -> Response:
+        pass
+
+    @abstractmethod
+    def update_response(self, response_id: str) -> Response:
         pass
 
     @abstractmethod
