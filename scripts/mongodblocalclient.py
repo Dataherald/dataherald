@@ -40,7 +40,7 @@ class MongoDbLocalClient:
               " from database: " + self.db_name)
         self.db[collection_name].drop()
 
-    def get_all_instructions_for_connection_id(self, db_connection_id: str):
+    def get_all_instructions_for_connection_id(self, db_connection_id: str) -> list[str]:
         """Given a db_connection_id return _all_ the instructions (_id) for that connection
 
         Collection Name: instructions
@@ -58,12 +58,12 @@ class MongoDbLocalClient:
         results_list: list = list(result)
 
         if len(results_list) == 0:
-            return None
+            return []
 
         # return all ids in a list
         return [str(item["_id"]) for item in results_list]
 
-    def get_all_golden_records_for_connection_id(self, db_connection_id: str):
+    def get_all_golden_records_for_connection_id(self, db_connection_id: str) -> list[str]:
         """Given a db_connection_id return _all_ the golden records (_id) for that connection
 
         Collection Name: golden_records
@@ -82,7 +82,7 @@ class MongoDbLocalClient:
         results_list: list = list(result)
 
         if len(results_list) == 0:
-            return None
+            return []
 
         # return all ids in a list
         return [str(item["_id"]) for item in results_list]

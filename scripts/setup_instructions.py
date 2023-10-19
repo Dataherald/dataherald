@@ -87,6 +87,8 @@ def delete_all_existing_instructions():
     instructions = mongo.get_all_instructions_for_connection_id(db_id)
     mongo.close()
 
+    print(f"instructions: size: {str(len(instructions))}")
+
     # 2. Loop through the database configuration file and construct the REST API call to delete the instructions
     for instruction in instructions:
         print(f"Deleting instruction: {instruction}")
