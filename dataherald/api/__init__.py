@@ -36,12 +36,14 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def answer_question(self, question_request: QuestionRequest) -> Response:
+    def answer_question(
+        self, run_evaluator: bool = True, question_request: QuestionRequest = None
+    ) -> Response:
         pass
 
     @abstractmethod
     def answer_question_with_timeout(
-        self, question_request: QuestionRequest
+        self, run_evaluator: bool = True, question_request: QuestionRequest = None
     ) -> Response:
         pass
 
@@ -102,6 +104,7 @@ class API(Component, ABC):
     @abstractmethod
     def create_response(
         self,
+        run_evaluator: bool = True,
         sql_response_only: bool = False,
         query_request: CreateResponseRequest = None,
     ) -> Response:
