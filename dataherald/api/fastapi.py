@@ -118,11 +118,12 @@ class FastAPI(API):
         return True
 
     @override
-    def answer_question(self, question_request: QuestionRequest) -> Response:
+    def answer_question(
+        self, run_evaluator: bool = True, question_request: QuestionRequest = None
+    ) -> Response:
         """Takes in an English question and answers it based on content from the registered databases"""
         logger.info(f"Answer question: {question_request.question}")
         sql_generation = self.system.instance(SQLGenerator)
-        evaluator = self.system.instance(Evaluator)
         context_store = self.system.instance(ContextStore)
 
         user_question = Question(
@@ -152,22 +153,24 @@ class FastAPI(API):
                 user_question, database_connection, context[0]
             )
             logger.info("Starts evaluator...")
-            confidence_score = evaluator.get_confidence_score(
-                user_question, generated_answer, database_connection
-            )
+            if run_evaluator:
+                evaluator = self.system.instance(Evaluator)
+                confidence_score = evaluator.get_confidence_score(
+                    user_question, generated_answer, database_connection
+                )
+                generated_answer.confidence_score = confidence_score
         except Exception as e:
             return JSONResponse(
                 status_code=400,
                 content={"question_id": user_question.id, "error_message": str(e)},
             )
-        generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
         response_repository = ResponseRepository(self.storage)
         return response_repository.insert(generated_answer)
 
     @override
     def answer_question_with_timeout(
-        self, question_request: QuestionRequest
+        self, run_evaluator: bool = True, question_request: QuestionRequest = None
     ) -> Response:
         result = None
         exception = None
@@ -182,7 +185,7 @@ class FastAPI(API):
         def run_and_catch_exceptions():
             nonlocal result, exception
             if not stop_event.is_set():
-                result = self.answer_question(question_request)
+                result = self.answer_question(run_evaluator, question_request)
 
         thread = threading.Thread(target=run_and_catch_exceptions)
         thread.start()
@@ -421,10 +424,10 @@ class FastAPI(API):
     @override
     def create_response(
         self,
+        run_evaluator: bool = True,
         sql_response_only: bool = False,
         query_request: CreateResponseRequest = None,  # noqa: ARG002
     ) -> Response:
-        evaluator = self.system.instance(Evaluator)
         question_repository = QuestionRepository(self.storage)
         user_question = question_repository.find_by_id(query_request.question_id)
         db_connection_repository = DatabaseConnectionRepository(self.storage)
@@ -443,10 +446,12 @@ class FastAPI(API):
         try:
             generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
             response = generates_nl_answer.execute(response, sql_response_only)
-            confidence_score = evaluator.get_confidence_score(
-                user_question, response, database_connection
-            )
-            response.confidence_score = confidence_score
+            if run_evaluator:
+                evaluator = self.system.instance(Evaluator)
+                confidence_score = evaluator.get_confidence_score(
+                    user_question, response, database_connection
+                )
+                response.confidence_score = confidence_score
             response.exec_time = time.time() - start_generated_answer
             response_repository.update(response)
         except ValueError as e:

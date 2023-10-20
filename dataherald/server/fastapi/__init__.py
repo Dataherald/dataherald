@@ -223,10 +223,14 @@ class FastAPI(dataherald.server.Server):
     ) -> bool:
         return self._api.scan_db(scanner_request, background_tasks)
 
-    def answer_question(self, question_request: QuestionRequest) -> Response:
+    def answer_question(
+        self, run_evaluator: bool = True, question_request: QuestionRequest = None
+    ) -> Response:
         if os.getenv("DH_ENGINE_TIMEOUT", None):
-            return self._api.answer_question_with_timeout(question_request)
-        return self._api.answer_question(question_request)
+            return self._api.answer_question_with_timeout(
+                run_evaluator, question_request
+            )
+        return self._api.answer_question(run_evaluator, question_request)
 
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
         return self._api.get_questions(db_connection_id)
@@ -299,11 +303,14 @@ class FastAPI(dataherald.server.Server):
 
     def create_response(
         self,
+        run_evaluator: bool = True,
         sql_response_only: bool = False,
         query_request: CreateResponseRequest = None,
     ) -> Response:
         """Executes a query on the given db_connection_id"""
-        return self._api.create_response(sql_response_only, query_request)
+        return self._api.create_response(
+            run_evaluator, sql_response_only, query_request
+        )
 
     def delete_golden_record(self, golden_record_id: str) -> dict:
         """Deletes a golden record"""
