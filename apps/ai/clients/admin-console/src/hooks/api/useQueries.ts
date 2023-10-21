@@ -1,4 +1,4 @@
-import usePagination, { PageResponse } from '@/hooks/api/usePagination'
+import usePagination, { PageResponse } from '@/hooks/api/generics/usePagination'
 import { QueryListItem } from '@/models/api'
 
 const useQueries = (): PageResponse<QueryListItem> =>

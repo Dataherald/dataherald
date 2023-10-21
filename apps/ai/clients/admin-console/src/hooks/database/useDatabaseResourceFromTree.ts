@@ -1,4 +1,7 @@
 import { useTree } from '@/components/ui/tree-view-context'
+import { useColumnResource } from '@/hooks/database/useColumnResource'
+import { useDatabaseResource } from '@/hooks/database/useDatabaseResource'
+import { useTableResource } from '@/hooks/database/useTableResource'
 import {
   isColumnResource,
   isDatabaseResource,
@@ -10,9 +13,6 @@ import {
   DatabaseResourceType,
   TableResource,
 } from '@/models/domain'
-import { useColumnResource } from './useColumnResource'
-import { useDatabaseResource } from './useDatabaseResource'
-import { useTableResource } from './useTableResource'
 
 export interface UseDatabaseResourceFromTree<R> {
   resource: R | null

@@ -1,13 +1,13 @@
+import WithAnalytics from '@/components/hoc/WithAnalytics'
+import { AppContextProvider } from '@/contexts/app-context'
 import { AuthProvider } from '@/contexts/auth-context'
-import useApiFetcher from '@/hooks/api/useApiFetcher'
+import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { cn } from '@/lib/utils'
 import '@/styles/globals.css'
-import { UserProvider } from '@auth0/nextjs-auth0/client'
 import type { AppProps } from 'next/app'
 import { Lato, Source_Code_Pro } from 'next/font/google'
 import { FC, ReactNode } from 'react'
 import { SWRConfig } from 'swr'
-import WithAnalytics from '@/components/hoc/WithAnalytics'
 
 const sourceCode = Source_Code_Pro({
   subsets: ['latin'],
@@ -37,8 +37,8 @@ const SWRConfigWithAuth: FC<{ children: ReactNode }> = ({ children }) => {
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <UserProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <AppContextProvider>
         <WithAnalytics>
           <SWRConfigWithAuth>
             <div
@@ -48,7 +48,7 @@ export default function App({ Component, pageProps }: AppProps) {
             </div>
           </SWRConfigWithAuth>
         </WithAnalytics>
-      </AuthProvider>
-    </UserProvider>
+      </AppContextProvider>
+    </AuthProvider>
   )
 }

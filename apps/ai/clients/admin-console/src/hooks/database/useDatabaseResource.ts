@@ -1,13 +1,13 @@
 import { TreeNode } from '@/components/ui/tree-view'
 import { toast } from '@/components/ui/use-toast'
 import { API_URL } from '@/config'
+import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
+import { UseDatabaseResourceFromTree } from '@/hooks/database/useDatabaseResourceFromTree'
 import { isDatabaseResource } from '@/lib/domain/database'
 import { Instruction } from '@/models/api'
 import { DatabaseResource, DatabaseResourceType } from '@/models/domain'
 import { useCallback } from 'react'
 import useSWR, { mutate } from 'swr'
-import useApiFetcher from '../api/useApiFetcher'
-import { UseDatabaseResourceFromTree } from './useDatabaseResourceFromTree'
 
 export const useDatabaseResource = (
   node: TreeNode | null,

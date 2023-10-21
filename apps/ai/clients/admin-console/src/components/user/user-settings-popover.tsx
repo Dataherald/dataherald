@@ -7,9 +7,9 @@ import {
 } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import UserPicture from '@/components/user/user-picture'
+import { useAppContext } from '@/contexts/app-context'
 import { User } from '@/models/api'
 import { LogOut, Settings, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 
 export interface UserSettingsPopoverProps {
@@ -18,9 +18,12 @@ export interface UserSettingsPopoverProps {
 
 const UserSettingsPopover: FC<UserSettingsPopoverProps> = ({ user }) => {
   const { name, email, picture } = user
-  const { push } = useRouter()
+  const { logout } = useAppContext()
 
-  const handleLogout = () => push('/api/auth/logout')
+  const handleLogout = () => {
+    logout()
+  }
+
   return (
     <Popover>
       <PopoverTrigger className="rounded-xl p-2 hover:bg-gray-100 hover:text-black/90">

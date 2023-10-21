@@ -1,5 +1,5 @@
 import { API_URL } from '@/config'
-import useApiFetcher from '@/hooks/api/useApiFetcher'
+import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { DatabaseConnection } from '@/models/api'
 import { useCallback } from 'react'
 

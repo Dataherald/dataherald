@@ -154,6 +154,13 @@ class Authorize:
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authorized"
             )
 
+    def is_self(self, user: UserResponse, requested_user_id: str):
+        if user.id != requested_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not authorized to access other user data",
+            )
+
     def _item_in_organization(
         self, collection: str, id: str, org_id: str, key: str = None
     ):

@@ -1,6 +1,6 @@
 import { API_URL, AUTH } from '@/config'
 import { serverFetcher } from '@/lib/api/server-fetcher'
-import { AuthUser, User } from '@/models/api'
+import { User } from '@/models/api'
 import {
   AfterCallback,
   HandlerError,
@@ -18,25 +18,14 @@ const afterCallback: AfterCallback = async (
 ) => {
   const { user: auth0User, accessToken: token } = session
   try {
-    const authUser: AuthUser = await serverFetcher<AuthUser>(
-      `${API_URL}/auth/login`,
-      {
-        body: JSON.stringify(auth0User),
-        method: 'POST',
-        token,
-      },
-    )
-    const { organization_name, ...userProps } = authUser
+    const user: User = await serverFetcher<User>(`${API_URL}/auth/login`, {
+      body: JSON.stringify(auth0User),
+      method: 'POST',
+      token,
+    })
     const sessionUser: User = {
       ...auth0User,
-      ...userProps,
-      // TODO login endpoint should send the full organization
-      // Even better, we should fetch user data and login shouldn't return anything
-      organization: {
-        id: 'unknown',
-        name: organization_name,
-        slack_workspace_id: 'unknown',
-      },
+      ...user,
     }
     session.user = sessionUser
   } catch (e: unknown) {

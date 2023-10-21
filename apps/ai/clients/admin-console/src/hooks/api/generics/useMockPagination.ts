@@ -2,7 +2,7 @@ import {
   DEFAULT_PAGE_SIZE,
   List,
   PageResponse,
-} from '@/hooks/api/usePagination'
+} from '@/hooks/api/generics/usePagination'
 import useSWRInfinite from 'swr/infinite'
 
 const useMockPagination = <T>(

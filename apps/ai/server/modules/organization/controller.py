@@ -32,7 +32,8 @@ async def get_organizations(
 async def get_organization(
     id: str, token: str = Depends(token_auth_scheme)
 ) -> OrganizationResponse:
-    authorize.is_admin_user(authorize.user(VerifyToken(token.credentials).verify()))
+    user_id = authorize.user(VerifyToken(token.credentials).verify()).id
+    authorize.user_in_organization(user_id, id)
     return org_service.get_organization(id)
 
 

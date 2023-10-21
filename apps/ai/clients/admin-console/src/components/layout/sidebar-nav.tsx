@@ -6,6 +6,7 @@ import { buttonVariants } from '@/components/ui/button'
 import UserPicture from '@/components/user/user-picture'
 import UserSettingsPopover from '@/components/user/user-settings-popover'
 
+import { useAppContext } from '@/contexts/app-context'
 import { cn } from '@/lib/utils'
 import { User } from '@/models/api'
 import { useUser } from '@auth0/nextjs-auth0/client'
@@ -44,11 +45,8 @@ const SidebarNav = ({
   const pathname = usePathname()
   const { user: authUser } = useUser()
   const user = authUser as User
-  const {
-    name,
-    picture,
-    organization: { name: orgName },
-  } = user as User
+  const { name, picture } = user as User
+  const { organization } = useAppContext()
 
   return (
     <aside className="min-w-[250px] flex flex-col justify-between bg-gray-50 border-r">
@@ -91,7 +89,7 @@ const SidebarNav = ({
           <div className="flex items-center gap-2">
             <UserPicture pictureUrl={picture} />
             <div className="flex flex-col">
-              <span className="text-xs">{orgName}</span>{' '}
+              <span className="text-xs">{organization?.name}</span>{' '}
               <span className="font-semibold text-sm">{name}</span>
             </div>
           </div>

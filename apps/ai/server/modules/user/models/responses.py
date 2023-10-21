@@ -1,7 +1,7 @@
-from modules.user.models.entities import BaseUser, Roles
+from modules.user.models.entities import User, Roles
 
 
-class UserResponse(BaseUser):
+class UserResponse(User):
     id: str
     organization_id: str
     role: Roles | None

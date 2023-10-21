@@ -1,4 +1,4 @@
-import usePagination, { PageResponse } from '@/hooks/api/usePagination'
+import usePagination, { PageResponse } from '@/hooks/api/generics/usePagination'
 import { GoldenSqlListItem } from '@/models/api'
 
 const useGoldenSqlList = (): PageResponse<GoldenSqlListItem> =>

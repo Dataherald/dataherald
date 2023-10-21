@@ -1,7 +1,7 @@
 import { TreeNode } from '@/components/ui/tree-view'
 import { toast } from '@/components/ui/use-toast'
 import { API_URL } from '@/config'
-import useApiFetcher from '@/hooks/api/useApiFetcher'
+import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { UseDatabaseResourceFromTree } from '@/hooks/database/useDatabaseResourceFromTree'
 import { isColumnResource } from '@/lib/domain/database'
 import { ColumnDescription, TableDescription } from '@/models/api'

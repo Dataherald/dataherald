@@ -1,20 +1,57 @@
 import { UserProfile } from '@auth0/nextjs-auth0/client'
 
+export interface SlackTeam {
+  id: string | null
+  name: string | null
+}
+export interface SlackUser {
+  token: string | null
+  scopes: string | null
+  id: string | null
+}
+export interface SlackBot {
+  scopes: string[] | null
+  token: string | null
+  user_id: string | null
+  id: string | null
+}
+export interface SlackInstallation {
+  team: SlackTeam | null
+  enterprise: string | null
+  user: SlackUser | null
+  token_type: string | null
+  is_enterprise_install: boolean | null
+  app_id: string | null
+  auth_version: string | null
+  bot: SlackBot | null
+}
+
+export interface LLMCredentials {
+  organization_id: string
+  api_key: string
+}
+
 export interface Organization {
   id: string
   name: string
-  slack_workspace_id: string
+  confidence_threshold: number
+  db_connection_id?: string
+  slack_installation?: SlackInstallation
+  llm_credentials?: LLMCredentials
 }
 
-// TODO temoporary class
-export interface AuthUser extends UserProfile {
-  slack_id?: string
-  organization_name: string
+export type Organizations = Organization[]
+
+export enum ERole {
+  ADMIN = 'ADMIN',
 }
+
+export type Roles = keyof typeof ERole
 
 export interface User extends UserProfile {
-  slack_id?: string
-  organization: Organization
+  id: string
+  organization_id: string
+  role: Roles | null
 }
 
 export enum EQueryStatus {

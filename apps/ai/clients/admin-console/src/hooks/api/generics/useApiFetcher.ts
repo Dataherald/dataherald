@@ -8,6 +8,7 @@ const useApiFetcher = () => {
 
   const apiFetcher = useCallback(
     async <T>(url: string, options?: RequestInit, retry = true): Promise<T> => {
+      if (!token) return Promise.resolve(null as unknown as T)
       const headers = {
         Authorization: `Bearer ${token}`,
         ...(!(options?.body instanceof FormData)

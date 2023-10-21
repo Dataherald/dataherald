@@ -1,6 +1,6 @@
 import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
-import useApiFetcher from '@/hooks/api/useApiFetcher'
+import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { Databases } from '@/models/api'
 import { useState } from 'react'
 import useSWR from 'swr'

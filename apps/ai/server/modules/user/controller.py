@@ -26,7 +26,7 @@ async def get_users(token: str = Depends(token_auth_scheme)) -> list[UserRespons
 @router.get("/{id}")
 async def get_user(id: str, token: str = Depends(token_auth_scheme)) -> UserResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    authorize.is_admin_user(user)
+    authorize.is_self(user, id)
     return user_service.get_user(id, user.organization_id)
 
 
@@ -48,7 +48,7 @@ async def update_user(
     return user_service.update_user(id, user_request, user.organization_id)
 
 
-@router.put("/{id}/organization")
+@router.patch("/{id}")
 async def update_user_organization(
     id: str,
     user_organization_request: UserOrganizationRequest,
