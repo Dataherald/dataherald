@@ -33,9 +33,6 @@ class AuthService:
         # the id does not get transformed into the new pydantic object
         new_user = UserResponse(**new_user.dict())
         new_user.id = new_user_id
-        new_user.organization_name = self.org_service.get_organization(
-            str(new_user.organization_id)
-        ).name
 
         self.analytics.identify(
             str(new_user.email),
@@ -43,7 +40,9 @@ class AuthService:
                 "email": new_user.email,
                 "name": new_user.name,
                 "organization_id": str(new_user.organization_id),
-                "organization_name": new_user.organization_name,
+                "organization_name": self.org_service.get_organization(
+                    str(new_user.organization_id)
+                ).name,
             },
         )
         return new_user
