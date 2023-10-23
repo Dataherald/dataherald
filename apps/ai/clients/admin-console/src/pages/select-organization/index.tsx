@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAppContext } from '@/contexts/app-context'
 import useOrganizations from '@/hooks/api/organization/useOrganizations'
 import { cn } from '@/lib/utils'
-import { Organization } from '@/models/api'
+import { ERole, Organization } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { Check, Loader } from 'lucide-react'
 import Image from 'next/image'
@@ -17,7 +17,7 @@ const SelectOrganizationPage: FC = () => {
   const [selectedOrganization, setSelectedOrganization] =
     useState<Organization>()
 
-  const { selectingOrg, setAdminOrganization } = useAppContext()
+  const { user, setAdminOrganization } = useAppContext()
 
   const isSelected = useCallback(
     (organizationId: string) => selectedOrganization?.id === organizationId,
@@ -30,17 +30,18 @@ const SelectOrganizationPage: FC = () => {
         setSigningIn(true)
         await setAdminOrganization(selectedOrganization.id)
         setSigningIn(false)
+        router.push('/')
       } catch (error) {
         console.error(`Error signing in: ${error}`)
       }
     }
-  }, [selectedOrganization, setAdminOrganization])
+  }, [router, selectedOrganization, setAdminOrganization])
 
   useEffect(() => {
-    if (!selectingOrg) {
+    if (user && user.role !== ERole.ADMIN) {
       router.push('/')
     }
-  }, [router, selectingOrg])
+  }, [router, user])
 
   return (
     <div className="flex items-center justify-center min-h-screen relative">
@@ -105,10 +106,10 @@ const SelectOrganizationPage: FC = () => {
                   size={20}
                   strokeWidth={2.5}
                 />{' '}
-                Signing In
+                Switching to {selectedOrganization?.name}
               </>
             ) : (
-              'Sign In'
+              'Switch to selected organization'
             )}
           </Button>
         </div>

@@ -1,19 +1,15 @@
-import { posthog } from 'posthog-js'
-import { useUser } from '@auth0/nextjs-auth0/client'
-import { useRouter } from 'next/router'
-import { FC, ReactNode, useEffect } from 'react'
-import { User } from '@/models/api'
-import { PostHogProvider } from 'posthog-js/react'
 import { POSTHOG_HOST, POSTHOG_KEY } from '@/config'
+import { useAppContext } from '@/contexts/app-context'
+import { posthog } from 'posthog-js'
+import { PostHogProvider } from 'posthog-js/react'
+import { FC, ReactNode, useEffect } from 'react'
 
 type WithAnalyticsProps = {
   children: ReactNode
 }
 
 const WithAnalytics: FC<WithAnalyticsProps> = ({ children }) => {
-  const router = useRouter()
-  const { user: authUser, error } = useUser()
-  const user = authUser as User
+  const { user, organization } = useAppContext()
 
   // Check that PostHog is client-side (used to handle Next.js SSR)
   if (typeof window !== 'undefined') {
@@ -27,18 +23,15 @@ const WithAnalytics: FC<WithAnalyticsProps> = ({ children }) => {
   }
 
   useEffect(() => {
-    if (error) {
-      console.error('Error fetching user:', error)
-      return
-    }
-    if (user && user.email) {
+    if (!user || !organization) return
+    if (user.email) {
       posthog.identify(user.email, {
         email: user.email,
         name: user.name,
-        organization_name: user.organization.name,
+        organization_name: organization.name,
       })
     }
-  }, [user, error, router])
+  }, [organization, user])
 
   return <PostHogProvider>{children}</PostHogProvider>
 }

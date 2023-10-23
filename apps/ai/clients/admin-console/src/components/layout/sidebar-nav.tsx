@@ -2,14 +2,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { buttonVariants } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import UserPicture from '@/components/user/user-picture'
 import UserSettingsPopover from '@/components/user/user-settings-popover'
 
 import { useAppContext } from '@/contexts/app-context'
 import { cn } from '@/lib/utils'
-import { User } from '@/models/api'
-import { useUser } from '@auth0/nextjs-auth0/client'
+import { ERole } from '@/models/api'
 import { Database, ListChecks, LucideIcon, Microscope } from 'lucide-react'
 
 export interface MenuItem {
@@ -43,10 +42,9 @@ const SidebarNav = ({
   ...props
 }: React.HTMLAttributes<HTMLElement>) => {
   const pathname = usePathname()
-  const { user: authUser } = useUser()
-  const user = authUser as User
-  const { name, picture } = user as User
-  const { organization } = useAppContext()
+  const { user, organization } = useAppContext()
+
+  const isAdmin = user?.role === ERole.ADMIN
 
   return (
     <aside className="min-w-[250px] flex flex-col justify-between bg-gray-50 border-r">
@@ -85,15 +83,22 @@ const SidebarNav = ({
         </nav>
       </div>
       {user && (
-        <div className="flex items-center justify-between gap-2 p-3 m-3 border rounded-xl bg-white">
-          <div className="flex items-center gap-2">
-            <UserPicture pictureUrl={picture} />
-            <div className="flex flex-col">
-              <span className="text-xs">{organization?.name}</span>{' '}
-              <span className="font-semibold text-sm">{name}</span>
+        <div className="flex flex-col items-center  gap-3 p-3 m-3 border rounded-xl bg-white">
+          <div className="flex items-center justify-between gap-2 ">
+            <div className="flex items-center gap-2">
+              <UserPicture pictureUrl={user.picture} />
+              <div className="flex flex-col">
+                <span className="text-xs">{organization?.name}</span>{' '}
+                <span className="font-semibold text-sm">{user.name}</span>
+              </div>
             </div>
+            <UserSettingsPopover user={user} />
           </div>
-          <UserSettingsPopover user={user} />
+          {isAdmin && (
+            <Button variant="secondary">
+              <Link href="/select-organization">Switch Organization</Link>
+            </Button>
+          )}
         </div>
       )}
     </aside>
