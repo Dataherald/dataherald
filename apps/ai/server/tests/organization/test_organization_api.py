@@ -6,6 +6,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from app import app
+from modules.user.models.responses import UserResponse
 
 client = TestClient(app)
 
@@ -13,8 +14,13 @@ client = TestClient(app)
 @patch("utils.auth.VerifyToken.verify", Mock(return_value={"email": ""}))
 @patch.multiple(
     "utils.auth.Authorize",
-    user=Mock(return_value=None),
+    user=Mock(
+        return_value=UserResponse(
+            id="0123456789ab0123456789ab", organization_id="0123456789ab0123456789ab"
+        )
+    ),
     is_admin_user=Mock(return_value=None),
+    user_in_organization=Mock(return_value=None),
 )
 class TestOrganizationAPI(TestCase):
     url = "/organization"

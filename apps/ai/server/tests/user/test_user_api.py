@@ -24,6 +24,7 @@ client = TestClient(app)
         )
     ),
     is_admin_user=Mock(return_value=None),
+    is_self=Mock(return_value=None),
 )
 class TestUserAPI(TestCase):
     url = "/user"

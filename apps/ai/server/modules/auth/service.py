@@ -1,9 +1,8 @@
 from fastapi import HTTPException, status
 
-from modules.auth.models.requests import AuthUserRequest
-from modules.auth.models.responses import AuthUserResponse
 from modules.organization.service import OrganizationService
 from modules.user.models.requests import UserRequest
+from modules.user.models.responses import UserResponse
 from modules.user.service import UserService
 from utils.analytics import Analytics
 
@@ -14,7 +13,7 @@ class AuthService:
         self.org_service = OrganizationService()
         self.analytics = Analytics()
 
-    def login(self, user_request: AuthUserRequest) -> AuthUserResponse:
+    def login(self, user_request: UserRequest) -> UserResponse:
         # check if user exists or not
         user = self.user_service.get_user_by_email(user_request.email)
         if user:
@@ -32,7 +31,7 @@ class AuthService:
         new_user = self.user_service.get_user_by_email(user_request.email)
         new_user_id = new_user.id
         # the id does not get transformed into the new pydantic object
-        new_user = AuthUserResponse(**new_user.dict())
+        new_user = UserResponse(**new_user.dict())
         new_user.id = new_user_id
         new_user.organization_name = self.org_service.get_organization(
             str(new_user.organization_id)
@@ -47,5 +46,4 @@ class AuthService:
                 "organization_name": new_user.organization_name,
             },
         )
-
         return new_user
