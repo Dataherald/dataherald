@@ -32,7 +32,7 @@ class UserService:
         new_user_data.organization_id = ObjectId(org_id)
         new_id = self.repo.add_user(new_user_data.dict(exclude_unset=True))
         if new_id:
-            new_user = self.repo.get_user(new_id)
+            new_user = self.repo.get_user({"_id": ObjectId(new_id)})
             return self._get_mapped_user_response(new_user)
 
         raise HTTPException(status_code=400, detail="User exists or cannot add user")
