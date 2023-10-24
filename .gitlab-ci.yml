@@ -43,17 +43,13 @@ update_golden_records:
   script:
     - echo "Checking that the containers are running"
     - echo "-----------------------------------------------------------------"
-    - docker-compose ps
-    - echo ""
-    - echo "Checking that there is an envfile in the root directory of the dataherald-app-1 container"
-    - echo "-----------------------------------------------------------------"
-    - docker-compose exec -T dataherald-app-1 sh -c "ls -l /app/"
+    - docker ps
     - echo ""
     - echo "Wait for 10 seconds for the database to be ready"
     - sleep 10
     - echo "Updating golden records"
     - echo "-----------------------------------------------------------------"
-    - docker-compose exec -T dataherald-app-1 sh -c "cd scripts && python3 setup_golden_records.py"
+    - docker exec -t dataherald-app-1 sh -c "cd scripts && python3 setup_golden_records.py"
   tags:
     - dockerexecutor
   only:
