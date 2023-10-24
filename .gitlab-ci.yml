@@ -1,6 +1,7 @@
 stages:
   - build_container
   - deploy_to_local
+  - update_golden_records
   - deploy_to_local_staging
 
 
