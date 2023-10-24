@@ -41,6 +41,14 @@ deploy_to_local:
 update_golden_records:
   stage: update_golden_records
   script:
+    - echo "Checking that the containers are running"
+    - echo "-----------------------------------------------------------------"
+    - docker-compose ps
+    - echo ""
+    - echo "Checking that there is an envfile in the root directory of the dataherald-app-1 container"
+    - echo "-----------------------------------------------------------------"
+    - docker-compose exec -T dataherald-app-1 sh -c "ls -l /app/"
+    - echo ""
     - echo "Wait for 10 seconds for the database to be ready"
     - sleep 10
     - echo "Updating golden records"
