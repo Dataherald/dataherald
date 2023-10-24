@@ -54,7 +54,7 @@ from dataherald.utils.agent_prompts import (
 logger = logging.getLogger(__name__)
 
 
-TOP_K = 50
+TOP_K = os.environ.get("TOP_K", 50)
 
 
 def catch_exceptions():  # noqa: C901
