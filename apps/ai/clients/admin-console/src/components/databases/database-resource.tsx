@@ -22,7 +22,7 @@ import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 
-const DB_INSTRUCTION_MAX_LENGTH = 500
+const DB_INSTRUCTION_MAX_LENGTH = 2000
 
 const formSchema = Yup.object({
   instructions: Yup.string().max(
