@@ -20,6 +20,9 @@ if __name__ == "__main__":
         print("Deleting existing dbdata folder")
         shutil.rmtree("/app/dbdata")
 
+    # print the contents of /app
+    print("Contents of /app")
+
     # create the dbdata folder
     os.mkdir("/app/dbdata")
     print("Created new dbdata folder in current working directory")

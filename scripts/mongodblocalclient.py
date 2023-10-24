@@ -8,10 +8,15 @@ from pymongo import MongoClient
 class MongoDbLocalClient:
     def __init__(self):
         load_dotenv()
-        uri = os.getenv('MONGODB_URI_LOCAL')
+        # print all the environment variables
+        print("Environment variables:")
+        print(os.environ)
+
+        uri = 'mongodb://admin:admin@mongodb:27017'
         db_name = os.getenv('MONGODB_DB_NAME')
 
         print(f"uri: {uri}")
+        print(f"db_name: {db_name}")
 
         self.client = MongoClient(uri)
         self.db_name = db_name

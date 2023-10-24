@@ -35,6 +35,22 @@ deploy_to_local:
   only:
     - dev
 
+
+# add step to run the setup_golden_records.py script at the end
+update_golden_records:
+  stage: deploy_to_local
+  script:
+    - echo "Wait for 10 seconds for the database to be ready"
+    - sleep 10
+    - echo "Updating golden records"
+    - echo "-----------------------------------------------------------------"
+    - docker-compose exec -T dataherald-app-1 sh -c "cd scripts && python3 setup_golden_records.py"
+  tags:
+    - dockerexecutor
+  only:
+    - dev
+    
+
 deploy_to_local_staging:
   stage: deploy_to_local_staging
   script:
