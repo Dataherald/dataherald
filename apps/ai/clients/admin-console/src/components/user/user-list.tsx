@@ -63,7 +63,7 @@ const UserList = () => {
   return (
     <>
       <div className="flex items-center gap-2">
-        <Users2 size={20} />
+        <Users2 size={20} strokeWidth={2.5} />
         <h1 className="font-semibold">Users</h1>
       </div>
       <div className="grow">

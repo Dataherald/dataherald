@@ -53,7 +53,7 @@ const UserSettingsPopover: FC<UserSettingsPopoverProps> = ({
           <UserPicture pictureUrl={picture} size={75} />
         </div>
         <div className="grid grid-cols-2">
-          <Link href="/account">
+          <Link href="/my-account">
             <Button variant="ghost" size="sm" className="w-full">
               <User2 className="mr-2" size={18} /> My account
             </Button>
