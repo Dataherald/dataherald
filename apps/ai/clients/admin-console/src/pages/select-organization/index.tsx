@@ -12,12 +12,25 @@ import { FC, useCallback, useEffect, useState } from 'react'
 
 const SelectOrganizationPage: FC = () => {
   const router = useRouter()
+  const { user, organization, setAdminOrganization } = useAppContext()
   const [signingIn, setSigningIn] = useState(false)
   const { organizations, isLoading } = useOrganizations()
   const [selectedOrganization, setSelectedOrganization] =
     useState<Organization>()
 
-  const { user, setAdminOrganization } = useAppContext()
+  useEffect(() => {
+    // load current organization as default selected value
+    if (selectedOrganization) return // if already selected, do nothing
+    if (organization) {
+      setSelectedOrganization(organization)
+    }
+  }, [organization, selectedOrganization])
+
+  useEffect(() => {
+    if (user && user.role !== ERole.ADMIN) {
+      router.push('/')
+    }
+  }, [router, user])
 
   const isSelected = useCallback(
     (organizationId: string) => selectedOrganization?.id === organizationId,
@@ -37,11 +50,9 @@ const SelectOrganizationPage: FC = () => {
     }
   }, [router, selectedOrganization, setAdminOrganization])
 
-  useEffect(() => {
-    if (user && user.role !== ERole.ADMIN) {
-      router.push('/')
-    }
-  }, [router, user])
+  const handleCancel = useCallback(() => {
+    router.push('/')
+  }, [router])
 
   return (
     <div className="flex items-center justify-center min-h-screen relative">
@@ -93,25 +104,29 @@ const SelectOrganizationPage: FC = () => {
               ))}
             </ul>
           )}
-          <Button
-            variant="secondary"
-            className="w-full"
-            disabled={!selectedOrganization || signingIn}
-            onClick={handleSignIn}
-          >
-            {signingIn ? (
-              <>
-                <Loader
-                  className="mr-2 animate-spin"
-                  size={20}
-                  strokeWidth={2.5}
-                />{' '}
-                Switching to {selectedOrganization?.name}
-              </>
-            ) : (
-              'Switch to selected organization'
-            )}
-          </Button>
+          <div className="w-full flex items-center justify-between gap-2">
+            <Button variant="secondary-outline" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={!selectedOrganization || signingIn}
+              onClick={handleSignIn}
+            >
+              {signingIn ? (
+                <>
+                  <Loader
+                    className="mr-2 animate-spin"
+                    size={20}
+                    strokeWidth={2.5}
+                  />{' '}
+                  Saving...
+                </>
+              ) : (
+                'Continue'
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
