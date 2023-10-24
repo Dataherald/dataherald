@@ -125,15 +125,17 @@ const UserList = () => {
               </ul>
             )}
       </div>
-      <Button className="self-end" onClick={() => setOpenAddUserDialog(true)}>
-        <UserPlus2 className="mr-2" />
-        Add User
-      </Button>
-      <AddUserDialog
-        open={openAddUserDialog}
-        onCancel={() => setOpenAddUserDialog(false)}
-        onAddUser={handleUserAdded}
-      />
+      <div className="self-end">
+        <Button onClick={() => setOpenAddUserDialog(true)}>
+          <UserPlus2 className="mr-2" />
+          Add User
+        </Button>
+        <AddUserDialog
+          open={openAddUserDialog}
+          onCancel={() => setOpenAddUserDialog(false)}
+          onAddUser={handleUserAdded}
+        />
+      </div>
     </>
   )
 }
