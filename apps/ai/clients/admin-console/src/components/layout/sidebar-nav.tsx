@@ -2,13 +2,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { Button, buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import UserPicture from '@/components/user/user-picture'
 import UserSettingsPopover from '@/components/user/user-settings-popover'
 
 import { useAppContext } from '@/contexts/app-context'
 import { cn } from '@/lib/utils'
-import { ERole } from '@/models/api'
 import { Database, ListChecks, LucideIcon, Microscope } from 'lucide-react'
 
 export interface MenuItem {
@@ -43,8 +42,6 @@ const SidebarNav = ({
 }: React.HTMLAttributes<HTMLElement>) => {
   const pathname = usePathname()
   const { user, organization } = useAppContext()
-
-  const isAdmin = user?.role === ERole.ADMIN
 
   return (
     <aside className="min-w-[250px] flex flex-col justify-between bg-gray-50 border-r">
@@ -82,9 +79,9 @@ const SidebarNav = ({
           ))}
         </nav>
       </div>
-      {user && (
+      {user && organization && (
         <div className="flex flex-col items-center  gap-3 p-3 m-3 border rounded-xl bg-white">
-          <div className="flex items-center justify-between gap-2 ">
+          <div className="w-full flex items-center justify-between gap-2 ">
             <div className="flex items-center gap-2">
               <UserPicture pictureUrl={user.picture} />
               <div className="flex flex-col">
@@ -92,13 +89,8 @@ const SidebarNav = ({
                 <span className="font-semibold text-sm">{user.name}</span>
               </div>
             </div>
-            <UserSettingsPopover user={user} />
+            <UserSettingsPopover user={user} organization={organization} />
           </div>
-          {isAdmin && (
-            <Button variant="secondary">
-              <Link href="/select-organization">Switch Organization</Link>
-            </Button>
-          )}
         </div>
       )}
     </aside>

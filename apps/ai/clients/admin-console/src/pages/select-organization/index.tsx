@@ -51,7 +51,7 @@ const SelectOrganizationPage: FC = () => {
   }, [router, selectedOrganization, setAdminOrganization])
 
   const handleCancel = useCallback(() => {
-    router.push('/')
+    router.push('/organization-settings')
   }, [router])
 
   return (
@@ -73,11 +73,10 @@ const SelectOrganizationPage: FC = () => {
             height={50}
           />
           <h1 className="text-2xl font-bold text-secondary-dark">
-            Select Organization
+            Change Organization
           </h1>
           <p className="text-sm text-slate-600">
-            Sign in as an <strong>admin</strong> to any of the following
-            organizations
+            Select the organization you wish to manage
           </p>
           {isLoading ? (
             Array.from({ length: 4 }).map((_, idx) => (

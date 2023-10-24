@@ -54,6 +54,8 @@ export interface User extends UserProfile {
   role: Roles | null
 }
 
+export type Users = User[]
+
 export enum EQueryStatus {
   REJECTED = 'REJECTED',
   SQL_ERROR = 'SQL_ERROR',
