@@ -12,7 +12,7 @@ const usePatch = <PatchModel>() => {
           body: JSON.stringify(updates),
         })
       } catch (error) {
-        console.error('Patch operation failed:', error)
+        console.error('PATCH operation failed:', error)
         throw error
       }
     },

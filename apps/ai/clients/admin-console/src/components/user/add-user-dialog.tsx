@@ -67,13 +67,14 @@ const AddUserDialog: FC<AddUserDialogProps> = ({
       form.reset()
       toast({
         title: 'User added',
+        description: `The user has been added to the Organization.`,
       })
     } catch (error) {
       console.error(`Error adding user: ${error}`)
       toast({
         variant: 'destructive',
         title: 'Ups! Something went wrong.',
-        description: 'There was a problem connecting your Database.',
+        description: 'There was a problem adding the user to the Organization.',
         action: (
           <ToastAction
             altText="Try again"
@@ -99,7 +100,8 @@ const AddUserDialog: FC<AddUserDialogProps> = ({
             <DialogHeader>
               <h1 className="font-semibold">Add User to the Organization</h1>
               <FormDescription>
-                Grant access to a new user by entering their email address
+                Grant access to the Organization to a new user by entering their
+                email address
               </FormDescription>
             </DialogHeader>
             <FormField
@@ -120,8 +122,8 @@ const AddUserDialog: FC<AddUserDialogProps> = ({
                 <AlertCircle size={18} />
               </div>
               <AlertDescription>
-                Once the user email address is added, they can sign in to the
-                admin console and manage the organization
+                Once the user email address is added, they can complete the sign
+                up process by signing in to the admin console
               </AlertDescription>
             </Alert>
             <DialogFooter>

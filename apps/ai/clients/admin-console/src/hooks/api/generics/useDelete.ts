@@ -1,24 +1,24 @@
 import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { useCallback } from 'react'
 
-const useGet = <Model>() => {
+const useDelete = () => {
   const apiFetcher = useApiFetcher()
 
-  const get = useCallback(
+  const deleteResource = useCallback(
     async (url: string) => {
       try {
-        return await apiFetcher<Model>(url, {
-          method: 'GET',
+        return await apiFetcher(url, {
+          method: 'DELETE',
         })
       } catch (error) {
-        console.error('GET operation failed:', error)
+        console.error('DELETE operation failed:', error)
         throw error
       }
     },
     [apiFetcher],
   )
 
-  return get
+  return deleteResource
 }
 
-export default useGet
+export default useDelete
