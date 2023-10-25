@@ -55,7 +55,9 @@ async def update_organization(
 
 @router.delete("/{id}")
 async def delete_organization(id: str, token: str = Depends(token_auth_scheme)):
-    authorize.is_admin_user(authorize.user(VerifyToken(token.credentials).verify()))
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    authorize.is_admin_user(user)
+    authorize.is_not_self(user.organization_id, id)
     return org_service.delete_organization(id)
 
 

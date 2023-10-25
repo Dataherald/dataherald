@@ -131,10 +131,10 @@ class TestOrganizationAPI(TestCase):
     )
     def test_delete(self):
         response = client.delete(
-            self.url + "/0123456789ab0123456789ab", headers=self.test_header
+            self.url + "/666f6f2d6261722d71757578", headers=self.test_header
         )
         assert response.status_code == status.HTTP_200_OK
-        assert response.json() == {"id": "0123456789ab0123456789ab"}
+        assert response.json() == {"id": "666f6f2d6261722d71757578"}
 
     @patch.multiple(
         "database.mongo.MongoDB",

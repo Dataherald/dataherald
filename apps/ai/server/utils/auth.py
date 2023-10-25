@@ -154,11 +154,18 @@ class Authorize:
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authorized"
             )
 
-    def is_self(self, user: UserResponse, requested_user_id: str):
-        if user.id != requested_user_id:
+    def is_self(self, id_a: str, id_b: str):
+        if id_a != id_b:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not authorized to access other user data",
+            )
+
+    def is_not_self(self, id_a: str, id_b: str):
+        if id_a == id_b:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not authorized to self modify  user data",
             )
 
     def _item_in_organization(

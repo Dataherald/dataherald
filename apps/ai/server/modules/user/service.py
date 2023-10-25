@@ -77,12 +77,20 @@ class UserService:
 
     def delete_user(self, user_id: str, org_id: str) -> dict:
         if (
-            self.repo.delete_user(
-                {"_id": ObjectId(user_id), "organization_id": ObjectId(org_id)}
+            len(
+                self.repo.get_users(
+                    {"organization_id": ObjectId(org_id), "role": {"$ne": "ADMIN"}}
+                )
             )
-            == 1
+            > 1
         ):
-            return {"id": user_id}
+            if (
+                self.repo.delete_user(
+                    {"_id": ObjectId(user_id), "organization_id": ObjectId(org_id)}
+                )
+                == 1
+            ):
+                return {"id": user_id}
 
         raise HTTPException(
             status_code=400, detail="User not found or cannot be deleted"

@@ -26,7 +26,7 @@ async def get_users(token: str = Depends(token_auth_scheme)) -> list[UserRespons
 @router.get("/{id}")
 async def get_user(id: str, token: str = Depends(token_auth_scheme)) -> UserResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    authorize.is_self(user, id)
+    authorize.is_self(user.id, id)
     return user_service.get_user(id, user.organization_id)
 
 
@@ -62,4 +62,5 @@ async def update_user_organization(
 async def delete_user(id: str, token: str = Depends(token_auth_scheme)) -> dict:
     user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_admin_user(user)
+    authorize.is_not_self(user.id, id)
     return user_service.delete_user(id, user.organization_id)
