@@ -19,14 +19,12 @@ authorize = Authorize()
 @router.get("/list")
 async def get_users(token: str = Depends(token_auth_scheme)) -> list[UserResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    authorize.is_admin_user(user)
     return user_service.get_users(user.organization_id)
 
 
 @router.get("/{id}")
 async def get_user(id: str, token: str = Depends(token_auth_scheme)) -> UserResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    authorize.is_self(user.id, id)
     return user_service.get_user(id, user.organization_id)
 
 
@@ -35,7 +33,6 @@ async def add_user(
     user_request: UserRequest, token: str = Depends(token_auth_scheme)
 ) -> UserResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    authorize.is_admin_user(user)
     return user_service.add_user(user_request, user.organization_id)
 
 
@@ -44,7 +41,6 @@ async def update_user(
     id: str, user_request: UserRequest, token: str = Depends(token_auth_scheme)
 ) -> UserResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    authorize.is_admin_user(user)
     return user_service.update_user(id, user_request, user.organization_id)
 
 
@@ -61,6 +57,5 @@ async def update_user_organization(
 @router.delete("/{id}")
 async def delete_user(id: str, token: str = Depends(token_auth_scheme)) -> dict:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    authorize.is_admin_user(user)
     authorize.is_not_self(user.id, id)
     return user_service.delete_user(id, user.organization_id)
