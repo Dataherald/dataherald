@@ -23,3 +23,16 @@ class Analytics:
             user_id,
             properties=properties,
         )
+
+    def track_error(
+        self,
+        user_id: str,
+        path: str,
+    ):
+        self.track(
+            user_id,
+            "engine_error",
+            {
+                "path": path,
+            },
+        )

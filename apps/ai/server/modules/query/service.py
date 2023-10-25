@@ -6,6 +6,7 @@ from bson import ObjectId
 from fastapi import status
 
 from config import settings
+from modules.db_connection.service import DBConnectionService
 from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.service import GoldenSQLService
 from modules.organization.models.responses import OrganizationResponse
@@ -46,6 +47,7 @@ class QueryService:
         self.repo = QueryRepository()
         self.golden_sql_service = GoldenSQLService()
         self.user_service = UserService()
+        self.db_connection_service = DBConnectionService()
         self.analytics = Analytics()
 
     async def answer_question(
@@ -102,8 +104,13 @@ class QueryService:
                     "question_id": str(query.question_id),
                     "response_id": str(query.response_id),
                     "organization_id": organization.id,
+                    "organization_name": organization.name,
+                    "database_name": self.db_connection_service.get_db_connection(
+                        organization.db_connection_id
+                    ).alias,
+                    "confidence_score": answer.confidence_score,
                     "status": query.status,
-                    "username": username,
+                    "asker": username,
                 },
             )
 
@@ -122,6 +129,26 @@ class QueryService:
                 is_above_confidence_threshold = False
             else:
                 is_above_confidence_threshold = True
+                self.analytics.track(
+                    question_request.slack_user_id,
+                    "query_correct_on_first_try",
+                    {
+                        "query_id": query.id,
+                        "question_id": str(query.question_id),
+                        "response_id": str(query.response_id)
+                        if query.response_id
+                        else None,
+                        "organization_id": organization.id,
+                        "organization_name": organization.name,
+                        "database_name": self.db_connection_service.get_db_connection(
+                            organization.db_connection_id
+                        ).alias,
+                        "display_id": query.display_id,
+                        "status": query.status.value,
+                        "confidence_score": answer.confidence_score,
+                        "asker": username,
+                    },
+                )
 
             # error handling for response longer than character limit
             if len(answer.response + answer.sql_query) >= SLACK_CHARACTER_LIMIT:
@@ -306,16 +333,18 @@ class QueryService:
             if all(answer.sql_query == prev_sql_query for answer in all_answers):
                 self.analytics.track(
                     user.email,
-                    "query_correct_on_first_try",
+                    "verified_query_correct_on_first_try",
                     {
-                        "query_id": query_id,
-                        "question_id": str(updated_query.question_id),
-                        "response_id": str(updated_query.response_id)
-                        if updated_query.response_id
+                        "query_id": query.id,
+                        "question_id": str(query.question_id),
+                        "response_id": str(query.response_id)
+                        if query.response_id
                         else None,
-                        "organization_id": organization.id,
-                        "display_id": updated_query.display_id,
-                        "status": query_request.query_status.value,
+                        "database_name": self.db_connection_service.get_db_connection(
+                            organization.db_connection_id
+                        ).alias,
+                        "display_id": query.display_id,
+                        "status": query.status.value,
                         "confidence_score": new_query_response.confidence_score
                         if new_query_response
                         else None,
@@ -345,12 +374,15 @@ class QueryService:
                 "response_id": str(updated_query.response_id)
                 if updated_query.response_id
                 else None,
-                "organization_id": organization.id,
+                "database_name": self.db_connection_service.get_db_connection(
+                    organization.db_connection_id
+                ).alias,
                 "display_id": updated_query.display_id,
                 "status": query_request.query_status.value,
                 "confidence_score": new_query_response.confidence_score
                 if new_query_response
                 else None,
+                "asker": query.slack_info.username,
             },
         )
 
@@ -383,7 +415,9 @@ class QueryService:
                     "query_id": query_id,
                     "question_id": new_query_response.id,
                     "response_id": new_query_response.id,
-                    "organization_id": user.organization_id,
+                    "database_name": self.db_connection_service.get_db_connection(
+                        str(question.db_connection_id)
+                    ).alias,
                     "sql_generation_status": new_query_response.sql_generation_status.value,
                     "confidence_score": new_query_response.confidence_score,
                 },

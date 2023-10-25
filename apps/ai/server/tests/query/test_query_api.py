@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from httpx import Response
 
 from app import app
+from modules.db_connection.models.responses import DBConnectionResponse
 from modules.organization.models.entities import SlackBot, SlackInstallation
 from modules.organization.models.responses import OrganizationResponse
 from modules.query.models.entities import Query
@@ -34,6 +35,10 @@ client = TestClient(app)
             db_connection_id="test_connection_id",
         )
     ),
+)
+@patch(
+    "modules.db_connection.service.DBConnectionService.get_db_connection",
+    Mock(return_value=DBConnectionResponse(id="123", alias="test_alias")),
 )
 class TestQueryAPI(TestCase):
     url = "/query"
