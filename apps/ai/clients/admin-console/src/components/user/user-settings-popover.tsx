@@ -35,7 +35,7 @@ const UserSettingsPopover: FC<UserSettingsPopoverProps> = ({
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="flex flex-col gap-3 ml-3 mb-3 w-[420px]"
+        className="flex flex-col gap-3 ml-3 mb-3 w-[420px] p-3"
       >
         <div className="grid grid-cols-[auto,1fr,auto] items-start gap-3">
           <div className="w-7"></div>{' '}
@@ -48,7 +48,7 @@ const UserSettingsPopover: FC<UserSettingsPopoverProps> = ({
             <X strokeWidth={1.5} size={20} />
           </PopoverClose>
         </div>
-        <div className="flex flex-col items-center justify-center gap-3 p-6">
+        <div className="flex flex-col items-center justify-center gap-3 p-2">
           <h1>Hi, {username}!</h1>
           <UserPicture pictureUrl={picture} size={75} />
         </div>
