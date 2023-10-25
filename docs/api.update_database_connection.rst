@@ -24,10 +24,7 @@ This endpoint is used to update a Database connection
       "use_ssh": true,
       "connection_uri": "string",
       "path_to_credentials_file": "string",
-      "llm_credentials": {
-        "organization_id": "string",
-        "api_key": "string"
-      },
+      "llm_api_key": "string",
       "ssh_settings": {
         "db_name": "string",
         "host": "string",
@@ -53,10 +50,7 @@ HTTP 200 code response
       "use_ssh": false,
       "uri": "gAAAAABk8lHQNAUn5XARb94Q8H1OfHpVzOtzP3b2LCpwxUsNCe7LGkwkN8FX-IF3t65oI5mTzgDMR0BY2lzvx55gO0rxlQxRDA==",
       "path_to_credentials_file": "string",
-      "llm_credentials": {
-        "organization_id": "string",
-        "api_key": "string"
-      },
+      "llm_api_key": "string",
       "ssh_settings": {
         "db_name": "string",
         "host": "string",
@@ -133,10 +127,7 @@ With a SSH connection and LLM credentials
       -d '{
       "alias": "my_db_alias",
       "use_ssh": true,
-      "llm_credentials": {
-        "organization_id": "organization_id",
-        "api_key": "api_key"
-      },
+      "llm_api_key": "api_key",
       "ssh_settings": {
         "db_name": "db_name",
         "host": "string",

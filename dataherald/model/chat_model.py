@@ -21,11 +21,9 @@ class ChatModel(LLMModel):
         model_name="gpt-4-32k",
         **kwargs: Any
     ) -> Any:
-        if database_connection.llm_credentials is not None:
+        if database_connection.llm_api_key is not None:
             fernet_encrypt = FernetEncrypt()
-            api_key = fernet_encrypt.decrypt(
-                database_connection.llm_credentials.api_key
-            )
+            api_key = fernet_encrypt.decrypt(database_connection.llm_api_key)
             if model_family == "openai":
                 os.environ["OPENAI_API_KEY"] = api_key
             elif model_family == "anthropic":
