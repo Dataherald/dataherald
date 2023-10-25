@@ -44,7 +44,7 @@ from dataherald.types import Question, Response
 logger = logging.getLogger(__name__)
 
 
-TOP_K = 50
+TOP_K = os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50")
 AGENT_PREFIX = """You are an agent designed to interact with a SQL database.
 Given an input question, create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
 You have access to tools for interacting with the database.

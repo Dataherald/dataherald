@@ -36,6 +36,7 @@ provided in the .env.example file with the default values.
     S3_AWS_SECRET_ACCESS_KEY =
 
     DH_ENGINE_TIMEOUT =
+    UPPER_LIMIT_QUERY_RETURN_ROWS =
 
 
 .. csv-table::
@@ -63,3 +64,4 @@ provided in the .env.example file with the default values.
    "S3_AWS_ACCESS_KEY_ID", "The key used to access credential files if saved to S3", "None", "No"
    "S3_AWS_SECRET_ACCESS_KEY", "The key used to access credential files if saved to S3", "None", "No"
    "DH_ENGINE_TIMEOUT", "This is used to set the max seconds the process will wait for the response to be generate. If the specified time limit is exceeded, it will trigger an exception", "None", "No"
+   "UPPER_LIMIT_QUERY_RETURN_ROWS", "The upper limit on number of rows returned from the query engine (equivalent to using LIMIT N in PostgreSQL/MySQL/SQlite).", "50", "No"
