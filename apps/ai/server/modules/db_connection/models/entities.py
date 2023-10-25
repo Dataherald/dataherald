@@ -3,11 +3,6 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
-class LLMCredentials(BaseModel):
-    organization_id: str
-    api_key: str
-
-
 class SSHSettings(BaseModel):
     db_name: str | None
     host: str | None
@@ -32,7 +27,7 @@ class BaseDBConnection(BaseModel):
 class DBConnection(BaseDBConnection):
     id: Any = Field(alias="_id")
     uri: str | None
-    llm_credentials: LLMCredentials | None
+    llm_api_key: str | None
 
 
 class DBConnectionRef(BaseModel):

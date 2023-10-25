@@ -58,9 +58,7 @@ class DBConnectionService:
             response = await client.post(
                 settings.k2_core_url + "/database-connections",
                 json={
-                    "llm_credentials": organization.llm_credentials.dict()
-                    if organization.llm_credentials
-                    else None,
+                    "llm_api_key": organization.llm_api_key,
                     **db_connection_request.dict(),
                 },
                 timeout=settings.default_k2_core_timeout,
@@ -100,9 +98,7 @@ class DBConnectionService:
             response = await client.put(
                 settings.k2_core_url + f"/database-connections/{id}",
                 json={
-                    "llm_credentials": organization.llm_credentials.dict()
-                    if organization.llm_credentials
-                    else None,
+                    "llm_api_key": organization.llm_api_key,
                     **db_connection_request.dict(),
                 },
                 timeout=settings.default_k2_core_timeout,

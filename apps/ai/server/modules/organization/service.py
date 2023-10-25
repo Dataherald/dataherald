@@ -1,7 +1,7 @@
+import openai
 from bson import ObjectId
 from fastapi import HTTPException, status
 
-from modules.db_connection.models.entities import LLMCredentials
 from modules.organization.models.entities import Organization, SlackInstallation
 from modules.organization.models.requests import OrganizationRequest
 from modules.organization.models.responses import OrganizationResponse
@@ -37,9 +37,10 @@ class OrganizationService:
     def add_organization(
         self, org_request: OrganizationRequest
     ) -> OrganizationResponse:
-        if org_request.llm_credentials:
-            org_request.llm_credentials = self._encrypt_llm_credentials(
-                org_request.llm_credentials
+        if org_request.llm_api_key:
+            self._validate_api_key(org_request.llm_api_key)
+            org_request.llm_api_key = self._encrypt_llm_credentials(
+                org_request.llm_api_key
             )
         new_org_data = Organization(**org_request.dict())
         new_org_data.db_connection_id = (
@@ -66,9 +67,10 @@ class OrganizationService:
     def update_organization(
         self, org_id: str, org_request: OrganizationRequest
     ) -> OrganizationResponse:
-        if org_request.llm_credentials:
-            org_request.llm_credentials = self._encrypt_llm_credentials(
-                org_request.llm_credentials
+        if org_request.llm_api_key:
+            self._validate_api_key(org_request.llm_api_key)
+            org_request.llm_api_key = self._encrypt_llm_credentials(
+                org_request.llm_api_key
             )
         updated_org_data = Organization(**org_request.dict(exclude_unset=True))
         updated_org_data.db_connection_id = (
@@ -83,6 +85,10 @@ class OrganizationService:
             == 1
         ):
             new_org = self.repo.get_organization(org_id)
+
+            if new_org.llm_api_key:
+                self.repo.update_db_connections_llm_api_key(org_id, new_org.llm_api_key)
+
             return self._get_mapped_organization_response(new_org)
 
         raise HTTPException(
@@ -158,12 +164,16 @@ class OrganizationService:
         )
         return OrganizationResponse(**org_dict)
 
-    def _encrypt_llm_credentials(
-        self, llm_credentials: LLMCredentials
-    ) -> LLMCredentials:
+    def _encrypt_llm_credentials(self, llm_api_key: str) -> str:
         fernet_encrypt = FernetEncrypt()
-        llm_credentials.api_key = fernet_encrypt.encrypt(llm_credentials.api_key)
-        llm_credentials.organization_id = fernet_encrypt.encrypt(
-            llm_credentials.organization_id
-        )
-        return llm_credentials
+        return fernet_encrypt.encrypt(llm_api_key)
+
+    def _validate_api_key(self, llm_api_key: str):
+        openai.api_key = llm_api_key
+        try:
+            openai.Model.list()
+        except openai.error.AuthenticationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid LLM API key",
+            ) from e

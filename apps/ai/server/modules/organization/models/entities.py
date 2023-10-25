@@ -2,8 +2,6 @@ from typing import Any
 
 from pydantic import BaseModel, Field, confloat
 
-from modules.db_connection.models.entities import LLMCredentials
-
 
 class SlackTeam(BaseModel):
     id: str | None
@@ -38,7 +36,7 @@ class BaseOrganization(BaseModel):
     name: str | None
     confidence_threshold: confloat(ge=0, le=1) | None
     slack_installation: SlackInstallation | None
-    llm_credentials: LLMCredentials | None
+    llm_api_key: str | None
 
 
 class Organization(BaseOrganization):

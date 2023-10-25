@@ -41,7 +41,7 @@ class TestDBConnectionAPI(TestCase):
         "use_ssh": False,
         "uri": "test_uri_1",
         "path_to_credentials_file": None,
-        "llm_credentials": None,
+        "llm_api_key": None,
     }
     test_2 = {
         "_id": ObjectId(b"lao-gan-maaa"),
@@ -49,7 +49,7 @@ class TestDBConnectionAPI(TestCase):
         "use_ssh": False,
         "uri": "test_uri_2",
         "path_to_credentials_file": None,
-        "llm_credentials": None,
+        "llm_api_key": None,
     }
 
     test_1_ref = {
@@ -73,7 +73,7 @@ class TestDBConnectionAPI(TestCase):
         "uri": test_1["uri"],
         "path_to_credentials_file": test_1["path_to_credentials_file"],
         "ssh_settings": None,
-        "llm_credentials": None,
+        "llm_api_key": None,
     }
 
     test_response_2 = {
@@ -83,7 +83,7 @@ class TestDBConnectionAPI(TestCase):
         "uri": test_2["uri"],
         "path_to_credentials_file": test_2["path_to_credentials_file"],
         "ssh_settings": None,
-        "llm_credentials": None,
+        "llm_api_key": None,
     }
 
     @patch.multiple(
