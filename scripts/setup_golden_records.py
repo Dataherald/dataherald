@@ -19,6 +19,7 @@
 
 import json
 import os
+import time
 
 import requests
 from mongodblocalclient import MongoDbLocalClient
@@ -131,7 +132,9 @@ def run():
     if len(api_payload) == 0:
         print("No golden records found in database")
         return
+    
     add_golden_record(api_payload)
+    time.sleep(2)
 
 
 if __name__ == "__main__":

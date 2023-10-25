@@ -54,8 +54,7 @@ from dataherald.utils.agent_prompts import (
 logger = logging.getLogger(__name__)
 
 
-TOP_K = os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", 50)
-
+TOP_K = int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", 50))
 
 def catch_exceptions():  # noqa: C901
     def decorator(fn: Callable[[str], str]) -> Callable[[str], str]:  # noqa: C901
@@ -643,6 +642,9 @@ class DataheraldSQLAgent(SQLGenerator):
             instructions=instructions,
             db_scan=db_scan,
         )
+        met = os.getenv("DH_ENGINE_TIMEOUT", None)
+        print(f"met: {met}")
+        print(f"typeof met: {type(met)}")
         agent_executor = self.create_sql_agent(
             toolkit=toolkit,
             verbose=True,
