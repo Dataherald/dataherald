@@ -40,55 +40,21 @@ from dataherald.sql_database.models.types import (
 )
 from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
 from dataherald.types import Question, Response
+from dataherald.utils.agent_prompts import (
+    AGENT_PREFIX,
+    FORMAT_INSTRUCTIONS,
+    PLAN_BASE,
+    PLAN_WITH_FEWSHOT_EXAMPLES,
+    PLAN_WITH_FEWSHOT_EXAMPLES_AND_INSTRUCTIONS,
+    PLAN_WITH_INSTRUCTIONS,
+    SUFFIX_WITH_FEW_SHOT_SAMPLES,
+    SUFFIX_WITHOUT_FEW_SHOT_SAMPLES,
+)
 
 logger = logging.getLogger(__name__)
 
 
 TOP_K = int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50"))
-AGENT_PREFIX = """You are an agent designed to interact with a SQL database.
-Given an input question, create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
-You have access to tools for interacting with the database.
-Only use the below tools. Only use the information returned by the below tools to construct your final answer.
-#
-Here is the plan you have to follow:
-1) Use the fewshot_examples_retriever tool to retrieve a first set of possibly relevant tables and columns and the SQL syntax to use.
-2) Use the db_tables_with_relevance_scores tool to find the a second set of possibly relevant tables.
-3) Use the db_relevant_tables_schema tool to obtain the schema of the both sets of possibly relevant tables to identify the possibly relevant columns.
-4) Use the db_relevant_columns_info tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
-5) [Optional based on the question] Use the get_current_datetime tool if the question has any mentions of time or dates.
-6) [Optional based on the question] Always use the db_column_entity_checker tool to make sure that relevant columns have the cell-values.
-7) Use the get_admin_instructions tool to retrieve the DB admin instructions before generating the SQL query.
-8) Write a {dialect} query and use sql_db_query tool the Execute the SQL query on the database to obtain the results.
-#
-Some tips to always keep in mind:
-tip1) For complex questions that has many relevant columns and tables request for more examples of Question/SQL pairs.
-tip2) The maximum number of Question/SQL pairs you can request is {max_examples}.
-tip3) If the SQL query resulted in errors, rewrite the SQL query and try again.
-tip4) If you are still unsure about which columns and tables to use, ask for more Question/SQL pairs.
-tip5) The Question/SQL pairs are labelled as correct pairs, so you can use them to learn how to construct the SQL query.
-#
-Always use the get_current_datetime tool if there is any time or date in the given question.
-If the question does not seem related to the database, just return "I don't know" as the answer.
-If the there is a very similar question among the fewshot examples, modify the SQL query to fit the given question and return the answer.
-The SQL query MUST have in-line comments to explain what each clause does.
-"""  # noqa: E501
-
-FORMAT_INSTRUCTIONS = """Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input question"""
-
-AGENT_SUFFIX = """Begin!
-
-Question: {input}
-Thought: I should Collect examples of Question/SQL pairs to identify possibly relevant tables, columns, and SQL query styles. If there is a similar question among the examples, I can use the SQL query from the example and modify it to fit the given question.
-{agent_scratchpad}"""  # noqa: E501
 
 
 def catch_exceptions():  # noqa: C901
@@ -569,6 +535,7 @@ class DataheraldSQLAgent(SQLGenerator):
         format_instructions: str = FORMAT_INSTRUCTIONS,
         input_variables: List[str] | None = None,
         max_examples: int = 20,
+        number_of_instructions: int = 1,
         max_iterations: int | None = 15,
         max_execution_time: float | None = None,
         early_stopping_method: str = "force",
@@ -578,11 +545,29 @@ class DataheraldSQLAgent(SQLGenerator):
     ) -> AgentExecutor:
         """Construct an SQL agent from an LLM and tools."""
         tools = toolkit.get_tools()
-        prefix = prefix.format(dialect=toolkit.dialect, max_examples=max_examples)
+        if max_examples > 0 and number_of_instructions > 0:
+            plan = PLAN_WITH_FEWSHOT_EXAMPLES_AND_INSTRUCTIONS
+            suffix = SUFFIX_WITH_FEW_SHOT_SAMPLES
+        elif max_examples > 0:
+            plan = PLAN_WITH_FEWSHOT_EXAMPLES
+            suffix = SUFFIX_WITH_FEW_SHOT_SAMPLES
+        elif number_of_instructions > 0:
+            plan = PLAN_WITH_INSTRUCTIONS
+            suffix = SUFFIX_WITHOUT_FEW_SHOT_SAMPLES
+        else:
+            plan = PLAN_BASE
+            suffix = SUFFIX_WITHOUT_FEW_SHOT_SAMPLES
+        plan = plan.format(
+            dialect=toolkit.dialect,
+            max_examples=max_examples,
+        )
+        prefix = prefix.format(
+            dialect=toolkit.dialect, max_examples=max_examples, agent_plan=plan
+        )
         prompt = ZeroShotAgent.create_prompt(
             tools,
             prefix=prefix,
-            suffix=suffix or AGENT_SUFFIX,
+            suffix=suffix,
             format_instructions=format_instructions,
             input_variables=input_variables,
         )
@@ -650,6 +635,7 @@ class DataheraldSQLAgent(SQLGenerator):
             toolkit=toolkit,
             verbose=True,
             max_examples=number_of_samples,
+            number_of_instructions=len(instructions) if instructions is not None else 0,
             max_execution_time=os.getenv("DH_ENGINE_TIMEOUT", None),
         )
         agent_executor.return_intermediate_steps = True
