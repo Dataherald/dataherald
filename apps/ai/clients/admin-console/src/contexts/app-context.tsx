@@ -134,7 +134,7 @@ export const AppContextProvider: FC<AppContextTypeProps> = ({ children }) => {
   )
 
   const logout = useCallback(async () => {
-    router.push('/api/auth/logout')
+    await router.push('/api/auth/logout')
     dispatch({ type: 'LOGOUT' })
   }, [router])
 
