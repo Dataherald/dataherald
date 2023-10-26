@@ -4,7 +4,7 @@ from typing import Any, List
 import fastapi
 from fastapi import BackgroundTasks, status
 from fastapi import FastAPI as _FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.routing import APIRoute
 
 import dataherald
@@ -165,6 +165,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/responses/{response_id}/file",
+            self.get_response_file,
+            methods=["GET"],
+            tags=["Responses"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/sql-query-executions",
             self.execute_sql_query,
             methods=["POST"],
@@ -216,10 +223,18 @@ class FastAPI(dataherald.server.Server):
     ) -> bool:
         return self._api.scan_db(scanner_request, background_tasks)
 
-    def answer_question(self, question_request: QuestionRequest) -> Response:
+    def answer_question(
+        self,
+        store_substantial_query_result_in_csv: bool = False,
+        question_request: QuestionRequest = None,
+    ) -> Response:
         if os.getenv("DH_ENGINE_TIMEOUT", None):
-            return self._api.answer_question_with_timeout(question_request)
-        return self._api.answer_question(question_request)
+            return self._api.answer_question_with_timeout(
+                store_substantial_query_result_in_csv, question_request
+            )
+        return self._api.answer_question(
+            store_substantial_query_result_in_csv, question_request
+        )
 
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
         return self._api.get_questions(db_connection_id)
@@ -282,13 +297,25 @@ class FastAPI(dataherald.server.Server):
         """Get a response"""
         return self._api.get_response(response_id)
 
+    def get_response_file(
+        self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
+        """Get a response file"""
+        return self._api.get_response_file(response_id, background_tasks)
+
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""
         return self._api.execute_sql_query(query)
 
-    def create_response(self, query_request: CreateResponseRequest) -> Response:
+    def create_response(
+        self,
+        store_substantial_query_result_in_csv: bool = False,
+        query_request: CreateResponseRequest = None,
+    ) -> Response:
         """Executes a query on the given db_connection_id"""
-        return self._api.create_response(query_request)
+        return self._api.create_response(
+            store_substantial_query_result_in_csv, query_request
+        )
 
     def delete_golden_record(self, golden_record_id: str) -> dict:
         """Deletes a golden record"""

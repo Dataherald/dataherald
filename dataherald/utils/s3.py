@@ -1,3 +1,5 @@
+import os
+
 import boto3
 from cryptography.fernet import InvalidToken
 
@@ -8,6 +10,22 @@ from dataherald.utils.encrypt import FernetEncrypt
 class S3:
     def __init__(self):
         self.settings = Settings()
+
+    def upload(self, file_location) -> str:
+        file_name = file_location.split("/")[-1]
+        bucket_name = "k2-core"
+
+        # Upload the file
+        s3_client = boto3.client(
+            "s3",
+            aws_access_key_id=self.settings.s3_aws_access_key_id,
+            aws_secret_access_key=self.settings.s3_aws_secret_access_key,
+        )
+        s3_client.upload_file(
+            file_location, bucket_name, os.path.basename(file_location)
+        )
+        os.remove(file_location)
+        return f"s3://{bucket_name}/{file_name}"
 
     def download(self, path: str) -> str:
         fernet_encrypt = FernetEncrypt()

@@ -8,7 +8,7 @@ from typing import List
 from bson import json_util
 from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from overrides import override
 
 from dataherald.api import API
@@ -50,6 +50,7 @@ from dataherald.types import (
     TableDescriptionRequest,
     UpdateInstruction,
 )
+from dataherald.utils.s3 import S3
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,10 @@ def async_scanning(scanner, database, scanner_request, storage):
         scanner_request.table_names,
         TableDescriptionRepository(storage),
     )
+
+
+def async_removing_file(file_path: str):
+    os.remove(file_path)
 
 
 class FastAPI(API):
@@ -118,7 +123,11 @@ class FastAPI(API):
         return True
 
     @override
-    def answer_question(self, question_request: QuestionRequest) -> Response:
+    def answer_question(
+        self,
+        store_substantial_query_result_in_csv: bool = False,
+        question_request: QuestionRequest = None,
+    ) -> Response:
         """Takes in an English question and answers it based on content from the registered databases"""
         logger.info(f"Answer question: {question_request.question}")
         sql_generation = self.system.instance(SQLGenerator)
@@ -149,7 +158,10 @@ class FastAPI(API):
         start_generated_answer = time.time()
         try:
             generated_answer = sql_generation.generate_response(
-                user_question, database_connection, context[0]
+                user_question,
+                database_connection,
+                context[0],
+                store_substantial_query_result_in_csv,
             )
             logger.info("Starts evaluator...")
             confidence_score = evaluator.get_confidence_score(
@@ -167,7 +179,9 @@ class FastAPI(API):
 
     @override
     def answer_question_with_timeout(
-        self, question_request: QuestionRequest
+        self,
+        store_substantial_query_result_in_csv: bool = False,
+        question_request: QuestionRequest = None,
     ) -> Response:
         result = None
         exception = None
@@ -182,7 +196,9 @@ class FastAPI(API):
         def run_and_catch_exceptions():
             nonlocal result, exception
             if not stop_event.is_set():
-                result = self.answer_question(question_request)
+                result = self.answer_question(
+                    store_substantial_query_result_in_csv, question_request
+                )
 
         thread = threading.Thread(target=run_and_catch_exceptions)
         thread.start()
@@ -349,6 +365,32 @@ class FastAPI(API):
         return result
 
     @override
+    def get_response_file(
+        self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
+        response_repository = ResponseRepository(self.storage)
+
+        try:
+            result = response_repository.find_by_id(response_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Question not found")
+
+        # todo download
+        s3 = S3()
+        file_path = s3.download(result.csv_file_path)
+        background_tasks.add_task(async_removing_file, file_path)
+        return FileResponse(
+            file_path,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f"attachment; filename={file_path.split('/')[-1]}"
+            },
+        )
+
+    @override
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
         question_repository = QuestionRepository(self.storage)
         query = {}
@@ -397,7 +439,9 @@ class FastAPI(API):
 
     @override
     def create_response(
-        self, query_request: CreateResponseRequest  # noqa: ARG002
+        self,
+        store_substantial_query_result_in_csv: bool = False,
+        query_request: CreateResponseRequest = None,  # noqa: ARG002
     ) -> Response:
         evaluator = self.system.instance(Evaluator)
         question_repository = QuestionRepository(self.storage)
@@ -417,7 +461,9 @@ class FastAPI(API):
         start_generated_answer = time.time()
         try:
             generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
-            response = generates_nl_answer.execute(response)
+            response = generates_nl_answer.execute(
+                response, store_substantial_query_result_in_csv
+            )
             confidence_score = evaluator.get_confidence_score(
                 user_question, response, database_connection
             )
