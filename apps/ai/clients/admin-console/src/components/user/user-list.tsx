@@ -66,25 +66,31 @@ const UserList = () => {
         <Users2 size={20} strokeWidth={2.5} />
         <h1 className="font-semibold">Users</h1>
       </div>
-      <div className="grow">
+      <div className="grow overflow-auto">
         {isLoading
           ? 'Loading...'
           : users && (
-              <ul className="overflow-auto">
+              <ul>
                 {users.map((user: User) => {
                   const { id, name, email } = user
                   return (
                     <li key={id} className="p-1">
                       <div className="flex items-center justify-between gap-2">
                         {name ? (
-                          <div className="flex items-center gap-2">
+                          <div
+                            className="flex gap-2"
+                            style={{ alignItems: 'baseline' }}
+                          >
                             <span>{name}</span>
                             <span className="text-xs text-slate-500">
                               {email}
                             </span>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2">
+                          <div
+                            className="flex gap-2"
+                            style={{ alignItems: 'baseline' }}
+                          >
                             <span className="text-slate-500">{email}</span>
                             <span className="text-xs text-orange-500">
                               Pending sign up

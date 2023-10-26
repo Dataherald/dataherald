@@ -1,4 +1,5 @@
 import PageLayout from '@/components/layout/page-layout'
+import LlmCredentialsConfig from '@/components/organization/llm-api-key'
 import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
 import UserList from '@/components/user/user-list'
@@ -10,7 +11,7 @@ import Link from 'next/link'
 import { FC } from 'react'
 
 const OrganizationSettingsPage: FC = () => {
-  const { user, organization } = useAppContext()
+  const { user, organization, updateOrganization } = useAppContext()
 
   if (!organization) return null
 
@@ -33,9 +34,12 @@ const OrganizationSettingsPage: FC = () => {
             </Link>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-4 min-h-[30vh] max-h-[30vh]">
-          <ContentBox className="grow">
+        <div className="flex items-start gap-4">
+          <ContentBox className="flex-1 min-h-[40vh] max-h-[50vh]">
             <UserList />
+          </ContentBox>
+          <ContentBox className="flex-1">
+            <LlmCredentialsConfig onOrganizationUpdate={updateOrganization} />
           </ContentBox>
         </div>
       </div>

@@ -21,6 +21,7 @@ interface AppState {
 
 interface AppContextType extends AppState {
   logout: () => void
+  updateOrganization: () => Promise<void>
   setAdminOrganization: (organizationId: string) => Promise<void>
 }
 
@@ -133,6 +134,12 @@ export const AppContextProvider: FC<AppContextTypeProps> = ({ children }) => {
     [fetchOrganization, patchUser],
   )
 
+  const updateOrganization = useCallback(async () => {
+    if (!state.organization) return
+    const organization = await fetchOrganization(state.organization.id)
+    dispatch({ type: 'SET_ORG', payload: organization })
+  }, [fetchOrganization, state.organization])
+
   const logout = useCallback(async () => {
     await router.push('/api/auth/logout')
     dispatch({ type: 'LOGOUT' })
@@ -173,6 +180,7 @@ export const AppContextProvider: FC<AppContextTypeProps> = ({ children }) => {
       value={{
         ...state,
         setAdminOrganization,
+        updateOrganization,
         logout,
       }}
     >

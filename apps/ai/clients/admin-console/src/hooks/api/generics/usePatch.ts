@@ -1,13 +1,13 @@
 import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { useCallback } from 'react'
 
-const usePatch = <PatchModel>() => {
+const usePatch = <T>() => {
   const apiFetcher = useApiFetcher()
 
   const patch = useCallback(
-    async (url: string, updates: Partial<PatchModel>) => {
+    async (url: string, updates: Partial<T>) => {
       try {
-        return await apiFetcher<PatchModel>(url, {
+        return await apiFetcher<T>(url, {
           method: 'PATCH',
           body: JSON.stringify(updates),
         })

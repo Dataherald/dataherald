@@ -26,18 +26,13 @@ export interface SlackInstallation {
   bot: SlackBot | null
 }
 
-export interface LLMCredentials {
-  organization_id: string
-  api_key: string
-}
-
 export interface Organization {
   id: string
   name: string
   confidence_threshold: number
   db_connection_id?: string
+  llm_api_key?: string
   slack_installation?: SlackInstallation
-  llm_credentials?: LLMCredentials
 }
 
 export type Organizations = Organization[]

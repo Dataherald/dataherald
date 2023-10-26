@@ -1,24 +1,25 @@
 import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { useCallback } from 'react'
 
-const useGet = <T>() => {
+const usePut = <T>() => {
   const apiFetcher = useApiFetcher()
 
-  const get = useCallback(
-    async (url: string) => {
+  const put = useCallback(
+    async (url: string, resource: T) => {
       try {
         return await apiFetcher<T>(url, {
-          method: 'GET',
+          method: 'PUT',
+          body: JSON.stringify(resource),
         })
       } catch (error) {
-        console.error('GET operation failed:', error)
+        console.error('PUT operation failed \n', error)
         throw error
       }
     },
     [apiFetcher],
   )
 
-  return get
+  return put
 }
 
-export default useGet
+export default usePut
