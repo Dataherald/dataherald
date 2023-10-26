@@ -24,10 +24,7 @@ You can find additional details on how to connect to each of the supported data 
     "use_ssh": false,
     "connection_uri": "string",
     "path_to_credentials_file": "string",
-    "llm_credentials": {
-      "organization_id": "string",
-      "api_key": "string"
-    },
+    "llm_api_key": "string",
     "ssh_settings": {
       "db_name": "string",
       "host": "string",
@@ -70,10 +67,7 @@ HTTP 201 code response
       "use_ssh": false,
       "uri": "gAAAAABk8lHQNAUn5XARb94Q8H1OfHpVzOtzP3b2LCpwxUsNCe7LGkwkN8FX-IF3t65oI5mTzgDMR0BY2lzvx55gO0rxlQxRDA==",
       "path_to_credentials_file": "string",
-      "llm_credentials": {
-        "organization_id": "gAAAAABlCz5TvOWQQ9TeSKgtCbaisl343oG3SaBlSniTsqs9R8aTIrptvzQq7b2a13ocBPuV6kGw17bximFbqAF_yaHmJF-Psw==",
-        "api_key": "gAAAAABlCz5TeU0ym4hW3bf9u21dz7B9tlnttOGLRDt8gq2ykkblNvpp70ZjT9FeFcoyMv-Csvp3GNQfw66eYvQBrcBEPsLokkLO2Jc2DD-Q8Aw6g_8UahdOTxJdT4izA6MsiQrf7GGmYBGZqbqsjTdNmcq661wF9Q=="
-      },
+      "llm_api_key": "gAAAAABlCz5TeU0ym4hW3bf9u21dz7B9tlnttOGLRDt8gq2ykkblNvpp70ZjT9FeFcoyMv-Csvp3GNQfw66eYvQBrcBEPsLokkLO2Jc2DD-Q8Aw6g_8UahdOTxJdT4izA6MsiQrf7GGmYBGZqbqsjTdNmcq661wF9Q==",
       "ssh_settings": {
         "db_name": "string",
         "host": "string",
@@ -150,10 +144,7 @@ With a SSH connection and LLM credentials
       -d '{
       "alias": "my_db_alias",
       "use_ssh": true,
-      "llm_credentials": {
-        "organization_id": "organization_id",
-        "api_key": "api_key"
-      },
+      "llm_api_key": "api_key",
       "ssh_settings": {
         "db_name": "db_name",
         "host": "string",

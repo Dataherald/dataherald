@@ -25,11 +25,9 @@ class BaseModel(LLMModel):
         model_name="davinci-003",
         **kwargs: Any
     ) -> Any:
-        if database_connection.llm_credentials is not None:
+        if database_connection.llm_api_key is not None:
             fernet_encrypt = FernetEncrypt()
-            api_key = fernet_encrypt.decrypt(
-                database_connection.llm_credentials.api_key
-            )
+            api_key = fernet_encrypt.decrypt(database_connection.llm_api_key)
             if model_family == "openai":
                 self.openai_api_key = api_key
             elif model_family == "anthropic":

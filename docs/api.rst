@@ -30,10 +30,7 @@ Related endpoints are:
         "use_ssh": false,
         "connection_uri": "string",
         "path_to_credentials_file": "string",
-        "llm_credentials": {
-            "organization_id": "string",
-            "api_key": "string"
-          },
+        "llm_api_key": "string",
         "ssh_settings": {
             "db_name": "string",
             "host": "string",
