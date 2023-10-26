@@ -39,9 +39,16 @@ class SQLGenerator(Component, ABC):
         return response
 
     def create_sql_query_status(
-        self, db: SQLDatabase, query: str, response: Response, top_k: int = None
+        self,
+        db: SQLDatabase,
+        query: str,
+        response: Response,
+        top_k: int = None,
+        store_substantial_query_result_in_csv: bool = False,
     ) -> Response:
-        return create_sql_query_status(db, query, response, top_k)
+        return create_sql_query_status(
+            db, query, response, top_k, store_substantial_query_result_in_csv
+        )
 
     def format_intermediate_representations(
         self, intermediate_representation: List[Tuple[AgentAction, str]]
@@ -76,6 +83,7 @@ class SQLGenerator(Component, ABC):
         user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
+        store_substantial_query_result_in_csv: bool = False,
     ) -> Response:
         """Generates a response to a user question."""
         pass

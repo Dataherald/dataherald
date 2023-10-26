@@ -35,6 +35,7 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
+        store_substantial_query_result_in_csv: bool = False,
     ) -> Response:
         start_time = time.time()
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
@@ -109,4 +110,9 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             intermediate_steps=[str(result.metadata)],
             sql_query=self.format_sql_query(result.metadata["sql_query"]),
         )
-        return self.create_sql_query_status(self.database, response.sql_query, response)
+        return self.create_sql_query_status(
+            self.database,
+            response.sql_query,
+            response,
+            store_substantial_query_result_in_csv=store_substantial_query_result_in_csv,
+        )
