@@ -49,7 +49,8 @@ async def add_organization(
 async def update_organization(
     id: str, org_request: OrganizationRequest, token: str = Depends(token_auth_scheme)
 ) -> OrganizationResponse:
-    authorize.is_admin_user(authorize.user(VerifyToken(token.credentials).verify()))
+    user_id = authorize.user(VerifyToken(token.credentials).verify()).id
+    authorize.user_in_organization(user_id, id)
     return org_service.update_organization(id, org_request)
 
 
