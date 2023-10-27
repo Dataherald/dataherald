@@ -35,7 +35,7 @@ const OrganizationSettingsPage: FC = () => {
           )}
         </div>
         <div className="flex items-start gap-4">
-          <ContentBox className="flex-1 min-h-[40vh] max-h-[50vh]">
+          <ContentBox className="flex-1 min-h-[50vh] max-h-[50vh]">
             <UserList />
           </ContentBox>
           <ContentBox className="flex-1">
