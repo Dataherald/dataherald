@@ -107,7 +107,7 @@ const LlmApiKeyConfig: FC<LlmApiKeyConfigProps> = ({
           className="grow space-y-6 flex flex-col"
         >
           <FormDescription>
-            You can connect own OpenAI API key to our platform
+            Connect your own OpenAI API key to our platform
           </FormDescription>
           <FormField
             control={form.control}
