@@ -68,7 +68,7 @@ class DatabaseConnection(BaseModel):
             raise ValueError("When use_ssh is False set uri")
         return v
 
-    @validator("uri", pre=True, always=True)
+    @validator("uri", "llm_api_key", pre=True, always=True)
     def encrypt(cls, value: str):
         fernet_encrypt = FernetEncrypt()
         try:
