@@ -10,6 +10,7 @@ import numpy as np
 import openai
 import pandas as pd
 import sqlalchemy
+import tiktoken
 from bson.objectid import ObjectId
 from google.api_core.exceptions import GoogleAPIError
 from langchain.agents.agent import AgentExecutor
@@ -39,6 +40,7 @@ from dataherald.sql_database.models.types import (
     DatabaseConnection,
 )
 from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
+from dataherald.sql_generator.adaptive_agent_executor import AdaptiveAgentExecutor
 from dataherald.types import Question, Response
 from dataherald.utils.agent_prompts import (
     AGENT_PREFIX,
@@ -572,15 +574,23 @@ class DataheraldSQLAgent(SQLGenerator):
             input_variables=input_variables,
         )
         llm_chain = LLMChain(
-            llm=self.llm,
+            llm=self.short_context_llm,
             prompt=prompt,
             callback_manager=callback_manager,
         )
         tool_names = [tool.name for tool in tools]
         agent = ZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names, **kwargs)
-        return AgentExecutor.from_agent_and_tools(
+        return AdaptiveAgentExecutor.from_agent_and_tools(
             agent=agent,
             tools=tools,
+            llm_list={
+                "short_context_llm": self.short_context_llm,
+                "long_context_llm": self.long_context_llm,
+            },
+            switch_to_larger_model_threshold=int(
+                os.getenv("SWITCH_LLM_THRESHOLD", "200")
+            ),
+            encoding=tiktoken.encoding_for_model(self.short_context_llm.model_name),
             callback_manager=callback_manager,
             verbose=verbose,
             max_iterations=max_iterations,
@@ -599,10 +609,15 @@ class DataheraldSQLAgent(SQLGenerator):
         start_time = time.time()
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
-        self.llm = self.model.get_model(
+        self.short_context_llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            model_name=os.getenv("AGENT_LLM_MODEL", "gpt-4-32k"),
+            model_name=os.getenv("AGENT_LLM_MODEL_SHORT_CONTEXT", "gpt-4"),
+        )
+        self.long_context_llm = self.model.get_model(
+            database_connection=database_connection,
+            temperature=0,
+            model_name=os.getenv("AGENT_LLM_MODEL_LONG_CONTEXT", "gpt-4-32k"),
         )
         repository = TableDescriptionRepository(storage)
         db_scan = repository.get_all_tables_by_db(
