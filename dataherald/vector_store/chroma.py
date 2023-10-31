@@ -37,7 +37,14 @@ class Chroma(VectorStore):
         return self.convert_to_pinecone_object_model(query_results)
 
     @override
-    def add_record(self, documents: str, collection: str, metadata: Any, ids: List):
+    def add_record(
+        self,
+        documents: str,
+        db_connection_id: str,  # noqa: ARG002
+        collection: str,
+        metadata: Any,
+        ids: List,
+    ):
         target_collection = self.chroma_client.get_or_create_collection(collection)
         existing_rows = target_collection.get(ids=ids)
         if len(existing_rows["documents"]) == 0:
