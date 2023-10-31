@@ -1,11 +1,13 @@
 import os
 from typing import Any, List
 
-import openai
 import pinecone
+from langchain.embeddings import OpenAIEmbeddings
 from overrides import override
 
 from dataherald.config import System
+from dataherald.db import DB
+from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.vector_store import VectorStore
 
 EMBEDDING_MODEL = "text-embedding-ada-002"
@@ -31,9 +33,14 @@ class Pinecone(VectorStore):
         num_results: int,
     ) -> list:
         index = pinecone.Index(collection)
-        xq = openai.Embedding.create(input=query_texts[0], engine=EMBEDDING_MODEL)[
-            "data"
-        ][0]["embedding"]
+        db_connection_repository = DatabaseConnectionRepository(
+            self.system.instance(DB)
+        )
+        database_connection = db_connection_repository.find_by_id(db_connection_id)
+        embedding = OpenAIEmbeddings(
+            openai_api_key=database_connection.decrypt_api_key(), model=EMBEDDING_MODEL
+        )
+        xq = embedding.embed_query(query_texts[0])
         query_response = index.query(
             queries=[xq],
             filter={
@@ -45,13 +52,25 @@ class Pinecone(VectorStore):
         return query_response.to_dict()["results"][0]["matches"]
 
     @override
-    def add_record(self, documents: str, collection: str, metadata: Any, ids: List):
+    def add_record(
+        self,
+        documents: str,
+        db_connection_id: str,
+        collection: str,
+        metadata: Any,
+        ids: List,
+    ):
         if collection not in pinecone.list_indexes():
             self.create_collection(collection)
-
+        db_connection_repository = DatabaseConnectionRepository(
+            self.system.instance(DB)
+        )
+        database_connection = db_connection_repository.find_by_id(db_connection_id)
+        embedding = OpenAIEmbeddings(
+            openai_api_key=database_connection.decrypt_api_key(), model=EMBEDDING_MODEL
+        )
         index = pinecone.Index(collection)
-        res = openai.Embedding.create(input=[documents], engine=EMBEDDING_MODEL)
-        embeds = [record["embedding"] for record in res["data"]]
+        embeds = embedding.embed_documents([documents])
         record = [(ids[0], embeds, metadata[0])]
         index.upsert(vectors=record)
 

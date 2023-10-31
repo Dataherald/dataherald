@@ -52,6 +52,7 @@ if __name__ == "__main__":
         question = golden_record["question"]
         vector_store.add_record(
             documents=question,
+            db_connection_id=golden_record["db_connection_id"],
             collection=golden_record_collection,
             metadata=[
                 {
