@@ -238,25 +238,6 @@ class FastAPI(dataherald.server.Server):
         self, database_connection_request: DatabaseConnectionRequest
     ) -> DatabaseConnection:
         """Creates a database connection"""
-        # print the database connection request members
-    #     alias: str
-    # use_ssh: bool = False
-    # connection_uri: str | None
-    # path_to_credentials_file: str | None
-    # llm_credentials: LLMCredentials | None
-    # ssh_settings: SSHSettings | None
-        print("********* Database connection request: ")
-        print("alias: " + database_connection_request.alias)
-        print("use_ssh: " + str(database_connection_request.use_ssh))
-        print("connection_uri: " + str(database_connection_request.connection_uri))
-        print(
-            "path_to_credentials_file: "
-            + str(database_connection_request.path_to_credentials_file)
-        )
-        print("llm_credentials: " +
-              str(database_connection_request.llm_credentials))
-        print("ssh_settings: " + str(database_connection_request.ssh_settings))
-
         return self._api.create_database_connection(database_connection_request)
 
     def list_database_connections(self) -> list[DatabaseConnection]:
