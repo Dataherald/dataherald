@@ -27,7 +27,12 @@ class VectorStore(Component, ABC):
 
     @abstractmethod
     def add_record(
-        self, documents: str, collection: str, metadata: Any, ids: List = None
+        self,
+        documents: str,
+        db_connection_id: str,
+        collection: str,
+        metadata: Any,
+        ids: List = None,
     ):
         pass
 

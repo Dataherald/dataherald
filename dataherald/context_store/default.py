@@ -77,6 +77,7 @@ class DefaultContextStore(ContextStore):
             golden_record = golden_records_repository.insert(golden_record)
             self.vector_store.add_record(
                 documents=question,
+                db_connection_id=record.db_connection_id,
                 collection=self.golden_record_collection,
                 metadata=[
                     {

@@ -22,6 +22,7 @@ from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
 )
 from langchain.chains.llm import LLMChain
+from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema import AgentAction
 from langchain.tools.base import BaseTool
 from overrides import override
@@ -55,6 +56,7 @@ logger = logging.getLogger(__name__)
 
 
 TOP_K = int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50"))
+EMBEDDING_MODEL = "text-embedding-ada-002"
 
 
 def catch_exceptions():  # noqa: C901
@@ -200,14 +202,14 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     Use this tool to identify the relevant tables for the given question.
     """
     db_scan: List[TableDescription]
+    embedding: OpenAIEmbeddings
 
     def get_embedding(
-        self, text: str, model: str = "text-embedding-ada-002"
+        self,
+        text: str,
     ) -> List[float]:
         text = text.replace("\n", " ")
-        return openai.Embedding.create(input=[text], model=model)["data"][0][
-            "embedding"
-        ]
+        return self.embedding.embed_query(text)
 
     def cosine_similarity(self, a: List[float], b: List[float]) -> float:
         return round(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), 4)
@@ -463,6 +465,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     few_shot_examples: List[dict] | None = Field(exclude=True, default=None)
     instructions: List[dict] | None = Field(exclude=True, default=None)
     db_scan: List[TableDescription] = Field(exclude=True)
+    embedding: OpenAIEmbeddings = Field(exclude=True)
 
     @property
     def dialect(self) -> str:
@@ -488,7 +491,10 @@ class SQLDatabaseToolkit(BaseToolkit):
         get_current_datetime = GetCurrentTimeTool(db=self.db, context=self.context)
         tools.append(get_current_datetime)
         tables_sql_db_tool = TablesSQLDatabaseTool(
-            db=self.db, context=self.context, db_scan=self.db_scan
+            db=self.db,
+            context=self.context,
+            db_scan=self.db_scan,
+            embedding=self.embedding,
         )
         tools.append(tables_sql_db_tool)
         schema_sql_db_tool = SchemaSQLDatabaseTool(
@@ -630,6 +636,10 @@ class DataheraldSQLAgent(SQLGenerator):
             few_shot_examples=new_fewshot_examples,
             instructions=instructions,
             db_scan=db_scan,
+            embedding=OpenAIEmbeddings(
+                openai_api_key=database_connection.decrypt_api_key(),
+                model=EMBEDDING_MODEL,
+            ),
         )
         agent_executor = self.create_sql_agent(
             toolkit=toolkit,

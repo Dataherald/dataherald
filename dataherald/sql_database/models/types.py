@@ -1,3 +1,4 @@
+import os
 from typing import Any
 
 from pydantic import BaseModel, BaseSettings, Extra, validator
@@ -68,7 +69,7 @@ class DatabaseConnection(BaseModel):
             raise ValueError("When use_ssh is False set uri")
         return v
 
-    @validator("uri", pre=True, always=True)
+    @validator("uri", "llm_api_key", pre=True, always=True)
     def encrypt(cls, value: str):
         fernet_encrypt = FernetEncrypt()
         try:
@@ -76,3 +77,9 @@ class DatabaseConnection(BaseModel):
             return value
         except Exception:
             return fernet_encrypt.encrypt(value)
+
+    def decrypt_api_key(self):
+        if self.llm_api_key is not None and self.llm_api_key != "":
+            fernet_encrypt = FernetEncrypt()
+            return fernet_encrypt.decrypt(self.llm_api_key)
+        return os.environ.get("OPENAI_API_KEY")
