@@ -47,12 +47,14 @@ class GeneratesNlAnswer:
         database = SQLDatabase.get_sql_engine(database_connection)
 
         query_response = create_sql_query_status(
-            database, query_response.sql_query, query_response, top_k=int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", 50))
+            database, query_response.sql_query, query_response, top_k=int(
+                os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50"))
         )
         system_message_prompt = SystemMessagePromptTemplate.from_template(
             SYSTEM_TEMPLATE
         )
-        human_message_prompt = HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE)
+        human_message_prompt = HumanMessagePromptTemplate.from_template(
+            HUMAN_TEMPLATE)
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_message_prompt, human_message_prompt]
         )

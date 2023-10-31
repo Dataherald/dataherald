@@ -54,7 +54,8 @@ from dataherald.utils.agent_prompts import (
 logger = logging.getLogger(__name__)
 
 
-TOP_K = int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", 50))
+TOP_K = int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50"))
+
 
 def catch_exceptions():  # noqa: C901
     def decorator(fn: Callable[[str], str]) -> Callable[[str], str]:  # noqa: C901
