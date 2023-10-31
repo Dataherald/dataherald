@@ -63,7 +63,7 @@ def main():
                 "alias": db["alias"],
                 "use_ssh": db["use_ssh"],
                 "ssh_settings": db["ssh_settings"],
-                "uri": db["uri"],
+                "connection_uri": db["connection_uri"],
             }
         else:
             print(
@@ -71,7 +71,7 @@ def main():
             request_body: dict = {
                 "alias": db["alias"],
                 "use_ssh": db["use_ssh"],
-                "uri": db["uri"],
+                "connection_uri": db["connection_uri"],
             }
 
         # 3. Run the REST API call to create the database in Dataherald
