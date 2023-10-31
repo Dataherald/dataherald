@@ -2,6 +2,6 @@
   {
     "alias": "hkg02p",
     "use_ssh": false,
-    "connection_uri": "mariadb+pymysql://company:dbcomp24@192.168.1.140:3306/hkg02p?charset=utf8"
+    "uri": "mariadb+pymysql://company:dbcomp24@192.168.1.140:3306/hkg02p?charset=utf8"
   }
 ]
