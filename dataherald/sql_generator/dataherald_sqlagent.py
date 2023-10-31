@@ -55,7 +55,6 @@ from dataherald.utils.agent_prompts import (
 logger = logging.getLogger(__name__)
 
 
-
 TOP_K = int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50"))
 EMBEDDING_MODEL = "text-embedding-ada-002"
 
