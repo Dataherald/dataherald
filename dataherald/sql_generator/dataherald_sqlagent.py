@@ -22,6 +22,7 @@ from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
 )
 from langchain.chains.llm import LLMChain
+from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema import AgentAction
 from langchain.tools.base import BaseTool
 from overrides import override
@@ -205,9 +206,10 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         self, text: str, model: str = "text-embedding-ada-002"
     ) -> List[float]:
         text = text.replace("\n", " ")
-        return openai.Embedding.create(input=[text], model=model)["data"][0][
-            "embedding"
-        ]
+        embedding = OpenAIEmbeddings(
+            openai_api_key=os.environ.get("OPENAI_API_KEY"), model=model
+        )
+        return embedding.embed_query(text)
 
     def cosine_similarity(self, a: List[float], b: List[float]) -> float:
         return round(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), 4)
