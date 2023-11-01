@@ -51,6 +51,7 @@ from dataherald.types import (
     TableDescriptionRequest,
     UpdateInstruction,
 )
+from dataherald.utils.s3 import S3
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +121,10 @@ class FastAPI(API):
 
     @override
     def answer_question(
-        self, run_evaluator: bool = True, question_request: QuestionRequest = None
+        self,
+        run_evaluator: bool = True,
+        large_query_result_in_csv: bool = False,
+        question_request: QuestionRequest = None,
     ) -> Response:
         """Takes in an English question and answers it based on content from the registered databases"""
         logger.info(f"Answer question: {question_request.question}")
@@ -151,7 +155,10 @@ class FastAPI(API):
             context = context_store.retrieve_context_for_question(user_question)
             start_generated_answer = time.time()
             generated_answer = sql_generation.generate_response(
-                user_question, database_connection, context[0]
+                user_question,
+                database_connection,
+                context[0],
+                large_query_result_in_csv,
             )
             logger.info("Starts evaluator...")
             if run_evaluator:
@@ -165,13 +172,19 @@ class FastAPI(API):
                 status_code=400,
                 content={"question_id": user_question.id, "error_message": str(e)},
             )
+        if generated_answer.csv_download_url:
+            generated_answer.sql_query_result = None
+        generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
         response_repository = ResponseRepository(self.storage)
         return response_repository.insert(generated_answer)
 
     @override
     def answer_question_with_timeout(
-        self, run_evaluator: bool = True, question_request: QuestionRequest = None
+        self,
+        run_evaluator: bool = True,
+        large_query_result_in_csv: bool = False,
+        question_request: QuestionRequest = None,
     ) -> Response:
         result = None
         exception = None
@@ -186,7 +199,9 @@ class FastAPI(API):
         def run_and_catch_exceptions():
             nonlocal result, exception
             if not stop_event.is_set():
-                result = self.answer_question(run_evaluator, question_request)
+                result = self.answer_question(
+                    run_evaluator, large_query_result_in_csv, question_request
+                )
 
         thread = threading.Thread(target=run_and_catch_exceptions)
         thread.start()
@@ -214,6 +229,7 @@ class FastAPI(API):
                 llm_api_key=database_connection_request.llm_api_key,
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
+                file_storage=database_connection_request.file_storage,
             )
 
             SQLDatabase.get_sql_engine(db_connection, True)
@@ -248,6 +264,7 @@ class FastAPI(API):
                 llm_api_key=database_connection_request.llm_api_key,
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
+                file_storage=database_connection_request.file_storage,
             )
 
             SQLDatabase.get_sql_engine(db_connection, True)
@@ -353,6 +370,27 @@ class FastAPI(API):
         return result
 
     @override
+    def get_response_file(self, response_id: str) -> JSONResponse:
+        response_repository = ResponseRepository(self.storage)
+
+        try:
+            result = response_repository.find_by_id(response_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Question not found")
+
+        s3 = S3()
+        return JSONResponse(
+            status_code=201,
+            content={
+                "csv_download_url": s3.download_url(result.csv_file_path),
+            },
+        )
+
+
+    @override
     def update_response(self, response_id: str) -> Response:
         response_repository = ResponseRepository(self.storage)
 
@@ -376,6 +414,7 @@ class FastAPI(API):
         except SQLInjectionError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
         return response
+
 
     @override
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
@@ -429,6 +468,7 @@ class FastAPI(API):
         self,
         run_evaluator: bool = True,
         sql_response_only: bool = False,
+        large_query_result_in_csv: bool = False,
         query_request: CreateResponseRequest = None,  # noqa: ARG002
     ) -> Response:
         question_repository = QuestionRepository(self.storage)
@@ -472,6 +512,8 @@ class FastAPI(API):
                 user_question, response, database_connection
             )
             response.confidence_score = confidence_score
+        if response.csv_download_url:
+            response.sql_query_result = None
         response.exec_time = time.time() - start_generated_answer
         response_repository.insert(response)
         return response

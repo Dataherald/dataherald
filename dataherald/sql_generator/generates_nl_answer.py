@@ -32,7 +32,10 @@ class GeneratesNlAnswer:
         self.model = ChatModel(self.system)
 
     def execute(
-        self, query_response: Response, sql_response_only: bool = False
+        self,
+        query_response: Response,
+        sql_response_only: bool = False,
+        large_query_result_in_csv: bool = False,
     ) -> Response:
         question_repository = QuestionRepository(self.storage)
         question = question_repository.find_by_id(query_response.question_id)
@@ -54,6 +57,7 @@ class GeneratesNlAnswer:
                 query_response.sql_query,
                 query_response,
                 top_k=int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50")),
+                large_query_result_in_csv=large_query_result_in_csv,
             )
 
         if not sql_response_only:

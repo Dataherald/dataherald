@@ -44,10 +44,16 @@ class SQLGenerator(Component, ABC):
         query: str,
         response: Response,
         top_k: int = None,
-        store_substantial_query_result_in_csv: bool = False,
+        large_query_result_in_csv: bool = False,
+        database_connection: DatabaseConnection | None = None,
     ) -> Response:
         return create_sql_query_status(
-            db, query, response, top_k, store_substantial_query_result_in_csv
+            db,
+            query,
+            response,
+            top_k,
+            large_query_result_in_csv,
+            database_connection=database_connection,
         )
 
     def format_intermediate_representations(
@@ -83,7 +89,7 @@ class SQLGenerator(Component, ABC):
         user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-        store_substantial_query_result_in_csv: bool = False,
+        large_query_result_in_csv: bool = False,
     ) -> Response:
         """Generates a response to a user question."""
         pass
