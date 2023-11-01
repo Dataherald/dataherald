@@ -60,6 +60,10 @@ class GeneratesNlAnswer:
                 large_query_result_in_csv=large_query_result_in_csv,
             )
 
+        if query_response.csv_download_url:
+            query_response.response = None
+            return query_response
+
         if not sql_response_only:
             system_message_prompt = SystemMessagePromptTemplate.from_template(
                 SYSTEM_TEMPLATE
