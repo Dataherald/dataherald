@@ -6,6 +6,7 @@ from decimal import Decimal
 from sqlalchemy import text
 
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import Response, SQLQueryResult
 from dataherald.utils.s3 import S3
 
@@ -28,12 +29,13 @@ def format_error_message(response: Response, error_message: str) -> Response:
 
 
 def create_csv_file(
-    store_substantial_query_result_in_csv: bool,
+    large_query_result_in_csv: bool,
     columns: list,
     rows: list,
     response: Response,
+    database_connection: DatabaseConnection | None = None,
 ):
-    if store_substantial_query_result_in_csv and (
+    if large_query_result_in_csv and (
         len(rows) >= MAX_ROWS_TO_CREATE_CSV_FILE
         or len(str(rows)) > MAX_CHARACTERS_TO_CREATE_CSV_FILE
     ):
@@ -45,7 +47,9 @@ def create_csv_file(
             for row in rows:
                 writer.writerow(row.values())
         s3 = S3()
-        s3.upload(file_location)
+        response.csv_download_url = s3.upload(
+            file_location, database_connection.file_storage
+        )
         response.csv_file_path = f's3://k2-core/{file_location.split("/")[-1]}'
     response.sql_query_result = SQLQueryResult(columns=columns, rows=rows)
 
@@ -55,7 +59,8 @@ def create_sql_query_status(
     query: str,
     response: Response,
     top_k: int = None,
-    store_substantial_query_result_in_csv: bool = False,
+    large_query_result_in_csv: bool = False,
+    database_connection: DatabaseConnection | None = None,
 ) -> Response:
     """Find the sql query status and populate the fields sql_query_result, sql_generation_status, and error_message"""
     if query == "":
@@ -95,7 +100,11 @@ def create_sql_query_status(
                     rows.append(modified_row)
 
                 create_csv_file(
-                    store_substantial_query_result_in_csv, columns, rows, response
+                    large_query_result_in_csv,
+                    columns,
+                    rows,
+                    response,
+                    database_connection,
                 )
 
             response.sql_generation_status = "VALID"

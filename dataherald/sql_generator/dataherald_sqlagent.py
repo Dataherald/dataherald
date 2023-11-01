@@ -601,7 +601,7 @@ class DataheraldSQLAgent(SQLGenerator):
         user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-        store_substantial_query_result_in_csv: bool = False,
+        large_query_result_in_csv: bool = False,
     ) -> Response:
         start_time = time.time()
         context_store = self.system.instance(ContextStore)
@@ -695,5 +695,6 @@ class DataheraldSQLAgent(SQLGenerator):
             response.sql_query,
             response,
             top_k=TOP_K,
-            store_substantial_query_result_in_csv=store_substantial_query_result_in_csv,
+            large_query_result_in_csv=large_query_result_in_csv,
+            database_connection=database_connection,
         )

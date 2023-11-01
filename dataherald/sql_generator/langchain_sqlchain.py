@@ -47,7 +47,7 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-        store_substantial_query_result_in_csv: bool = False,
+        large_query_result_in_csv: bool = False,
     ) -> Response:
         start_time = time.time()
         self.llm = self.model.get_model(
@@ -99,5 +99,5 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
             self.database,
             response.sql_query,
             response,
-            store_substantial_query_result_in_csv=store_substantial_query_result_in_csv,
+            large_query_result_in_csv=large_query_result_in_csv,
         )

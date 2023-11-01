@@ -8,7 +8,7 @@ from typing import List
 from bson import json_util
 from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from overrides import override
 
 from dataherald.api import API
@@ -62,10 +62,6 @@ def async_scanning(scanner, database, scanner_request, storage):
         scanner_request.table_names,
         TableDescriptionRepository(storage),
     )
-
-
-def async_removing_file(file_path: str):
-    os.remove(file_path)
 
 
 class FastAPI(API):
@@ -125,7 +121,7 @@ class FastAPI(API):
     @override
     def answer_question(
         self,
-        store_substantial_query_result_in_csv: bool = False,
+        large_query_result_in_csv: bool = False,
         question_request: QuestionRequest = None,
     ) -> Response:
         """Takes in an English question and answers it based on content from the registered databases"""
@@ -161,7 +157,7 @@ class FastAPI(API):
                 user_question,
                 database_connection,
                 context[0],
-                store_substantial_query_result_in_csv,
+                large_query_result_in_csv,
             )
             logger.info("Starts evaluator...")
             confidence_score = evaluator.get_confidence_score(
@@ -172,6 +168,8 @@ class FastAPI(API):
                 status_code=400,
                 content={"question_id": user_question.id, "error_message": str(e)},
             )
+        if generated_answer.csv_download_url:
+            generated_answer.sql_query_result = None
         generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
         response_repository = ResponseRepository(self.storage)
@@ -180,7 +178,7 @@ class FastAPI(API):
     @override
     def answer_question_with_timeout(
         self,
-        store_substantial_query_result_in_csv: bool = False,
+        large_query_result_in_csv: bool = False,
         question_request: QuestionRequest = None,
     ) -> Response:
         result = None
@@ -197,7 +195,7 @@ class FastAPI(API):
             nonlocal result, exception
             if not stop_event.is_set():
                 result = self.answer_question(
-                    store_substantial_query_result_in_csv, question_request
+                    large_query_result_in_csv, question_request
                 )
 
         thread = threading.Thread(target=run_and_catch_exceptions)
@@ -226,6 +224,7 @@ class FastAPI(API):
                 llm_api_key=database_connection_request.llm_api_key,
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
+                file_storage=database_connection_request.file_storage,
             )
 
             SQLDatabase.get_sql_engine(db_connection, True)
@@ -260,6 +259,7 @@ class FastAPI(API):
                 llm_api_key=database_connection_request.llm_api_key,
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
+                file_storage=database_connection_request.file_storage,
             )
 
             SQLDatabase.get_sql_engine(db_connection, True)
@@ -365,9 +365,7 @@ class FastAPI(API):
         return result
 
     @override
-    def get_response_file(
-        self, response_id: str, background_tasks: BackgroundTasks
-    ) -> FileResponse:
+    def get_response_file(self, response_id: str) -> JSONResponse:
         response_repository = ResponseRepository(self.storage)
 
         try:
@@ -378,15 +376,11 @@ class FastAPI(API):
         if not result:
             raise HTTPException(status_code=404, detail="Question not found")
 
-        # todo download
         s3 = S3()
-        file_path = s3.download(result.csv_file_path)
-        background_tasks.add_task(async_removing_file, file_path)
-        return FileResponse(
-            file_path,
-            media_type="text/csv",
-            headers={
-                "Content-Disposition": f"attachment; filename={file_path.split('/')[-1]}"
+        return JSONResponse(
+            status_code=201,
+            content={
+                "csv_download_url": s3.download_url(result.csv_file_path),
             },
         )
 
@@ -440,7 +434,7 @@ class FastAPI(API):
     @override
     def create_response(
         self,
-        store_substantial_query_result_in_csv: bool = False,
+        large_query_result_in_csv: bool = False,
         query_request: CreateResponseRequest = None,  # noqa: ARG002
     ) -> Response:
         evaluator = self.system.instance(Evaluator)
@@ -461,13 +455,13 @@ class FastAPI(API):
         start_generated_answer = time.time()
         try:
             generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
-            response = generates_nl_answer.execute(
-                response, store_substantial_query_result_in_csv
-            )
+            response = generates_nl_answer.execute(response, large_query_result_in_csv)
             confidence_score = evaluator.get_confidence_score(
                 user_question, response, database_connection
             )
             response.confidence_score = confidence_score
+            if response.csv_download_url:
+                response.sql_query_result = None
             response.exec_time = time.time() - start_generated_answer
             response_repository.update(response)
         except ValueError as e:

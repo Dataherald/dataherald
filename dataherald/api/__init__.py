@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from fastapi import BackgroundTasks
-from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
 
 from dataherald.api.types import Query
 from dataherald.config import Component
@@ -39,7 +39,7 @@ class API(Component, ABC):
     @abstractmethod
     def answer_question(
         self,
-        store_substantial_query_result_in_csv: bool = False,
+        large_query_result_in_csv: bool = False,
         question_request: QuestionRequest = None,
     ) -> Response:
         pass
@@ -47,7 +47,7 @@ class API(Component, ABC):
     @abstractmethod
     def answer_question_with_timeout(
         self,
-        store_substantial_query_result_in_csv: bool = False,
+        large_query_result_in_csv: bool = False,
         question_request: QuestionRequest = None,
     ) -> Response:
         pass
@@ -109,7 +109,7 @@ class API(Component, ABC):
     @abstractmethod
     def create_response(
         self,
-        store_substantial_query_result_in_csv: bool = False,
+        large_query_result_in_csv: bool = False,
         query_request: CreateResponseRequest = None,
     ) -> Response:
         pass
@@ -123,9 +123,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def get_response_file(
-        self, response_id: str, background_tasks: BackgroundTasks
-    ) -> FileResponse:
+    def get_response_file(self, response_id: str) -> JSONResponse:
         pass
 
     @abstractmethod

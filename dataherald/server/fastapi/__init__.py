@@ -165,9 +165,9 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/responses/{response_id}/file",
+            "/api/v1/responses/{response_id}/generate-csv-download-url",
             self.get_response_file,
-            methods=["GET"],
+            methods=["POST"],
             tags=["Responses"],
         )
 
@@ -225,16 +225,14 @@ class FastAPI(dataherald.server.Server):
 
     def answer_question(
         self,
-        store_substantial_query_result_in_csv: bool = False,
+        large_query_result_in_csv: bool = False,
         question_request: QuestionRequest = None,
     ) -> Response:
         if os.getenv("DH_ENGINE_TIMEOUT", None):
             return self._api.answer_question_with_timeout(
-                store_substantial_query_result_in_csv, question_request
+                large_query_result_in_csv, question_request
             )
-        return self._api.answer_question(
-            store_substantial_query_result_in_csv, question_request
-        )
+        return self._api.answer_question(large_query_result_in_csv, question_request)
 
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
         return self._api.get_questions(db_connection_id)
@@ -297,11 +295,9 @@ class FastAPI(dataherald.server.Server):
         """Get a response"""
         return self._api.get_response(response_id)
 
-    def get_response_file(
-        self, response_id: str, background_tasks: BackgroundTasks
-    ) -> FileResponse:
+    def get_response_file(self, response_id: str) -> JSONResponse:
         """Get a response file"""
-        return self._api.get_response_file(response_id, background_tasks)
+        return self._api.get_response_file(response_id)
 
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""
@@ -309,13 +305,11 @@ class FastAPI(dataherald.server.Server):
 
     def create_response(
         self,
-        store_substantial_query_result_in_csv: bool = False,
+        large_query_result_in_csv: bool = False,
         query_request: CreateResponseRequest = None,
     ) -> Response:
         """Executes a query on the given db_connection_id"""
-        return self._api.create_response(
-            store_substantial_query_result_in_csv, query_request
-        )
+        return self._api.create_response(large_query_result_in_csv, query_request)
 
     def delete_golden_record(self, golden_record_id: str) -> dict:
         """Deletes a golden record"""
