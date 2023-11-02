@@ -52,6 +52,7 @@ from dataherald.utils.agent_prompts import (
     SUFFIX_WITH_FEW_SHOT_SAMPLES,
     SUFFIX_WITHOUT_FEW_SHOT_SAMPLES,
 )
+from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
 
 logger = logging.getLogger(__name__)
 
@@ -587,9 +588,7 @@ class DataheraldSQLAgent(SQLGenerator):
                 "short_context_llm": self.short_context_llm,
                 "long_context_llm": self.long_context_llm,
             },
-            switch_to_larger_model_threshold=int(
-                os.getenv("SWITCH_LLM_THRESHOLD", "200")
-            ),
+            switch_to_larger_model_threshold=OPENAI_CONTEXT_WIDNOW_SIZES[self.short_context_llm.model_name]-500,
             encoding=tiktoken.encoding_for_model(self.short_context_llm.model_name),
             callback_manager=callback_manager,
             verbose=verbose,
@@ -612,12 +611,12 @@ class DataheraldSQLAgent(SQLGenerator):
         self.short_context_llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            model_name=os.getenv("AGENT_LLM_MODEL_SHORT_CONTEXT", "gpt-4"),
+            model_name=os.getenv("LLM_MODEL", "gpt-4"),
         )
         self.long_context_llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            model_name=os.getenv("AGENT_LLM_MODEL_LONG_CONTEXT", "gpt-4-32k"),
+            model_name=os.getenv("AGENT_LLM_MODEL", "gpt-4-32k"),
         )
         repository = TableDescriptionRepository(storage)
         db_scan = repository.get_all_tables_by_db(

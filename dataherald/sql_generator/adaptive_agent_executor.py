@@ -30,6 +30,7 @@ class AdaptiveAgentExecutor(AgentExecutor):
     llm_list: dict
     switch_to_larger_model_threshold: int
     enc: Encoding
+    tokens: int
 
     @classmethod
     def from_agent_and_tools(
@@ -50,19 +51,21 @@ class AdaptiveAgentExecutor(AgentExecutor):
             switch_to_larger_model_threshold=switch_to_larger_model_threshold,
             enc=encoding,
             callbacks=callbacks,
+            tokens=len(encoding.encode(str(agent.llm_chain.prompt.template))),
             **kwargs,
         )
 
     def token_counter(self, intermediate_steps: List[Tuple[AgentAction, str]]) -> int:
-        total_text = ""
-        for item in intermediate_steps:
-            total_text += (
-                str(item[0].log)
-                + str(item[0].tool)
-                + str(item[0].tool_input)
-                + str(item[1])
-            )
-        return len(self.enc.encode(total_text))
+        if len(intermediate_steps) == 0:
+            return self.tokens
+        new_item_text = (
+            str(intermediate_steps[-1][0].log)
+            + str(intermediate_steps[-1][0].tool)
+            + str(intermediate_steps[-1][0].tool_input)
+            + str(intermediate_steps[-1][1])
+        )
+        self.tokens += len(self.enc.encode(new_item_text))
+        return self.tokens
 
     @override
     def _take_next_step(  # noqa: PLR0912 C901 PLR0915
