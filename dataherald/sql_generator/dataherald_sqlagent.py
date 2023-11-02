@@ -588,7 +588,10 @@ class DataheraldSQLAgent(SQLGenerator):
                 "short_context_llm": self.short_context_llm,
                 "long_context_llm": self.long_context_llm,
             },
-            switch_to_larger_model_threshold=OPENAI_CONTEXT_WIDNOW_SIZES[self.short_context_llm.model_name]-500,
+            switch_to_larger_model_threshold=OPENAI_CONTEXT_WIDNOW_SIZES[
+                self.short_context_llm.model_name
+            ]
+            - 500,
             encoding=tiktoken.encoding_for_model(self.short_context_llm.model_name),
             callback_manager=callback_manager,
             verbose=verbose,
