@@ -240,7 +240,9 @@ class FastAPI(dataherald.server.Server):
             return self._api.answer_question_with_timeout(
                 run_evaluator, large_query_result_in_csv, question_request
             )
-        return self._api.answer_question(run_evaluator, large_query_result_in_csv, question_request)
+        return self._api.answer_question(
+            run_evaluator, large_query_result_in_csv, question_request
+        )
 
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
         return self._api.get_questions(db_connection_id)

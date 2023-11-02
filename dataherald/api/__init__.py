@@ -55,6 +55,10 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
+    def update_response(self, response_id: str) -> Response:
+        pass
+
+    @abstractmethod
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
         pass
 

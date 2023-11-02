@@ -372,23 +372,31 @@ class FastAPI(API):
     @override
     def get_response_file(self, response_id: str) -> JSONResponse:
         response_repository = ResponseRepository(self.storage)
-
+        question_repository = QuestionRepository(self.storage)
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
         try:
             result = response_repository.find_by_id(response_id)
+            question = question_repository.find_by_id(result.question_id)
+            db_connection = db_connection_repository.find_by_id(
+                question.db_connection_id
+            )
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not result:
-            raise HTTPException(status_code=404, detail="Question not found")
+            raise HTTPException(
+                status_code=404, detail="Question, response, or db_connection not found"
+            )
 
         s3 = S3()
         return JSONResponse(
             status_code=201,
             content={
-                "csv_download_url": s3.download_url(result.csv_file_path),
+                "csv_download_url": s3.download_url(
+                    result.csv_file_path, db_connection.file_storage
+                ),
             },
         )
-
 
     @override
     def update_response(self, response_id: str) -> Response:
@@ -414,7 +422,6 @@ class FastAPI(API):
         except SQLInjectionError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
         return response
-
 
     @override
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
@@ -488,7 +495,10 @@ class FastAPI(API):
                 context = context_store.retrieve_context_for_question(user_question)
                 start_generated_answer = time.time()
                 response = sql_generation.generate_response(
-                    user_question, database_connection, context[0]
+                    user_question,
+                    database_connection,
+                    context[0],
+                    large_query_result_in_csv,
                 )
             else:
                 response = Response(
