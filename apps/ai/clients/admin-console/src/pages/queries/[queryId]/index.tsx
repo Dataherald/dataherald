@@ -2,11 +2,12 @@ import PageLayout from '@/components/layout/page-layout'
 import QueryError from '@/components/query/error'
 import LoadingQuery from '@/components/query/loading'
 import QueryWorkspace from '@/components/query/workspace'
-import { ContentBox } from '@/components/ui/content-box'
-import { useQuery } from '@/hooks/api/useQuery'
-import useQueryExecution from '@/hooks/api/useQueryExecution'
-import usePatchQuery from '@/hooks/api/useQueryPatch'
-import { Query, QueryStatus } from '@/models/api'
+import { useQuery } from '@/hooks/api/query/useQuery'
+import useQueryExecution from '@/hooks/api/query/useQueryExecution'
+import useQueryPatch, {
+  QueryPatchRequest,
+} from '@/hooks/api/query/useQueryPatch'
+import { Query } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/router'
 import { FC, useEffect, useState } from 'react'
@@ -21,24 +22,32 @@ const QueryPage: FC = () => {
     mutate,
   } = useQuery(queryId as string)
   const [query, setQuery] = useState<Query | undefined>(initialQuery)
-  const patchQuery = usePatchQuery()
+  const patchQuery = useQueryPatch()
   const executeQuery = useQueryExecution()
 
   useEffect(() => setQuery(initialQuery), [initialQuery])
 
   const handleExecuteQuery = async (sql_query: string) => {
-    const executedQuery = await executeQuery(queryId as string, sql_query)
-    setQuery(executedQuery)
+    try {
+      const executedQuery = await executeQuery(queryId as string, sql_query)
+      setQuery(executedQuery)
+    } catch (e) {
+      console.error(e)
+      throw e
+    }
+    return void 0
   }
 
-  const handlePatchQuery = async (patches: {
-    sql_query: string
-    custom_response: string
-    query_status: QueryStatus
-  }) => {
-    const patchedQuery = await patchQuery(queryId as string, patches)
-    mutate(patchedQuery)
-    setQuery(patchedQuery)
+  const handlePatchQuery = async (patches: QueryPatchRequest) => {
+    try {
+      const patchedQuery = await patchQuery(queryId as string, patches)
+      mutate(patchedQuery)
+      setQuery(patchedQuery)
+    } catch (e) {
+      console.error(e)
+      throw e
+    }
+    return void 0
   }
 
   let pageContent: JSX.Element = <></>
@@ -46,7 +55,11 @@ const QueryPage: FC = () => {
   if (isLoadingInitialQuery && !query) {
     pageContent = <LoadingQuery />
   } else if (error) {
-    pageContent = <QueryError />
+    pageContent = (
+      <div className="m-6">
+        <QueryError />
+      </div>
+    )
   } else if (query)
     pageContent = (
       <QueryWorkspace
@@ -56,11 +69,7 @@ const QueryPage: FC = () => {
       />
     )
 
-  return (
-    <PageLayout>
-      <ContentBox>{pageContent}</ContentBox>
-    </PageLayout>
-  )
+  return <PageLayout disableBreadcrumb>{pageContent}</PageLayout>
 }
 
 export default withPageAuthRequired(QueryPage)

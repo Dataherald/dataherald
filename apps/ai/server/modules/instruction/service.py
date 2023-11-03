@@ -13,7 +13,7 @@ class InstructionService:
     ) -> list[InstructionResponse]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                settings.k2_core_url + "/instructions",
+                settings.engine_url + "/instructions",
                 params={"db_connection_id": db_connection_id},
             )
             raise_for_status(response.status_code, response.text)
@@ -22,7 +22,7 @@ class InstructionService:
     async def get_instruction(self, db_connection_id: str) -> InstructionResponse:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                settings.k2_core_url + "/instructions",
+                settings.engine_url + "/instructions",
                 params={"db_connection_id": db_connection_id},
             )
             instructions = response.json()
@@ -36,7 +36,7 @@ class InstructionService:
     ) -> InstructionResponse:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                settings.k2_core_url + "/instructions",
+                settings.engine_url + "/instructions",
                 json={
                     "db_connection_id": db_connection_id,
                     **instruction_request.dict(),
@@ -53,7 +53,7 @@ class InstructionService:
     ) -> InstructionResponse:
         async with httpx.AsyncClient() as client:
             response = await client.put(
-                settings.k2_core_url + f"/instructions/{instruction_id}",
+                settings.engine_url + f"/instructions/{instruction_id}",
                 json={
                     "db_connection_id": db_connection_id,
                     **instruction_request.dict(exclude_unset=True),
@@ -65,7 +65,7 @@ class InstructionService:
     async def delete_instruction(self, instruction_id):
         async with httpx.AsyncClient() as client:
             response = await client.delete(
-                settings.k2_core_url + f"/instructions/{instruction_id}",
+                settings.engine_url + f"/instructions/{instruction_id}",
             )
             raise_for_status(response.status_code, response.text)
             return {"id": instruction_id}

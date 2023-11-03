@@ -8,7 +8,7 @@ const useQueryExecution = () => {
 
   const executeQuery = useCallback(
     async (queryId: string, sql_query: string): Promise<Query> =>
-      apiFetcher<Query>(`${API_URL}/query/${queryId}/answer`, {
+      apiFetcher<Query>(`${API_URL}/query/${queryId}/sql-answer`, {
         method: 'POST',
         body: JSON.stringify({ sql_query }),
       }),

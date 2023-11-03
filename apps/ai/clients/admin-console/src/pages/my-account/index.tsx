@@ -13,7 +13,7 @@ const MyAccountPage: FC = () => {
   return (
     <PageLayout>
       {user && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 m-6">
           <ContentBox>
             <div className="flex items-center gap-2">
               <User2 size={18} strokeWidth={2.5} />

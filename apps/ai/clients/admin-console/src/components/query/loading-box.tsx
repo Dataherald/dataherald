@@ -2,11 +2,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { FC, HTMLAttributes } from 'react'
 
-export type LoadingSqlQueryResultsProps = HTMLAttributes<HTMLDivElement>
+export type LoadingBoxProps = HTMLAttributes<HTMLDivElement>
 
-const LoadingSqlQueryResults: FC<LoadingSqlQueryResultsProps> = ({
-  className,
-}) => {
+const LoadingBox: FC<LoadingBoxProps> = ({ className }) => {
   return (
     <div
       className={cn(
@@ -19,4 +17,4 @@ const LoadingSqlQueryResults: FC<LoadingSqlQueryResultsProps> = ({
   )
 }
 
-export default LoadingSqlQueryResults
+export default LoadingBox

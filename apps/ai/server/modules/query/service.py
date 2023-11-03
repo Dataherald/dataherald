@@ -11,20 +11,20 @@ from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.service import GoldenSQLService
 from modules.organization.models.responses import OrganizationResponse
 from modules.query.models.entities import (
-    BaseEngineAnswer,
-    EngineAnswer,
+    Answer,
     Query,
     QueryStatus,
     Question,
     SQLGenerationStatus,
 )
 from modules.query.models.requests import (
-    QueryExecutionRequest,
     QueryUpdateRequest,
     QuestionRequest,
+    SQLAnswerRequest,
 )
 from modules.query.models.responses import (
-    EngineAnswerResponse,
+    AnswerResponse,
+    MessageResponse,
     QueryListResponse,
     QueryResponse,
     QuerySlackResponse,
@@ -62,22 +62,22 @@ class QueryService:
         # ask question to k2 engine
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                settings.k2_core_url + "/questions",
+                settings.engine_url + "/questions",
                 json={
                     "question": question_string,
                     "db_connection_id": organization.db_connection_id,
                 },
-                timeout=settings.default_k2_core_timeout,
+                timeout=settings.default_engine_timeout,
             )
             response_json = response.json()
             if not response_json["question_id"]:
                 raise_for_status(response.status_code, response.text)
 
-            answer = EngineAnswerResponse(**response_json)
+            answer = AnswerResponse(**response_json)
 
             query = Query(
                 question_id=ObjectId(answer.question_id),
-                response_id=ObjectId(answer.id) if answer.id else None,
+                answer_id=ObjectId(answer.id) if answer.id else None,
                 question_date=current_utc_time,
                 last_updated=current_utc_time,
                 organization_id=ObjectId(organization.id),
@@ -93,7 +93,7 @@ class QueryService:
                 else QueryStatus.SQL_ERROR,
             )
 
-            query_id = self.repo.add_query(query.dict(exclude={"id"}))
+            query_id = self.repo.add_query(query.dict(exclude_unset=True))
 
             self.analytics.track(
                 question_request.slack_user_id,
@@ -102,7 +102,7 @@ class QueryService:
                     "query_id": query_id,
                     "display_id": query.display_id,
                     "question_id": str(query.question_id),
-                    "response_id": str(query.response_id),
+                    "answer_id": str(query.answer_id),
                     "organization_id": organization.id,
                     "organization_name": organization.name,
                     "database_name": self.db_connection_service.get_db_connection(
@@ -144,7 +144,7 @@ class QueryService:
                             organization.db_connection_id
                         ).alias,
                         "display_id": query.display_id,
-                        "status": query.status.value,
+                        "status": query.status,
                         "confidence_score": answer.confidence_score,
                         "asker": username,
                     },
@@ -171,9 +171,7 @@ class QueryService:
     def get_query(self, query_id: str):
         query = self.repo.get_query(query_id)
         question = self.repo.get_question(str(query.question_id))
-        answer = (
-            self.repo.get_answer(str(query.response_id)) if query.response_id else None
-        )
+        answer = self.repo.get_answer(str(query.answer_id)) if query.answer_id else None
         if query:
             return self._get_mapped_query_response(query, question, answer)
 
@@ -197,8 +195,8 @@ class QueryService:
                     id=str(query.id),
                     username=query.slack_info.username or "unknown",
                     question=question.question,
-                    response=query.custom_response
-                    or (answer.response if query.response_id else ""),
+                    response=query.message
+                    or (answer.response if query.answer_id else ""),
                     status=query.status,
                     question_date=query.question_date,
                     evaluation_score=self._convert_confidence_score(
@@ -217,7 +215,7 @@ class QueryService:
             [
                 result
                 for query in queries
-                if (result := str(query.response_id) if query.response_id else None)
+                if (result := str(query.answer_id) if query.answer_id else None)
                 is not None
             ]
         )
@@ -231,7 +229,7 @@ class QueryService:
             if question.id not in question_dict:
                 question_dict[question.id] = question.question
 
-        query_response_dict: Dict[ObjectId, EngineAnswer | None] = {}
+        query_response_dict: Dict[ObjectId, Answer | None] = {}
         for answer in query_responses:
             query_response_dict[answer.id] = answer
 
@@ -241,18 +239,18 @@ class QueryService:
                     id=str(query.id),
                     username=query.slack_info.username or "unknown",
                     question=question_dict[query.question_id],
-                    response=query.custom_response
+                    response=query.message
                     or (
-                        query_response_dict[query.response_id].response
-                        if query.response_id
+                        query_response_dict[query.answer_id].response
+                        if query.answer_id
                         else ""
                     ),
                     question_date=query.question_date,
                     status=query.status,
                     evaluation_score=self._convert_confidence_score(
-                        query_response_dict[query.response_id].confidence_score
+                        query_response_dict[query.answer_id].confidence_score
                     )
-                    if query.response_id
+                    if query.answer_id
                     else 0,
                     display_id=query.display_id,
                 )
@@ -261,109 +259,77 @@ class QueryService:
 
         return []
 
-    async def patch_response(
+    async def update_query(
         self,
         query_id: str,
         query_request: QueryUpdateRequest,
-        organization: OrganizationResponse,
         user: UserResponse,
+        organization: OrganizationResponse,
     ) -> QueryResponse:
         query = self.repo.get_query(query_id)
-        prev_sql_query = (
-            self.repo.get_answer(str(query.response_id)).sql_query
-            if query.response_id
-            else None
-        )
-
-        if query_request.query_status != QueryStatus.REJECTED:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    settings.k2_core_url + "/responses",
-                    json={
-                        "question_id": str(query.question_id),
-                        "sql_query": query_request.sql_query,
-                    },
-                    timeout=settings.default_k2_core_timeout,
-                )
-                raise_for_status(response.status_code, response.text)
-
-                new_query_response = EngineAnswerResponse(**response.json())
-        else:
-            new_query_response = None
-
         question = self.repo.get_question(query.question_id)
+        answer = self.repo.get_answer(str(query.answer_id)) if query.answer_id else None
         current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-        updated_query = {
-            "response_id": ObjectId(new_query_response.id)
-            if new_query_response
-            else None,
+        updated_request = {
             "last_updated": current_utc_time,
             "updated_by": ObjectId(user.id),
-            "status": query_request.query_status.value,
-            "custom_response": query_request.custom_response,
+            "message": query_request.message,
         }
-        self.repo.update_query(str(query.id), updated_query)
+        if query_request.query_status:
+            updated_request["status"] = query_request.query_status
+
+        self.repo.update_query(str(query.id), updated_request)
         updated_query = self.repo.get_query(str(query.id))
 
         # verified
-        if query_request.query_status == QueryStatus.VERIFIED:
-            golden_sql = GoldenSQLRequest(
-                question=question.question,
-                sql_query=query_request.sql_query,
-                db_connection_id=organization.db_connection_id,
-            )
-            await self.golden_sql_service.add_verified_query_golden_sql(
-                golden_sql,
-                organization.id,
-                updated_query.id,
-            )
-
-            SlackWebClient(
-                organization.slack_installation.bot.token
-            ).send_verified_query_message(
-                updated_query,
-                new_query_response,
-                question.question,
-            )
-
-            # logic to track 1st time correct response generated by engine
-            all_answers = self.repo.get_answers_by_question_id(
-                str(updated_query.question_id)
-            )
-            if all(answer.sql_query == prev_sql_query for answer in all_answers):
-                self.analytics.track(
-                    user.email,
-                    "verified_query_correct_on_first_try",
-                    {
-                        "query_id": query.id,
-                        "question_id": str(query.question_id),
-                        "response_id": str(query.response_id)
-                        if query.response_id
-                        else None,
-                        "database_name": self.db_connection_service.get_db_connection(
-                            organization.db_connection_id
-                        ).alias,
-                        "display_id": query.display_id,
-                        "status": query.status.value,
-                        "confidence_score": new_query_response.confidence_score
-                        if new_query_response
-                        else None,
-                    },
+        if query_request.query_status:
+            if query_request.query_status == QueryStatus.VERIFIED:
+                golden_sql = GoldenSQLRequest(
+                    question=question.question,
+                    sql_query=answer.sql_query,
+                    db_connection_id=organization.db_connection_id,
+                )
+                await self.golden_sql_service.add_verified_query_golden_sql(
+                    golden_sql,
+                    organization.id,
+                    updated_query.id,
                 )
 
-        # rejected or not verified
-        else:
-            golden_sql_ref = self.golden_sql_service.get_verified_golden_sql_ref(
-                updated_query.id
-            )
-            if golden_sql_ref:
-                await self.golden_sql_service.delete_golden_sql(
-                    str(golden_sql_ref.golden_sql_id)
+                # logic to track 1st time correct response generated by engine
+                all_answers = self.repo.get_answers_by_question_id(
+                    str(updated_query.question_id)
                 )
-            if query_request.query_status == QueryStatus.REJECTED:
-                SlackWebClient(
-                    organization.slack_installation.bot.token,
-                ).send_rejected_query_message(updated_query)
+                if all(ans.sql_query == answer.sql_query for ans in all_answers):
+                    self.analytics.track(
+                        user.email,
+                        "verified_query_correct_on_first_try",
+                        {
+                            "query_id": query_id,
+                            "question_id": str(updated_query.question_id),
+                            "answer_id": str(updated_query.answer_id)
+                            if updated_query.answer_id
+                            else None,
+                            "organization_id": organization.id,
+                            "display_id": updated_query.display_id,
+                            "status": query_request.query_status,
+                            "confidence_score": answer.confidence_score
+                            if answer
+                            else None,
+                            "database_name": self.db_connection_service.get_db_connection(
+                                organization.db_connection_id
+                            ).alias,
+                        },
+                    )
+
+            # rejected or not verified
+            else:
+                golden_sql_ref = self.golden_sql_service.get_verified_golden_sql_ref(
+                    updated_query.id
+                )
+                if golden_sql_ref:
+                    await self.golden_sql_service.delete_golden_sql(
+                        str(golden_sql_ref.golden_sql_id), query_request.query_status
+                    )
 
         self.analytics.track(
             user.email,
@@ -371,80 +337,111 @@ class QueryService:
             {
                 "query_id": query_id,
                 "question_id": str(updated_query.question_id),
-                "response_id": str(updated_query.response_id)
-                if updated_query.response_id
+                "answer_id": str(updated_query.answer_id)
+                if updated_query.answer_id
                 else None,
                 "database_name": self.db_connection_service.get_db_connection(
                     organization.db_connection_id
                 ).alias,
                 "display_id": updated_query.display_id,
-                "status": query_request.query_status.value,
-                "confidence_score": new_query_response.confidence_score
-                if new_query_response
-                else None,
-                "asker": query.slack_info.username,
+                "status": query_request.query_status,
+                "confidence_score": answer.confidence_score if answer else None,
             },
         )
 
-        return self._get_mapped_query_response(
-            updated_query, question, new_query_response
-        )
+        return self._get_mapped_query_response(updated_query, question, answer)
 
-    async def run_response(
-        self, query_id: str, query_request: QueryExecutionRequest, user: UserResponse
-    ):
+    async def generate_sql_answer(
+        self, query_id: str, sql_answer_request: SQLAnswerRequest, user: UserResponse
+    ) -> QueryResponse:
         query = self.repo.get_query(query_id)
+        question = self.repo.get_question(str(query.question_id))
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                settings.k2_core_url + "/responses",
+                settings.engine_url + "/responses",
+                params={"sql_response_only": True, "run_evaluator": False},
                 json={
                     "question_id": str(query.question_id),
-                    "sql_query": query_request.sql_query,
+                    "sql_query": sql_answer_request.sql_query,
                 },
-                timeout=settings.default_k2_core_timeout,
+                timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
-            query.custom_response = None
-            question = self.repo.get_question(query.question_id)
-            new_query_response = EngineAnswerResponse(**response.json())
-
+            current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+            answer = AnswerResponse(**response.json())
+            updated_request = {
+                "last_updated": current_utc_time,
+                "updated_by": ObjectId(user.id),
+                "answer_id": ObjectId(answer.id),
+            }
+            self.repo.update_query(str(query.id), updated_request)
             self.analytics.track(
                 user.email,
                 "query_executed",
                 {
                     "query_id": query_id,
-                    "question_id": new_query_response.id,
-                    "response_id": new_query_response.id,
+                    "question_id": question.id,
+                    "answer_id": answer.id,
+                    "sql_generation_status": answer.sql_generation_status,
+                    "confidence_score": answer.confidence_score,
                     "database_name": self.db_connection_service.get_db_connection(
                         str(question.db_connection_id)
                     ).alias,
-                    "sql_generation_status": new_query_response.sql_generation_status.value,
-                    "confidence_score": new_query_response.confidence_score,
                 },
             )
+            return self._get_mapped_query_response(query, question, answer)
 
-            return self._get_mapped_query_response(query, question, new_query_response)
+    async def generate_message(self, query_id: str) -> MessageResponse:
+        query = self.repo.get_query(query_id)
+        async with httpx.AsyncClient() as client:
+            response = await client.patch(
+                settings.engine_url + f"/responses/{str(query.answer_id)}",
+                timeout=settings.default_engine_timeout,
+            )
+            raise_for_status(response.status_code, response.text)
+
+            answer = AnswerResponse(**response.json())
+            self.repo.update_query(query_id, {"message": answer.response})
+            return MessageResponse(message=answer.response)
+
+    async def send_message(self, query_id: str, organization: OrganizationResponse):
+        query = self.repo.get_query(query_id)
+        question = self.repo.get_question(str(query.question_id))
+        answer = self.repo.get_answer(str(query.answer_id)) if query.answer_id else None
+
+        message = (
+            f":wave: Hello, <@{query.slack_info.user_id}>! An Admin has reviewed {query.display_id}.\n\n"
+            + f"Question: {question.question}\n\n"
+            + f"Response: {query.message or answer.response}\n\n"
+            + f":memo: *Generated SQL Query*: \n ```{answer.sql_query}```"
+        )
+
+        SlackWebClient(organization.slack_installation.bot.token).send_message(
+            query.slack_info.channel_id, query.slack_info.thread_ts, message
+        )
 
     def _get_mapped_query_response(
         self,
         query: Query,
         question: Question,
-        answer: BaseEngineAnswer = None,
+        answer: Answer = None,
     ) -> QueryResponse:
         if not answer:
-            answer = BaseEngineAnswer(
-                response_id=None,
-                question_id=query.question_id,
-                response=query.custom_response or "",
+            answer = Answer(
+                id=None,
+                question_id=question.id,
+                response=query.message or "",
                 sql_query="",
                 confidence_score=0,
             )
 
         return QueryResponse(
             id=str(query.id),
+            question_id=str(question.id),
+            answer_id=str(answer.id),
             username=query.slack_info.username or "unknown",
             question=question.question,
-            response=query.custom_response or answer.response,
+            response=query.message or answer.response,
             sql_query=answer.sql_query,
             sql_query_result=answer.sql_query_result,
             ai_process=answer.intermediate_steps or ["process unknown"],
@@ -463,7 +460,7 @@ class QueryService:
 
     def _convert_confidence_score(self, confidence_score: float) -> int:
         if not confidence_score:
-            return 0
+            return None
         if confidence_score > CONFIDENCE_CAP:
             return 95
         return int(confidence_score * 100)

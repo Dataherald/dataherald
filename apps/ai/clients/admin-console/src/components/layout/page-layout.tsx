@@ -4,19 +4,22 @@ import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { FC, HTMLAttributes } from 'react'
 
-export type PageLayoutProps = HTMLAttributes<HTMLDivElement>
+interface PageLayoutProps extends HTMLAttributes<HTMLDivElement> {
+  disableBreadcrumb?: boolean
+}
 
 const PageLayout: FC<PageLayoutProps> = ({
   className,
   children,
+  disableBreadcrumb = false,
   ...props
 }: PageLayoutProps) => (
   <div className={cn('flex h-screen', className)} {...props}>
     <SidebarNav />
     <div className="w-full h-full overflow-auto flex flex-col">
-      <BreadcrumbHeader />
+      {!disableBreadcrumb && <BreadcrumbHeader />}
       <Separator />
-      <main className="grow flex flex-col overflow-auto p-6">{children}</main>
+      <main className="grow flex flex-col overflow-auto">{children}</main>
     </div>
   </div>
 )

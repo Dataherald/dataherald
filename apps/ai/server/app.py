@@ -61,7 +61,7 @@ async def heartbeat():
 @app.get("/engine/heartbeat")
 async def engine_heartbeat():
     async with httpx.AsyncClient() as client:
-        response = await client.get(settings.k2_core_url + "/heartbeat")
+        response = await client.get(settings.engine_url + "/heartbeat")
         response.raise_for_status()  # Raise an exception for non-2xx status codes
         return response.json()
 

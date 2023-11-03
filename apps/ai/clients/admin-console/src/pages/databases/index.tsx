@@ -66,7 +66,7 @@ const DatabasesPage: FC = () => {
   }
   return (
     <PageLayout>
-      <ContentBox>{pageContent}</ContentBox>
+      <ContentBox className="m-6">{pageContent}</ContentBox>
     </PageLayout>
   )
 }

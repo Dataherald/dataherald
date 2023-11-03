@@ -8,10 +8,15 @@ const Editor = dynamic(() => import('@monaco-editor/react'), {
 
 export interface SqlEditorProps {
   initialQuery: string
+  disabled?: boolean
   onValueChange: (value: string) => void
 }
 
-const SqlEditor: FC<SqlEditorProps> = ({ initialQuery, onValueChange }) => {
+const SqlEditor: FC<SqlEditorProps> = ({
+  initialQuery,
+  onValueChange,
+  disabled = false,
+}) => {
   const handleEditorChange = (value: string | undefined): void => {
     onValueChange(value || '')
   }
@@ -57,10 +62,11 @@ const SqlEditor: FC<SqlEditorProps> = ({ initialQuery, onValueChange }) => {
       defaultValue={initialQuery}
       language="sql"
       options={{
+        readOnly: disabled,
         lineHeight: 1.5,
         scrollBeyondLastLine: false,
         lineNumbersMinChars: 0,
-        renderLineHighlight: 'gutter',
+        renderLineHighlight: disabled ? 'none' : 'gutter',
         scrollbar: {
           useShadows: true,
           arrowSize: 0,

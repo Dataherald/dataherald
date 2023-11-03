@@ -19,24 +19,24 @@ class QueryStatus(str, Enum):
     REJECTED = "REJECTED"
 
 
-class SQLGenerationStatus(Enum):
-    VALID = "VALID"
-    INVALID = "INVALID"
-    NONE = "NONE"
-
-
 class Query(BaseModel):
     id: Any = Field(alias="_id")
     status: QueryStatus
     question_id: Any
-    response_id: Any
+    answer_id: Any
     question_date: str
     last_updated: str
     updated_by: Any
     organization_id: Any
     display_id: str | None
     slack_info: SlackInfo
-    custom_response: str | None
+    message: str | None
+
+
+class SQLGenerationStatus(str, Enum):
+    VALID = "VALID"
+    INVALID = "INVALID"
+    NONE = "NONE"
 
 
 class SQLQueryResult(BaseModel):
@@ -44,8 +44,8 @@ class SQLQueryResult(BaseModel):
     rows: list[dict]
 
 
-class BaseEngineAnswer(BaseModel):
-    response: str | None
+class BaseAnswer(BaseModel):
+    response: str | None  # TODO: rename to message after engine refactor
     intermediate_steps: list[str] | None
     sql_query: str | None
     sql_query_result: SQLQueryResult | None
@@ -57,6 +57,6 @@ class BaseEngineAnswer(BaseModel):
     error_message: str | None
 
 
-class EngineAnswer(BaseEngineAnswer):
-    id: Any | None = Field(alias="_id")
+class Answer(BaseAnswer):
+    id: Any = Field(alias="_id")
     question_id: Any

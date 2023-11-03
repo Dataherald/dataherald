@@ -171,6 +171,7 @@ class TestGoldenSQLAPI(TestCase):
         get_golden_sql_ref=Mock(return_value=GoldenSQLRef(**test_ref_1)),
         delete_verified_golden_sql_ref=Mock(return_value=1),
         delete_golden_sql_ref=Mock(return_value=1),
+        update_query_status=Mock(return_value=None),
     )
     def test_delete_golden_sql(self):
         response = client.delete(

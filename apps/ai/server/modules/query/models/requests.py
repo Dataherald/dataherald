@@ -12,10 +12,9 @@ class QuestionRequest(BaseModel):
 
 
 class QueryUpdateRequest(BaseModel):
-    sql_query: str
     query_status: QueryStatus | None
-    custom_response: str | None
+    message: str | None
 
 
-class QueryExecutionRequest(BaseModel):
+class SQLAnswerRequest(BaseModel):
     sql_query: str

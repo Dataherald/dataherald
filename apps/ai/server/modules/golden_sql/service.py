@@ -10,6 +10,7 @@ from modules.golden_sql.models.entities import GoldenSQL, GoldenSQLRef, GoldenSQ
 from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.models.responses import GoldenSQLResponse
 from modules.golden_sql.repository import GoldenSQLRepository
+from modules.query.models.entities import QueryStatus
 from utils.exception import raise_for_status
 
 
@@ -65,9 +66,9 @@ class GoldenSQLService:
             await self.delete_golden_sql(golden_sql_ref.golden_sql_id)
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                settings.k2_core_url + "/golden-records",
+                settings.engine_url + "/golden-records",
                 json=[golden_sql_request.dict()],
-                timeout=settings.default_k2_core_timeout,
+                timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
             response_json = response.json()[0]
@@ -94,12 +95,12 @@ class GoldenSQLService:
     ) -> List[GoldenSQLResponse]:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                settings.k2_core_url + "/golden-records",
+                settings.engine_url + "/golden-records",
                 json=[
                     golden_sql_request.dict()
                     for golden_sql_request in golden_sql_requests
                 ],
-                timeout=settings.default_k2_core_timeout,
+                timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
 
@@ -117,7 +118,7 @@ class GoldenSQLService:
                 golden_sql_ref_data = GoldenSQLRef(
                     golden_sql_id=golden_sql.id,
                     organization_id=ObjectId(org_id),
-                    source=GoldenSQLSource.USER_UPLOAD.value,
+                    source=GoldenSQLSource.USER_UPLOAD,
                     created_time=datetime.now(timezone.utc).strftime(
                         "%Y-%m-%d %H:%M:%S"
                     ),
@@ -133,14 +134,16 @@ class GoldenSQLService:
 
             return golden_sql_responses
 
-    async def delete_golden_sql(self, golden_id: str) -> dict:
+    async def delete_golden_sql(
+        self, golden_id: str, query_status: QueryStatus = None
+    ) -> dict:
         golden_sql_ref = self.repo.get_golden_sql_ref(golden_id)
 
         if golden_sql_ref:
             async with httpx.AsyncClient() as client:
                 response = await client.delete(
-                    settings.k2_core_url + f"/golden-records/{golden_id}",
-                    timeout=settings.default_k2_core_timeout,
+                    settings.engine_url + f"/golden-records/{golden_id}",
+                    timeout=settings.default_engine_timeout,
                 )
                 raise_for_status(response.status_code, response.text)
                 if response.json()["status"]:
@@ -148,6 +151,10 @@ class GoldenSQLService:
                         matched_count = self.repo.delete_verified_golden_sql_ref(
                             golden_sql_ref.query_id
                         )
+                        if query_status:
+                            self.repo.update_query_status(
+                                golden_sql_ref.query_id, query_status
+                            )
                     else:
                         matched_count = self.repo.delete_golden_sql_ref(golden_id)
                     if matched_count == 1:

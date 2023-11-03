@@ -56,12 +56,12 @@ class DBConnectionService:
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                settings.k2_core_url + "/database-connections",
+                settings.engine_url + "/database-connections",
                 json={
                     "llm_api_key": organization.llm_api_key,
                     **db_connection_request.dict(),
                 },
-                timeout=settings.default_k2_core_timeout,
+                timeout=settings.default_engine_timeout,
             )
 
             raise_for_status(response.status_code, response.text)
@@ -96,12 +96,12 @@ class DBConnectionService:
 
         async with httpx.AsyncClient() as client:
             response = await client.put(
-                settings.k2_core_url + f"/database-connections/{id}",
+                settings.engine_url + f"/database-connections/{id}",
                 json={
                     "llm_api_key": organization.llm_api_key,
                     **db_connection_request.dict(),
                 },
-                timeout=settings.default_k2_core_timeout,
+                timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
             return DBConnectionResponse(**response.json())

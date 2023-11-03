@@ -3,11 +3,12 @@ from fastapi.security import HTTPBearer
 
 from modules.organization.service import OrganizationService
 from modules.query.models.requests import (
-    QueryExecutionRequest,
     QueryUpdateRequest,
     QuestionRequest,
+    SQLAnswerRequest,
 )
 from modules.query.models.responses import (
+    MessageResponse,
     QueryListResponse,
     QueryResponse,
     QuerySlackResponse,
@@ -66,7 +67,7 @@ async def get_query(id: str, token: str = Depends(token_auth_scheme)) -> QueryRe
 
 
 @router.patch("/{id}")
-async def patch_response(
+async def update_query(
     id: str,
     query_request: QueryUpdateRequest,
     token: str = Depends(token_auth_scheme),
@@ -74,15 +75,36 @@ async def patch_response(
     user = authorize.user(VerifyToken(token.credentials).verify())
     organization = authorize.get_organization_by_user_response(user)
     authorize.query_in_organization(id, str(organization.id))
-    return await query_service.patch_response(id, query_request, organization, user)
+    return await query_service.update_query(id, query_request, user, organization)
 
 
-@router.post("/{id}/answer")
-async def run_response(
+@router.post("/{id}/sql-answer", status_code=status.HTTP_201_CREATED)
+async def generate_sql_answer(
     id: str,
-    sql_query: QueryExecutionRequest,
+    sql_answer_request: SQLAnswerRequest,
     token: str = Depends(token_auth_scheme),
 ) -> QueryResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.query_in_organization(id, user.organization_id)
-    return await query_service.run_response(id, sql_query, user)
+    return await query_service.generate_sql_answer(id, sql_answer_request, user)
+
+
+@router.patch("/{id}/message", status_code=status.HTTP_200_OK)
+async def generate_message(
+    id: str,
+    token: str = Depends(token_auth_scheme),
+) -> MessageResponse:
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    authorize.query_in_organization(id, user.organization_id)
+    return await query_service.generate_message(id)
+
+
+@router.post("/{id}/message", status_code=status.HTTP_200_OK)
+async def send_message(
+    id: str,
+    token: str = Depends(token_auth_scheme),
+):
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    authorize.query_in_organization(id, user.organization_id)
+    organization = authorize.get_organization_by_user_response(user)
+    return await query_service.send_message(id, organization)

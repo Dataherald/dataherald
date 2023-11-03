@@ -10,7 +10,7 @@ from app import app
 from modules.db_connection.models.responses import DBConnectionResponse
 from modules.organization.models.entities import SlackBot, SlackInstallation
 from modules.organization.models.responses import OrganizationResponse
-from modules.query.models.entities import Query
+from modules.query.models.entities import Query, Question
 from modules.user.models.responses import UserResponse
 
 client = TestClient(app)
@@ -21,7 +21,7 @@ client = TestClient(app)
     "utils.auth.Authorize",
     user=Mock(
         return_value=UserResponse(
-            id="123",
+            id="0123456789ab0123456789ab",
             email="test@gmail.com",
             username="test_user",
             organization_id="0123456789ab0123456789ab",
@@ -84,11 +84,11 @@ class TestQueryAPI(TestCase):
 
     test_ref_1 = {
         "_id": ObjectId(b"doo-ree-miii"),
-        "response_id": test_0["_id"],
+        "answer_id": test_0["_id"],
         "question_id": test_question["_id"],
         "question_date": "2023-09-15 21:14:29",
         "status": "NOT_VERIFIED",
-        "custom_response": None,
+        "message": None,
         "last_updated": "2023-09-15 21:14:29",
         "updated_by": None,
         "organization_id": ObjectId(b"foo-bar-quux"),
@@ -123,6 +123,8 @@ class TestQueryAPI(TestCase):
         "last_updated": test_ref_1["last_updated"],
         "updated_by": None,
         "sql_error_message": "test_error",
+        "question_id": str(test_question["_id"]),
+        "answer_id": str(test_0["_id"]),
         **test_list_response_1,
     }
 
@@ -133,6 +135,10 @@ class TestQueryAPI(TestCase):
         "sql_query": test_response_1["sql_query"],
         "exec_time": test_response_0["exec_time"],
         "is_above_confidence_threshold": False,
+    }
+
+    test_message_response_1 = {
+        "message": "test_response",
     }
 
     @patch(
@@ -218,29 +224,37 @@ class TestQueryAPI(TestCase):
         assert response.json() == self.test_response_1
 
     @patch(
-        "modules.organization.service.OrganizationService.get_organization",
-        Mock(return_value={"id": "666f6f2d6261722d71757578"}),
+        "httpx.AsyncClient.post",
+        AsyncMock(return_value=Response(201, json=test_response_0)),
     )
-    @patch(
-        "modules.query.service.QueryService.patch_response",
-        AsyncMock(return_value=test_response_1),
+    @patch.multiple(
+        "modules.query.repository.QueryRepository",
+        get_query=Mock(return_value=Query(**test_ref_1)),
+        get_question=Mock(return_value=Question(**test_question)),
+        update_query=Mock(return_value=None),
     )
-    def test_patch_response(self):
-        response = client.patch(
-            self.url + "/666f6f2d6261722d71757578",
-            headers=self.test_header,
-            json={"sql_query": "test_query", "query_status": "VERIFIED"},
-        )
-        assert response.status_code == status.HTTP_200_OK
-
-    @patch(
-        "modules.query.service.QueryService.run_response",
-        AsyncMock(return_value=test_response_1),
-    )
-    def test_run_response(self):
+    def test_generate_sql_answer(self):
         response = client.post(
-            self.url + "/666f6f2d6261722d71757578/answer",
+            self.url + "/666f6f2d6261722d71757578/sql-answer",
             headers=self.test_header,
             json={"sql_query": "test_query"},
         )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.json() == self.test_response_1
+
+    @patch(
+        "httpx.AsyncClient.patch",
+        AsyncMock(return_value=Response(200, json=test_response_0)),
+    )
+    @patch.multiple(
+        "modules.query.repository.QueryRepository",
+        get_query=Mock(return_value=Query(**test_ref_1)),
+        update_query=Mock(return_value=None),
+    )
+    def test_generate_message(self):
+        response = client.patch(
+            self.url + "/666f6f2d6261722d71757578/message",
+            headers=self.test_header,
+        )
         assert response.status_code == status.HTTP_200_OK
+        assert response.json() == self.test_message_response_1

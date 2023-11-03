@@ -10,63 +10,62 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormMessage,
 } from '@/components/ui/form'
 import { Textarea } from '@/components/ui/textarea'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Info } from 'lucide-react'
 import { FC, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 
-const CUSTOM_RESPONSE_MAX_LENGTH = 3000
+const CUSTOM_MESSAGE_MAX_LENGTH = 3000
 
-export const customResponseFormSchema = Yup.object({
-  customResponse: Yup.string()
+export const customMessageFormSchema = Yup.object({
+  customMessage: Yup.string()
     .max(
-      CUSTOM_RESPONSE_MAX_LENGTH,
+      CUSTOM_MESSAGE_MAX_LENGTH,
       `The response can't be longer than 3000 characters`,
     )
     .required('Please enter a response for the query'),
 })
 
-type CustomResponseFormValues = Yup.InferType<typeof customResponseFormSchema>
+type CustomMessageFormValues = Yup.InferType<typeof customMessageFormSchema>
 
-interface CustomResponseDialogProps {
+interface CustomMessageDialogProps {
   initialValue: string
   isOpen: boolean
   title: string | JSX.Element
   description: string
-  onClose: (newCustomResponse?: string) => void
+  onClose: (newCustomMessage?: string) => void
 }
 
-const CustomResponseDialog: FC<CustomResponseDialogProps> = ({
+const CustomMessageDialog: FC<CustomMessageDialogProps> = ({
   initialValue,
   isOpen,
   title,
   description,
   onClose,
 }) => {
-  const form = useForm<CustomResponseFormValues>({
-    resolver: yupResolver(customResponseFormSchema),
+  const form = useForm<CustomMessageFormValues>({
+    resolver: yupResolver(customMessageFormSchema),
     defaultValues: {
-      customResponse: initialValue,
+      customMessage: initialValue,
     },
   })
 
   const handleCancel = () => {
+    form.reset({ customMessage: initialValue })
     onClose()
-    form.reset({ customResponse: initialValue })
   }
-  const handleContinue = (formValues: CustomResponseFormValues) => {
-    onClose(formValues.customResponse)
+  const handleContinue = (formValues: CustomMessageFormValues) => {
+    form.reset({ customMessage: initialValue })
+    onClose(formValues.customMessage)
   }
 
   useEffect(
-    () => form.reset({ customResponse: initialValue }),
+    () => form.reset({ customMessage: initialValue }),
     [form, initialValue],
   )
 
@@ -86,17 +85,13 @@ const CustomResponseDialog: FC<CustomResponseDialogProps> = ({
             </DialogHeader>
             <FormField
               control={form.control}
-              name="customResponse"
+              name="customMessage"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Textarea {...field} />
+                    <Textarea {...field} rows={10} />
                   </FormControl>
                   <FormMessage />
-                  <FormDescription className="flex items-start gap-1 pt-2">
-                    <Info size={18} strokeWidth={2}></Info>
-                    {`This message will be sent as the question's response to the Slack thread.`}
-                  </FormDescription>
                 </FormItem>
               )}
             />
@@ -104,7 +99,7 @@ const CustomResponseDialog: FC<CustomResponseDialogProps> = ({
               <Button variant="outline" type="button" onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button type="submit">Done</Button>
+              <Button type="submit">Save</Button>
             </DialogFooter>
           </form>
         </Form>
@@ -112,4 +107,4 @@ const CustomResponseDialog: FC<CustomResponseDialogProps> = ({
     </Dialog>
   )
 }
-export default CustomResponseDialog
+export default CustomMessageDialog

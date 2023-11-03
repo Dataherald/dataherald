@@ -23,9 +23,9 @@ class TableDescriptionService:
     ) -> list[TableDescriptionResponse]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                settings.k2_core_url + "/table-descriptions",
+                settings.engine_url + "/table-descriptions",
                 params={"db_connection_id": db_connection_id, "table_name": table_name},
-                timeout=settings.default_k2_core_timeout,
+                timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
 
@@ -46,8 +46,8 @@ class TableDescriptionService:
     ) -> TableDescriptionResponse:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                settings.k2_core_url + f"/table-descriptions/{table_description_id}",
-                timeout=settings.default_k2_core_timeout,
+                settings.engine_url + f"/table-descriptions/{table_description_id}",
+                timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
 
@@ -65,9 +65,9 @@ class TableDescriptionService:
 
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                settings.k2_core_url + "/table-descriptions",
+                settings.engine_url + "/table-descriptions",
                 params={"db_connection_id": db_connection_id, "table_name": ""},
-                timeout=settings.default_k2_core_timeout,
+                timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
 
@@ -99,9 +99,9 @@ class TableDescriptionService:
     async def sync_table_descriptions_schemas(self, scan_request: ScanRequest) -> bool:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                settings.k2_core_url + "/table-descriptions/sync-schemas",
+                settings.engine_url + "/table-descriptions/sync-schemas",
                 json=scan_request.dict(),
-                timeout=settings.default_k2_core_timeout,
+                timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
             return response.json()
@@ -113,7 +113,7 @@ class TableDescriptionService:
     ) -> TableDescriptionResponse:
         async with httpx.AsyncClient() as client:
             response = await client.patch(
-                settings.k2_core_url + f"/table-descriptions/{table_description_id}",
+                settings.engine_url + f"/table-descriptions/{table_description_id}",
                 json=table_description_request.dict(exclude_unset=True),
             )
             raise_for_status(response.status_code, response.text)
@@ -122,7 +122,7 @@ class TableDescriptionService:
     async def delete_table_description(self, table_description_id: str):
         async with httpx.AsyncClient() as client:
             response = await client.delete(
-                settings.k2_core_url + f"/table-descriptions/{table_description_id}",
+                settings.engine_url + f"/table-descriptions/{table_description_id}",
             )
             raise_for_status(response.status_code, response.text)
             return True

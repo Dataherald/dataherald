@@ -2,8 +2,7 @@ import re
 
 from slack_sdk import WebClient
 
-from modules.query.models.entities import Query
-from modules.query.models.responses import EngineAnswerResponse
+from modules.query.models.entities import Answer, Query, Question
 
 
 class SlackWebClient:
@@ -24,69 +23,69 @@ class SlackWebClient:
 
     def send_verified_query_message(
         self,
-        query_ref: Query,
-        query_response: EngineAnswerResponse,
-        question: str,
+        query: Query,
+        question: Question,
+        answer: Answer,
     ):
         message_blocks = [
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f":wave: Hello, <@{query_ref.slack_info.user_id}>! Your query {query_ref.display_id} has been verified.",
+                    "text": f":wave: Hello, <@{query.slack_info.user_id}>! Your query {query.display_id} has been verified.",
                 },
             },
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Question: {question}",
+                    "text": f"Question: {question.question}",
                 },
             },
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Response: {query_ref.custom_response or query_response.response}",
+                    "text": f"Response: {query.message or answer.response}",
                 },
             },
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f":memo: *Generated SQL Query*: \n ```{query_response.sql_query}```",
+                    "text": f":memo: *Generated SQL Query*: \n ```{answer.sql_query}```",
                 },
             },
         ]
         self.client.chat_postMessage(
-            channel=query_ref.slack_info.channel_id,
-            thread_ts=query_ref.slack_info.thread_ts,
+            channel=query.slack_info.channel_id,
+            thread_ts=query.slack_info.thread_ts,
             blocks=message_blocks,
         )
 
     def send_rejected_query_message(
         self,
-        query_ref: Query,
+        query: Query,
     ):
         message_blocks = [
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f":wave: Hello, <@{query_ref.slack_info.user_id}>. Your query {query_ref.display_id} could not be answered.",
+                    "text": f":wave: Hello, <@{query.slack_info.user_id}>. Your query {query.display_id} could not be answered.",
                 },
             },
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Reason: {query_ref.custom_response}",
+                    "text": f"Reason: {query.message}",
                 },
             },
         ]
         self.client.chat_postMessage(
-            channel=query_ref.slack_info.channel_id,
-            thread_ts=query_ref.slack_info.thread_ts,
+            channel=query.slack_info.channel_id,
+            thread_ts=query.slack_info.thread_ts,
             blocks=message_blocks,
         )
 

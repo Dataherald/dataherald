@@ -6,6 +6,7 @@ from fastapi.security import HTTPBearer
 from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.models.responses import GoldenSQLResponse
 from modules.golden_sql.service import GoldenSQLService
+from modules.query.models.entities import QueryStatus
 from utils.auth import Authorize, VerifyToken
 
 router = APIRouter(
@@ -56,4 +57,4 @@ async def add_user_upload_golden_sql(
 async def delete_golden_sql(id: str, token: str = Depends(token_auth_scheme)):
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     authorize.golden_sql_in_organization(id, org_id)
-    return await golden_sql_service.delete_golden_sql(id)
+    return await golden_sql_service.delete_golden_sql(id, QueryStatus.NOT_VERIFIED)

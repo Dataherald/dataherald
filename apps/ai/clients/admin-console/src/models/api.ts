@@ -82,15 +82,19 @@ export type QueryList = QueryListItem[]
 
 export interface Query {
   id: string
+  display_id: string
+  question_id: string
   question: string
   question_date: string
+  answer_id: string
   sql_query: string
   sql_query_result: QuerySqlResult | null
   sql_error_message?: string
-  ai_process: string[]
-  response: string
-  status: QueryStatus
   evaluation_score: number
+  ai_process: string[]
+  message: string
+  response: string // TODO remove this field once the backend migrated to `message`
+  status: QueryStatus
   username: string
   last_updated: string
   updated_by: User

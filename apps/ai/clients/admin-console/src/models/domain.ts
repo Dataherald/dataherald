@@ -4,6 +4,7 @@ import { LucideIcon } from 'lucide-react'
 export enum EDomainQueryStatus {
   REJECTED = 'REJECTED',
   SQL_ERROR = 'SQL_ERROR',
+  NOT_VERIFIED = 'NOT_VERIFIED',
   LOW_CONFIDENCE = 'LOW_CONFIDENCE',
   MEDIUM_CONFIDENCE = 'MEDIUM_CONFIDENCE',
   HIGH_CONFIDENCE = 'HIGH_CONFIDENCE',
@@ -13,9 +14,9 @@ export enum EDomainQueryStatus {
 export type DomainQueryStatus = keyof typeof EDomainQueryStatus
 
 export enum EDomainQueryWorkspaceStatus {
-  REJECTED = 'REJECTED',
-  NOT_VERIFIED = 'NOT_VERIFIED',
   VERIFIED = 'VERIFIED',
+  NOT_VERIFIED = 'NOT_VERIFIED',
+  REJECTED = 'REJECTED',
 }
 
 export type QueryWorkspaceStatus = keyof typeof EDomainQueryWorkspaceStatus

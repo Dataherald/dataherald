@@ -3,18 +3,16 @@ import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { Query, QueryStatus } from '@/models/api'
 import { useCallback } from 'react'
 
-const usePatchQuery = () => {
+export interface QueryPatchRequest {
+  query_status?: QueryStatus
+  message?: string
+}
+
+const useQueryPatch = () => {
   const apiFetcher = useApiFetcher()
 
   const patchQuery = useCallback(
-    async (
-      queryId: string,
-      patches: {
-        sql_query: string
-        custom_response: string
-        query_status: QueryStatus
-      },
-    ): Promise<Query> =>
+    async (queryId: string, patches: QueryPatchRequest): Promise<Query> =>
       apiFetcher<Query>(`${API_URL}/query/${queryId}`, {
         method: 'PATCH',
         body: JSON.stringify(patches),
@@ -24,4 +22,4 @@ const usePatchQuery = () => {
   return patchQuery
 }
 
-export default usePatchQuery
+export default useQueryPatch

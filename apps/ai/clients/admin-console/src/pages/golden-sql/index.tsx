@@ -81,7 +81,7 @@ const GoldenSQLPage: FC = () => {
 
   return (
     <PageLayout>
-      <ContentBox className="overflow-auto">
+      <ContentBox className="overflow-auto m-6">
         <div className="flex flex-col gap-3 bg-gray-50 py-0">
           <h1 className="font-bold">Training Queries</h1>
           <p className="text-sm">

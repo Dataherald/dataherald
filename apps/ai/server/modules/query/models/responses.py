@@ -1,16 +1,7 @@
 from pydantic import BaseModel
 
-from modules.query.models.entities import (
-    BaseEngineAnswer,
-    QueryStatus,
-    SQLQueryResult,
-)
+from modules.query.models.entities import BaseAnswer, QueryStatus, SQLQueryResult
 from modules.user.models.responses import UserResponse
-
-
-class EngineAnswerResponse(BaseEngineAnswer):
-    id: str | None
-    question_id: str
 
 
 class QuerySlackResponse(BaseModel):
@@ -26,7 +17,7 @@ class QueryListResponse(BaseModel):
     id: str
     username: str
     question: str
-    question_date: str
+    question_date: str | None
     response: str | None
     status: QueryStatus | None
     evaluation_score: float | None
@@ -34,9 +25,20 @@ class QueryListResponse(BaseModel):
 
 
 class QueryResponse(QueryListResponse):
+    question_id: str
+    answer_id: str
     sql_query_result: SQLQueryResult | None
     sql_query: str
     ai_process: list[str] = []
     last_updated: str | None
     updated_by: UserResponse | None
     sql_error_message: str | None
+
+
+class AnswerResponse(BaseAnswer):
+    id: str
+    question_id: str
+
+
+class MessageResponse(BaseModel):
+    message: str

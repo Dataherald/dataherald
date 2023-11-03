@@ -19,7 +19,7 @@ const OrganizationSettingsPage: FC = () => {
 
   return (
     <PageLayout>
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-5 m-6">
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2">
             <Building2 size={18} />

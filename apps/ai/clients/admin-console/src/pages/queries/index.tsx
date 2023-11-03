@@ -5,7 +5,7 @@ import { columns as cols } from '@/components/queries/columns'
 import QueriesError from '@/components/queries/error'
 import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
-import useQueries from '@/hooks/api/useQueries'
+import useQueries from '@/hooks/api/query/useQueries'
 import { buildIdHref, cn } from '@/lib/utils'
 import { QueryListItem } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
@@ -63,7 +63,7 @@ const QueriesPage: FC = () => {
 
   return (
     <PageLayout>
-      <ContentBox className="overflow-auto">
+      <ContentBox className="overflow-auto m-6">
         <div className="flex items-center justify-between bg-gray-50 py-0">
           <h1 className="font-bold">Latest Queries</h1>
           <Button
