@@ -80,6 +80,7 @@ class QueryService:
                 answer_id=ObjectId(answer.id) if answer.id else None,
                 question_date=current_utc_time,
                 last_updated=current_utc_time,
+                message=answer.response,
                 organization_id=ObjectId(organization.id),
                 display_id=self.repo.get_next_display_id(organization.id),
                 slack_info=SlackInfo(
