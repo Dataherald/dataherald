@@ -22,7 +22,7 @@ class DBConnectionValidation(BaseModel):
 
 class CreateResponseRequest(BaseModel):
     question_id: str
-    sql_query: str = Field(None, min_length=3)
+    sql_query: str | None = Field(None, min_length=3)
 
 
 class SQLQueryResult(BaseModel):
