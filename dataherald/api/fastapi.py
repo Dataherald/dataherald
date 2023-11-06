@@ -5,6 +5,7 @@ import threading
 import time
 from typing import List
 
+import openai
 from bson import json_util
 from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
@@ -368,6 +369,8 @@ class FastAPI(API):
             response = generates_nl_answer.execute(response)
             response.exec_time = time.time() - start_generated_answer
             response_repository.update(response)
+        except openai.error.AuthenticationError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLInjectionError as e:
@@ -454,6 +457,8 @@ class FastAPI(API):
                 response.confidence_score = confidence_score
             response.exec_time = time.time() - start_generated_answer
             response_repository.update(response)
+        except openai.error.AuthenticationError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLInjectionError as e:
