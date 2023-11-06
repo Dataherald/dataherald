@@ -71,7 +71,7 @@ class SqlAlchemyScanner(Scanner):
             examples_dict.append(temp_dict)
         return examples_dict
 
-    def get_processed_column(
+    def get_processed_column(  # noqa: PLR0911
         self, meta: MetaData, table: str, column: dict, db_engine: SQLDatabase
     ) -> ColumnDetail:
         dynamic_meta_table = meta.tables[table]
@@ -95,7 +95,7 @@ class SqlAlchemyScanner(Scanner):
         if db_engine.engine.driver == "psycopg2":
             # TODO escape table and column names
             rs = db_engine.engine.execute(
-                f"SELECT n_distinct, most_common_vals::TEXT::TEXT[] FROM pg_catalog.pg_stats WHERE tablename = '{table}' AND attname = '{column['name']}'"
+                f"SELECT n_distinct, most_common_vals::TEXT::TEXT[] FROM pg_catalog.pg_stats WHERE tablename = '{table}' AND attname = '{column['name']}'"  # noqa: S608 E501
             ).fetchall()
             if MIN_CATEGORY_VALUE < rs[0]["n_distinct"] <= MAX_CATEGORY_VALUE:
                 return ColumnDetail(
