@@ -89,6 +89,16 @@ async def generate_sql_answer(
     return await query_service.generate_sql_answer(id, sql_answer_request, user)
 
 
+@router.post("/{id}/answer", status_code=status.HTTP_201_CREATED)
+async def generate_answer(
+    id: str,
+    token: str = Depends(token_auth_scheme),
+) -> QueryResponse:
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    authorize.query_in_organization(id, user.organization_id)
+    return await query_service.generate_answer(id, user)
+
+
 @router.patch("/{id}/message", status_code=status.HTTP_200_OK)
 async def generate_message(
     id: str,

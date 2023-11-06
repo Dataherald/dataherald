@@ -352,6 +352,41 @@ class QueryService:
 
         return self._get_mapped_query_response(updated_query, question, answer)
 
+    async def generate_answer(self, query_id: str, user: UserResponse) -> QueryResponse:
+        query = self.repo.get_query(query_id)
+        question = self.repo.get_question(str(query.question_id))
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                settings.engine_url + "/responses",
+                params={"sql_response_only": False, "run_evaluator": True},
+                json={"question_id": str(query.question_id)},
+                timeout=settings.default_engine_timeout,
+            )
+            raise_for_status(response.status_code, response.text)
+            current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+            answer = AnswerResponse(**response.json())
+            updated_request = {
+                "last_updated": current_utc_time,
+                "updated_by": ObjectId(user.id),
+                "answer_id": ObjectId(answer.id),
+            }
+            self.repo.update_query(str(query.id), updated_request)
+            self.analytics.track(
+                user.email,
+                "query_resubmitted",
+                {
+                    "query_id": query_id,
+                    "question_id": question.id,
+                    "answer_id": answer.id,
+                    "sql_generation_status": answer.sql_generation_status,
+                    "confidence_score": answer.confidence_score,
+                    "database_name": self.db_connection_service.get_db_connection(
+                        str(question.db_connection_id)
+                    ).alias,
+                },
+            )
+            return self._get_mapped_query_response(query, question, answer)
+
     async def generate_sql_answer(
         self, query_id: str, sql_answer_request: SQLAnswerRequest, user: UserResponse
     ) -> QueryResponse:
