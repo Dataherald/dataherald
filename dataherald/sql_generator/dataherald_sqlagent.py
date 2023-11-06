@@ -4,7 +4,7 @@ import logging
 import os
 import time
 from functools import wraps
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
 
 import numpy as np
 import openai
@@ -100,7 +100,7 @@ class BaseSQLDatabaseTool(BaseModel):
     """Base tool for interacting with the SQL database and the context information."""
 
     db: SQLDatabase = Field(exclude=True)
-    context: List[dict] | None = Field(exclude=True, default=None)
+    context: Tuple[List[dict] | None, List[dict] | None] = Field(exclude=True, default=None)
 
     class Config(BaseTool.Config):
         """Configuration for this pydantic object."""
@@ -464,7 +464,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     """Dataherald toolkit"""
 
     db: SQLDatabase = Field(exclude=True)
-    context: List[dict] | None = Field(exclude=True, default=None)
+    context: Tuple[List[dict] | None, List[dict] | None] = Field(exclude=True, default=None)
     few_shot_examples: List[dict] | None = Field(exclude=True, default=None)
     instructions: List[dict] | None = Field(exclude=True, default=None)
     db_scan: List[TableDescription] = Field(exclude=True)
@@ -612,7 +612,7 @@ class DataheraldSQLAgent(SQLGenerator):
         self,
         user_question: Question,
         database_connection: DatabaseConnection,
-        context: List[dict] = None,
+        context: Tuple[List[dict] | None, List[dict] | None],
     ) -> Response:
         start_time = time.time()
         context_store = self.system.instance(ContextStore)

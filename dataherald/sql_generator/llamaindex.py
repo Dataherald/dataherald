@@ -3,7 +3,7 @@
 import logging
 import os
 import time
-from typing import Any, List
+from typing import Any, List, Tuple
 
 import tiktoken
 from langchain.callbacks.openai_info import MODEL_COST_PER_1K_TOKENS
@@ -34,7 +34,7 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         self,
         user_question: Question,
         database_connection: DatabaseConnection,
-        context: List[dict] = None,
+        context: Tuple[List[dict] | None, List[dict] | None],
     ) -> Response:
         start_time = time.time()
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
@@ -55,17 +55,17 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         metadata_obj.reflect(db_engine)
         table_schema_objs = []
         table_node_mapping = SQLTableNodeMapping(self.database)
-        if context is not None:
+        if context[0] is not None:
             samples_prompt_string = "The following are some similar previous questions and their correct SQL queries from these databases: \
             \n"
-            for sample in context:
+            for sample in context[0]:
                 samples_prompt_string += (
                     f"Question: {sample['nl_question']} \nSQL: {sample['sql_query']} \n"
                 )
         question_with_context = (
             f"{user_question.question} An example of a similar question and the query that was generated to answer it \
                                  is the following {samples_prompt_string}"
-            if context is not None
+            if context[0] is not None
             else user_question.question
         )
         for table_name in metadata_obj.tables.keys():

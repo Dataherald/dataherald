@@ -3,7 +3,7 @@
 import logging
 import os
 import time
-from typing import Any, List
+from typing import Any, List, Tuple
 
 from langchain.agents import initialize_agent
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
@@ -28,7 +28,7 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
         self,
         user_question: Question,
         database_connection: DatabaseConnection,
-        context: List[dict] = None,
+        context: Tuple[List[dict] | None, List[dict] | None],
     ) -> Response:  # type: ignore
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
         self.llm = self.model.get_model(
@@ -48,10 +48,10 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
             handle_parsing_errors=True,
             return_intermediate_steps=True,
         )
-        if context is not None:
+        if context[0] is not None:
             samples_prompt_string = "The following are some similar previous questions and their correct SQL queries from these databases: \
             \n"
-            for sample in context:
+            for sample in context[0]:
                 samples_prompt_string += (
                     f"Question: {sample['nl_question']} \nSQL: {sample['sql_query']} \n"
                 )
@@ -59,7 +59,7 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
         question_with_context = (
             f"{user_question.question} An example of a similar question and the query that was generated \
                                 to answer it is the following {samples_prompt_string}"
-            if context is not None
+            if context[0] is not None
             else user_question.question
         )
         with get_openai_callback() as cb:

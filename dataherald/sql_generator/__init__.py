@@ -75,7 +75,7 @@ class SQLGenerator(Component, ABC):
         self,
         user_question: Question,
         database_connection: DatabaseConnection,
-        context: List[dict] = None,
+        context: Tuple[List[dict] | None, List[dict] | None],
     ) -> Response:
         """Generates a response to a user question."""
         pass
