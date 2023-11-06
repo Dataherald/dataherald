@@ -20,9 +20,13 @@ import { FC, useState } from 'react'
 
 interface SendMessageDialogProps {
   queryId: string
+  disabled: boolean
 }
 
-const SendMessageDialog: FC<SendMessageDialogProps> = ({ queryId }) => {
+const SendMessageDialog: FC<SendMessageDialogProps> = ({
+  queryId,
+  disabled = false,
+}) => {
   const sendMessage = useQuerySendMessage()
   const [sendingMessage, setSendingMessage] = useState(false)
   const handleSendMessage = async () => {
@@ -54,7 +58,7 @@ const SendMessageDialog: FC<SendMessageDialogProps> = ({ queryId }) => {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
-          disabled={sendingMessage}
+          disabled={disabled || sendingMessage}
           className={cn(
             MAIN_ACTION_BTN_CLASSES,
             'bg-green-600 hover:bg-green-500',

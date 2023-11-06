@@ -25,9 +25,10 @@ import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import useQueryGenerateMessage from '@/hooks/api/query/useQueryGenerateMessage'
 import { cn } from '@/lib/utils'
-import { Bot, Edit, Loader } from 'lucide-react'
+import { Bot, Edit, Info, Loader } from 'lucide-react'
 import Image from 'next/image'
 import { FC, useState } from 'react'
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 
 interface MessageSectionProps {
   queryId: string
@@ -47,6 +48,9 @@ const MessageSection: FC<MessageSectionProps> = ({
   const [openEditMessageDialog, setOpenEditMessageDialog] = useState(false)
   const [editingMessage, setEditingMessage] = useState(false)
   const [generatingMessage, setGeneratingMessage] = useState(false)
+
+  const disabledActions = editingMessage || generatingMessage
+
   const handleGenerateMessage = async () => {
     setGeneratingMessage(true)
     try {
@@ -62,6 +66,7 @@ const MessageSection: FC<MessageSectionProps> = ({
       setGeneratingMessage(false)
     }
   }
+
   const handleCloseEditDialog = async (newCustomMessage?: string) => {
     setOpenEditMessageDialog(false)
     if (!newCustomMessage) return
@@ -94,6 +99,7 @@ const MessageSection: FC<MessageSectionProps> = ({
       setEditingMessage(false)
     }
   }
+
   return (
     <>
       <SectionHeader>
@@ -107,10 +113,11 @@ const MessageSection: FC<MessageSectionProps> = ({
           Slack message
         </SectionHeaderTitle>
         <div className="flex items-center gap-5">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               type="button"
+              disabled={disabledActions}
               className={cn(
                 MAIN_ACTION_BTN_CLASSES,
                 SECONDARY_ACTION_BTN_CLASSES,
@@ -142,6 +149,7 @@ const MessageSection: FC<MessageSectionProps> = ({
                 <Button
                   variant="ghost"
                   type="button"
+                  disabled={disabledActions}
                   className={cn(
                     MAIN_ACTION_BTN_CLASSES,
                     SECONDARY_ACTION_BTN_CLASSES,
@@ -187,7 +195,9 @@ const MessageSection: FC<MessageSectionProps> = ({
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-            <SendMessageDialog {...{ queryId }} />
+            <SendMessageDialog
+              {...{ queryId, disabled: disabledActions || !currentMessage }}
+            />
           </div>
         </div>
       </SectionHeader>
@@ -195,7 +205,20 @@ const MessageSection: FC<MessageSectionProps> = ({
         {editingMessage || generatingMessage ? (
           <LoadingBox className="h-24" />
         ) : (
-          currentMessage
+          currentMessage || (
+            <>
+              <Alert variant="info">
+                <AlertTitle className="flex items-center gap-2 font-bold">
+                  <Info size={16} strokeWidth={2.5} />
+                  No message yet
+                </AlertTitle>
+                <AlertDescription>
+                  There is no message yet. You can edit the message or generate
+                  a message using the AI platform.
+                </AlertDescription>
+              </Alert>
+            </>
+          )
         )}
       </div>
     </>
