@@ -146,9 +146,9 @@ class FastAPI(API):
                     "error_message": "Connections doesn't exist",
                 },
             )
-        context = context_store.retrieve_context_for_question(user_question)
-        start_generated_answer = time.time()
         try:
+            context = context_store.retrieve_context_for_question(user_question)
+            start_generated_answer = time.time()
             generated_answer = sql_generation.generate_response(
                 user_question, database_connection, context[0]
             )
