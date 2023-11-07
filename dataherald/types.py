@@ -76,7 +76,6 @@ class Response(BaseModel):
     sql_query: str
     sql_query_result: SQLQueryResult | None
     csv_file_path: str | None
-    csv_download_url: str | None
     sql_generation_status: str = "INVALID"
     error_message: str | None
     exec_time: float | None = None

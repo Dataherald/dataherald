@@ -35,7 +35,7 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-        large_query_result_in_csv: bool = False,
+        generate_csv: bool = False,
     ) -> Response:
         start_time = time.time()
         logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
@@ -114,5 +114,5 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             self.database,
             response.sql_query,
             response,
-            large_query_result_in_csv=large_query_result_in_csv,
+            generate_csv=generate_csv,
         )

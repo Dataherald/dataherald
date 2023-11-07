@@ -10,9 +10,6 @@ from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import Response, SQLQueryResult
 from dataherald.utils.s3 import S3
 
-MAX_ROWS_TO_CREATE_CSV_FILE = 50
-MAX_CHARACTERS_TO_CREATE_CSV_FILE = 3_000
-
 
 def format_error_message(response: Response, error_message: str) -> Response:
     # Remove the complete query
@@ -29,16 +26,13 @@ def format_error_message(response: Response, error_message: str) -> Response:
 
 
 def create_csv_file(
-    large_query_result_in_csv: bool,
+    generate_csv: bool,
     columns: list,
     rows: list,
     response: Response,
     database_connection: DatabaseConnection | None = None,
 ):
-    if large_query_result_in_csv and (
-        len(rows) >= MAX_ROWS_TO_CREATE_CSV_FILE
-        or len(str(rows)) > MAX_CHARACTERS_TO_CREATE_CSV_FILE
-    ):
+    if generate_csv:
         file_location = f"tmp/{str(uuid.uuid4())}.csv"
         with open(file_location, "w", newline="") as file:
             writer = csv.writer(file)
@@ -47,10 +41,9 @@ def create_csv_file(
             for row in rows:
                 writer.writerow(row.values())
         s3 = S3()
-        response.csv_download_url = s3.upload(
+        response.csv_file_path = s3.upload(
             file_location, database_connection.file_storage
         )
-        response.csv_file_path = f's3://k2-core/{file_location.split("/")[-1]}'
     response.sql_query_result = SQLQueryResult(columns=columns, rows=rows)
 
 
@@ -59,7 +52,7 @@ def create_sql_query_status(
     query: str,
     response: Response,
     top_k: int = None,
-    large_query_result_in_csv: bool = False,
+    generate_csv: bool = False,
     database_connection: DatabaseConnection | None = None,
 ) -> Response:
     """Find the sql query status and populate the fields sql_query_result, sql_generation_status, and error_message"""
@@ -100,7 +93,7 @@ def create_sql_query_status(
                     rows.append(modified_row)
 
                 create_csv_file(
-                    large_query_result_in_csv,
+                    generate_csv,
                     columns,
                     rows,
                     response,

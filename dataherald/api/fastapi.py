@@ -9,7 +9,7 @@ import openai
 from bson import json_util
 from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from overrides import override
 
 from dataherald.api import API
@@ -123,7 +123,7 @@ class FastAPI(API):
     def answer_question(
         self,
         run_evaluator: bool = True,
-        large_query_result_in_csv: bool = False,
+        generate_csv: bool = False,
         question_request: QuestionRequest = None,
     ) -> Response:
         """Takes in an English question and answers it based on content from the registered databases"""
@@ -158,7 +158,7 @@ class FastAPI(API):
                 user_question,
                 database_connection,
                 context[0],
-                large_query_result_in_csv,
+                generate_csv,
             )
             logger.info("Starts evaluator...")
             if run_evaluator:
@@ -172,7 +172,7 @@ class FastAPI(API):
                 status_code=400,
                 content={"question_id": user_question.id, "error_message": str(e)},
             )
-        if generated_answer.csv_download_url:
+        if generated_answer.csv_file_path:
             generated_answer.sql_query_result = None
         generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
@@ -183,7 +183,7 @@ class FastAPI(API):
     def answer_question_with_timeout(
         self,
         run_evaluator: bool = True,
-        large_query_result_in_csv: bool = False,
+        generate_csv: bool = False,
         question_request: QuestionRequest = None,
     ) -> Response:
         result = None
@@ -200,7 +200,7 @@ class FastAPI(API):
             nonlocal result, exception
             if not stop_event.is_set():
                 result = self.answer_question(
-                    run_evaluator, large_query_result_in_csv, question_request
+                    run_evaluator, generate_csv, question_request
                 )
 
         thread = threading.Thread(target=run_and_catch_exceptions)
@@ -370,7 +370,7 @@ class FastAPI(API):
         return result
 
     @override
-    def get_response_file(self, response_id: str) -> JSONResponse:
+    def get_response_file(self, response_id: str) -> FileResponse:
         response_repository = ResponseRepository(self.storage)
         question_repository = QuestionRepository(self.storage)
         db_connection_repository = DatabaseConnectionRepository(self.storage)
@@ -389,13 +389,10 @@ class FastAPI(API):
             )
 
         s3 = S3()
-        return JSONResponse(
-            status_code=201,
-            content={
-                "csv_download_url": s3.download_url(
-                    result.csv_file_path, db_connection.file_storage
-                ),
-            },
+
+        return FileResponse(
+            s3.download(result.csv_file_path, db_connection.file_storage),
+            media_type="text/csv",
         )
 
     @override
@@ -475,7 +472,7 @@ class FastAPI(API):
         self,
         run_evaluator: bool = True,
         sql_response_only: bool = False,
-        large_query_result_in_csv: bool = False,
+        generate_csv: bool = False,
         query_request: CreateResponseRequest = None,  # noqa: ARG002
     ) -> Response:
         question_repository = QuestionRepository(self.storage)
@@ -498,7 +495,7 @@ class FastAPI(API):
                     user_question,
                     database_connection,
                     context[0],
-                    large_query_result_in_csv,
+                    generate_csv,
                 )
             else:
                 response = Response(
@@ -522,7 +519,7 @@ class FastAPI(API):
                 user_question, response, database_connection
             )
             response.confidence_score = confidence_score
-        if response.csv_download_url:
+        if response.csv_file_path:
             response.sql_query_result = None
         response.exec_time = time.time() - start_generated_answer
         response_repository.insert(response)

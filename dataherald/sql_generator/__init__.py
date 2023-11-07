@@ -44,7 +44,7 @@ class SQLGenerator(Component, ABC):
         query: str,
         response: Response,
         top_k: int = None,
-        large_query_result_in_csv: bool = False,
+        generate_csv: bool = False,
         database_connection: DatabaseConnection | None = None,
     ) -> Response:
         return create_sql_query_status(
@@ -52,7 +52,7 @@ class SQLGenerator(Component, ABC):
             query,
             response,
             top_k,
-            large_query_result_in_csv,
+            generate_csv,
             database_connection=database_connection,
         )
 
@@ -89,7 +89,7 @@ class SQLGenerator(Component, ABC):
         user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-        large_query_result_in_csv: bool = False,
+        generate_csv: bool = False,
     ) -> Response:
         """Generates a response to a user question."""
         pass
