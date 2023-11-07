@@ -25,6 +25,7 @@ import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import useQueryGenerateMessage from '@/hooks/api/query/useQueryGenerateMessage'
 import { cn } from '@/lib/utils'
+import { Query } from '@/models/api'
 import { Bot, Edit, Info, Loader } from 'lucide-react'
 import Image from 'next/image'
 import { FC, useState } from 'react'
@@ -33,7 +34,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 interface MessageSectionProps {
   queryId: string
   initialMessage: string
-  onPatchQuery: (data: { message: string }) => Promise<void>
+  onPatchQuery: (data: { message: string }) => Promise<Query | undefined>
 }
 
 const MessageSection: FC<MessageSectionProps> = ({

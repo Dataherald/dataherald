@@ -17,57 +17,35 @@ const QueryPage: FC = () => {
   const router = useRouter()
   const { queryId } = router.query
   const {
-    query: initialQuery,
-    isLoading: isLoadingInitialQuery,
+    query: serverQuery,
+    isLoading: isLoadingServerQuery,
     error,
     mutate,
   } = useQuery(queryId as string)
-  const [query, setQuery] = useState<Query | undefined>(initialQuery)
+  const [query, setQuery] = useState<Query | undefined>(serverQuery)
   const resubmitQuery = useQueryResubmit()
   const patchQuery = useQueryPatch()
   const executeQuery = useQueryExecution()
 
-  useEffect(() => setQuery(initialQuery), [initialQuery])
+  useEffect(() => {
+    setQuery(serverQuery)
+  }, [serverQuery])
 
   const handleResubmitQuery = async () => {
-    try {
-      const newQuery = await resubmitQuery(queryId as string)
-      mutate(newQuery)
-      setQuery(newQuery)
-    } catch (e) {
-      console.error(e)
-      throw e
-    }
-    return void 0
+    return mutate(resubmitQuery(queryId as string))
   }
 
   const handleExecuteQuery = async (sql_query: string) => {
-    try {
-      const executedQuery = await executeQuery(queryId as string, sql_query)
-      mutate(executedQuery)
-      setQuery(executedQuery)
-    } catch (e) {
-      console.error(e)
-      throw e
-    }
-    return void 0
+    return mutate(executeQuery(queryId as string, sql_query))
   }
 
   const handlePatchQuery = async (patches: QueryPatchRequest) => {
-    try {
-      const patchedQuery = await patchQuery(queryId as string, patches)
-      mutate(patchedQuery)
-      setQuery(patchedQuery)
-    } catch (e) {
-      console.error(e)
-      throw e
-    }
-    return void 0
+    return mutate(patchQuery(queryId as string, patches))
   }
 
   let pageContent: JSX.Element = <></>
 
-  if (isLoadingInitialQuery && !query) {
+  if (isLoadingServerQuery && !query) {
     pageContent = <LoadingQuery />
   } else if (error) {
     pageContent = (
@@ -78,7 +56,7 @@ const QueryPage: FC = () => {
   } else if (query)
     pageContent = (
       <QueryWorkspace
-        query={query as Query}
+        query={query}
         onResubmitQuery={handleResubmitQuery}
         onExecuteQuery={handleExecuteQuery}
         onPatchQuery={handlePatchQuery}

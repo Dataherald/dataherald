@@ -26,23 +26,27 @@ import {
   isVerified,
 } from '@/lib/domain/query'
 import { cn } from '@/lib/utils'
-import { Query } from '@/models/api'
+import { Query, QueryStatus } from '@/models/api'
 import {
   EDomainQueryWorkspaceStatus,
   QueryWorkspaceStatus,
 } from '@/models/domain'
 import { Ban, Box, Code2, Loader, Play, Verified, XOctagon } from 'lucide-react'
-import { FC, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 
 export const MAIN_ACTION_BTN_CLASSES = 'h-8 py-0 px-4 w-28'
 export const SECONDARY_ACTION_BTN_CLASSES =
   'w-fit px-4 text-sm hover:bg-slate-300 hover:text-black/80 flex items-center gap-1'
 
+const getWorkspaceQueryStatus = (status: QueryStatus) =>
+  Object.values(EDomainQueryWorkspaceStatus).find((qs) => qs === status) ||
+  EDomainQueryWorkspaceStatus.NOT_VERIFIED
+
 export interface QueryWorkspaceProps {
   query: Query
-  onResubmitQuery: () => Promise<void>
-  onExecuteQuery: (sql_query: string) => Promise<void>
-  onPatchQuery: (patches: QueryPatchRequest) => Promise<void>
+  onResubmitQuery: () => Promise<Query | undefined>
+  onExecuteQuery: (sql_query: string) => Promise<Query | undefined>
+  onPatchQuery: (patches: QueryPatchRequest) => Promise<Query | undefined>
 }
 
 const QueryWorkspace: FC<QueryWorkspaceProps> = ({
@@ -73,10 +77,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
 
   const [currentSqlQuery, setCurrentSqlQuery] = useState(sql_query)
   const [currentQueryStatus, setCurrentQueryStatus] =
-    useState<EDomainQueryWorkspaceStatus>(
-      Object.values(EDomainQueryWorkspaceStatus).find((qs) => qs === status) ||
-        EDomainQueryWorkspaceStatus.NOT_VERIFIED,
-    )
+    useState<EDomainQueryWorkspaceStatus>(getWorkspaceQueryStatus(status))
 
   const [resubmittingQuery, setResubmittingQuery] = useState(false)
   const [runningQuery, setRunningQuery] = useState(false)
@@ -84,7 +85,14 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
 
   const { toast } = useToast()
 
+  useEffect(() => setCurrentSqlQuery(sql_query), [sql_query])
+  useEffect(
+    () => setCurrentQueryStatus(getWorkspaceQueryStatus(status)),
+    [status],
+  )
+
   const handleResubmit = async () => {
+    if (resubmittingQuery) return
     setResubmittingQuery(true)
     try {
       await onResubmitQuery()
@@ -111,6 +119,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   }
 
   const handleRunQuery = async () => {
+    if (runningQuery) return
     setRunningQuery(true)
     try {
       await onExecuteQuery(currentSqlQuery)
@@ -164,10 +173,9 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
             'The query is marked as rejected and will not be used to improve the platform accuracy',
         })
       }
-      setCurrentQueryStatus(newStatus)
     } catch (e) {
       console.error(e)
-      setCurrentQueryStatus(status as EDomainQueryWorkspaceStatus)
+      setCurrentQueryStatus(getWorkspaceQueryStatus(status))
       toast({
         variant: 'destructive',
         title: 'Ups! Something went wrong.',
@@ -255,7 +263,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
               <div className="grow h-44">
                 <SqlEditor
                   disabled={isVerified(currentQueryStatus)}
-                  initialQuery={currentSqlQuery}
+                  query={currentSqlQuery}
                   onValueChange={handleSqlChange}
                 />
               </div>
