@@ -174,7 +174,6 @@ class FastAPI(API):
             )
         if generated_answer.csv_file_path:
             generated_answer.sql_query_result = None
-        generated_answer.confidence_score = confidence_score
         generated_answer.exec_time = time.time() - start_generated_answer
         response_repository = ResponseRepository(self.storage)
         return response_repository.insert(generated_answer)
@@ -505,7 +504,9 @@ class FastAPI(API):
                 start_generated_answer = time.time()
 
                 generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
-                response = generates_nl_answer.execute(response, sql_response_only)
+                response = generates_nl_answer.execute(
+                    response, sql_response_only, generate_csv
+                )
         except openai.error.AuthenticationError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except ValueError as e:
