@@ -154,6 +154,8 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
         top_k: int = TOP_K,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
+        logger.info(
+            f"**** Executing SQL query in the QuerySQLDataBaseTool: {query}")
         """Execute the query, return the results or an error message."""
         return self.db.run_sql(query, top_k=top_k)[0]
 
