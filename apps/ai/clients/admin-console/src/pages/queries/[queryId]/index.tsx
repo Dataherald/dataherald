@@ -32,6 +32,7 @@ const QueryPage: FC = () => {
   const handleResubmitQuery = async () => {
     try {
       const newQuery = await resubmitQuery(queryId as string)
+      mutate(newQuery)
       setQuery(newQuery)
     } catch (e) {
       console.error(e)
@@ -43,6 +44,7 @@ const QueryPage: FC = () => {
   const handleExecuteQuery = async (sql_query: string) => {
     try {
       const executedQuery = await executeQuery(queryId as string, sql_query)
+      mutate(executedQuery)
       setQuery(executedQuery)
     } catch (e) {
       console.error(e)
