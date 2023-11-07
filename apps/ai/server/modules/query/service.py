@@ -274,10 +274,11 @@ class QueryService:
         updated_request = {
             "last_updated": current_utc_time,
             "updated_by": ObjectId(user.id),
-            "message": query_request.message,
         }
         if query_request.query_status:
             updated_request["status"] = query_request.query_status
+        if query_request.message:
+            updated_request["message"] = query_request.message
 
         self.repo.update_query(str(query.id), updated_request)
         updated_query = self.repo.get_query(str(query.id))
