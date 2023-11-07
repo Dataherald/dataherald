@@ -7,6 +7,7 @@ OPENAI_CONTEXT_WIDNOW_SIZES = {
     "gpt-4-32k-0314": 32000,
     "gpt-3.5-turbo": 4000,
     "gpt-3.5-turbo-16k": 16000,
+    "gpt-3.5-turbo-1106": 16000,
     "gpt-3.5-turbo-instruct": 4000,
     "gpt-3.5-turbo-0613": 4000,
     "gpt-3.5-turbo-16k-0613": 16000,
