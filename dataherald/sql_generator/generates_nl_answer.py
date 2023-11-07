@@ -58,6 +58,7 @@ class GeneratesNlAnswer:
                 query_response,
                 top_k=int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50")),
                 generate_csv=generate_csv,
+                database_connection=database_connection,
             )
 
         if query_response.csv_file_path:

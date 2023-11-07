@@ -91,4 +91,5 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
             response.sql_query,
             response,
             generate_csv=generate_csv,
+            database_connection=database_connection,
         )
