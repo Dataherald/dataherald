@@ -131,7 +131,9 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def get_response_file(self, response_id: str) -> FileResponse:
+    def get_response_file(
+        self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
         pass
 
     @abstractmethod

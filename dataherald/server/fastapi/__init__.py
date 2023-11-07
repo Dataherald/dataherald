@@ -307,9 +307,11 @@ class FastAPI(dataherald.server.Server):
         """Update a response"""
         return self._api.update_response(response_id)
 
-    def get_response_file(self, response_id: str) -> FileResponse:
+    def get_response_file(
+        self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
         """Get a response file"""
-        return self._api.get_response_file(response_id)
+        return self._api.get_response_file(response_id, background_tasks)
 
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""

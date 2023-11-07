@@ -65,6 +65,10 @@ def async_scanning(scanner, database, scanner_request, storage):
     )
 
 
+def delete_file(file_location: str):
+    os.remove(file_location)
+
+
 class FastAPI(API):
     def __init__(self, system: System):
         super().__init__(system)
@@ -369,7 +373,9 @@ class FastAPI(API):
         return result
 
     @override
-    def get_response_file(self, response_id: str) -> FileResponse:
+    def get_response_file(
+        self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
         response_repository = ResponseRepository(self.storage)
         question_repository = QuestionRepository(self.storage)
         db_connection_repository = DatabaseConnectionRepository(self.storage)
@@ -389,8 +395,11 @@ class FastAPI(API):
 
         s3 = S3()
 
+        file_location = s3.download(result.csv_file_path, db_connection.file_storage)
+        background_tasks.add_task(delete_file, file_location)
+
         return FileResponse(
-            s3.download(result.csv_file_path, db_connection.file_storage),
+            file_location,
             media_type="text/csv",
         )
 
