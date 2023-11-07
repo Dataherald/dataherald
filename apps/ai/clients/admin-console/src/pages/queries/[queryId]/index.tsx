@@ -7,6 +7,7 @@ import useQueryExecution from '@/hooks/api/query/useQueryExecution'
 import useQueryPatch, {
   QueryPatchRequest,
 } from '@/hooks/api/query/useQueryPatch'
+import useQueryResubmit from '@/hooks/api/query/useQueryResubmit'
 import { Query } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/router'
@@ -22,10 +23,22 @@ const QueryPage: FC = () => {
     mutate,
   } = useQuery(queryId as string)
   const [query, setQuery] = useState<Query | undefined>(initialQuery)
+  const resubmitQuery = useQueryResubmit()
   const patchQuery = useQueryPatch()
   const executeQuery = useQueryExecution()
 
   useEffect(() => setQuery(initialQuery), [initialQuery])
+
+  const handleResubmitQuery = async () => {
+    try {
+      const newQuery = await resubmitQuery(queryId as string)
+      setQuery(newQuery)
+    } catch (e) {
+      console.error(e)
+      throw e
+    }
+    return void 0
+  }
 
   const handleExecuteQuery = async (sql_query: string) => {
     try {
@@ -64,6 +77,7 @@ const QueryPage: FC = () => {
     pageContent = (
       <QueryWorkspace
         query={query as Query}
+        onResubmitQuery={handleResubmitQuery}
         onExecuteQuery={handleExecuteQuery}
         onPatchQuery={handlePatchQuery}
       />

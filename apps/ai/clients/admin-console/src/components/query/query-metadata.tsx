@@ -1,12 +1,26 @@
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import {
   formatQueryStatusWithScore,
   getDomainStatus,
   getDomainStatusColors,
+  isRejected,
+  isVerified,
 } from '@/lib/domain/query'
 import { cn } from '@/lib/utils'
 import { QueryStatus } from '@/models/api'
 import { EDomainQueryStatus } from '@/models/domain'
-import { Loader } from 'lucide-react'
+import { Ban, Boxes, Loader } from 'lucide-react'
 import { FC, HTMLAttributes } from 'react'
 
 export interface QueryMetadataProps extends HTMLAttributes<HTMLDivElement> {
@@ -14,7 +28,7 @@ export interface QueryMetadataProps extends HTMLAttributes<HTMLDivElement> {
   status: QueryStatus
   confidenceLevel: number | null
   updatingQuery: boolean
-  // onResubmit: () => void
+  onResubmit: () => void
 }
 
 const QueryMetadata: FC<QueryMetadataProps> = ({
@@ -22,7 +36,7 @@ const QueryMetadata: FC<QueryMetadataProps> = ({
   status,
   confidenceLevel,
   updatingQuery,
-  // onResubmit,
+  onResubmit,
   className,
 }) => {
   const textColor = getDomainStatusColors(status, confidenceLevel).text
@@ -33,16 +47,67 @@ const QueryMetadata: FC<QueryMetadataProps> = ({
     EDomainQueryStatus.MEDIUM_CONFIDENCE.valueOf(),
     EDomainQueryStatus.HIGH_CONFIDENCE.valueOf(),
   ].includes(domainStatus as EDomainQueryStatus)
+  const isNotVerified = !isVerified(status) && !isRejected(status)
   return (
     <div className={cn('flex flex-col gap-1 items-end', className)}>
       <div className="flex items-center gap-2">
-        {/* <Button
-          variant="ghost"
-          className="flex items-center gap-2 h-9"
-          onClick={onResubmit}
-        >
-          <Boxes /> Resubmit
-        </Button> */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              disabled={updatingQuery}
+              className="flex items-center gap-2 h-9"
+            >
+              <Boxes strokeWidth={1.5} />
+              Resubmit
+            </Button>
+          </AlertDialogTrigger>
+
+          {isNotVerified ? (
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Resubmit Query</AlertDialogTitle>
+              </AlertDialogHeader>
+              <AlertDialogDescription>
+                The platform will generate an entire new response for the
+                question, including the SQL query and the natural language
+                response.
+              </AlertDialogDescription>
+              <AlertDialogDescription>
+                This process can take a couple of minutes. Do you wish to
+                continue?
+              </AlertDialogDescription>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={onResubmit}>
+                  <Boxes className="mr-2" strokeWidth={1} />
+                  Resubmit
+                </AlertDialogAction>
+              </AlertDialogFooter>{' '}
+            </AlertDialogContent>
+          ) : (
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  <div className="flex items-center gap-2">
+                    <Ban size={22} strokeWidth={2.5} />
+                    {`Can't Resubmit Query`}
+                  </div>
+                </AlertDialogTitle>
+              </AlertDialogHeader>
+              <AlertDialogDescription>
+                This query was already{' '}
+                <strong>{isVerified(status) ? 'Verified' : 'Rejected'}</strong>{' '}
+                by an administrator. If you wish to resubmit the query to the
+                platform to get a new response, please mark the query as{' '}
+                <strong>Not Verified</strong> first.
+              </AlertDialogDescription>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Close</AlertDialogCancel>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          )}
+        </AlertDialog>
         <h1 className="text-xl font-bold">{queryId}</h1>
       </div>
       <div

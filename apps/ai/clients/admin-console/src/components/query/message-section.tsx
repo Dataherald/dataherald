@@ -108,6 +108,7 @@ const MessageSection: FC<MessageSectionProps> = ({
             src="/images/slack-black.png"
             width={24}
             height={24}
+            className="p-0.5"
             alt="Slack icon"
           />{' '}
           Slack message

@@ -1,4 +1,5 @@
 import QueryLastUpdated from '@/components/query/last-updated'
+import LoadingQuery from '@/components/query/loading'
 import LoadingBox from '@/components/query/loading-box'
 import MessageSection from '@/components/query/message-section'
 import QueryMetadata from '@/components/query/query-metadata'
@@ -39,12 +40,14 @@ export const SECONDARY_ACTION_BTN_CLASSES =
 
 export interface QueryWorkspaceProps {
   query: Query
+  onResubmitQuery: () => Promise<void>
   onExecuteQuery: (sql_query: string) => Promise<void>
   onPatchQuery: (patches: QueryPatchRequest) => Promise<void>
 }
 
 const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   query,
+  onResubmitQuery,
   onExecuteQuery,
   onPatchQuery,
 }) => {
@@ -75,10 +78,37 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
         EDomainQueryWorkspaceStatus.NOT_VERIFIED,
     )
 
+  const [resubmittingQuery, setResubmittingQuery] = useState(false)
   const [runningQuery, setRunningQuery] = useState(false)
   const [updatingQueryStatus, setUpdatingQueryStatus] = useState(false)
 
   const { toast } = useToast()
+
+  const handleResubmit = async () => {
+    setResubmittingQuery(true)
+    try {
+      await onResubmitQuery()
+      toast({
+        title: 'Query updated',
+        description:
+          'The query was resubmitted to the platform for a new response',
+      })
+    } catch (error) {
+      console.error(error)
+      toast({
+        variant: 'destructive',
+        title: 'Ups! Something went wrong.',
+        description: 'There was a problem with resubmitting the query',
+        action: (
+          <ToastAction altText="Try again" onClick={handleResubmit}>
+            Try again
+          </ToastAction>
+        ),
+      })
+    } finally {
+      setResubmittingQuery(false)
+    }
+  }
 
   const handleRunQuery = async () => {
     setRunningQuery(true)
@@ -87,7 +117,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       toast({
         title: 'Query updated',
         description:
-          'The query was executed successfully and the results were updated.',
+          'The query was executed successfully and the results were updated',
       })
     } catch (e) {
       console.error(e)
@@ -118,20 +148,20 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
           variant: 'success',
           title: 'Query Verified',
           description:
-            'Query added to the Golden SQL training set and used to further train the model for future queries.',
+            'Query added to the Golden SQL training set and used to further train the model for future queries',
         })
       } else if (isNotVerified(newStatus)) {
         toast({
           title: 'Query Unverified',
           description:
-            'The query is not part of the Golden SQL training set and not used to improve the platform accuracy.',
+            'The query is not part of the Golden SQL training set and not used to improve the platform accuracy',
         })
       } else if (isRejected(newStatus)) {
         toast({
           variant: 'destructive-outline',
           title: 'Query Rejected',
           description:
-            'The query is marked as rejected and will not be used to improve the platform accuracy.',
+            'The query is marked as rejected and will not be used to improve the platform accuracy',
         })
       }
       setCurrentQueryStatus(newStatus)
@@ -165,11 +195,6 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     updateQueryStatus(value)
   }
 
-  // TODO implement
-  // const handleResubmit = async () => {
-  //   console.log('resubmitting query')
-  // }
-
   return (
     <>
       <div
@@ -186,168 +211,177 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
             {...{
               queryId: display_id,
               status,
-              updatingQuery: runningQuery || updatingQueryStatus,
+              updatingQuery:
+                runningQuery || updatingQueryStatus || resubmittingQuery,
               confidenceLevel: evaluation_score,
-              // onResubmit: handleResubmit,
+              onResubmit: handleResubmit,
             }}
           />
         </div>
-        <div className="grow flex flex-col overflow-auto">
-          <SectionHeader>
-            <SectionHeaderTitle>
-              <Code2 strokeWidth={2}></Code2>
-              {isNotVerified(currentQueryStatus) ? 'Verify SQL' : 'SQL'}
-            </SectionHeaderTitle>
-            {isNotVerified(currentQueryStatus) && (
-              <Button
-                onClick={handleRunQuery}
-                disabled={runningQuery || updatingQueryStatus}
-                className={cn(MAIN_ACTION_BTN_CLASSES)}
-              >
-                {runningQuery ? (
-                  <>
-                    <Loader
-                      className="mr-2 animate-spin"
-                      size={16}
-                      strokeWidth={2.5}
-                    />{' '}
-                    Running
-                  </>
-                ) : (
-                  <>
-                    <Play className="mr-2" size={16} strokeWidth={2.5} />
-                    Run
-                  </>
-                )}
-              </Button>
-            )}
-          </SectionHeader>
-          <div className="grow flex flex-col gap-2 px-6 py-4">
-            <div className="grow h-44">
-              <SqlEditor
-                disabled={isVerified(currentQueryStatus)}
-                initialQuery={currentSqlQuery}
-                onValueChange={handleSqlChange}
+        {resubmittingQuery ? (
+          <LoadingQuery enableHeader={false} />
+        ) : (
+          <div className="grow flex flex-col overflow-auto">
+            <SectionHeader>
+              <SectionHeaderTitle>
+                <Code2 strokeWidth={2}></Code2>
+                {isNotVerified(currentQueryStatus) ? 'Verify SQL' : 'SQL'}
+              </SectionHeaderTitle>
+              {isNotVerified(currentQueryStatus) && (
+                <Button
+                  onClick={handleRunQuery}
+                  disabled={runningQuery || updatingQueryStatus}
+                  className={cn(MAIN_ACTION_BTN_CLASSES)}
+                >
+                  {runningQuery ? (
+                    <>
+                      <Loader
+                        className="mr-2 animate-spin"
+                        size={16}
+                        strokeWidth={2.5}
+                      />{' '}
+                      Running
+                    </>
+                  ) : (
+                    <>
+                      <Play className="mr-2" size={16} strokeWidth={2.5} />
+                      Run
+                    </>
+                  )}
+                </Button>
+              )}
+            </SectionHeader>
+            <div className="grow flex flex-col gap-2 px-6 py-4">
+              <div className="grow h-44">
+                <SqlEditor
+                  disabled={isVerified(currentQueryStatus)}
+                  initialQuery={currentSqlQuery}
+                  onValueChange={handleSqlChange}
+                />
+              </div>
+              <QueryLastUpdated
+                responsible={updated_by?.name as string}
+                date={lastUpdatedDate}
               />
-            </div>
-            <QueryLastUpdated
-              responsible={updated_by?.name as string}
-              date={lastUpdatedDate}
-            />
-            {runningQuery || updatingQueryStatus ? (
-              <div id="loading_query_results" className="shrink-0 h-32">
-                <LoadingBox />
-              </div>
-            ) : isVerified(currentQueryStatus) ? (
-              <div
-                id="verified_banner"
-                className="shrink-0 h-32 flex flex-col border bg-muted text-muted-foreground"
-              >
-                <div className="h-full flex flex-col items-center justify-center gap-2">
-                  <div className="flex items-center gap-2 text-green-700">
-                    <Verified size={18} strokeWidth={2} /> Verified query
-                  </div>
-                  <div className="px-20 text-center">
-                    {`The SQL query was verified and added to the Golden SQL training set. To modify the SQL query, please set the status to "Not Verified" first.`}
+              {runningQuery || updatingQueryStatus ? (
+                <div id="loading_query_results" className="shrink-0 h-32">
+                  <LoadingBox />
+                </div>
+              ) : isVerified(currentQueryStatus) ? (
+                <div
+                  id="verified_banner"
+                  className="shrink-0 h-32 flex flex-col border bg-muted text-muted-foreground"
+                >
+                  <div className="h-full flex flex-col items-center justify-center gap-2">
+                    <div className="flex items-center gap-2 text-green-700">
+                      <Verified size={18} strokeWidth={2} /> Verified query
+                    </div>
+                    <div className="px-20 text-center">
+                      {`The SQL query was verified and added to the Golden SQL training set. To modify the SQL query, please set the status to "Not Verified" first.`}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : isRejected(currentQueryStatus) ? (
-              <div
-                id="rejected__banner"
-                className="shrink-0 h-32 flex flex-col border bg-muted text-red-500"
-              >
-                <div className="h-full flex items-center justify-center gap-2 ">
-                  <Ban size={18} strokeWidth={2} /> Rejected query
-                </div>
-              </div>
-            ) : sql_error_message ? (
-              <div className="shrink-0 h-32 flex flex-col items-center border bg-white border-red-600 text-red-600">
-                <div className="flex items-center gap-3 py-5 font-bold">
-                  <XOctagon size={28} />
-                  <span>SQL Error</span>
-                </div>
-                <div className="w-full overflow-auto px-8 pb-3">
-                  {sql_error_message}
-                </div>
-              </div>
-            ) : (
-              <div
-                id="query_results"
-                className="min-h-[10rem] max-h-80 flex flex-col border bg-white"
-              >
-                {sql_query_result === null ? (
-                  <div className="w-full h-44 flex items-center justify-center bg-gray-100">
-                    <div className="text-gray-600">No Results</div>
+              ) : isRejected(currentQueryStatus) ? (
+                <div
+                  id="rejected__banner"
+                  className="shrink-0 h-32 flex flex-col border bg-muted text-red-500"
+                >
+                  <div className="h-full flex items-center justify-center gap-2 ">
+                    <Ban size={18} strokeWidth={2} /> Rejected query
                   </div>
-                ) : (
-                  <SqlResultsTable
-                    columns={sql_query_result.columns.map(
-                      (columnKey: string) => ({
-                        id: columnKey,
-                        header: columnKey,
-                        accessorKey: columnKey,
-                      }),
-                    )}
-                    data={sql_query_result.rows}
-                  />
-                )}
-              </div>
-            )}
-          </div>
-          <MessageSection
-            {...{ queryId, initialMessage: message || response, onPatchQuery }}
-          />
-          <SectionHeader>
-            <SectionHeaderTitle>
-              <Box strokeWidth={2}></Box>Query Status
-            </SectionHeaderTitle>
-          </SectionHeader>
-          <div className="p-6 flex flex-col gap-5">
-            <RadioGroup
-              disabled={runningQuery || updatingQueryStatus}
-              className="space-y-1"
-              value={currentQueryStatus}
-              onValueChange={handleQueryStatusChange}
-            >
-              {Object.values(EDomainQueryWorkspaceStatus).map(
-                (qs: QueryWorkspaceStatus, idx) => (
-                  <div
-                    key={qs + idx}
-                    className={cn(
-                      'flex items-center space-x-2',
-                      QUERY_STATUS_COLORS[qs].text,
-                      qs === currentQueryStatus && 'font-bold',
-                    )}
-                  >
-                    <RadioGroupItem
-                      value={qs}
-                      id={qs}
-                      className={cn(
-                        QUERY_STATUS_COLORS[qs].text,
-                        QUERY_STATUS_COLORS[qs].border,
+                </div>
+              ) : sql_error_message ? (
+                <div className="shrink-0 h-32 flex flex-col items-center border bg-white border-red-600 text-red-600">
+                  <div className="flex items-center gap-3 py-5 font-bold">
+                    <XOctagon size={28} />
+                    <span>SQL Error</span>
+                  </div>
+                  <div className="w-full overflow-auto px-8 pb-3">
+                    {sql_error_message}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  id="query_results"
+                  className="min-h-[10rem] max-h-80 flex flex-col border bg-white"
+                >
+                  {sql_query_result === null ? (
+                    <div className="w-full h-44 flex items-center justify-center bg-gray-100">
+                      <div className="text-gray-600">No Results</div>
+                    </div>
+                  ) : (
+                    <SqlResultsTable
+                      columns={sql_query_result.columns.map(
+                        (columnKey: string) => ({
+                          id: columnKey,
+                          header: columnKey,
+                          accessorKey: columnKey,
+                        }),
                       )}
+                      data={sql_query_result.rows}
                     />
-                    <Label
-                      htmlFor={qs}
+                  )}
+                </div>
+              )}
+            </div>
+            <MessageSection
+              {...{
+                queryId,
+                initialMessage: message || response,
+                onPatchQuery,
+              }}
+            />
+            <SectionHeader>
+              <SectionHeaderTitle>
+                <Box strokeWidth={2}></Box>Query Status
+              </SectionHeaderTitle>
+            </SectionHeader>
+            <div className="p-6 flex flex-col gap-5">
+              <RadioGroup
+                disabled={runningQuery || updatingQueryStatus}
+                className="space-y-1"
+                value={currentQueryStatus}
+                onValueChange={handleQueryStatusChange}
+              >
+                {Object.values(EDomainQueryWorkspaceStatus).map(
+                  (qs: QueryWorkspaceStatus, idx) => (
+                    <div
+                      key={qs + idx}
                       className={cn(
-                        'tracking-wide text-base',
-                        runningQuery || updatingQueryStatus
-                          ? ''
-                          : 'cursor-pointer',
+                        'flex items-center space-x-2',
+                        QUERY_STATUS_COLORS[qs].text,
+                        qs === currentQueryStatus && 'font-bold',
                       )}
                     >
-                      {formatQueryStatus(qs)}{' '}
-                      <span className="ml-2 text-xs text-slate-400">
-                        {QUERY_STATUS_EXPLANATION[qs]}
-                      </span>
-                    </Label>
-                  </div>
-                ),
-              )}
-            </RadioGroup>
+                      <RadioGroupItem
+                        value={qs}
+                        id={qs}
+                        className={cn(
+                          QUERY_STATUS_COLORS[qs].text,
+                          QUERY_STATUS_COLORS[qs].border,
+                        )}
+                      />
+                      <Label
+                        htmlFor={qs}
+                        className={cn(
+                          'tracking-wide text-base',
+                          runningQuery || updatingQueryStatus
+                            ? ''
+                            : 'cursor-pointer',
+                        )}
+                      >
+                        {formatQueryStatus(qs)}{' '}
+                        <span className="ml-2 text-xs text-slate-400">
+                          {QUERY_STATUS_EXPLANATION[qs]}
+                        </span>
+                      </Label>
+                    </div>
+                  ),
+                )}
+              </RadioGroup>
+            </div>
           </div>
-        </div>
+        )}
       </div>
       <Toaster />
     </>
