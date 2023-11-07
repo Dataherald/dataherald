@@ -72,7 +72,7 @@ class SqlAlchemyScanner(Scanner):
             examples_dict.append(temp_dict)
         return examples_dict
 
-    def get_processed_column(
+    def get_processed_column(  # noqa: PLR0911
         self, meta: MetaData, table: str, column: dict, db_engine: SQLDatabase
     ) -> ColumnDetail:
         dynamic_meta_table = meta.tables[table]
@@ -90,6 +90,27 @@ class SqlAlchemyScanner(Scanner):
                 data_type=str(column["type"]),
                 low_cardinality=False,
             )
+
+        # special case for PostgreSQL table - read query planner statistics from the pg_stats view
+        # TODO doesn't work for views, only tables
+        if db_engine.engine.driver == "psycopg2":
+            # TODO escape table and column names
+            rs = db_engine.engine.execute(
+                f"SELECT n_distinct, most_common_vals::TEXT::TEXT[] FROM pg_catalog.pg_stats WHERE tablename = '{table}' AND attname = '{column['name']}'"  # noqa: S608 E501
+            ).fetchall()
+            if MIN_CATEGORY_VALUE < rs[0]["n_distinct"] <= MAX_CATEGORY_VALUE:
+                return ColumnDetail(
+                    name=column["name"],
+                    data_type=str(column["type"]),
+                    low_cardinality=True,
+                    categories=rs[0]["most_common_vals"],
+                )
+            return ColumnDetail(
+                name=column["name"],
+                data_type=str(column["type"]),
+                low_cardinality=False,
+            )
+
         try:
             cardinality_query = sqlalchemy.select(
                 [func.distinct(dynamic_meta_table.c[column["name"]])]

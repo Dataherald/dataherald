@@ -5,6 +5,7 @@ import threading
 import time
 from typing import List
 
+import openai
 from bson import json_util
 from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
@@ -147,9 +148,10 @@ class FastAPI(API):
                     "error_message": "Connections doesn't exist",
                 },
             )
-        context = context_store.retrieve_context_for_question(user_question)
-        start_generated_answer = time.time()
         try:
+            context = context_store.retrieve_context_for_question(
+                user_question)
+            start_generated_answer = time.time()
             generated_answer = sql_generation.generate_response(
                 user_question, database_connection, context[0]
             )
@@ -374,6 +376,8 @@ class FastAPI(API):
             response = generates_nl_answer.execute(response)
             response.exec_time = time.time() - start_generated_answer
             response_repository.update(response)
+        except openai.error.AuthenticationError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLInjectionError as e:
@@ -436,6 +440,7 @@ class FastAPI(API):
         query_request: CreateResponseRequest = None,  # noqa: ARG002
     ) -> Response:
         question_repository = QuestionRepository(self.storage)
+        response_repository = ResponseRepository(self.storage)
         user_question = question_repository.find_by_id(
             query_request.question_id)
         db_connection_repository = DatabaseConnectionRepository(self.storage)
@@ -446,27 +451,42 @@ class FastAPI(API):
             raise HTTPException(
                 status_code=404, detail="Database connection not found")
 
-        response = Response(
-            question_id=query_request.question_id, sql_query=query_request.sql_query
-        )
-        response_repository = ResponseRepository(self.storage)
-        response_repository.insert(response)
-        start_generated_answer = time.time()
         try:
-            generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
-            response = generates_nl_answer.execute(response, sql_response_only)
-            if run_evaluator:
-                evaluator = self.system.instance(Evaluator)
-                confidence_score = evaluator.get_confidence_score(
-                    user_question, response, database_connection
+            if not query_request.sql_query:
+                sql_generation = self.system.instance(SQLGenerator)
+                context_store = self.system.instance(ContextStore)
+                context = context_store.retrieve_context_for_question(
+                    user_question)
+                start_generated_answer = time.time()
+                response = sql_generation.generate_response(
+                    user_question, database_connection, context[0]
                 )
-                response.confidence_score = confidence_score
-            response.exec_time = time.time() - start_generated_answer
-            response_repository.update(response)
+            else:
+                response = Response(
+                    question_id=query_request.question_id,
+                    sql_query=query_request.sql_query,
+                )
+                start_generated_answer = time.time()
+
+                generates_nl_answer = GeneratesNlAnswer(
+                    self.system, self.storage)
+                response = generates_nl_answer.execute(
+                    response, sql_response_only)
+        except openai.error.AuthenticationError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLInjectionError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
+
+        if run_evaluator:
+            evaluator = self.system.instance(Evaluator)
+            confidence_score = evaluator.get_confidence_score(
+                user_question, response, database_connection
+            )
+            response.confidence_score = confidence_score
+        response.exec_time = time.time() - start_generated_answer
+        response_repository.insert(response)
         return response
 
     @override
