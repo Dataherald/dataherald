@@ -71,7 +71,7 @@ const LlmApiKeyConfig: FC<LlmApiKeyConfigProps> = ({
       })
       toast({
         variant: 'destructive',
-        title: 'Ups! Something went wrong.',
+        title: 'Oops! Something went wrong.',
         description:
           'There was a problem updating the API key. Please try again.',
         action: (

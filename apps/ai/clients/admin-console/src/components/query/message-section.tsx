@@ -85,7 +85,7 @@ const MessageSection: FC<MessageSectionProps> = ({
       console.error(error)
       toast({
         variant: 'destructive',
-        title: 'Ups! Something went wrong.',
+        title: 'Oops! Something went wrong.',
         description: 'There was a problem with updating the message.',
         action: (
           <ToastAction

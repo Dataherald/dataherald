@@ -58,7 +58,7 @@ export const useDatabaseResource = (
       } catch (e) {
         toast({
           variant: 'destructive',
-          title: 'Ups! Something went wrong',
+          title: 'Oops! Something went wrong',
           description: 'Database instructions could not be updated',
         })
       }

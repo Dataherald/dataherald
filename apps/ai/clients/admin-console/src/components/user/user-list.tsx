@@ -45,7 +45,7 @@ const UserList = () => {
       console.error(error)
       toast({
         variant: 'destructive',
-        title: 'Ups! Something went wrong.',
+        title: 'Oops! Something went wrong.',
         description:
           'There was a problem deleting the user from the Organization.',
         action: (

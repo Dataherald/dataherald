@@ -138,7 +138,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       console.error(error)
       toast({
         variant: 'destructive',
-        title: 'Ups! Something went wrong.',
+        title: 'Oops! Something went wrong.',
         description: 'There was a problem with resubmitting the query',
         action: (
           <ToastAction altText="Try again" onClick={handleResubmit}>
@@ -165,7 +165,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       console.error(e)
       toast({
         variant: 'destructive',
-        title: 'Ups! Something went wrong.',
+        title: 'Oops! Something went wrong.',
         description: 'There was a problem with running the query',
         action: (
           <ToastAction altText="Try again" onClick={handleRunQuery}>
@@ -211,7 +211,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       setCurrentQueryStatus(getWorkspaceQueryStatus(status))
       toast({
         variant: 'destructive',
-        title: 'Ups! Something went wrong.',
+        title: 'Oops! Something went wrong.',
         description: 'There was a problem with updating the query status',
         action: (
           <ToastAction

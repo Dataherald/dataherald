@@ -73,7 +73,7 @@ const AddUserDialog: FC<AddUserDialogProps> = ({
       console.error(`Error adding user: ${error}`)
       toast({
         variant: 'destructive',
-        title: 'Ups! Something went wrong.',
+        title: 'Oops! Something went wrong.',
         description: 'There was a problem adding the user to the Organization.',
         action: (
           <ToastAction

@@ -64,7 +64,7 @@ export const useColumnResource = (
       } catch (e) {
         toast({
           variant: 'destructive',
-          title: 'Ups! Something went wrong',
+          title: 'Oops! Something went wrong',
           description: `${columnDescription?.name} description could not be updated`,
         })
       }

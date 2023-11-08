@@ -37,7 +37,7 @@ const GoldenSQLPage: FC = () => {
         console.error(e)
         toast({
           variant: 'destructive',
-          title: 'Ups! Something went wrong.',
+          title: 'Oops! Something went wrong.',
           description:
             'There was a problem with deleting your golden sql query',
           action: (

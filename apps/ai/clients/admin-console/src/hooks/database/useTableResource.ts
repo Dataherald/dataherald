@@ -58,7 +58,7 @@ export const useTableResource = (
       } catch (e) {
         toast({
           variant: 'destructive',
-          title: 'Ups! Something went wrong',
+          title: 'Oops! Something went wrong',
           description: `${tableDescription?.table_name} description could not be updated`,
         })
       }
