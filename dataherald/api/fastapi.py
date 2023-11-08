@@ -55,6 +55,8 @@ from dataherald.utils.s3 import S3
 
 logger = logging.getLogger(__name__)
 
+MAX_ROWS_TO_CREATE_CSV_FILE = 50
+
 
 def async_scanning(scanner, database, scanner_request, storage):
     scanner.scan(
@@ -176,7 +178,11 @@ class FastAPI(API):
                 status_code=400,
                 content={"question_id": user_question.id, "error_message": str(e)},
             )
-        if generated_answer.csv_file_path:
+        if (
+            generate_csv
+            and len(generated_answer.sql_query_result.rows)
+            > MAX_ROWS_TO_CREATE_CSV_FILE
+        ):
             generated_answer.sql_query_result = None
         generated_answer.exec_time = time.time() - start_generated_answer
         response_repository = ResponseRepository(self.storage)
@@ -529,7 +535,10 @@ class FastAPI(API):
                 user_question, response, database_connection
             )
             response.confidence_score = confidence_score
-        if response.csv_file_path:
+        if (
+            generate_csv
+            and len(response.sql_query_result.rows) > MAX_ROWS_TO_CREATE_CSV_FILE
+        ):
             response.sql_query_result = None
         response.exec_time = time.time() - start_generated_answer
         response_repository.insert(response)
