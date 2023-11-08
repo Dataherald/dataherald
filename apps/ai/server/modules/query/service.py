@@ -396,7 +396,7 @@ class QueryService:
     ) -> QueryResponse:
         query = self.repo.get_query(query_id)
         question = self.repo.get_question(str(query.question_id))
-        if query.status != QueryStatus.NOT_VERIFIED:
+        if query.status in {QueryStatus.VERIFIED, QueryStatus.REJECTED}:
             raise_for_status(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="query has already been verified or rejected",
