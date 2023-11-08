@@ -32,6 +32,7 @@ import {
   QueryWorkspaceStatus,
 } from '@/models/domain'
 import { Ban, Box, Code2, Loader, Play, Verified, XOctagon } from 'lucide-react'
+import { useRouter } from 'next/router'
 import { FC, useEffect, useState } from 'react'
 
 export const MAIN_ACTION_BTN_CLASSES = 'h-8 py-0 px-4 w-28'
@@ -55,6 +56,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   onExecuteQuery,
   onPatchQuery,
 }) => {
+  const router = useRouter()
   const {
     id: queryId,
     display_id,
@@ -78,6 +80,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   const [currentSqlQuery, setCurrentSqlQuery] = useState(sql_query)
   const [currentQueryStatus, setCurrentQueryStatus] =
     useState<EDomainQueryWorkspaceStatus>(getWorkspaceQueryStatus(status))
+  const [unsavedChanges, setUnsavedChanges] = useState(false)
 
   const [resubmittingQuery, setResubmittingQuery] = useState(false)
   const [runningQuery, setRunningQuery] = useState(false)
@@ -90,6 +93,36 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     () => setCurrentQueryStatus(getWorkspaceQueryStatus(status)),
     [status],
   )
+  useEffect(
+    () =>
+      setUnsavedChanges(
+        JSON.stringify(currentSqlQuery) !== JSON.stringify(sql_query),
+      ),
+    [currentSqlQuery, sql_query],
+  )
+
+  // prompt the user if they try and leave with unsaved changes
+  useEffect(() => {
+    const warningText =
+      'Your current SQL query changes will be discarded. \n\nDo you wish to continue?'
+    const handleWindowClose = (e: BeforeUnloadEvent) => {
+      if (!unsavedChanges) return
+      e.preventDefault()
+      return (e.returnValue = warningText)
+    }
+    const handleBrowseAway = () => {
+      if (!unsavedChanges) return
+      if (window.confirm(warningText)) return
+      router.events.emit('routeChangeError')
+      throw 'routeChange aborted.'
+    }
+    window.addEventListener('beforeunload', handleWindowClose)
+    router.events.on('routeChangeStart', handleBrowseAway)
+    return () => {
+      window.removeEventListener('beforeunload', handleWindowClose)
+      router.events.off('routeChangeStart', handleBrowseAway)
+    }
+  }, [router.events, unsavedChanges])
 
   const handleResubmit = async () => {
     if (resubmittingQuery) return
@@ -262,7 +295,10 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
             <div className="grow flex flex-col gap-2 px-6 py-4">
               <div className="grow h-44">
                 <SqlEditor
-                  disabled={isVerified(currentQueryStatus)}
+                  disabled={
+                    isVerified(currentQueryStatus) ||
+                    isRejected(currentQueryStatus)
+                  }
                   query={currentSqlQuery}
                   onValueChange={handleSqlChange}
                 />
