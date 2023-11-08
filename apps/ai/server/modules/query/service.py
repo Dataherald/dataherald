@@ -370,6 +370,9 @@ class QueryService:
                 "last_updated": current_utc_time,
                 "updated_by": ObjectId(user.id),
                 "answer_id": ObjectId(answer.id),
+                "status": QueryStatus.NOT_VERIFIED
+                if answer.sql_generation_status == SQLGenerationStatus.VALID
+                else QueryStatus.SQL_ERROR,
             }
             self.repo.update_query(str(query.id), updated_request)
             self.analytics.track(
@@ -393,6 +396,11 @@ class QueryService:
     ) -> QueryResponse:
         query = self.repo.get_query(query_id)
         question = self.repo.get_question(str(query.question_id))
+        if query.status != QueryStatus.NOT_VERIFIED:
+            raise_for_status(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="query has already been verified or rejected",
+            )
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.engine_url + "/responses",
@@ -410,7 +418,11 @@ class QueryService:
                 "last_updated": current_utc_time,
                 "updated_by": ObjectId(user.id),
                 "answer_id": ObjectId(answer.id),
+                "status": QueryStatus.NOT_VERIFIED
+                if answer.sql_generation_status == SQLGenerationStatus.VALID
+                else QueryStatus.SQL_ERROR,
             }
+
             self.repo.update_query(str(query.id), updated_request)
             self.analytics.track(
                 user.email,
