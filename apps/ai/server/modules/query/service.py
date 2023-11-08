@@ -367,6 +367,7 @@ class QueryService:
             current_utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
             answer = AnswerResponse(**response.json())
             updated_request = {
+                "message": answer.response,
                 "last_updated": current_utc_time,
                 "updated_by": ObjectId(user.id),
                 "answer_id": ObjectId(answer.id),
