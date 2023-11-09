@@ -15,7 +15,7 @@ async function handleMessage(context, say) {
     log(
         `Slack message "${message}" received from ${userId} in channel ${channel_id} (thread: ${thread_ts}) that belongs to ${teamId} workspace`
     )
-    const welcomeMessage = `Hello, <@${userId}>. Please, give me a few moments and I'll be back with your answer.`
+    const welcomeMessage = `Hey there! Please, give me a few moments and I'll be back with your answer.`
     await say({
         blocks: [
             {
