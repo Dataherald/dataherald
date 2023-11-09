@@ -9,9 +9,6 @@ const appConfig =
 
 const app = new App(appConfig)
 
-// Listens to incoming messages in direct messages with the bot
-app.message(({ message, say }) => handleMessage(message, say))
-
 // Listens to incoming messages that mention the bot user
 app.event('app_mention', ({ event, say }) => handleMessage(event, say))
 
