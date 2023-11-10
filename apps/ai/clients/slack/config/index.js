@@ -32,10 +32,6 @@ const OAUTH_CONFIG = {
         'chat:write',
         'groups:history',
         'groups:read',
-        'im:history',
-        'im:read',
-        'im:write',
-        'mpim:history',
         'users:read',
     ],
     customRoutes: [
