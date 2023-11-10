@@ -155,7 +155,13 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         logger.info(
-            f"**** Executing SQL query in the QuerySQLDataBaseTool: {query}")
+            f"**** Executing SQL query in the QuerySQLDataBaseTool: {query}\n")
+        # remove markdown formatting from the query. ```sql from the start and ``` from the end
+        if "```" in query:
+            logger.info(f"**** Removing markdown formatting from the query\n")
+            query = query.replace("```sql", "").replace("```", "")
+            logger.info(
+                f"**** Query after removing markdown formatting: {query}\n")
         """Execute the query, return the results or an error message."""
         return self.db.run_sql(query, top_k=top_k)[0]
 
