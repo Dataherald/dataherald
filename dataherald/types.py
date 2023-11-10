@@ -5,7 +5,7 @@ from bson.errors import InvalidId
 from bson.objectid import ObjectId
 from pydantic import BaseModel, Field, validator
 
-from dataherald.sql_database.models.types import SSHSettings
+from dataherald.sql_database.models.types import FileStorage, SSHSettings
 
 
 class DBConnectionValidation(BaseModel):
@@ -75,6 +75,7 @@ class Response(BaseModel):
     intermediate_steps: list[str] | None = None
     sql_query: str
     sql_query_result: SQLQueryResult | None
+    csv_file_path: str | None
     sql_generation_status: str = "INVALID"
     error_message: str | None
     exec_time: float | None = None
@@ -117,6 +118,7 @@ class DatabaseConnectionRequest(BaseModel):
     path_to_credentials_file: str | None
     llm_api_key: str | None
     ssh_settings: SSHSettings | None
+    file_storage: FileStorage | None
 
 
 class ForeignKeyDetail(BaseModel):

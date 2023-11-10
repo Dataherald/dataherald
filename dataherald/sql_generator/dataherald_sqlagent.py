@@ -613,6 +613,7 @@ class DataheraldSQLAgent(SQLGenerator):
         user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
+        generate_csv: bool = False,
     ) -> Response:
         start_time = time.time()
         context_store = self.system.instance(ContextStore)
@@ -707,5 +708,10 @@ class DataheraldSQLAgent(SQLGenerator):
             sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",
         )
         return self.create_sql_query_status(
-            self.database, response.sql_query, response, top_k=TOP_K
+            self.database,
+            response.sql_query,
+            response,
+            top_k=TOP_K,
+            generate_csv=generate_csv,
+            database_connection=database_connection,
         )
