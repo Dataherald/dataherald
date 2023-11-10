@@ -108,6 +108,25 @@ class OrganizationService:
     def add_organization_by_slack_installation(
         self, slack_installation_request: SlackInstallation
     ):
+        current_org = self.repo.get_organization_by_slack_workspace_id(
+            slack_installation_request.team.id
+        )
+        if current_org:  # update
+            if (
+                self.repo.update_organization(
+                    str(current_org.id),
+                    {"slack_installation": slack_installation_request.dict()},
+                )
+                == 1
+            ):
+                updated_org = self.repo.get_organization(str(current_org.id))
+                return self._get_mapped_organization_response(updated_org)
+
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An error ocurred while updating organization",
+            )
+
         new_org_data = Organization(
             name=slack_installation_request.team.name,
             slack_installation=slack_installation_request,
