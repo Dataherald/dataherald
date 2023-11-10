@@ -9,7 +9,7 @@ Here is the plan you have to follow:
 Always use the get_current_datetime tool if there is any time or date in the given question.
 If the question does not seem related to the database, just return "I don't know" as the answer.
 If the there is a very similar question among the fewshot examples, modify the SQL query to fit the given question and return the answer.
-The SQL query MUST have in-line comments to explain what each clause.
+The SQL query MUST have in-line comments to explain what each clause does HOWEVER there should be no comment before the first line of SQL.
 """  # noqa: E501
 
 PLAN_WITH_FEWSHOT_EXAMPLES_AND_INSTRUCTIONS = """1) Use the fewshot_examples_retriever tool to retrieve a first set of possibly relevant tables and columns and the SQL syntax to use.
