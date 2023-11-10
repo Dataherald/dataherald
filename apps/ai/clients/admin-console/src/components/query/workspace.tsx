@@ -88,10 +88,10 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
 
   const { toast } = useToast()
 
-  useEffect(() => setCurrentSqlQuery(sql_query), [sql_query])
+  useEffect(() => setCurrentSqlQuery(query.sql_query), [query.sql_query])
   useEffect(
-    () => setCurrentQueryStatus(getWorkspaceQueryStatus(status)),
-    [status],
+    () => setCurrentQueryStatus(getWorkspaceQueryStatus(query.status)),
+    [query.status],
   )
   useEffect(
     () =>
