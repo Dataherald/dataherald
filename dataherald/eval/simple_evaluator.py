@@ -42,6 +42,7 @@ Double check the SQL query for the common mistakes, including:
 - columns in the SELECT clause should correspond to what exactly asked by user in the question
 - check for the improper use of the aggergation functions (SUM, AVG, MIN, MAX, ...)
 - robustness of the SQL query in handling cases where data values can be in different format (WHERE lower(column) = lower(entity))
+Ignore markup which could be wrapping the SQL query such as ```sql and ```
 """
 
 HUMAN_TEMPLATE = """
