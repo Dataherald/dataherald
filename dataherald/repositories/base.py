@@ -11,7 +11,7 @@ class ResponseRepository:
         self.storage = storage
 
     def insert(self, response: Response) -> Response:
-        response_dict = response.dict(exclude={"id", "sql_query_result"})
+        response_dict = response.dict(exclude={"id"})
         response_dict["question_id"] = ObjectId(response.question_id)
         response.id = str(self.storage.insert_one(DB_COLLECTION, response_dict))
         return response
@@ -25,7 +25,7 @@ class ResponseRepository:
         return Response(**row)
 
     def update(self, response: Response) -> Response:
-        response_dict = response.dict(exclude={"id", "sql_query_result"})
+        response_dict = response.dict(exclude={"id"})
         response_dict["question_id"] = ObjectId(response.question_id)
 
         self.storage.update_or_create(
