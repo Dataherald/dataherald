@@ -9,7 +9,7 @@ import openai
 from bson import json_util
 from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from overrides import override
 
 from dataherald.api import API
@@ -51,8 +51,11 @@ from dataherald.types import (
     TableDescriptionRequest,
     UpdateInstruction,
 )
+from dataherald.utils.s3 import S3
 
 logger = logging.getLogger(__name__)
+
+MAX_ROWS_TO_CREATE_CSV_FILE = 50
 
 
 def async_scanning(scanner, database, scanner_request, storage):
@@ -62,6 +65,10 @@ def async_scanning(scanner, database, scanner_request, storage):
         scanner_request.table_names,
         TableDescriptionRepository(storage),
     )
+
+
+def delete_file(file_location: str):
+    os.remove(file_location)
 
 
 class FastAPI(API):
@@ -120,7 +127,10 @@ class FastAPI(API):
 
     @override
     def answer_question(
-        self, run_evaluator: bool = True, question_request: QuestionRequest = None
+        self,
+        run_evaluator: bool = True,
+        generate_csv: bool = False,
+        question_request: QuestionRequest = None,
     ) -> Response:
         """Takes in an English question and answers it based on content from the registered databases"""
         logger.info(f"Answer question: {question_request.question}")
@@ -151,7 +161,10 @@ class FastAPI(API):
             context = context_store.retrieve_context_for_question(user_question)
             start_generated_answer = time.time()
             generated_answer = sql_generation.generate_response(
-                user_question, database_connection, context[0]
+                user_question,
+                database_connection,
+                context[0],
+                generate_csv,
             )
             logger.info("Starts evaluator...")
             if run_evaluator:
@@ -165,13 +178,22 @@ class FastAPI(API):
                 status_code=400,
                 content={"question_id": user_question.id, "error_message": str(e)},
             )
+        if (
+            generate_csv
+            and len(generated_answer.sql_query_result.rows)
+            > MAX_ROWS_TO_CREATE_CSV_FILE
+        ):
+            generated_answer.sql_query_result = None
         generated_answer.exec_time = time.time() - start_generated_answer
         response_repository = ResponseRepository(self.storage)
         return response_repository.insert(generated_answer)
 
     @override
     def answer_question_with_timeout(
-        self, run_evaluator: bool = True, question_request: QuestionRequest = None
+        self,
+        run_evaluator: bool = True,
+        generate_csv: bool = False,
+        question_request: QuestionRequest = None,
     ) -> Response:
         result = None
         exception = None
@@ -186,7 +208,9 @@ class FastAPI(API):
         def run_and_catch_exceptions():
             nonlocal result, exception
             if not stop_event.is_set():
-                result = self.answer_question(run_evaluator, question_request)
+                result = self.answer_question(
+                    run_evaluator, generate_csv, question_request
+                )
 
         thread = threading.Thread(target=run_and_catch_exceptions)
         thread.start()
@@ -214,6 +238,7 @@ class FastAPI(API):
                 llm_api_key=database_connection_request.llm_api_key,
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
+                file_storage=database_connection_request.file_storage,
             )
 
             SQLDatabase.get_sql_engine(db_connection, True)
@@ -248,6 +273,7 @@ class FastAPI(API):
                 llm_api_key=database_connection_request.llm_api_key,
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
+                file_storage=database_connection_request.file_storage,
             )
 
             SQLDatabase.get_sql_engine(db_connection, True)
@@ -353,6 +379,37 @@ class FastAPI(API):
         return result
 
     @override
+    def get_response_file(
+        self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
+        response_repository = ResponseRepository(self.storage)
+        question_repository = QuestionRepository(self.storage)
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        try:
+            result = response_repository.find_by_id(response_id)
+            question = question_repository.find_by_id(result.question_id)
+            db_connection = db_connection_repository.find_by_id(
+                question.db_connection_id
+            )
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if not result:
+            raise HTTPException(
+                status_code=404, detail="Question, response, or db_connection not found"
+            )
+
+        s3 = S3()
+
+        file_location = s3.download(result.csv_file_path, db_connection.file_storage)
+        background_tasks.add_task(delete_file, file_location)
+
+        return FileResponse(
+            file_location,
+            media_type="text/csv",
+        )
+
+    @override
     def update_response(self, response_id: str) -> Response:
         response_repository = ResponseRepository(self.storage)
 
@@ -429,6 +486,7 @@ class FastAPI(API):
         self,
         run_evaluator: bool = True,
         sql_response_only: bool = False,
+        generate_csv: bool = False,
         query_request: CreateResponseRequest = None,  # noqa: ARG002
     ) -> Response:
         question_repository = QuestionRepository(self.storage)
@@ -448,7 +506,10 @@ class FastAPI(API):
                 context = context_store.retrieve_context_for_question(user_question)
                 start_generated_answer = time.time()
                 response = sql_generation.generate_response(
-                    user_question, database_connection, context[0]
+                    user_question,
+                    database_connection,
+                    context[0],
+                    generate_csv,
                 )
             else:
                 response = Response(
@@ -458,7 +519,9 @@ class FastAPI(API):
                 start_generated_answer = time.time()
 
                 generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
-                response = generates_nl_answer.execute(response, sql_response_only)
+                response = generates_nl_answer.execute(
+                    response, sql_response_only, generate_csv
+                )
         except openai.error.AuthenticationError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except ValueError as e:
@@ -472,6 +535,11 @@ class FastAPI(API):
                 user_question, response, database_connection
             )
             response.confidence_score = confidence_score
+        if (
+            generate_csv
+            and len(response.sql_query_result.rows) > MAX_ROWS_TO_CREATE_CSV_FILE
+        ):
+            response.sql_query_result = None
         response.exec_time = time.time() - start_generated_answer
         response_repository.insert(response)
         return response
