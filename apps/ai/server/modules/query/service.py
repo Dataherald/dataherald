@@ -136,9 +136,7 @@ class QueryService:
                     {
                         "query_id": query.id,
                         "question_id": str(query.question_id),
-                        "response_id": str(query.response_id)
-                        if query.response_id
-                        else None,
+                        "answer_id": str(query.answer_id) if query.answer_id else None,
                         "organization_id": organization.id,
                         "organization_name": organization.name,
                         "database_name": self.db_connection_service.get_db_connection(
