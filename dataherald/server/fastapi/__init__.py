@@ -4,7 +4,7 @@ from typing import Any, List
 import fastapi
 from fastapi import BackgroundTasks, status
 from fastapi import FastAPI as _FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.routing import APIRoute
 
 import dataherald
@@ -165,6 +165,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/responses/{response_id}/file",
+            self.get_response_file,
+            methods=["GET"],
+            tags=["Responses"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/responses/{response_id}",
             self.update_response,
             methods=["PATCH"],
@@ -224,13 +231,16 @@ class FastAPI(dataherald.server.Server):
         return self._api.scan_db(scanner_request, background_tasks)
 
     def answer_question(
-        self, run_evaluator: bool = True, question_request: QuestionRequest = None
+        self,
+        run_evaluator: bool = True,
+        generate_csv: bool = False,
+        question_request: QuestionRequest = None,
     ) -> Response:
         if os.getenv("DH_ENGINE_TIMEOUT", None):
             return self._api.answer_question_with_timeout(
-                run_evaluator, question_request
+                run_evaluator, generate_csv, question_request
             )
-        return self._api.answer_question(run_evaluator, question_request)
+        return self._api.answer_question(run_evaluator, generate_csv, question_request)
 
     def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
         return self._api.get_questions(db_connection_id)
@@ -297,6 +307,12 @@ class FastAPI(dataherald.server.Server):
         """Update a response"""
         return self._api.update_response(response_id)
 
+    def get_response_file(
+        self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
+        """Get a response file"""
+        return self._api.get_response_file(response_id, background_tasks)
+
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""
         return self._api.execute_sql_query(query)
@@ -305,11 +321,12 @@ class FastAPI(dataherald.server.Server):
         self,
         run_evaluator: bool = True,
         sql_response_only: bool = False,
+        generate_csv: bool = False,
         query_request: CreateResponseRequest = None,
     ) -> Response:
         """Executes a query on the given db_connection_id"""
         return self._api.create_response(
-            run_evaluator, sql_response_only, query_request
+            run_evaluator, sql_response_only, generate_csv, query_request
         )
 
     def delete_golden_record(self, golden_record_id: str) -> dict:

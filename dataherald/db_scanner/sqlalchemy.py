@@ -98,7 +98,10 @@ class SqlAlchemyScanner(Scanner):
             rs = db_engine.engine.execute(
                 f"SELECT n_distinct, most_common_vals::TEXT::TEXT[] FROM pg_catalog.pg_stats WHERE tablename = '{table}' AND attname = '{column['name']}'"  # noqa: S608 E501
             ).fetchall()
-            if MIN_CATEGORY_VALUE < rs[0]["n_distinct"] <= MAX_CATEGORY_VALUE:
+            if (
+                len(rs) > 0
+                and MIN_CATEGORY_VALUE < rs[0]["n_distinct"] <= MAX_CATEGORY_VALUE
+            ):
                 return ColumnDetail(
                     name=column["name"],
                     data_type=str(column["type"]),

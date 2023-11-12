@@ -47,6 +47,7 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
+        generate_csv: bool = False,
     ) -> Response:
         start_time = time.time()
         self.llm = self.model.get_model(
@@ -94,4 +95,10 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
             total_tokens=cb.total_tokens,
             sql_query=self.format_sql_query(result["intermediate_steps"][1]),
         )
-        return self.create_sql_query_status(self.database, response.sql_query, response)
+        return self.create_sql_query_status(
+            self.database,
+            response.sql_query,
+            response,
+            generate_csv=generate_csv,
+            database_connection=database_connection,
+        )

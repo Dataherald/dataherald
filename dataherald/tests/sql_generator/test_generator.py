@@ -18,10 +18,12 @@ class TestGenerator(SQLGenerator):
         user_question: Question,
         database_connection: DatabaseConnection,
         context: List[dict] = None,  # noqa: ARG002
+        generate_csv: bool = None,
     ) -> Response:
         return Response(
             question_id="651f2d76275132d5b65175eb",
             response="Foo response",
             intermediate_steps=["foo"],
             sql_query="bar",
+            generate_csv=None,
         )
