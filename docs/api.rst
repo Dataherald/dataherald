@@ -54,6 +54,7 @@ The related endpoints are:
 * :doc:`add_responses <api.add_responses>` -- ``POST api/v1/responses``
 * :doc:`list_responses <api.list_responses>` -- ``GET api/v1/responses``
 * :doc:`get_response <api.get_response>` -- ``GET api/v1/responses/{response_id}``
+* :doc:`get_response_file <api.get_response_file>` -- ``GET api/v1/responses/{response_id}/file``
 
 **Response resource example:**
 
@@ -156,3 +157,4 @@ Related endpoints are:
     api.add_responses
     api.list_responses
     api.get_response
+    api.get_response_file
