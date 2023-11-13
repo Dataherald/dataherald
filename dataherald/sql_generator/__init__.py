@@ -3,6 +3,7 @@ import re
 from abc import ABC, abstractmethod
 from datetime import date, datetime
 from typing import Any, List, Tuple
+import logging
 
 import sqlparse
 from langchain.schema import AgentAction
@@ -14,6 +15,8 @@ from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator.create_sql_query_status import create_sql_query_status
 from dataherald.types import Question, Response, SQLQueryResult
 from dataherald.utils.strings import contains_line_breaks
+
+logger = logging.getLogger(__name__)
 
 
 class EngineTimeOutORItemLimitError(Exception):
@@ -71,10 +74,15 @@ class SQLGenerator(Component, ABC):
         return formatted_intermediate_representation
 
     def format_sql_query(self, sql_query: str) -> str:
+
+        logger.info(f"[format_sql_query]\n")
+        logger.info(f"sql_query: {sql_query}\n")
+
         comments = [
             match.group() for match in re.finditer(r"--.*$", sql_query, re.MULTILINE)
         ]
-        sql_query_without_comments = re.sub(r"--.*$", "", sql_query, flags=re.MULTILINE)
+        sql_query_without_comments = re.sub(
+            r"--.*$", "", sql_query, flags=re.MULTILINE)
 
         if contains_line_breaks(sql_query_without_comments.strip()):
             return sql_query

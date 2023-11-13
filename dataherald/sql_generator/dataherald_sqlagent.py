@@ -732,6 +732,10 @@ class DataheraldSQLAgent(SQLGenerator):
             total_cost=cb.total_cost,
             sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",
         )
+        logger.info(
+            f"===================== from generate_response =============================")
+        logger.info(f"response: {response}")
+        logger.info(f"==================================================")
         return self.create_sql_query_status(
             self.database,
             response.sql_query,
