@@ -492,6 +492,9 @@ class FastAPI(API):
         question_repository = QuestionRepository(self.storage)
         response_repository = ResponseRepository(self.storage)
         user_question = question_repository.find_by_id(query_request.question_id)
+        if not user_question:
+            raise HTTPException(status_code=404, detail="Question not found")
+
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         database_connection = db_connection_repository.find_by_id(
             user_question.db_connection_id

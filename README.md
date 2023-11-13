@@ -403,6 +403,23 @@ curl -X 'POST' \
     }'
 ```
 
+### Create new response based on a previously created question
+After utilizing the `questions` endpoint, you have the option to generate a new response associated with a specific question_id. 
+You can modify the `sql_query` to produce an alternative `sql_query_result` and a distinct response. In the event that you do not 
+specify a `sql_query`, the system will reprocess the question to generate the `sql_query`, execute the `sql_query_result`, and subsequently 
+generate the response.
+
+```
+curl -X 'POST' \
+  '<host>/api/v1/responses?run_evaluator=true&sql_response_only=false&generate_csv=false' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "question_id": "11fa1e419fe93d137536fe99",
+  "sql_query": "select * from sales order by created_at DESC limit 10"
+}'
+```
+
 ### Run scripts
 Within the `scripts` folder located inside the `dataherald` directory, you have the ability to upgrade your versions. 
 For instance, if you are currently using version 0.0.3 and wish to switch to version 0.0.4, simply execute the following command:

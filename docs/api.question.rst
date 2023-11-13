@@ -17,6 +17,23 @@ Request this ``POST`` endpoint::
       "question": "string"
     }
 
+**Parameters**
+
+.. csv-table::
+   :header: "Name", "Type", "Description"
+   :widths: 20, 20, 60
+
+   "run_evaluator", "boolean", "If True it evaluates the generated `sql_query` and `sql_query_result`, ``Optional``"
+   "generate_csv", "boolean", "If True it responses `sql_result` as NULL if it has more than 50 rows and generates the CSV file, ``Optional``"
+
+If the generate_csv flag is set to True, and the sql_query_result contains more than 50 rows, the system will utilize either
+the S3 credentials specified in the environment variables or those configured within the db_connection to generate the CSV file.
+The resulting file path will be structured as follows:
+
+.. code-block:: rst
+
+    "csv_file_path": "s3://k2-core/c6ddccfc-f355-4477-a2e7-e43f77e31bbb.csv"
+
 **Responses**
 
 HTTP 201 code response
@@ -39,6 +56,7 @@ HTTP 201 code response
           {}
         ]
       },
+      "csv_file_path": "string",
       "sql_generation_status": "NONE",
       "error_message": "string",
       "exec_time": 0,
@@ -85,6 +103,7 @@ HTTP 201 code response
           }
         ]
       },
+      "csv_file_path": null,
       "sql_generation_status": "VALID",
       "error_message": null,
       "exec_time": 37.183526277542114,
