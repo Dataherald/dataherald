@@ -6,7 +6,7 @@ Only use the below tools. Only use the information returned by the below tools t
 Here is the plan you have to follow:
 {agent_plan}
 #
-Using `current_date()` or `current_datetime()` in SQL queries is banned, use system_time tool to use the exact time of the query execution.
+Using `current_date()` or `current_datetime()` in SQL queries is banned, use system_time tool to get the exact time of the query execution.
 If the question does not seem related to the database, just return "I don't know" as the answer.
 If the there is a very similar question among the fewshot examples, modify the SQL query to fit the given question and return the answer.
 The SQL query MUST have in-line comments to explain what each clause does.
