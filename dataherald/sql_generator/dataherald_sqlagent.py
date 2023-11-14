@@ -109,10 +109,10 @@ class BaseSQLDatabaseTool(BaseModel):
         extra = Extra.forbid
 
 
-class GetCurrentTimeTool(BaseSQLDatabaseTool, BaseTool):
+class SystemTime(BaseSQLDatabaseTool, BaseTool):
     """Tool for finding the current data and time."""
 
-    name = "get_current_datetime"
+    name = "system_time"
     description = """
     Input is an empty string, output is the current data and time.
     Always use this tool before generating a query if there is any time or date in the given question.
@@ -495,7 +495,7 @@ class SQLDatabaseToolkit(BaseToolkit):
                     db=self.db, context=self.context, instructions=self.instructions
                 )
             )
-        get_current_datetime = GetCurrentTimeTool(db=self.db, context=self.context)
+        get_current_datetime = SystemTime(db=self.db, context=self.context)
         tools.append(get_current_datetime)
         tables_sql_db_tool = TablesSQLDatabaseTool(
             db=self.db,
