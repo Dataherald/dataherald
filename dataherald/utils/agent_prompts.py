@@ -25,7 +25,7 @@ Some tips to always keep in mind:
 tip1) For complex questions that has many relevant columns and tables request for more examples of Question/SQL pairs.
 tip2) The maximum number of Question/SQL pairs you can request is {max_examples}.
 tip3) If the SQL query resulted in errors, rewrite the SQL query and try again.
-tip4) If you are still unsure about which columns and tables to use, ask for more Question/SQL pairs.
+tip4) Always call the get_admin_instructions tool before generating the SQL query, it will give you rules to follow when writing the SQL query.
 tip5) The Question/SQL pairs are labelled as correct pairs, so you can use them to learn how to construct the SQL query.
 """  # noqa: E501
 
@@ -39,6 +39,7 @@ PLAN_WITH_INSTRUCTIONS = """1) Use the db_tables_with_relevance_scores tool to f
 #
 Some tips to always keep in mind:
 tip1) If the SQL query resulted in errors, rewrite the SQL query and try again.
+tip2) Always call the get_admin_instructions tool before generating the SQL query, it will give you rules to follow when writing the SQL query.
 """  # noqa: E501
 
 PLAN_WITH_FEWSHOT_EXAMPLES = """1) Use the fewshot_examples_retriever tool to retrieve a first set of possibly relevant tables and columns and the SQL syntax to use.
