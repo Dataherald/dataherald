@@ -155,6 +155,8 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Execute the query, return the results or an error message."""
+        if '```sql' in query:
+            query = query.replace('```sql', '').replace('```', '')
         return self.db.run_sql(query, top_k=top_k)[0]
 
     async def _arun(
@@ -690,7 +692,10 @@ class DataheraldSQLAgent(SQLGenerator):
         for step in result["intermediate_steps"]:
             action = step[0]
             if type(action) == AgentAction and action.tool == "sql_db_query":
-                sql_query_list.append(self.format_sql_query(action.tool_input))
+                query = self.format_sql_query(action.tool_input)
+                if '```sql' in query:
+                   query = query.replace('```sql', '').replace('```', '')
+                sql_query_list.append(query)
         intermediate_steps = self.format_intermediate_representations(
             result["intermediate_steps"]
         )
