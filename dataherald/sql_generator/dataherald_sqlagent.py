@@ -156,7 +156,9 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     ) -> str:
         """Execute the query, return the results or an error message."""
         if "```sql" in query:
+            logger.info("**** Removing markdown formatting from the query\n")
             query = query.replace("```sql", "").replace("```", "")
+            logger.info(f"**** Query after removing markdown formatting: {query}\n")
         return self.db.run_sql(query, top_k=top_k)[0]
 
     async def _arun(
@@ -694,7 +696,11 @@ class DataheraldSQLAgent(SQLGenerator):
             if type(action) == AgentAction and action.tool == "sql_db_query":
                 query = self.format_sql_query(action.tool_input)
                 if "```sql" in query:
+                    logger.info("**** Removing markdown formatting from the query\n")
                     query = query.replace("```sql", "").replace("```", "")
+                    logger.info(
+                        f"**** Query after removing markdown formatting: {query}\n"
+                    )
                 sql_query_list.append(query)
         intermediate_steps = self.format_intermediate_representations(
             result["intermediate_steps"]
