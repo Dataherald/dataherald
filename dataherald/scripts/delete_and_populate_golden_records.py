@@ -29,12 +29,12 @@ if __name__ == "__main__":
         question = golden_record["question"]
         vector_store.add_record(
             documents=question,
-            db_connection_id=golden_record["db_connection_id"],
+            db_connection_id=str(golden_record["db_connection_id"]),
             collection=golden_record_collection,
             metadata=[
                 {
                     "tables_used": tables[0],
-                    "db_connection_id": golden_record["db_connection_id"],
+                    "db_connection_id": str(golden_record["db_connection_id"]),
                 }
             ],
             ids=[str(golden_record["_id"])],

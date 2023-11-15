@@ -109,10 +109,10 @@ class BaseSQLDatabaseTool(BaseModel):
         extra = Extra.forbid
 
 
-class GetCurrentTimeTool(BaseSQLDatabaseTool, BaseTool):
+class SystemTime(BaseSQLDatabaseTool, BaseTool):
     """Tool for finding the current data and time."""
 
-    name = "get_current_datetime"
+    name = "system_time"
     description = """
     Input is an empty string, output is the current data and time.
     Always use this tool before generating a query if there is any time or date in the given question.
@@ -163,6 +163,11 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
             logger.info(
                 f"**** Query after removing markdown formatting: {query}\n")
         """Execute the query, return the results or an error message."""
+        if "```sql" in query:
+            logger.info("**** Removing markdown formatting from the query\n")
+            query = query.replace("```sql", "").replace("```", "")
+            logger.info(
+                f"**** Query after removing markdown formatting: {query}\n")
         return self.db.run_sql(query, top_k=top_k)[0]
 
     async def _arun(
@@ -506,8 +511,7 @@ class SQLDatabaseToolkit(BaseToolkit):
                     db=self.db, context=self.context, instructions=self.instructions
                 )
             )
-        get_current_datetime = GetCurrentTimeTool(
-            db=self.db, context=self.context)
+        get_current_datetime = SystemTime(db=self.db, context=self.context)
         tools.append(get_current_datetime)
         tables_sql_db_tool = TablesSQLDatabaseTool(
             db=self.db,
@@ -715,7 +719,15 @@ class DataheraldSQLAgent(SQLGenerator):
         for step in result["intermediate_steps"]:
             action = step[0]
             if type(action) == AgentAction and action.tool == "sql_db_query":
-                sql_query_list.append(self.format_sql_query(action.tool_input))
+                query = self.format_sql_query(action.tool_input)
+                if "```sql" in query:
+                    logger.info(
+                        "**** Removing markdown formatting from the query\n")
+                    query = query.replace("```sql", "").replace("```", "")
+                    logger.info(
+                        f"**** Query after removing markdown formatting: {query}\n"
+                    )
+                sql_query_list.append(query)
         intermediate_steps = self.format_intermediate_representations(
             result["intermediate_steps"]
         )

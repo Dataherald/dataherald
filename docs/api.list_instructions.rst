@@ -9,7 +9,7 @@ Request this ``GET`` endpoint::
 
     GET /api/v1/instructions
 
-** Parameters **
+**Parameters**
 
 .. csv-table::
    :header: "Name", "Type", "Description"
