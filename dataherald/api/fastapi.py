@@ -55,6 +55,16 @@ from dataherald.utils.s3 import S3
 
 logger = logging.getLogger(__name__)
 
+
+import ptvsd
+
+# Allow other computers to attach to ptvsd at this IP address and port.
+ptvsd.enable_attach(address=('0.0.0.0', 5678), redirect_output=True)
+
+# Pause the program until a remote debugger is attached
+ptvsd.wait_for_attach()
+
+
 MAX_ROWS_TO_CREATE_CSV_FILE = 50
 
 
@@ -416,7 +426,33 @@ class FastAPI(API):
             file_location,
             media_type="text/csv",
         )
+      
+    @override
+    def get_response_local_file(
+       self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
+        response_repository = ResponseRepository(self.storage)
+        question_repository = QuestionRepository(self.storage)
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        try:
+            result = response_repository.find_by_id(response_id)
+            question = question_repository.find_by_id(result.question_id)
+            db_connection = db_connection_repository.find_by_id(
+                question.db_connection_id
+            )
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
+        if not result:
+            raise HTTPException(
+                status_code=404, detail="Question, response, or db_connection not found"
+            )
+
+        return FileResponse(
+            result.csv_file_path,
+            media_type="text/csv",
+        )
+        
     @override
     def update_response(self, response_id: str) -> Response:
         response_repository = ResponseRepository(self.storage)

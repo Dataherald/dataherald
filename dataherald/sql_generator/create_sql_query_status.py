@@ -9,6 +9,7 @@ from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import Response, SQLQueryResult
 from dataherald.utils.s3 import S3
+from dataherald.config import Settings
 
 
 def format_error_message(response: Response, error_message: str) -> Response:
@@ -40,10 +41,14 @@ def create_csv_file(
             writer.writerow(rows[0].keys())
             for row in rows:
                 writer.writerow(row.values())
-        s3 = S3()
-        response.csv_file_path = s3.upload(
-            file_location, database_connection.file_storage
-        )
+        
+        if Settings().only_store_csv_files_locally:
+          response.csv_file_path = file_location
+        else: 
+          s3 = S3()
+          response.csv_file_path = s3.upload(
+              file_location, database_connection.file_storage
+          )
     response.sql_query_result = SQLQueryResult(columns=columns, rows=rows)
 
 

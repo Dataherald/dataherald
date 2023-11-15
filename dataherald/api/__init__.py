@@ -135,6 +135,12 @@ class API(Component, ABC):
         self, response_id: str, background_tasks: BackgroundTasks
     ) -> FileResponse:
         pass
+      
+    @abstractmethod
+    def get_response_local_file(
+        self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
+        pass
 
     @abstractmethod
     def delete_golden_record(self, golden_record_id: str) -> dict:
