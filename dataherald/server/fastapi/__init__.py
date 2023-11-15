@@ -239,7 +239,7 @@ class FastAPI(dataherald.server.Server):
 
     def answer_question(
         self,
-        run_evaluator: bool = True,
+        run_evaluator: bool = False,
         generate_csv: bool = False,
         question_request: QuestionRequest = None,
     ) -> Response:

@@ -129,7 +129,7 @@ class FastAPI(API):
     @override
     def answer_question(
         self,
-        run_evaluator: bool = False,
+        run_evaluator: bool = True,
         generate_csv: bool = False,
         question_request: QuestionRequest = None,
     ) -> Response:
@@ -192,7 +192,7 @@ class FastAPI(API):
     @override
     def answer_question_with_timeout(
         self,
-        run_evaluator: bool = False,
+        run_evaluator: bool = True,
         generate_csv: bool = False,
         question_request: QuestionRequest = None,
     ) -> Response:
