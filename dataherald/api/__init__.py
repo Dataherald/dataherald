@@ -137,6 +137,12 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
+    def create_response_csv(
+        self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
+        pass
+
+    @abstractmethod
     def delete_golden_record(self, golden_record_id: str) -> dict:
         pass
 

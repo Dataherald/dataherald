@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 import os
@@ -408,6 +409,32 @@ class FastAPI(API):
             file_location,
             media_type="text/csv",
         )
+
+    @override
+    def create_response_csv(
+        self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
+        response_repository = ResponseRepository(self.storage)
+        try:
+            response = response_repository.find_by_id(response_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if not response:
+            raise HTTPException(
+                status_code=404, detail="Question, response, or db_connection not found"
+            )
+        csv_file_path = "query_result.csv"
+        with open(csv_file_path, mode="w", newline="", encoding="utf-8") as file:
+            writer = csv.DictWriter(file, fieldnames=response.sql_query_result.columns)
+            writer.writeheader()
+            for row in response.sql_query_result.rows:
+                writer.writerow(row)
+        response = FileResponse(
+            path=csv_file_path, filename="query_result.csv", media_type="text/csv"
+        )
+        background_tasks.add_task(delete_file, csv_file_path)
+        return response
 
     @override
     def update_response(self, response_id: str) -> Response:

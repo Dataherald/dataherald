@@ -172,6 +172,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/responses/{response_id}/csv",
+            self.create_response_csv,
+            methods=["GET"],
+            tags=["Responses"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/responses/{response_id}",
             self.update_response,
             methods=["PATCH"],
@@ -312,6 +319,12 @@ class FastAPI(dataherald.server.Server):
     ) -> FileResponse:
         """Get a response file"""
         return self._api.get_response_file(response_id, background_tasks)
+
+    def create_response_csv(
+        self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
+        """Get a response file"""
+        return self._api.create_response_csv(response_id, background_tasks)
 
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""
