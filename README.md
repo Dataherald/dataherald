@@ -68,15 +68,12 @@ cp .env.example .env
 
 Specifically the following 5 fields must be manually set before the engine is started.
 
-LLM_MODEL is employed by evaluators and natural language generators that do not necessitate an extensive context window.
-
-AGENT_LLM_MODEL, on the other hand, is utilized by the NL-to-SQL generator, which relies on a larger context window.
+LLM_MODEL is employed by the engine to generate SQL from natural language. You can use the default model (gpt-4-1106-preview) or use your own.
 
 ```
 #OpenAI credentials and model 
 OPENAI_API_KEY = 
 LLM_MODEL = 
-AGENT_LLM_MODEL = 
 ORG_ID =
 
 #Encryption key for storing DB connection data in Mongo
