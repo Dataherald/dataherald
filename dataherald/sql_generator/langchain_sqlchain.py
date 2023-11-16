@@ -53,7 +53,7 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            model_name=os.getenv("AGENT_LLM_MODEL", "gpt-4-32k"),
+            model_name=os.getenv("LLM_MODEL", "gpt-4-1106-preview"),
         )
         self.database = SQLDatabase.get_sql_engine(database_connection)
         logger.info(
