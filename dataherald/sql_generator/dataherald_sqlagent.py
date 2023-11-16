@@ -2,7 +2,6 @@ import datetime
 import difflib
 import logging
 import os
-import time
 from functools import wraps
 from typing import Any, Callable, Dict, List
 
@@ -26,7 +25,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema import AgentAction
 from langchain.tools.base import BaseTool
 from overrides import override
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel, Field
 from sqlalchemy import MetaData
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
@@ -103,7 +102,7 @@ class BaseSQLDatabaseTool(BaseModel):
         """Configuration for this pydantic object."""
 
         arbitrary_types_allowed = True
-        extra = Extra.forbid
+        extra = "allow"
 
 
 class SystemTime(BaseSQLDatabaseTool, BaseTool):
@@ -607,7 +606,6 @@ class DataheraldSQLAgent(SQLGenerator):
         context: List[dict] = None,
         generate_csv: bool = False,
     ) -> Response:
-        start_time = time.time()
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
         self.llm = self.model.get_model(
@@ -688,15 +686,11 @@ class DataheraldSQLAgent(SQLGenerator):
         intermediate_steps = self.format_intermediate_representations(
             result["intermediate_steps"]
         )
-        exec_time = time.time() - start_time
-        logger.info(
-            f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
-        )
+        logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
         response = Response(
             question_id=user_question.id,
             response=result["output"],
             intermediate_steps=intermediate_steps,
-            exec_time=exec_time,
             total_tokens=cb.total_tokens,
             total_cost=cb.total_cost,
             sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",
