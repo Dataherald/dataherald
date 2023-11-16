@@ -7,7 +7,7 @@ Here is the plan you have to follow:
 {agent_plan}
 #
 Using `current_date()` or `current_datetime()` in SQL queries is banned, use system_time tool to get the exact time of the query execution.
-If the question does not seem related to the database, just return "I don't know" as the answer.
+If the question does not seem related to the database, explain why you cannot answer the question.
 If the there is a very similar question among the fewshot examples, modify the SQL query to fit the given question and return the answer.
 The SQL query MUST have in-line comments to explain what each clause does.
 """  # noqa: E501
@@ -91,3 +91,29 @@ SUFFIX_WITHOUT_FEW_SHOT_SAMPLES = """Begin!
 Question: {input}
 Thought: I should find the a set of possibly relevant tables to the given question.
 {agent_scratchpad}"""
+
+FINETUNING_SYSTEM_INFORMATION = """
+You are an assistant that is an expert in generating Postgres SQL queries.
+Having the access to database content, generate a correct SQL query for the given question.
+Always follow the instructions provided by the database administrator.
+
+# Database content:
+"""
+FINETUNING_AGENT_SUFFIX = """Begin!
+
+Question: {input}
+Thought: I should use the generate_sql tool to generate a correct SQL query for the given question.
+{agent_scratchpad}"""
+
+FINETUNING_AGENT_PREFIX = """You are an agent designed to interact with a SQL database.
+Given an input question, use generate_sql tool to create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
+If the question is complex:
+1) Break the question into sub-questions.
+2) Find the SQL query for each sub-question by using the generate_sql tool for each sub-question.
+3) Combine the SQL queries for each sub-question into a single SQL query.
+
+Using `current_date()` or `current_datetime()` in SQL queries is banned, use system_time tool to get the exact time of the query execution.
+If running the SQL query results in an error, rewrite the SQL query and try again. You can use db_schema tool to get the schema of the database.
+Only rely on generate_sql tool to generate the SQL query.
+If the question does not seem related to the database, explain why you cannot answer the question.
+"""  # noqa: E501
