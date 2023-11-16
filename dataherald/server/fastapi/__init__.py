@@ -170,6 +170,13 @@ class FastAPI(dataherald.server.Server):
             methods=["GET"],
             tags=["Responses"],
         )
+        
+        self.router.add_api_route(
+            "/api/v1/responses/{response_id}/localfile",
+            self.get_response_local_file,
+            methods=["GET"],
+            tags=["Responses"],
+        )
 
         self.router.add_api_route(
             "/api/v1/responses/{response_id}",
@@ -312,6 +319,12 @@ class FastAPI(dataherald.server.Server):
     ) -> FileResponse:
         """Get a response file"""
         return self._api.get_response_file(response_id, background_tasks)
+
+    def get_response_file_file(
+        self, response_id: str, background_tasks: BackgroundTasks
+    ) -> FileResponse:
+        """Get a response file from local file system (within docker container)"""
+        return self._api.get_response_local_file(response_id, background_tasks)
 
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""
