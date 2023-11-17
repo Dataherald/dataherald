@@ -373,7 +373,12 @@ class DataheraldFinetuningAgent(SQLGenerator):
         **kwargs: Dict[str, Any],
     ) -> AgentExecutor:
         tools = toolkit.get_tools()
-        prefix = prefix.format(dialect=toolkit.dialect)
+        admin_instructions = ""
+        for index, instruction in enumerate(toolkit.instructions):
+            admin_instructions += f"{index+1}) {instruction['instruction']}\n"
+        prefix = prefix.format(
+            dialect=toolkit.dialect, admin_instructions=admin_instructions
+        )
         prompt = ZeroShotAgent.create_prompt(
             tools,
             prefix=prefix,
