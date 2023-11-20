@@ -9,6 +9,7 @@ import openai
 from bson import json_util
 from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, JSONResponse
 from overrides import override
 
@@ -150,14 +151,17 @@ class FastAPI(API):
         database_connection = db_connection_repository.find_by_id(
             user_question.db_connection_id
         )
+        response_repository = ResponseRepository(self.storage)
+
         if not database_connection:
-            return JSONResponse(
-                status_code=404,
-                content={
-                    "question_id": user_question.id,
-                    "error_message": "Connections doesn't exist",
-                },
+            response = response_repository.insert(
+                Response(
+                    question_id=user_question.id,
+                    error_message="Connections doesn't exist",
+                    sql_query="",
+                )
             )
+            return JSONResponse(status_code=404, content=jsonable_encoder(response))
         try:
             context = context_store.retrieve_context_for_question(user_question)
             start_generated_answer = time.time()
@@ -175,10 +179,16 @@ class FastAPI(API):
                 )
                 generated_answer.confidence_score = confidence_score
         except Exception as e:
+            response = response_repository.insert(
+                Response(
+                    question_id=user_question.id, error_message=str(e), sql_query=""
+                )
+            )
             return JSONResponse(
                 status_code=400,
-                content={"question_id": user_question.id, "error_message": str(e)},
+                content=jsonable_encoder(response),
             )
+
         if (
             generate_csv
             and len(generated_answer.sql_query_result.rows)
@@ -218,13 +228,15 @@ class FastAPI(API):
         thread.join(timeout=int(os.getenv("DH_ENGINE_TIMEOUT")))
         if thread.is_alive():
             stop_event.set()
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "question_id": user_question.id,
-                    "error_message": "Timeout Error",
-                },
+            response_repository = ResponseRepository(self.storage)
+            response = response_repository.insert(
+                Response(
+                    question_id=user_question.id,
+                    error_message="Timeout Error",
+                    sql_query="",
+                )
             )
+            return JSONResponse(status_code=400, content=jsonable_encoder(response))
         return result
 
     @override
