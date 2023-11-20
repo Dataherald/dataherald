@@ -365,7 +365,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         suffix: str = FINETUNING_AGENT_SUFFIX,
         format_instructions: str = FORMAT_INSTRUCTIONS,
         input_variables: List[str] | None = None,
-        max_iterations: int | None = 12,
+        max_iterations: int | None = int(os.getenv("AGENT_MAX_ITERATIONS", "20")),
         max_execution_time: float | None = None,
         early_stopping_method: str = "force",
         verbose: bool = False,

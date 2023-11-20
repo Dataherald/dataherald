@@ -119,6 +119,10 @@ ORG_ID =
 
 #Encryption key for storing DB connection data in Mongo
 ENCRYPT_KEY = 
+
+# All of our SQL generation agents are using different tools to generate SQL queries, in order to limit the number of times that agents can
+# use different tools you can set the "AGENT_MAX_ITERATIONS" env variable. By default it is set to 20 iterations.
+
 ```
 
 While not strictly required, we also strongly suggest you change the MONGO username and password fields as well.
