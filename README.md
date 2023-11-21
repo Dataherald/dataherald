@@ -267,6 +267,12 @@ You can generate the `connection_uri` parameter in the API call for each of the 
 "connection_uri": awsathena+rest://<aws_access_key_id>:<aws_secret_access_key>@athena.<region_name>.amazonaws.com:443/<schema_name>?s3_staging_dir=<s3_staging_dir>&work_group=primary
 ```
 
+**DuckDB**
+To connect to DuckDB you should first host your database in MotherDuck and fetch your authentication token.
+```
+"connection_uri": duckdb:///md:<database_name>?motherduck_token=<your_token>
+```
+
 **BigQuery**
 To connect to BigQuery you should create a json credential file. Please follow Steps 1-3 under "Configure 
 BigQuery Authentication in Google Cloud Platform" in 
