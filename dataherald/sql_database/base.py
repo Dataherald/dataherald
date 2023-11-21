@@ -62,6 +62,11 @@ class SQLDatabase(LangchainSQLDatabase):
     ) -> "SQLDatabase":
         """Construct a SQLAlchemy engine from URI."""
         _engine_args = engine_args or {}
+        if database_uri.lower().startswith("duckdb"):
+            config = {
+                "autoload_known_extensions": False
+            }
+            _engine_args["connect_args"] = {"config": config}
         engine = create_engine(database_uri, **_engine_args)
         return cls(engine, **kwargs)
 
