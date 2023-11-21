@@ -310,7 +310,7 @@ curl -X 'PATCH' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "description": "Tabla description",
+  "description": "Table description",
   "columns": [
     {
       "name": "column1",
@@ -340,7 +340,7 @@ curl -X 'PATCH' \
 
 #### Adding database level instructions
 
-You can add database level instructions to the context store manually from the `POST /api/v1/instructions` endpoint
+You can add database level instructions to the context store manually from the `POST /api/v1/instructions` endpoint.
 These instructions are passed directly to the engine and can be used to steer the engine to generate SQL that is more in line with your business logic.
 
 ```
