@@ -13,12 +13,12 @@ The SQL query MUST have in-line comments to explain what each clause does.
 """  # noqa: E501
 
 PLAN_WITH_FEWSHOT_EXAMPLES_AND_INSTRUCTIONS = """1) Use the fewshot_examples_retriever tool to retrieve a first set of possibly relevant tables and columns and the SQL syntax to use.
-2) Use the db_tables_with_relevance_scores tool to find the a second set of possibly relevant tables.
-3) Use the db_relevant_tables_schema tool to obtain the schema of the both sets of possibly relevant tables to identify the possibly relevant columns.
-4) Use the db_relevant_columns_info tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
-5) [Optional based on the question] Use the system_time tool if the question has any mentions of time or dates.
-6) [Optional based on the question] Always use the db_column_entity_checker tool to make sure that relevant columns have the cell-values.
-7) Use the get_admin_instructions tool to retrieve the DB admin instructions before generating the SQL query.
+2) Use the get_admin_instructions tool to retrieve the DB admin instructions before calling ant other tools, to make sure you follow the instructions when writing the SQL query.
+3) Use the db_tables_with_relevance_scores tool to find the a second set of possibly relevant tables.
+4) Use the db_relevant_tables_schema tool to obtain the schema of the both sets of possibly relevant tables to identify the possibly relevant columns.
+5) Use the db_relevant_columns_info tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
+6) [Optional based on the question] Use the system_time tool if the question has any mentions of time or dates.
+7) [Optional based on the question] Always use the db_column_entity_checker tool to make sure that relevant columns have the cell-values.
 8) Write a {dialect} query and use sql_db_query tool the Execute the SQL query on the database to obtain the results.
 #
 Some tips to always keep in mind:
@@ -30,11 +30,11 @@ tip5) The Question/SQL pairs are labelled as correct pairs, so you can use them 
 """  # noqa: E501
 
 PLAN_WITH_INSTRUCTIONS = """1) Use the db_tables_with_relevance_scores tool to find the a set of possibly relevant tables.
+2) Use the get_admin_instructions tool to retrieve the DB admin instructions before calling ant other tools, to make sure you follow the instructions when writing the SQL query.
 2) Use the db_relevant_tables_schema tool to obtain the schema of possibly relevant tables to identify the possibly relevant columns.
-3) Use the db_relevant_columns_info tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
-4) [Optional based on the question] Use the system_time tool if the question has any mentions of time or dates.
-5) [Optional based on the question] Always use the db_column_entity_checker tool to make sure that relevant columns have the cell-values.
-6) Use the get_admin_instructions tool to retrieve the DB admin instructions before generating the SQL query.
+4) Use the db_relevant_columns_info tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
+5) [Optional based on the question] Use the system_time tool if the question has any mentions of time or dates.
+6) [Optional based on the question] Always use the db_column_entity_checker tool to make sure that relevant columns have the cell-values.
 7) Write a {dialect} query and use sql_db_query tool the Execute the SQL query on the database to obtain the results.
 #
 Some tips to always keep in mind:
