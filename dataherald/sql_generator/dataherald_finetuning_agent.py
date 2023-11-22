@@ -123,6 +123,34 @@ class SystemTime(BaseSQLDatabaseTool, BaseTool):
     ) -> str:
         raise NotImplementedError("SystemTime tool does not support async")
 
+class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
+    """Tool which takes in the given question and returns a list of tables with their relevance score to the question"""
+
+    name = "get_db_table_names"
+    description = """
+    Use this tool to get the list of tables in the database.
+    """
+    db_scan: List[TableDescription]
+
+    @catch_exceptions()
+    def _run(
+        self,
+        input: str,  # noqa: ARG002
+        run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
+    ) -> str:
+        """Use the concatenation of table name, columns names, and the description of the table as the table representation"""
+        tables= []
+        for table in self.db_scan:
+            tables.append(table.table_name)
+        return f"Tables in the database: {','.join(tables)}"
+
+    async def _arun(
+        self,
+        input: str = "",
+        run_manager: AsyncCallbackManagerForToolRun | None = None,
+    ) -> str:
+        raise NotImplementedError("TablesSQLDatabaseTool does not support async")
+
 
 class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for querying a SQL database."""
@@ -347,6 +375,7 @@ class SQLDatabaseToolkit(BaseToolkit):
             )
         )
         tools.append(SchemaSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
+        tools.append(TablesSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
         return tools
 
 
