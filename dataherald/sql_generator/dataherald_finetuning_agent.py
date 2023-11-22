@@ -123,6 +123,7 @@ class SystemTime(BaseSQLDatabaseTool, BaseTool):
     ) -> str:
         raise NotImplementedError("SystemTime tool does not support async")
 
+
 class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool which takes in the given question and returns a list of tables with their relevance score to the question"""
 
@@ -139,7 +140,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Use the concatenation of table name, columns names, and the description of the table as the table representation"""
-        tables= []
+        tables = []
         for table in self.db_scan:
             tables.append(table.table_name)
         return f"Tables in the database: {','.join(tables)}"
