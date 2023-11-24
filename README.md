@@ -68,19 +68,20 @@ cp .env.example .env
 
 Specifically the following 5 fields must be manually set before the engine is started.
 
-LLM_MODEL is employed by evaluators and natural language generators that do not necessitate an extensive context window.
-
-AGENT_LLM_MODEL, on the other hand, is utilized by the NL-to-SQL generator, which relies on a larger context window.
+LLM_MODEL is employed by the engine to generate SQL from natural language. You can use the default model (gpt-4-1106-preview) or use your own.
 
 ```
 #OpenAI credentials and model 
 OPENAI_API_KEY = 
 LLM_MODEL = 
-AGENT_LLM_MODEL = 
 ORG_ID =
 
 #Encryption key for storing DB connection data in Mongo
 ENCRYPT_KEY = 
+
+# All of our SQL generation agents are using different tools to generate SQL queries, in order to limit the number of times that agents can
+# use different tools you can set the "AGENT_MAX_ITERATIONS" env variable. By default it is set to 20 iterations.
+
 ```
 
 While not strictly required, we also strongly suggest you change the MONGO username and password fields as well.
@@ -225,6 +226,12 @@ You can generate the `connection_uri` parameter in the API call for each of the 
 "connection_uri": awsathena+rest://<aws_access_key_id>:<aws_secret_access_key>@athena.<region_name>.amazonaws.com:443/<schema_name>?s3_staging_dir=<s3_staging_dir>&work_group=primary
 ```
 
+**DuckDB**
+To connect to DuckDB you should first host your database in MotherDuck and fetch your authentication token.
+```
+"connection_uri": duckdb:///md:<database_name>?motherduck_token=<your_token>
+```
+
 **BigQuery**
 To connect to BigQuery you should create a json credential file. Please follow Steps 1-3 under "Configure 
 BigQuery Authentication in Google Cloud Platform" in 
@@ -309,7 +316,7 @@ curl -X 'PATCH' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "description": "Tabla description",
+  "description": "Table description",
   "columns": [
     {
       "name": "column1",
@@ -339,7 +346,7 @@ curl -X 'PATCH' \
 
 #### Adding database level instructions
 
-You can add database level instructions to the context store manually from the `POST /api/v1/instructions` endpoint
+You can add database level instructions to the context store manually from the `POST /api/v1/instructions` endpoint.
 These instructions are passed directly to the engine and can be used to steer the engine to generate SQL that is more in line with your business logic.
 
 ```

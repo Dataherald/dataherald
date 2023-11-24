@@ -2,7 +2,6 @@ import datetime
 import difflib
 import logging
 import os
-import time
 from functools import wraps
 from typing import Any, Callable, Dict, List
 
@@ -10,7 +9,6 @@ import numpy as np
 import openai
 import pandas as pd
 import sqlalchemy
-import tiktoken
 from bson.objectid import ObjectId
 from google.api_core.exceptions import GoogleAPIError
 from langchain.agents.agent import AgentExecutor
@@ -27,7 +25,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema import AgentAction
 from langchain.tools.base import BaseTool
 from overrides import override
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel, Field
 from sqlalchemy import MetaData
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
@@ -41,7 +39,6 @@ from dataherald.sql_database.models.types import (
     DatabaseConnection,
 )
 from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
-from dataherald.sql_generator.adaptive_agent_executor import AdaptiveAgentExecutor
 from dataherald.types import Question, Response
 from dataherald.utils.agent_prompts import (
     AGENT_PREFIX,
@@ -53,7 +50,6 @@ from dataherald.utils.agent_prompts import (
     SUFFIX_WITH_FEW_SHOT_SAMPLES,
     SUFFIX_WITHOUT_FEW_SHOT_SAMPLES,
 )
-from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +102,7 @@ class BaseSQLDatabaseTool(BaseModel):
         """Configuration for this pydantic object."""
 
         arbitrary_types_allowed = True
-        extra = Extra.forbid
+        extra = "allow"
 
 
 class SystemTime(BaseSQLDatabaseTool, BaseTool):
@@ -549,7 +545,8 @@ class DataheraldSQLAgent(SQLGenerator):
         input_variables: List[str] | None = None,
         max_examples: int = 20,
         number_of_instructions: int = 1,
-        max_iterations: int | None = 15,
+        max_iterations: int
+        | None = int(os.getenv("AGENT_MAX_ITERATIONS", "20")),  # noqa: B008
         max_execution_time: float | None = None,
         early_stopping_method: str = "force",
         verbose: bool = False,
@@ -585,24 +582,15 @@ class DataheraldSQLAgent(SQLGenerator):
             input_variables=input_variables,
         )
         llm_chain = LLMChain(
-            llm=self.short_context_llm,
+            llm=self.llm,
             prompt=prompt,
             callback_manager=callback_manager,
         )
         tool_names = [tool.name for tool in tools]
         agent = ZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names, **kwargs)
-        return AdaptiveAgentExecutor.from_agent_and_tools(
+        return AgentExecutor.from_agent_and_tools(
             agent=agent,
             tools=tools,
-            llm_list={
-                "short_context_llm": self.short_context_llm,
-                "long_context_llm": self.long_context_llm,
-            },
-            switch_to_larger_model_threshold=OPENAI_CONTEXT_WIDNOW_SIZES[
-                self.short_context_llm.model_name
-            ]
-            - 500,
-            encoding=tiktoken.encoding_for_model(self.short_context_llm.model_name),
             callback_manager=callback_manager,
             verbose=verbose,
             max_iterations=max_iterations,
@@ -619,18 +607,12 @@ class DataheraldSQLAgent(SQLGenerator):
         context: List[dict] = None,
         generate_csv: bool = False,
     ) -> Response:
-        start_time = time.time()
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
-        self.short_context_llm = self.model.get_model(
+        self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            model_name=os.getenv("LLM_MODEL", "gpt-4"),
-        )
-        self.long_context_llm = self.model.get_model(
-            database_connection=database_connection,
-            temperature=0,
-            model_name=os.getenv("AGENT_LLM_MODEL", "gpt-4-32k"),
+            model_name=os.getenv("LLM_MODEL", "gpt-4-1106-preview"),
         )
         repository = TableDescriptionRepository(storage)
         db_scan = repository.get_all_tables_by_db(
@@ -705,15 +687,11 @@ class DataheraldSQLAgent(SQLGenerator):
         intermediate_steps = self.format_intermediate_representations(
             result["intermediate_steps"]
         )
-        exec_time = time.time() - start_time
-        logger.info(
-            f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
-        )
+        logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
         response = Response(
             question_id=user_question.id,
             response=result["output"],
             intermediate_steps=intermediate_steps,
-            exec_time=exec_time,
             total_tokens=cb.total_tokens,
             total_cost=cb.total_cost,
             sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",
