@@ -136,7 +136,6 @@ class API(Component, ABC):
     ) -> FileResponse:
         pass
 
-
     @abstractmethod
     def delete_golden_record(self, golden_record_id: str) -> dict:
         pass
