@@ -41,3 +41,27 @@ To run a migration script use the following command:
 ```
 docker-compose exec app python3 -m database.migrations.sprint_xx.script_name
 ```
+
+## Run reporting script
+1. Register the public IP in https://cloud.mongodb.com/, click "Network access" and click "ADD IP ADDRESS".
+2. Set your envvars in the .env file, for example:
+```
+MONGODB_DB_NAME=dataherald
+MONGODB_URI=mongodb://admoulin:admin@mongodb:27017 # update mongo URI
+```
+3. Build the container to take the envvars changes, check that you are located in this path `monorepo/apps/ai/server`
+```
+docker-compose up --build
+```
+4. To run a migration script use the following commands:
+Check the docker container id
+```
+docker ps
+```
+
+Run the script specifying the container_id and `organization_id`, `question_date_gte` and `question_date_gte` parameters are optional
+```
+docker exec <container_id> python3 -m database.scripts.data_report organization_id 64f772407fc2d1535ccdcfab question_date_gte 2024-11-01 question_date_gte 2024-11-24
+```
+
+5. It should create a csv file if there is data
