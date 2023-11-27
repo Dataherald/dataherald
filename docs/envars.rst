@@ -34,6 +34,8 @@ provided in the .env.example file with the default values.
 
     S3_AWS_ACCESS_KEY_ID =
     S3_AWS_SECRET_ACCESS_KEY =
+  
+    ONLY_STORE_CSV_FILES_LOCALLY =
 
     DH_ENGINE_TIMEOUT =
     UPPER_LIMIT_QUERY_RETURN_ROWS =
@@ -65,3 +67,5 @@ provided in the .env.example file with the default values.
    "S3_AWS_SECRET_ACCESS_KEY", "The key used to access credential files if saved to S3", "None", "No"
    "DH_ENGINE_TIMEOUT", "This is used to set the max seconds the process will wait for the response to be generate. If the specified time limit is exceeded, it will trigger an exception", "None", "No"
    "UPPER_LIMIT_QUERY_RETURN_ROWS", "The upper limit on number of rows returned from the query engine (equivalent to using LIMIT N in PostgreSQL/MySQL/SQlite).", "None", "No"
+   "ONLY_STORE_CSV_FILES_LOCALLY", "Set to True if only want to save generated CSV files locally instead of S3. Note that if stored locally they should be treated as ephemeral, i.e., they will disappear when the engine is restarted.", "None", "No"
+
