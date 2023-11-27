@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     encrypt_key: str = os.environ.get("ENCRYPT_KEY")
     s3_aws_access_key_id: str | None = os.environ.get("S3_AWS_ACCESS_KEY_ID")
     s3_aws_secret_access_key: str | None = os.environ.get("S3_AWS_SECRET_ACCESS_KEY")
+    only_store_csv_files_locally: str | None = os.environ.get("ONLY_STORE_CSV_FILES_LOCALLY")
 
     def require(self, key: str) -> Any:
         val = self[key]

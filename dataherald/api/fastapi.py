@@ -52,6 +52,7 @@ from dataherald.types import (
     TableDescriptionRequest,
     UpdateInstruction,
 )
+from dataherald.config import Settings
 from dataherald.utils.s3 import S3
 
 logger = logging.getLogger(__name__)
@@ -408,14 +409,19 @@ class FastAPI(API):
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not result:
-            raise HTTPException(
-                status_code=404, detail="Question, response, or db_connection not found"
-            )
+            raise HTTPException(status_code=404, detail="Question, response, or db_connection not found")
 
-        s3 = S3()
+        # Check if the file is to be returned from server (locally) or from S3
+        if Settings().only_store_csv_files_locally:
+            file_location = result.csv_file_path
+            # check if the file exists
+            if not os.path.exists(file_location):
+                raise HTTPException(status_code=404, detail="CSV file not found. Possibly deleted/removed from server.")
+        else:
+            s3 = S3()
 
-        file_location = s3.download(result.csv_file_path, db_connection.file_storage)
-        background_tasks.add_task(delete_file, file_location)
+            file_location = s3.download(result.csv_file_path, db_connection.file_storage)
+            background_tasks.add_task(delete_file, file_location)
 
         return FileResponse(
             file_location,
