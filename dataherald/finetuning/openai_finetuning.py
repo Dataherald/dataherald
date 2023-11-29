@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import time
 import uuid
@@ -17,6 +18,7 @@ from dataherald.utils.agent_prompts import FINETUNING_SYSTEM_INFORMATION
 
 FILE_PROCESSING_ATTEMPTS = 20
 
+logger = logging.getLogger(__name__)
 
 class OpenAIFineTuning:
     finetuning_dataset_path: str
@@ -118,11 +120,10 @@ class OpenAIFineTuning:
         openai.api_key = db_connection.decrypt_api_key()
         model_repository = FinetuningsRepository(storage)
         model = model_repository.find_by_id(fine_tuning_request.id)
-        model.finetuning_file_id = openai.File.create(
-            file=open(cls.finetuning_dataset_path, purpose="fine-tune")
-        )["id"]
+        model.finetuning_file_id = openai.File.create(file=open(cls.finetuning_dataset_path,purpose='fine-tune'))['id']
         model_repository.update(model)
         os.remove(cls.finetuning_dataset_path)
+
 
     @classmethod
     def create_fine_tuning_job(cls, fine_tuning_request: Finetuning, storage: Any):
@@ -135,10 +136,7 @@ class OpenAIFineTuning:
         model = model_repository.find_by_id(fine_tuning_request.id)
         retrieve_file_attempt = 0
         while True:
-            if (
-                openai.File.retrieve(id=model.finetuning_file_id)["status"]
-                == "processed"
-            ):
+            if openai.File.retrieve(id=model.finetuning_file_id)["status"] == "processed":
                 break
             time.sleep(5)
             retrieve_file_attempt += 1
@@ -150,7 +148,7 @@ class OpenAIFineTuning:
         finetuning_request = openai.FineTune.create(
             training_file=model.finetuning_file_id,
             model=model.base_llm.model_name,
-            hyperparameters=model.base_llm.model_parameters,
+            hyperparameters= model.base_llm.model_parameters
         )
         model.finetuning_job_id = finetuning_request["id"]
         if finetuning_request["status"] == "failed":
@@ -186,3 +184,6 @@ class OpenAIFineTuning:
         model.status = finetuning_request["status"]
         model.error = "Fine tuning cancelled by the user"
         model_repository.update(model)
+
+
+
