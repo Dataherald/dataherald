@@ -106,6 +106,9 @@ class FastAPI(API):
 
         scanner = self.system.instance(Scanner)
         all_tables = scanner.get_all_tables_and_views(database)
+        if database.engine.driver in ["bigquery", "snowflake"]:
+            all_tables = [f"{database.engine.url.database}.{x}" for x in all_tables]
+
         if scanner_request.table_names:
             for table in scanner_request.table_names:
                 if table not in all_tables:
@@ -338,6 +341,8 @@ class FastAPI(API):
 
             scanner = self.system.instance(Scanner)
             all_tables = scanner.get_all_tables_and_views(database)
+            if database.engine.driver in ["bigquery", "snowflake"]:
+                all_tables = [f"{database.engine.url.database}.{x}" for x in all_tables]
 
             for table_description in table_descriptions:
                 if table_description.table_name not in all_tables:

@@ -158,12 +158,17 @@ class SqlAlchemyScanner(Scanner):
         self, meta: MetaData, db_engine: SQLDatabase, table: str
     ) -> str:
         print(f"Create table schema: {table}")
-        create_table = str(
-            CreateTable([x for x in meta.sorted_tables if x.name == table][0]).compile(
-                db_engine.engine
+        obj = CreateTable(
+            [x for x in meta.sorted_tables if x.name == table][0]
+        ).compile(db_engine.engine)
+
+        create_table = str(obj).rstrip()
+
+        if db_engine.engine.driver in ["bigquery", "snowflake"]:
+            create_table = create_table.replace(
+                table, f"{db_engine.engine.url.database}.{table}"
             )
-        )
-        return f"{create_table.rstrip()}"
+        return create_table
 
     def scan_single_table(
         self,
@@ -189,7 +194,9 @@ class SqlAlchemyScanner(Scanner):
 
         object = TableDescription(
             db_connection_id=db_connection_id,
-            table_name=table,
+            table_name=f"{db_engine.engine.url.database}.{table}"
+            if db_engine.engine.driver in ["bigquery", "snowflake"]
+            else table,
             columns=table_columns,
             table_schema=self.get_table_schema(
                 meta=meta, db_engine=db_engine, table=table
@@ -217,7 +224,7 @@ class SqlAlchemyScanner(Scanner):
         MetaData.reflect(meta, views=True)
         tables = inspector.get_table_names() + inspector.get_view_names()
         if table_names:
-            table_names = [table.lower() for table in table_names]
+            table_names = [table.lower().split(".")[-1] for table in table_names]
             tables = [
                 table for table in tables if table and table.lower() in table_names
             ]
