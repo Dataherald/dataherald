@@ -451,7 +451,7 @@ class FastAPI(API):
             response = generates_nl_answer.execute(response)
             response.exec_time = time.time() - start_generated_answer
             response_repository.update(response)
-        except openai.error.AuthenticationError as e:
+        except openai.AuthenticationError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
@@ -550,7 +550,7 @@ class FastAPI(API):
                 response = generates_nl_answer.execute(
                     response, sql_response_only, generate_csv
                 )
-        except openai.error.AuthenticationError as e:
+        except openai.AuthenticationError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
