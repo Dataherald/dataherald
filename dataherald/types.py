@@ -147,6 +147,7 @@ class FineTuningStatus(Enum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     CANCELLED = "cancelled"
+    VALIDATING_FILES = "validating_files"
 
 
 class BaseLLM(BaseModel):

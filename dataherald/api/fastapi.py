@@ -25,6 +25,7 @@ from dataherald.db_scanner.repository.base import (
     TableDescriptionRepository,
 )
 from dataherald.eval import Evaluator
+from dataherald.finetuning.openai_finetuning import OpenAIFineTuning
 from dataherald.repositories.base import ResponseRepository
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.finetunings import FinetuningsRepository
@@ -56,6 +57,7 @@ from dataherald.types import (
     TableDescriptionRequest,
     UpdateInstruction,
 )
+from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
 from dataherald.utils.s3 import S3
 
 logger = logging.getLogger(__name__)
@@ -72,8 +74,10 @@ def async_scanning(scanner, database, scanner_request, storage):
     )
 
 
-def async_fine_tuning():
-    pass
+def async_fine_tuning(storage, model):
+    openai_fine_tuning = OpenAIFineTuning(storage, model)
+    openai_fine_tuning.create_fintuning_dataset()
+    openai_fine_tuning.create_fine_tuning_job()
 
 
 def delete_file(file_location: str):
@@ -678,6 +682,12 @@ class FastAPI(API):
             if not golden_records:
                 raise HTTPException(status_code=404, detail="No golden records found")
 
+        if fine_tuning_request.base_llm.model_name not in OPENAI_CONTEXT_WIDNOW_SIZES:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Model {fine_tuning_request.base_llm.model_name} not supported",
+            )
+
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.insert(
             Finetuning(
@@ -689,9 +699,7 @@ class FastAPI(API):
             )
         )
 
-        background_tasks.add_task(
-            async_fine_tuning, fine_tuning_request, self.storage, golden_records
-        )
+        background_tasks.add_task(async_fine_tuning, self.storage, model)
 
         return model
 
@@ -717,9 +725,9 @@ class FastAPI(API):
                 status_code=400, detail="Model has already been cancelled."
             )
 
-        # Todo: Add code to cancel the fine tuning job
+        openai_fine_tuning = OpenAIFineTuning(self.storage, model)
 
-        return model
+        return openai_fine_tuning.cancel_finetuning_job()
 
     @override
     def get_finetuning_job(self, finetuning_job_id: str) -> Finetuning:
@@ -727,4 +735,5 @@ class FastAPI(API):
         model = model_repository.find_by_id(finetuning_job_id)
         if not model:
             raise HTTPException(status_code=404, detail="Model not found")
-        return model
+        openai_fine_tuning = OpenAIFineTuning(self.storage, model)
+        return openai_fine_tuning.retrieve_finetuning_job()
