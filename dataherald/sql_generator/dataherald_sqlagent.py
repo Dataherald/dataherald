@@ -64,23 +64,21 @@ def catch_exceptions():  # noqa: C901
         def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: PLR0911
             try:
                 return fn(*args, **kwargs)
-            except openai.error.APIError as e:
+            except openai.AuthenticationError as e:
+                # Handle authentication error here
+                return f"OpenAI API authentication error: {e}"
+            except openai.RateLimitError as e:
                 # Handle API error here, e.g. retry or log
-                return f"OpenAI API returned an API Error: {e}"
-            except openai.error.APIConnectionError as e:
-                # Handle connection error here
-                return f"Failed to connect to OpenAI API: {e}"
-            except openai.error.RateLimitError as e:
-                # Handle rate limit error (we recommend using exponential backoff)
                 return f"OpenAI API request exceeded rate limit: {e}"
-            except openai.error.Timeout as e:
-                # Handle timeout error (we recommend using exponential backoff)
+            except openai.BadRequestError as e:
+                # Handle connection error here
                 return f"OpenAI API request timed out: {e}"
-            except openai.error.ServiceUnavailableError as e:
-                # Handle service unavailable error (we recommend using exponential backoff)
-                return f"OpenAI API service unavailable: {e}"
-            except openai.error.InvalidRequestError as e:
-                return f"OpenAI API request was invalid: {e}"
+            except openai.APIResponseValidationError as e:
+                # Handle rate limit error (we recommend using exponential backoff)
+                return f"OpenAI API response is invalid: {e}"
+            except openai.OpenAIError as e:
+                # Handle timeout error (we recommend using exponential backoff)
+                return f"OpenAI API returned an error: {e}"
             except GoogleAPIError as e:
                 return f"Google API returned an error: {e}"
             except SQLAlchemyError as e:
