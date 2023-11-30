@@ -37,3 +37,4 @@ PyAthena==3.0.6
 tiktoken==0.5.1
 duckdb-engine==0.9.1
 duckdb==0.9.1
+PyMySQL==1.1.0
