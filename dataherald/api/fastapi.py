@@ -24,6 +24,7 @@ from dataherald.db_scanner.repository.base import (
     InvalidColumnNameError,
     TableDescriptionRepository,
 )
+from dataherald.db_scanner.repository.query_history import QueryHistoryRepository
 from dataherald.eval import Evaluator
 from dataherald.repositories.base import ResponseRepository
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
@@ -65,6 +66,7 @@ def async_scanning(scanner, database, scanner_request, storage):
         scanner_request.db_connection_id,
         scanner_request.table_names,
         TableDescriptionRepository(storage),
+        QueryHistoryRepository(storage),
     )
 
 

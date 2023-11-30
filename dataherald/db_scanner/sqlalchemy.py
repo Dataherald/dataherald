@@ -5,7 +5,6 @@ import sqlalchemy
 from overrides import override
 from sqlalchemy import MetaData, inspect
 from sqlalchemy.schema import CreateTable
-from sqlalchemy.sql import func
 
 from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.models.types import (
@@ -14,6 +13,12 @@ from dataherald.db_scanner.models.types import (
     TableDescriptionStatus,
 )
 from dataherald.db_scanner.repository.base import TableDescriptionRepository
+from dataherald.db_scanner.repository.query_history import QueryHistoryRepository
+from dataherald.db_scanner.services.abstract_scanner import AbstractScanner
+from dataherald.db_scanner.services.base_scanner import BaseScanner
+from dataherald.db_scanner.services.big_query_scanner import BigQueryScanner
+from dataherald.db_scanner.services.postgre_sql_scanner import PostgreSqlScanner
+from dataherald.db_scanner.services.snowflake_scanner import SnowflakeScanner
 from dataherald.sql_database.base import SQLDatabase
 
 MIN_CATEGORY_VALUE = 1
@@ -22,6 +27,10 @@ MAX_SIZE_LETTERS = 50
 
 
 class SqlAlchemyScanner(Scanner):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.scanner_service: AbstractScanner = None
+
     @override
     def synchronizing(
         self,
@@ -81,6 +90,7 @@ class SqlAlchemyScanner(Scanner):
         ).limit(1)
 
         field_size = db_engine.engine.execute(field_size_query).first()
+        # Check if the column is empty
         if not field_size:
             field_size = [""]
         if len(str(str(field_size[0]))) > MAX_SIZE_LETTERS:
@@ -89,64 +99,15 @@ class SqlAlchemyScanner(Scanner):
                 data_type=str(column["type"]),
                 low_cardinality=False,
             )
-
-        # special case for PostgreSQL table - read query planner statistics from the pg_stats view
-        # TODO doesn't work for views, only tables
-        if db_engine.engine.driver == "psycopg2":
-            # TODO escape table and column names
-            rs = db_engine.engine.execute(
-                f"SELECT n_distinct, most_common_vals::TEXT::TEXT[] FROM pg_catalog.pg_stats WHERE tablename = '{table}' AND attname = '{column['name']}'"  # noqa: S608 E501
-            ).fetchall()
-            if (
-                len(rs) > 0
-                and MIN_CATEGORY_VALUE < rs[0]["n_distinct"] <= MAX_CATEGORY_VALUE
-            ):
-                return ColumnDetail(
-                    name=column["name"],
-                    data_type=str(column["type"]),
-                    low_cardinality=True,
-                    categories=rs[0]["most_common_vals"],
-                )
-            return ColumnDetail(
-                name=column["name"],
-                data_type=str(column["type"]),
-                low_cardinality=False,
-            )
-
-        try:
-            cardinality_query = sqlalchemy.select(
-                [func.distinct(dynamic_meta_table.c[column["name"]])]
-            ).limit(200)
-            cardinality = db_engine.engine.execute(cardinality_query).fetchall()
-        except Exception:
-            return ColumnDetail(
-                name=column["name"],
-                data_type=str(column["type"]),
-                low_cardinality=False,
-            )
-
-        if len(cardinality) > MAX_CATEGORY_VALUE:
-            return ColumnDetail(
-                name=column["name"],
-                data_type=str(column["type"]),
-                low_cardinality=False,
-            )
-
-        query = sqlalchemy.select(
-            [
-                dynamic_meta_table.c[column["name"]],
-                sqlalchemy.func.count(dynamic_meta_table.c[column["name"]]),
-            ]
-        ).group_by(dynamic_meta_table.c[column["name"]])
-
-        # get rows
-        categories = db_engine.engine.execute(query).fetchall()
-        if MIN_CATEGORY_VALUE < len(categories) <= MAX_CATEGORY_VALUE:
+        category_values = self.scanner_service.cardinality_values(
+            dynamic_meta_table.c[column["name"]], db_engine
+        )
+        if category_values:
             return ColumnDetail(
                 name=column["name"],
                 data_type=str(column["type"]),
                 low_cardinality=True,
-                categories=[str(category[0]) for category in categories],
+                categories=category_values,
             )
         return ColumnDetail(
             name=column["name"],
@@ -211,7 +172,17 @@ class SqlAlchemyScanner(Scanner):
         db_connection_id: str,
         table_names: list[str] | None,
         repository: TableDescriptionRepository,
+        query_history_repository: QueryHistoryRepository,
     ) -> None:
+        services = {
+            "snowflake": SnowflakeScanner,
+            "bigquery": BigQueryScanner,
+            "psycopg2": PostgreSqlScanner,
+        }
+        self.scanner_service = BaseScanner()
+        if db_engine.engine.driver in services.keys():
+            self.scanner_service = services[db_engine.engine.driver]()
+
         inspector = inspect(db_engine.engine)
         meta = MetaData(bind=db_engine.engine)
         MetaData.reflect(meta, views=True)
@@ -242,3 +213,13 @@ class SqlAlchemyScanner(Scanner):
                         error_message=f"{e}",
                     )
                 )
+            try:
+                query_history = self.scanner_service.get_logs(
+                    table, db_engine, db_connection_id
+                )
+                if len(query_history) > 0:
+                    for query in query_history:
+                        query_history_repository.insert(query)
+
+            except Exception:
+                continue

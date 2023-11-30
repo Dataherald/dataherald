@@ -45,3 +45,11 @@ class TableDescription(BaseModel):
         if not value:
             return None
         return value.replace(tzinfo=timezone.utc)  # Set the timezone to UTC
+
+
+class QueryHistory(BaseModel):
+    id: str | None
+    db_connection_id: str
+    table_name: str
+    query: str
+    coincidences: int = 0

@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 from dataherald.config import Component
 from dataherald.db_scanner.repository.base import TableDescriptionRepository
+from dataherald.db_scanner.repository.query_history import QueryHistoryRepository
 from dataherald.sql_database.base import SQLDatabase
 
 
@@ -14,6 +15,7 @@ class Scanner(Component, ABC):
         db_connection_id: str,
         table_names: list[str] | None,
         repository: TableDescriptionRepository,
+        query_history_repository: QueryHistoryRepository,
     ) -> None:
         """ "Scan a db"""
 
