@@ -81,7 +81,15 @@ if __name__ == "__main__":
                     if len(responses) == 1
                     else final_response["sql_generation_status"],
                     "was_the_original_correct": True
-                    if original_response["sql_generation_status"] == "VALID"
+                    if query["status"] == "VERIFIED"
+                    and (
+                        len(responses) == 1
+                        or (
+                            len(responses) > 1
+                            and original_response["sql_query"]
+                            == final_response["sql_query"]
+                        )
+                    )
                     else False,
                 }
             )

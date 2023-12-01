@@ -61,7 +61,7 @@ docker ps
 
 Run the script specifying the container_id and `organization_id`, `question_date_gte` and `question_date_gte` parameters are optional
 ```
-docker exec <container_id> python3 -m database.scripts.data_report organization_id 64f772407fc2d1535ccdcfab question_date_gte 2024-11-01 question_date_gte 2024-11-24
+docker exec <container_id> python3 -m database.scripts.data_report organization_id 64f772407fc2d1535ccdcfab question_date_gte 2024-11-01 question_date_lt 2024-11-24
 ```
 
 5. It should create a csv file if there is data
