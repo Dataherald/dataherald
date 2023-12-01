@@ -91,6 +91,8 @@ if __name__ == "__main__":
                         )
                     )
                     else False,
+                    "question_asked_date": str(original_response["created_at"]),
+                    "num_responses": len(responses),
                 }
             )
     if len(rows) > 0:
