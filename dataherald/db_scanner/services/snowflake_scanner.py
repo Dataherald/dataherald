@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import sqlalchemy
 from overrides import override
 from sqlalchemy.sql import func
@@ -9,13 +11,14 @@ from dataherald.sql_database.base import SQLDatabase
 
 MIN_CATEGORY_VALUE = 1
 MAX_CATEGORY_VALUE = 100
+MAX_LOGS = 5_000
 
 
 class SnowflakeScanner(AbstractScanner):
     @override
     def cardinality_values(self, column: Column, db_engine: SQLDatabase) -> list | None:
         rs = db_engine.engine.execute(
-            f"select HLL({column.name}) from {column.table.name}" # noqa: S608 E501
+            f"select HLL({column.name}) from {column.table.name}"  # noqa: S608 E501
         ).fetchall()
 
         if (
@@ -34,16 +37,17 @@ class SnowflakeScanner(AbstractScanner):
         self, table: str, db_engine: SQLDatabase, db_connection_id: str
     ) -> list[QueryHistory]:
         database_name = db_engine.engine.url.database.split("/")[0]
-        # todo fix hardcoded date
+        filter_date = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
         rows = db_engine.engine.execute(
-            f"select QUERY_TEXT, count(*) as total from TABLE(INFORMATION_SCHEMA.QUERY_HISTORY()) where DATABASE_NAME = '{database_name}' and QUERY_TYPE = 'SELECT' and EXECUTION_STATUS = 'SUCCESS' and START_TIME > '2023-11-01' and QUERY_TEXT like '%FROM {table}%' and QUERY_TEXT not like '%QUERY_HISTORY%' group by QUERY_TEXT ORDER BY total DESC limit 5" # noqa: S608 E501
+            f"select QUERY_TEXT, USER_NAME, count(*) as occurrences from TABLE(INFORMATION_SCHEMA.QUERY_HISTORY()) where DATABASE_NAME = '{database_name}' and QUERY_TYPE = 'SELECT' and EXECUTION_STATUS = 'SUCCESS' and START_TIME > '{filter_date}' and QUERY_TEXT like '%FROM {table}%' and QUERY_TEXT not like '%QUERY_HISTORY%' group by QUERY_TEXT, USER_NAME ORDER BY occurrences DESC limit {MAX_LOGS}"  # noqa: S608 E501
         ).fetchall()
         return [
             QueryHistory(
                 db_connection_id=db_connection_id,
                 table_name=table,
                 query=row[0],
-                coincidences=row[1],
+                user=row[1],
+                occurrences=row[2],
             )
             for row in rows
         ]

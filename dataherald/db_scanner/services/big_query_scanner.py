@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import sqlalchemy
 from overrides import override
 from sqlalchemy.sql import func
@@ -9,6 +11,7 @@ from dataherald.sql_database.base import SQLDatabase
 
 MIN_CATEGORY_VALUE = 1
 MAX_CATEGORY_VALUE = 100
+MAX_LOGS = 5_000
 
 
 class BigQueryScanner(AbstractScanner):
@@ -33,16 +36,17 @@ class BigQueryScanner(AbstractScanner):
     def get_logs(
         self, table: str, db_engine: SQLDatabase, db_connection_id: str
     ) -> list[QueryHistory]:
-        # todo fix hardcoded date
+        filter_date = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
         rows = db_engine.engine.execute(
-            f"SELECT query, count(*) as total FROM `region-us.INFORMATION_SCHEMA.JOBS_BY_PROJECT`, UNNEST(referenced_tables) AS t where job_type = 'QUERY' and statement_type = 'SELECT' and t.table_id = '{table}' and state = 'DONE' and creation_time >='2023-11-01' group by query ORDER BY total DESC limit 20"  # noqa: S608 E501
+            f"SELECT query, user_email, count(*) as occurrences FROM `region-us.INFORMATION_SCHEMA.JOBS`, UNNEST(referenced_tables) AS t where job_type = 'QUERY' and statement_type = 'SELECT' and t.table_id = '{table}' and state = 'DONE' and creation_time >='{filter_date}' group by query, user_email ORDER BY occurrences DESC limit {MAX_LOGS}"  # noqa: S608 E501
         ).fetchall()
         return [
             QueryHistory(
                 db_connection_id=db_connection_id,
                 table_name=table,
                 query=row[0],
-                coincidences=row[1],
+                user=row[1],
+                occurrences=row[2],
             )
             for row in rows
         ]

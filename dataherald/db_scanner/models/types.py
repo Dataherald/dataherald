@@ -52,4 +52,5 @@ class QueryHistory(BaseModel):
     db_connection_id: str
     table_name: str
     query: str
-    coincidences: int = 0
+    user: str
+    occurrences: int = 0

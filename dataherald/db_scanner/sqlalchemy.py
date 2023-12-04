@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from typing import Any, List
 
@@ -24,6 +25,8 @@ from dataherald.sql_database.base import SQLDatabase
 MIN_CATEGORY_VALUE = 1
 MAX_CATEGORY_VALUE = 60
 MAX_SIZE_LETTERS = 50
+
+logger = logging.getLogger(__name__)
 
 
 class SqlAlchemyScanner(Scanner):
@@ -214,6 +217,7 @@ class SqlAlchemyScanner(Scanner):
                     )
                 )
             try:
+                logger.info(f"Get logs table: {table}")
                 query_history = self.scanner_service.get_logs(
                     table, db_engine, db_connection_id
                 )
@@ -221,5 +225,5 @@ class SqlAlchemyScanner(Scanner):
                     for query in query_history:
                         query_history_repository.insert(query)
 
-            except Exception:
+            except Exception:  # noqa: S112
                 continue

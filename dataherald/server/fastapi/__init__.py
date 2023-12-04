@@ -10,7 +10,7 @@ from fastapi.routing import APIRoute
 import dataherald
 from dataherald.api.types import Query
 from dataherald.config import Settings
-from dataherald.db_scanner.models.types import TableDescription
+from dataherald.db_scanner.models.types import QueryHistory, TableDescription
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
     CreateResponseRequest,
@@ -96,6 +96,13 @@ class FastAPI(dataherald.server.Server):
             self.get_table_description,
             methods=["GET"],
             tags=["Table descriptions"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/query-history",
+            self.get_query_history,
+            methods=["GET"],
+            tags=["Query history"],
         )
 
         self.router.add_api_route(
@@ -294,6 +301,10 @@ class FastAPI(dataherald.server.Server):
     def get_table_description(self, table_description_id: str) -> TableDescription:
         """Get description"""
         return self._api.get_table_description(table_description_id)
+
+    def get_query_history(self, db_connection_id: str) -> list[QueryHistory]:
+        """Get description"""
+        return self._api.get_query_history(db_connection_id)
 
     def get_responses(self, question_id: str | None = None) -> list[Response]:
         """List responses"""

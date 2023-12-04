@@ -19,20 +19,13 @@ class QueryHistoryRepository:
         )
         return query_history
 
-    # def find_one(self, query: dict) -> Response | None:
-    #     if not row:
-    #
-    # def update(self, response: Response) -> Response:
-    #
-    #     self.storage.update_or_create(
-    #         DB_COLLECTION,
-    #         response_dict,
-    #
-    # def find_by_id(self, id: str) -> Response | None:
-    #     if not row:
-    #
-    # def find_by(self, query: dict, page: int = 1, limit: int = 10) -> list[Response]:
-    #         DB_COLLECTION,
-    #         query,
-    #     for row in rows:
-    #
+    def find_by(
+        self, query: dict, page: int = 1, limit: int = 10
+    ) -> list[QueryHistory]:
+        rows = self.storage.find(DB_COLLECTION, query, page=page, limit=limit)
+        result = []
+        for row in rows:
+            row["id"] = str(row["_id"])
+            row["db_connection_id"] = str(row["db_connection_id"])
+            result.append(QueryHistory(**row))
+        return result

@@ -23,6 +23,6 @@ class BaseScanner(AbstractScanner):
 
     @override
     def get_logs(
-        self, table: str, db_engine: SQLDatabase, db_connection_id: str
+        self, table: str, db_engine: SQLDatabase, db_connection_id: str  # noqa: ARG002
     ) -> list[QueryHistory]:
         return []
