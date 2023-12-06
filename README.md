@@ -263,7 +263,9 @@ Once you have connected to the data warehouse, you should add context to the eng
 While only the Database scan part is required to start generating SQL, adding verified SQL and string descriptions are also important for the tool to generate accurate SQL. 
 
 #### Scanning the Database
-The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM. You can trigger a scan of a database from the `POST /api/v1/table-descriptions/sync-schemas` endpoint. Example below
+The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM.
+In addition, it retrieves logs, which consist of historical queries associated with each database table. These records are then stored within the query_history collection. The historical queries retrieved encompass data from the past three months and are grouped based on query and user.
+You can trigger a scan of a database from the `POST /api/v1/table-descriptions/sync-schemas` endpoint. Example below
 
 
 ```
@@ -278,6 +280,29 @@ curl -X 'POST' \
 ```
 
 Since the endpoint identifies low cardinality columns (and their values) it can take time to complete. Therefore while it is possible to trigger a scan on the entire DB by not specifying the `table_names`, we recommend against it for large databases. 
+
+#### Get logs per db connection
+Once a database was scanned you can use this endpoint to retrieve the tables logs
+
+```
+curl -X 'GET' \
+  'http://localhost/api/v1/query-history?db_connection_id=656e52cb4d1fda50cae7b939' \
+  -H 'accept: application/json'
+```
+
+Response example:
+```
+[
+  {
+    "id": "656e52cb4d1fda50cae7b939",
+    "db_connection_id": "656e52cb4d1fda50cae7b939",
+    "table_name": "table_name",
+    "query": "select QUERY_TEXT, USER_NAME, count(*) as occurrences from ....",
+    "user": "user_name",
+    "occurrences": 1
+  }
+]
+```
 
 #### Get a scanned db
 Once a database was scanned you can use this endpoint to retrieve the tables names and columns
