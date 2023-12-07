@@ -248,7 +248,7 @@ You should set in the endpoint param `path_to_credentials_file` the path, for ex
 ```
 
 ```
-"connection_uri": bigquery://<project>/<database>
+"connection_uri": bigquery://<project_id>/<dataset>
 ```
 
 
@@ -285,7 +285,7 @@ Once a database was scanned you can use this endpoint to retrieve the tables nam
 
 ```
 curl -X 'GET' \
-  '<host>/api/v1/table-descriptions?db_connection_id=64dfa0e103f5134086f7090c&table_name=foo' \
+  '<host>/api/v1/table-descriptions?db_connection_id=<use_your_db_connection_id>&table_name=foo' \
   -H 'accept: application/json'
 ```
 
@@ -312,7 +312,7 @@ All request body fields are optional, and only the fields that are explicitly se
 
 ```
 curl -X 'PATCH' \
-  '<host>/api/v1/table-descriptions/64dfa0e103f5134086f7090c' \
+  '<host>/api/v1/table-descriptions/<use_your_db_connection_id>' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
