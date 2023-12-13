@@ -158,6 +158,7 @@ class BaseLLM(BaseModel):
 
 class Finetuning(BaseModel):
     id: str | None = None
+    alias: str | None = None
     db_connection_id: str | None = None
     status: str = "queued"
     error: str | None = None
@@ -172,6 +173,7 @@ class Finetuning(BaseModel):
 
 class FineTuningRequest(BaseModel):
     db_connection_id: str
+    alias: str
     base_llm: BaseLLM
     golden_records: list[str] | None = None
     metadata: dict[str, str] | None = None

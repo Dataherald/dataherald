@@ -16,6 +16,7 @@ HTTP 200 code response
     {
         "id": "finetuing-job-id",
         "db_connection_id": "database_connection_id"
+        "alias": "model name"
         "status": "finetuning_job_status" # queued is default other possible values are [queued, running, succeeded, failed, validating_files, or cancelled]
         "error": "The error message if the job failed" # optional default value is None
         "base_llm": {
@@ -50,6 +51,7 @@ HTTP 200 code response
     {
     "id": "finetuning-job-id",
     "db_connection_id": "database_connection_id",
+    "alias": "my_model",
     "status": "validating_files",
     "error": null,
     "base_llm": {

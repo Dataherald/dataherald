@@ -692,6 +692,7 @@ class FastAPI(API):
         model = model_repository.insert(
             Finetuning(
                 db_connection_id=fine_tuning_request.db_connection_id,
+                alias=fine_tuning_request.alias,
                 base_llm=fine_tuning_request.base_llm,
                 golden_records=[
                     str(golden_record.id) for golden_record in golden_records

@@ -16,6 +16,7 @@ Request this ``POST`` endpoint to create a finetuning job::
 
    {
         "db_connection_id": "database_connection_id"
+        "alias": "model name",
         "base_llm": {
             "model_provider": "model_provider_name" # right now openai is the only provider.
             "model_name": "model_name" # right now gpt-3.5-turbo and gpt-4 are suported.
@@ -37,7 +38,8 @@ HTTP 201 code response
 
     {
         "id": "finetuing-job-id",
-        "db_connection_id": "database_connection_id"
+        "db_connection_id": "database_connection_id",
+        "alias": "model name",
         "status": "finetuning_job_status" # queued is default other possible values are [queued, running, succeeded, failed, validating_files, or cancelled]
         "error": "The error message if the job failed" # optional default value is None
         "base_llm": {
@@ -67,6 +69,7 @@ HTTP 201 code response
     -H 'Content-Type: application/json' \
     -d '{
     "db_connection_id": "database_connection_id",
+    "alias": "my_model",
     "base_llm": {
         "model_provider": "openai",
         "model_name": "gpt-3.5-turbo-1106",
@@ -83,6 +86,7 @@ HTTP 201 code response
 
     {
     "id": "finetuning-job-id",
+    "alias": "my_model",
     "db_connection_id": "database_connection_id",
     "status": "queued",
     "error": null,

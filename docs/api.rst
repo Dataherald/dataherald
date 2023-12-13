@@ -149,6 +149,7 @@ Related endpoints are:
     {
         "id": "finetuing-job-id",
         "db_connection_id": "database_connection_id",
+        "alias": "model name",
         "status": "finetuning_job_status", // Possible values: queued, running, succeeded, validating_files, failed, or cancelled
         "error": "The error message if the job failed", // Optional, default is None
         "base_llm": {
