@@ -4,7 +4,6 @@ import re
 import time
 from typing import Any
 
-from bson.objectid import ObjectId
 from langchain.chains import LLMChain
 from langchain.prompts.chat import (
     ChatPromptTemplate,
@@ -97,7 +96,7 @@ class SimpleEvaluator(Evaluator):
         repository = TableDescriptionRepository(storage)
         db_scan = repository.get_all_tables_by_db(
             {
-                "db_connection_id": ObjectId(database_connection.id),
+                "db_connection_id": str(database_connection.id),
                 "status": TableDescriptionStatus.SYNCHRONIZED.value,
             }
         )

@@ -11,9 +11,7 @@ class GoldenRecordRepository:
 
     def insert(self, golden_record: GoldenRecord) -> GoldenRecord:
         golden_record_dict = golden_record.dict(exclude={"id"})
-        golden_record_dict["db_connection_id"] = ObjectId(
-            golden_record.db_connection_id
-        )
+        golden_record_dict["db_connection_id"] = str(golden_record.db_connection_id)
         golden_record.id = str(
             self.storage.insert_one(DB_COLLECTION, golden_record_dict)
         )
@@ -29,9 +27,7 @@ class GoldenRecordRepository:
 
     def update(self, golden_record: GoldenRecord) -> GoldenRecord:
         golden_record_dict = golden_record.dict(exclude={"id"})
-        golden_record_dict["db_connection_id"] = ObjectId(
-            golden_record.db_connection_id
-        )
+        golden_record_dict["db_connection_id"] = str(golden_record.db_connection_id)
 
         self.storage.update_or_create(
             DB_COLLECTION,

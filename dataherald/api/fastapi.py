@@ -7,7 +7,7 @@ from typing import List
 
 import openai
 from bson import json_util
-from bson.objectid import InvalidId, ObjectId
+from bson.objectid import InvalidId
 from fastapi import BackgroundTasks, HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, JSONResponse
@@ -337,7 +337,7 @@ class FastAPI(API):
     ) -> list[TableDescription]:
         scanner_repository = TableDescriptionRepository(self.storage)
         table_descriptions = scanner_repository.find_by(
-            {"db_connection_id": ObjectId(db_connection_id), "table_name": table_name}
+            {"db_connection_id": str(db_connection_id), "table_name": table_name}
         )
 
         if db_connection_id:
@@ -383,7 +383,7 @@ class FastAPI(API):
         response_repository = ResponseRepository(self.storage)
         query = {}
         if question_id:
-            query = {"question_id": ObjectId(question_id)}
+            query = {"question_id": str(question_id)}
         return response_repository.find_by(query)
 
     @override
@@ -473,7 +473,7 @@ class FastAPI(API):
         question_repository = QuestionRepository(self.storage)
         query = {}
         if db_connection_id:
-            query = {"db_connection_id": ObjectId(db_connection_id)}
+            query = {"db_connection_id": str(db_connection_id)}
 
         return question_repository.find_by(query)
 
@@ -595,7 +595,7 @@ class FastAPI(API):
         golden_records_repository = GoldenRecordRepository(self.storage)
         if db_connection_id:
             return golden_records_repository.find_by(
-                {"db_connection_id": ObjectId(db_connection_id)},
+                {"db_connection_id": str(db_connection_id)},
                 page=page,
                 limit=limit,
             )
@@ -618,7 +618,7 @@ class FastAPI(API):
         instruction_repository = InstructionRepository(self.storage)
         if db_connection_id:
             return instruction_repository.find_by(
-                {"db_connection_id": ObjectId(db_connection_id)},
+                {"db_connection_id": str(db_connection_id)},
                 page=page,
                 limit=limit,
             )

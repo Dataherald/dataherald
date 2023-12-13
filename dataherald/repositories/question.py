@@ -11,7 +11,7 @@ class QuestionRepository:
 
     def insert(self, question: Question) -> Question:
         question_dict = question.dict(exclude={"id"})
-        question_dict["db_connection_id"] = ObjectId(question.db_connection_id)
+        question_dict["db_connection_id"] = str(question.db_connection_id)
         question.id = str(self.storage.insert_one(DB_COLLECTION, question_dict))
         return question
 

@@ -12,7 +12,7 @@ class ResponseRepository:
 
     def insert(self, response: Response) -> Response:
         response_dict = response.dict(exclude={"id"})
-        response_dict["question_id"] = ObjectId(response.question_id)
+        response_dict["question_id"] = str(response.question_id)
         response.id = str(self.storage.insert_one(DB_COLLECTION, response_dict))
         return response
 
@@ -26,7 +26,7 @@ class ResponseRepository:
 
     def update(self, response: Response) -> Response:
         response_dict = response.dict(exclude={"id"})
-        response_dict["question_id"] = ObjectId(response.question_id)
+        response_dict["question_id"] = str(response.question_id)
 
         self.storage.update_or_create(
             DB_COLLECTION,

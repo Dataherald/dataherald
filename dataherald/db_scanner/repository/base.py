@@ -29,7 +29,7 @@ class TableDescriptionRepository:
     ) -> TableDescription | None:
         row = self.storage.find_one(
             DB_COLLECTION,
-            {"db_connection_id": ObjectId(db_connection_id), "table_name": table_name},
+            {"db_connection_id": str(db_connection_id), "table_name": table_name},
         )
         if row:
             row["id"] = str(row["_id"])
@@ -48,7 +48,7 @@ class TableDescriptionRepository:
 
     def save_table_info(self, table_info: TableDescription) -> None:
         table_info_dict = table_info.dict(exclude={"id"})
-        table_info_dict["db_connection_id"] = ObjectId(table_info.db_connection_id)
+        table_info_dict["db_connection_id"] = str(table_info.db_connection_id)
         self.storage.update_or_create(
             DB_COLLECTION,
             {
@@ -60,7 +60,7 @@ class TableDescriptionRepository:
 
     def update(self, table_info: TableDescription) -> TableDescription:
         table_info_dict = table_info.dict(exclude={"id"})
-        table_info_dict["db_connection_id"] = ObjectId(table_info.db_connection_id)
+        table_info_dict["db_connection_id"] = str(table_info.db_connection_id)
 
         self.storage.update_or_create(
             DB_COLLECTION,
