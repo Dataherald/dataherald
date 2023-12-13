@@ -15,6 +15,7 @@ from dataherald.db_scanner.models.types import (
 )
 from dataherald.db_scanner.repository.base import TableDescriptionRepository
 from dataherald.sql_database.base import SQLDatabase
+from dataherald.types import ScannerRequest
 
 MIN_CATEGORY_VALUE = 1
 MAX_CATEGORY_VALUE = 60
@@ -25,17 +26,17 @@ class SqlAlchemyScanner(Scanner):
     @override
     def synchronizing(
         self,
-        tables: list[str],
-        db_connection_id: str,
+        scanner_request: ScannerRequest,
         repository: TableDescriptionRepository,
     ) -> None:
         # persist tables to be scanned
-        for table in tables:
+        for table in scanner_request.table_names:
             repository.save_table_info(
                 TableDescription(
-                    db_connection_id=db_connection_id,
+                    db_connection_id=scanner_request.db_connection_id,
                     table_name=table,
                     status=TableDescriptionStatus.SYNCHRONIZING.value,
+                    metadata=scanner_request.metadata,
                 )
             )
 

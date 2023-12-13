@@ -116,8 +116,7 @@ class FastAPI(API):
             scanner_request.table_names = all_tables
 
         scanner.synchronizing(
-            scanner_request.table_names,
-            scanner_request.db_connection_id,
+            scanner_request,
             TableDescriptionRepository(self.storage),
         )
 
@@ -142,6 +141,7 @@ class FastAPI(API):
             user_question = Question(
                 question=question_request.question,
                 db_connection_id=question_request.db_connection_id,
+                metadata=question_request.metadata,
             )
             question_repository = QuestionRepository(self.storage)
             user_question = question_repository.insert(user_question)
@@ -159,6 +159,7 @@ class FastAPI(API):
                     question_id=user_question.id,
                     error_message="Connections doesn't exist",
                     sql_query="",
+                    metadata=question_request.metadata,
                 )
             )
             return JSONResponse(status_code=404, content=jsonable_encoder(response))
@@ -181,7 +182,10 @@ class FastAPI(API):
         except Exception as e:
             response = response_repository.insert(
                 Response(
-                    question_id=user_question.id, error_message=str(e), sql_query=""
+                    question_id=user_question.id,
+                    error_message=str(e),
+                    sql_query="",
+                    metadata=question_request.metadata,
                 )
             )
             return JSONResponse(
@@ -211,6 +215,7 @@ class FastAPI(API):
         user_question = Question(
             question=question_request.question,
             db_connection_id=question_request.db_connection_id,
+            metadata=question_request.metadata,
         )
         question_repository = QuestionRepository(self.storage)
         user_question = question_repository.insert(user_question)
@@ -234,6 +239,7 @@ class FastAPI(API):
                     question_id=user_question.id,
                     error_message="Timeout Error",
                     sql_query="",
+                    metadata=question_request.metadata,
                 )
             )
             return JSONResponse(status_code=400, content=jsonable_encoder(response))
@@ -252,6 +258,7 @@ class FastAPI(API):
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
                 file_storage=database_connection_request.file_storage,
+                metadata=database_connection_request.metadata,
             )
 
             SQLDatabase.get_sql_engine(db_connection, True)
@@ -287,6 +294,7 @@ class FastAPI(API):
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
                 file_storage=database_connection_request.file_storage,
+                metadata=database_connection_request.metadata,
             )
 
             SQLDatabase.get_sql_engine(db_connection, True)
@@ -309,6 +317,7 @@ class FastAPI(API):
         scanner_repository = TableDescriptionRepository(self.storage)
         try:
             table = scanner_repository.find_by_id(table_description_id)
+            table.metadata = table_description_request.metadata
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -543,6 +552,7 @@ class FastAPI(API):
                 response = Response(
                     question_id=query_request.question_id,
                     sql_query=query_request.sql_query,
+                    metadata=query_request.metadata,
                 )
                 start_generated_answer = time.time()
 
@@ -597,6 +607,7 @@ class FastAPI(API):
         instruction = Instruction(
             instruction=instruction_request.instruction,
             db_connection_id=instruction_request.db_connection_id,
+            metadata=instruction_request.metadata,
         )
         return instruction_repository.insert(instruction)
 
@@ -635,6 +646,7 @@ class FastAPI(API):
             id=instruction_id,
             instruction=instruction_request.instruction,
             db_connection_id=instruction.db_connection_id,
+            metadata=instruction_request.metadata,
         )
         instruction_repository.update(updated_instruction)
         return json.loads(json_util.dumps(updated_instruction))

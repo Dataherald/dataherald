@@ -23,6 +23,7 @@ class DBConnectionValidation(BaseModel):
 class CreateResponseRequest(BaseModel):
     question_id: str
     sql_query: str | None = Field(None, min_length=3)
+    metadata: dict | None
 
 
 class SQLQueryResult(BaseModel):
@@ -34,25 +35,33 @@ class Question(BaseModel):
     id: str | None = None
     question: str
     db_connection_id: str
+    created_at: datetime = Field(default_factory=datetime.now)
+    metadata: dict | None
 
 
 class UpdateInstruction(BaseModel):
     instruction: str
+    metadata: dict | None
 
 
 class InstructionRequest(DBConnectionValidation):
     instruction: str = Field(None, min_length=3)
+    metadata: dict | None
 
 
 class Instruction(BaseModel):
     id: str | None = None
     instruction: str
     db_connection_id: str
+    created_at: datetime = Field(default_factory=datetime.now)
+    metadata: dict | None
 
 
 class GoldenRecordRequest(DBConnectionValidation):
     question: str = Field(None, min_length=3)
     sql_query: str = Field(None, min_length=3)
+    created_at: datetime = Field(default_factory=datetime.now)
+    metadata: dict | None
 
 
 class GoldenRecord(BaseModel):
@@ -60,6 +69,8 @@ class GoldenRecord(BaseModel):
     question: str
     sql_query: str
     db_connection_id: str
+    created_at: datetime = Field(default_factory=datetime.now)
+    metadata: dict | None
 
 
 class SQLGenerationStatus(Enum):
@@ -83,6 +94,7 @@ class Response(BaseModel):
     total_cost: float | None = None
     confidence_score: float | None = None
     created_at: datetime = Field(default_factory=datetime.now)
+    metadata: dict | None
 
     @validator("created_at", pre=True)
     def parse_datetime_with_timezone(cls, value):
@@ -105,10 +117,12 @@ class SupportedDatabase(Enum):
 
 class QuestionRequest(DBConnectionValidation):
     question: str = Field(None, min_length=3)
+    metadata: dict | None
 
 
 class ScannerRequest(DBConnectionValidation):
     table_names: list[str] | None
+    metadata: dict | None
 
 
 class DatabaseConnectionRequest(BaseModel):
@@ -119,6 +133,7 @@ class DatabaseConnectionRequest(BaseModel):
     llm_api_key: str | None
     ssh_settings: SSHSettings | None
     file_storage: FileStorage | None
+    metadata: dict | None
 
 
 class ForeignKeyDetail(BaseModel):
@@ -139,3 +154,4 @@ class ColumnDescriptionRequest(BaseModel):
 class TableDescriptionRequest(BaseModel):
     description: str | None
     columns: list[ColumnDescriptionRequest] | None
+    metadata: dict | None

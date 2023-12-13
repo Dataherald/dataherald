@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from dataherald.config import Component
 from dataherald.db_scanner.repository.base import TableDescriptionRepository
 from dataherald.sql_database.base import SQLDatabase
+from dataherald.types import ScannerRequest
 
 
 class Scanner(Component, ABC):
@@ -20,8 +21,7 @@ class Scanner(Component, ABC):
     @abstractmethod
     def synchronizing(
         self,
-        tables: list[str],
-        db_connection_id: str,
+        scanner_request: ScannerRequest,
         repository: TableDescriptionRepository,
     ) -> None:
         """ "Update table_description status"""
