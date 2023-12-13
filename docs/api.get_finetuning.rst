@@ -5,7 +5,7 @@ After creating a fine-tuning job, you can retrive the status of the job by calli
 
 request this ``GET`` endpoint to retrieve the status of the fine-tuning job.
 
-    /api/v1/finetuning-jobs/<finetuning_id>
+    /api/v1/finetunings/<finetuning_id>
 
 **Responses**
 

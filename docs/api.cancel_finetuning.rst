@@ -5,7 +5,7 @@ This endpoint allows you to cancel a finetuning job, which will stop the trainin
 
 request this ``POST`` endpoint to cancel a finetuning job.
 
-    /api/v1/finetuning-jobs/<finetuning_id>/cancel
+    /api/v1/finetunings/<finetuning_id>/cancel
 
 **Request body**
 
