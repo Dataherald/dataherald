@@ -139,3 +139,46 @@ class ColumnDescriptionRequest(BaseModel):
 class TableDescriptionRequest(BaseModel):
     description: str | None
     columns: list[ColumnDescriptionRequest] | None
+
+
+class FineTuningStatus(Enum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+    VALIDATING_FILES = "validating_files"
+
+
+class BaseLLM(BaseModel):
+    model_provider: str | None = None
+    model_name: str | None = None
+    model_parameters: dict[str, str] | None = None
+
+
+class Finetuning(BaseModel):
+    id: str | None = None
+    alias: str | None = None
+    db_connection_id: str | None = None
+    status: str = "queued"
+    error: str | None = None
+    base_llm: BaseLLM | None = None
+    finetuning_file_id: str | None = None
+    finetuning_job_id: str | None = None
+    model_id: str | None = None
+    created_at: datetime = Field(default_factory=datetime.now)
+    golden_records: list[str] | None = None
+    metadata: dict[str, str] | None = None
+
+
+class FineTuningRequest(BaseModel):
+    db_connection_id: str
+    alias: str
+    base_llm: BaseLLM
+    golden_records: list[str] | None = None
+    metadata: dict[str, str] | None = None
+
+
+class CancelFineTuningRequest(BaseModel):
+    finetuning_id: str
+    metadata: dict[str, str] | None = None

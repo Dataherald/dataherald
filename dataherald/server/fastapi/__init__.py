@@ -13,8 +13,11 @@ from dataherald.config import Settings
 from dataherald.db_scanner.models.types import TableDescription
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
+    CancelFineTuningRequest,
     CreateResponseRequest,
     DatabaseConnectionRequest,
+    Finetuning,
+    FineTuningRequest,
     GoldenRecord,
     GoldenRecordRequest,
     Instruction,
@@ -216,6 +219,28 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/finetunings",
+            self.create_finetuning_job,
+            methods=["POST"],
+            status_code=201,
+            tags=["Finetunings"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/finetunings/{finetuning_id}",
+            self.get_finetuning_job,
+            methods=["GET"],
+            tags=["Finetunings"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/finetunings/{finetuning_id}/cancel",
+            self.cancel_finetuning_job,
+            methods=["POST"],
+            tags=["Finetunings"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/heartbeat", self.heartbeat, methods=["GET"], tags=["System"]
         )
 
@@ -379,3 +404,19 @@ class FastAPI(dataherald.server.Server):
     ) -> Instruction:
         """Updates an instruction"""
         return self._api.update_instruction(instruction_id, instruction_request)
+
+    def create_finetuning_job(
+        self, fine_tuning_request: FineTuningRequest, background_tasks: BackgroundTasks
+    ) -> Finetuning:
+        """Creates a fine tuning job"""
+        return self._api.create_finetuning_job(fine_tuning_request, background_tasks)
+
+    def cancel_finetuning_job(
+        self, cancel_fine_tuning_request: CancelFineTuningRequest
+    ) -> Finetuning:
+        """Cancels a fine tuning job"""
+        return self._api.cancel_finetuning_job(cancel_fine_tuning_request)
+
+    def get_finetuning_job(self, finetuning_job_id: str) -> Finetuning:
+        """Gets fine tuning jobs"""
+        return self._api.get_finetuning_job(finetuning_job_id)

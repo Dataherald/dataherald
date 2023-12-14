@@ -130,6 +130,44 @@ Related endpoints are:
         "instruction": "string",
     }
 
+Finetuning jobs
+---------------------
+The ``finetuning`` object is used to finetune the LLM to your data. This is an asynchronous process that uploads your golden records to model provider servers and creates a finetuning job.
+The finetuned model is going to be used inside an agent for generating SQL queries.
+
+Related endpoints are:
+
+* :doc:`Finetuning job create <api.finetuning>` -- ``POST api/v1/finetunings``
+* :doc:`Finetuning job get <api.get_finetuning>` -- ``GET api/v1/finetunings/{finetuning_id}``
+* :doc:`Finetuning job cancel <api.cancel_finetuning>` -- ``POST api/v1/finetunings/{finetuning_id}/cancel``
+
+
+**Finetuning resource example:**
+
+.. code-block:: json
+
+    {
+        "id": "finetuing-job-id",
+        "db_connection_id": "database_connection_id",
+        "alias": "model name",
+        "status": "finetuning_job_status", // Possible values: queued, running, succeeded, validating_files, failed, or cancelled
+        "error": "The error message if the job failed", // Optional, default is None
+        "base_llm": {
+            "model_provider": "model_provider_name", // Currently, only 'openai'
+            "model_name": "model_name", // Supported: gpt-3.5-turbo, gpt-4
+            "model_parameters": {
+                "n_epochs": "int or string", // Optional, default 3
+                "batch_size": "int or string", // Optional, default 1
+                "learning_rate_multiplier": "int or string" // Optional, default "auto"
+            }
+        },
+        "finetuning_file_id": "File ID for finetuning file",
+        "finetuning_job_id": "Finetuning job ID",
+        "model_id": "Model ID after finetuning",
+        "created_at": "datetime",
+        "golden_records": "array[ids]", // Default is None, meaning use all golden records
+        "metadata": "dict[str, str] | None" // Optional, default None
+    }
 
 .. toctree::
     :hidden:
@@ -158,3 +196,7 @@ Related endpoints are:
     api.list_responses
     api.get_response
     api.get_response_file
+
+    api.finetuning
+    api.get_finetuning
+    api.cancel_finetuning
