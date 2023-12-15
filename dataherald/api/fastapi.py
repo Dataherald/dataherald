@@ -19,11 +19,16 @@ from dataherald.config import Settings, System
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.db_scanner import Scanner
-from dataherald.db_scanner.models.types import TableDescription, TableDescriptionStatus
+from dataherald.db_scanner.models.types import (
+    QueryHistory,
+    TableDescription,
+    TableDescriptionStatus,
+)
 from dataherald.db_scanner.repository.base import (
     InvalidColumnNameError,
     TableDescriptionRepository,
 )
+from dataherald.db_scanner.repository.query_history import QueryHistoryRepository
 from dataherald.eval import Evaluator
 from dataherald.finetuning.openai_finetuning import OpenAIFineTuning
 from dataherald.repositories.base import ResponseRepository
@@ -71,6 +76,7 @@ def async_scanning(scanner, database, scanner_request, storage):
         scanner_request.db_connection_id,
         scanner_request.table_names,
         TableDescriptionRepository(storage),
+        QueryHistoryRepository(storage),
     )
 
 
@@ -380,6 +386,13 @@ class FastAPI(API):
         if not result:
             raise HTTPException(status_code=404, detail="Table description not found")
         return result
+
+    @override
+    def get_query_history(self, db_connection_id: str) -> list[QueryHistory]:
+        query_history_repository = QueryHistoryRepository(self.storage)
+        return query_history_repository.find_by(
+            {"db_connection_id": ObjectId(db_connection_id)}
+        )
 
     @override
     def get_responses(self, question_id: str | None = None) -> list[Response]:

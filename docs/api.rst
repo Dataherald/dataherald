@@ -180,6 +180,7 @@ Related endpoints are:
     api.list_table_description
     api.get_table_description
     api.update_table_descriptions
+    api.list_query_history
 
     api.add_instructions
     api.list_instructions
