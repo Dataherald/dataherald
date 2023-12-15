@@ -8,13 +8,22 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.routing import APIRoute
 
 import dataherald
-from dataherald.api.types import Query
+from dataherald.api.types.query import Query
+from dataherald.api.types.requests import (
+    NLGenerationRequest,
+    PromptRequest,
+    SQLGenerationRequest,
+)
+from dataherald.api.types.responses import (
+    NLGenerationResponse,
+    PromptResponse,
+    SQLGenerationResponse,
+)
 from dataherald.config import Settings
 from dataherald.db_scanner.models.types import QueryHistory, TableDescription
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
     CancelFineTuningRequest,
-    CreateResponseRequest,
     DatabaseConnectionRequest,
     Finetuning,
     FineTuningRequest,
@@ -22,9 +31,6 @@ from dataherald.types import (
     GoldenRecordRequest,
     Instruction,
     InstructionRequest,
-    Question,
-    QuestionRequest,
-    Response,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateInstruction,
@@ -131,61 +137,65 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/questions",
-            self.answer_question,
+            "/api/v1/prompts",
+            self.create_prompt,
             methods=["POST"],
             status_code=201,
-            tags=["Questions"],
+            tags=["Prompts"],
         )
 
         self.router.add_api_route(
-            "/api/v1/questions",
-            self.get_questions,
+            "/api/v1/prompts/{prompt_id}",
+            self.get_prompt,
             methods=["GET"],
-            tags=["Questions"],
+            tags=["Prompts"],
         )
 
         self.router.add_api_route(
-            "/api/v1/questions/{question_id}",
-            self.get_question,
+            "/api/v1/prompts",
+            self.get_prompts,
             methods=["GET"],
-            tags=["Questions"],
+            tags=["Prompts"],
         )
 
         self.router.add_api_route(
-            "/api/v1/responses",
-            self.create_response,
+            "/api/v1/prompts/{prompt_id}/sql-generations",
+            self.create_sql_generation,
             methods=["POST"],
             status_code=201,
-            tags=["Responses"],
+            tags=["SQL Generation"],
         )
 
         self.router.add_api_route(
-            "/api/v1/responses",
-            self.get_responses,
-            methods=["GET"],
-            tags=["Responses"],
+            "/api/v1/prompts/sql-generations",
+            self.create_prompt_and_sql_generation,
+            methods=["POST"],
+            status_code=201,
+            tags=["SQL Generation"],
         )
 
         self.router.add_api_route(
-            "/api/v1/responses/{response_id}",
-            self.get_response,
-            methods=["GET"],
-            tags=["Responses"],
+            "/api/v1/sql-generations/{sql_generation_id}/nl-generations",
+            self.create_nl_generation,
+            methods=["POST"],
+            status_code=201,
+            tags=["NL Generation"],
         )
 
         self.router.add_api_route(
-            "/api/v1/responses/{response_id}/file",
-            self.get_response_file,
-            methods=["GET"],
-            tags=["Responses"],
+            "/api/v1/prompts/{sql_generation_id}/sql-generations/nl-generations",
+            self.create_sql_and_nl_generation,
+            methods=["POST"],
+            status_code=201,
+            tags=["NL Generation"],
         )
 
         self.router.add_api_route(
-            "/api/v1/responses/{response_id}",
-            self.update_response,
-            methods=["PATCH"],
-            tags=["Responses"],
+            "/api/v1/prompts/sql-generations/nl-generations",
+            self.create_prompt_sql_and_nl_generation,
+            methods=["POST"],
+            status_code=201,
+            tags=["NL Generation"],
         )
 
         self.router.add_api_route(
@@ -262,24 +272,42 @@ class FastAPI(dataherald.server.Server):
     ) -> bool:
         return self._api.scan_db(scanner_request, background_tasks)
 
-    def answer_question(
+    def create_prompt(self, prompt_request: PromptRequest) -> PromptResponse:
+        pass
+
+    def get_prompt(self, prompt_id: str) -> PromptResponse:
+        pass
+
+    def get_prompts(self) -> list[PromptResponse]:
+        return []
+
+    def create_sql_generation(
+        self, sql_generation_request: SQLGenerationRequest
+    ) -> SQLGenerationResponse:
+        pass
+
+    def create_prompt_and_sql_generation(
+        self, prompt: PromptRequest, sql_generation: SQLGenerationRequest
+    ) -> SQLGenerationResponse:
+        pass
+
+    def create_nl_generation(
+        self, nl_generation_request: NLGenerationRequest
+    ) -> NLGenerationResponse:
+        pass
+
+    def create_sql_and_nl_generation(
+        self, sql_generation: SQLGenerationRequest, nl_generation: NLGenerationRequest
+    ) -> NLGenerationResponse:
+        pass
+
+    def create_prompt_sql_and_nl_generation(
         self,
-        run_evaluator: bool = True,
-        generate_csv: bool = False,
-        question_request: QuestionRequest = None,
-    ) -> Response:
-        if os.getenv("DH_ENGINE_TIMEOUT", None):
-            return self._api.answer_question_with_timeout(
-                run_evaluator, generate_csv, question_request
-            )
-        return self._api.answer_question(run_evaluator, generate_csv, question_request)
-
-    def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
-        return self._api.get_questions(db_connection_id)
-
-    def get_question(self, question_id: str) -> Question:
-        """Get a question"""
-        return self._api.get_question(question_id)
+        prompt: PromptRequest,
+        sql_generation: SQLGenerationRequest,
+        nl_generation: NLGenerationRequest,
+    ) -> NLGenerationResponse:
+        pass
 
     def root(self) -> dict[str, int]:
         return {"nanosecond heartbeat": self._api.heartbeat()}
@@ -331,39 +359,9 @@ class FastAPI(dataherald.server.Server):
         """Get description"""
         return self._api.get_query_history(db_connection_id)
 
-    def get_responses(self, question_id: str | None = None) -> list[Response]:
-        """List responses"""
-        return self._api.get_responses(question_id)
-
-    def get_response(self, response_id: str) -> Response:
-        """Get a response"""
-        return self._api.get_response(response_id)
-
-    def update_response(self, response_id: str) -> Response:
-        """Update a response"""
-        return self._api.update_response(response_id)
-
-    def get_response_file(
-        self, response_id: str, background_tasks: BackgroundTasks
-    ) -> FileResponse:
-        """Get a response file"""
-        return self._api.get_response_file(response_id, background_tasks)
-
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""
         return self._api.execute_sql_query(query)
-
-    def create_response(
-        self,
-        run_evaluator: bool = True,
-        sql_response_only: bool = False,
-        generate_csv: bool = False,
-        query_request: CreateResponseRequest = None,
-    ) -> Response:
-        """Executes a query on the given db_connection_id"""
-        return self._api.create_response(
-            run_evaluator, sql_response_only, generate_csv, query_request
-        )
 
     def delete_golden_record(self, golden_record_id: str) -> dict:
         """Deletes a golden record"""

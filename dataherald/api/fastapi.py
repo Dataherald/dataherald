@@ -1,21 +1,17 @@
 import json
 import logging
 import os
-import threading
 import time
 from typing import List
 
-import openai
 from bson import json_util
 from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import FileResponse, JSONResponse
 from overrides import override
 
 from dataherald.api import API
-from dataherald.api.types import Query
-from dataherald.config import Settings, System
+from dataherald.api.types.query import Query
+from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.db_scanner import Scanner
@@ -29,25 +25,19 @@ from dataherald.db_scanner.repository.base import (
     TableDescriptionRepository,
 )
 from dataherald.db_scanner.repository.query_history import QueryHistoryRepository
-from dataherald.eval import Evaluator
 from dataherald.finetuning.openai_finetuning import OpenAIFineTuning
-from dataherald.repositories.base import ResponseRepository
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.finetunings import FinetuningsRepository
 from dataherald.repositories.golden_records import GoldenRecordRepository
 from dataherald.repositories.instructions import InstructionRepository
-from dataherald.repositories.question import QuestionRepository
 from dataherald.sql_database.base import (
     InvalidDBConnectionError,
     SQLDatabase,
     SQLInjectionError,
 )
 from dataherald.sql_database.models.types import DatabaseConnection
-from dataherald.sql_generator import SQLGenerator
-from dataherald.sql_generator.generates_nl_answer import GeneratesNlAnswer
 from dataherald.types import (
     CancelFineTuningRequest,
-    CreateResponseRequest,
     DatabaseConnectionRequest,
     Finetuning,
     FineTuningRequest,
@@ -55,15 +45,11 @@ from dataherald.types import (
     GoldenRecordRequest,
     Instruction,
     InstructionRequest,
-    Question,
-    QuestionRequest,
-    Response,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateInstruction,
 )
 from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
-from dataherald.utils.s3 import S3
 
 logger = logging.getLogger(__name__)
 
@@ -143,119 +129,6 @@ class FastAPI(API):
             async_scanning, scanner, database, scanner_request, self.storage
         )
         return True
-
-    @override
-    def answer_question(
-        self,
-        run_evaluator: bool = True,
-        generate_csv: bool = False,
-        question_request: QuestionRequest = None,
-        user_question: Question | None = None,
-    ) -> Response:
-        """Takes in an English question and answers it based on content from the registered databases"""
-        sql_generation = self.system.instance(SQLGenerator)
-        context_store = self.system.instance(ContextStore)
-
-        if not user_question:
-            user_question = Question(
-                question=question_request.question,
-                db_connection_id=question_request.db_connection_id,
-            )
-            question_repository = QuestionRepository(self.storage)
-            user_question = question_repository.insert(user_question)
-        logger.info(f"Answer question: {user_question.question}")
-
-        db_connection_repository = DatabaseConnectionRepository(self.storage)
-        database_connection = db_connection_repository.find_by_id(
-            user_question.db_connection_id
-        )
-        response_repository = ResponseRepository(self.storage)
-
-        if not database_connection:
-            response = response_repository.insert(
-                Response(
-                    question_id=user_question.id,
-                    error_message="Connections doesn't exist",
-                    sql_query="",
-                )
-            )
-            return JSONResponse(status_code=404, content=jsonable_encoder(response))
-        try:
-            context = context_store.retrieve_context_for_question(user_question)
-            start_generated_answer = time.time()
-            generated_answer = sql_generation.generate_response(
-                user_question,
-                database_connection,
-                context[0],
-                generate_csv,
-            )
-            logger.info("Starts evaluator...")
-            if run_evaluator:
-                evaluator = self.system.instance(Evaluator)
-                confidence_score = evaluator.get_confidence_score(
-                    user_question, generated_answer, database_connection
-                )
-                generated_answer.confidence_score = confidence_score
-        except Exception as e:
-            response = response_repository.insert(
-                Response(
-                    question_id=user_question.id, error_message=str(e), sql_query=""
-                )
-            )
-            return JSONResponse(
-                status_code=400,
-                content=jsonable_encoder(response),
-            )
-
-        if (
-            generate_csv
-            and len(generated_answer.sql_query_result.rows)
-            > MAX_ROWS_TO_CREATE_CSV_FILE
-        ):
-            generated_answer.sql_query_result = None
-        generated_answer.exec_time = time.time() - start_generated_answer
-        response_repository = ResponseRepository(self.storage)
-        return response_repository.insert(generated_answer)
-
-    @override
-    def answer_question_with_timeout(
-        self,
-        run_evaluator: bool = True,
-        generate_csv: bool = False,
-        question_request: QuestionRequest = None,
-    ) -> Response:
-        result = None
-        exception = None
-        user_question = Question(
-            question=question_request.question,
-            db_connection_id=question_request.db_connection_id,
-        )
-        question_repository = QuestionRepository(self.storage)
-        user_question = question_repository.insert(user_question)
-        stop_event = threading.Event()
-
-        def run_and_catch_exceptions():
-            nonlocal result, exception
-            if not stop_event.is_set():
-                result = self.answer_question(
-                    run_evaluator, generate_csv, None, user_question
-                )
-
-        thread = threading.Thread(target=run_and_catch_exceptions)
-        thread.start()
-        thread.join(timeout=int(os.getenv("DH_ENGINE_TIMEOUT")))
-        if thread.is_alive():
-            stop_event.set()
-            response_repository = ResponseRepository(self.storage)
-            response = response_repository.insert(
-                Response(
-                    question_id=user_question.id,
-                    error_message="Timeout Error",
-                    sql_query="",
-                )
-            )
-            return JSONResponse(status_code=400, content=jsonable_encoder(response))
-        return result
 
     @override
     def create_database_connection(
@@ -395,119 +268,6 @@ class FastAPI(API):
         )
 
     @override
-    def get_responses(self, question_id: str | None = None) -> list[Response]:
-        response_repository = ResponseRepository(self.storage)
-        query = {}
-        if question_id:
-            query = {"question_id": ObjectId(question_id)}
-        return response_repository.find_by(query)
-
-    @override
-    def get_response(self, response_id: str) -> Response:
-        response_repository = ResponseRepository(self.storage)
-
-        try:
-            result = response_repository.find_by_id(response_id)
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
-
-        if not result:
-            raise HTTPException(status_code=404, detail="Question not found")
-
-        return result
-
-    @override
-    def get_response_file(
-        self, response_id: str, background_tasks: BackgroundTasks
-    ) -> FileResponse:
-        response_repository = ResponseRepository(self.storage)
-        question_repository = QuestionRepository(self.storage)
-        db_connection_repository = DatabaseConnectionRepository(self.storage)
-        try:
-            result = response_repository.find_by_id(response_id)
-            question = question_repository.find_by_id(result.question_id)
-            db_connection = db_connection_repository.find_by_id(
-                question.db_connection_id
-            )
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
-
-        if not result:
-            raise HTTPException(
-                status_code=404, detail="Question, response, or db_connection not found"
-            )
-
-        # Check if the file is to be returned from server (locally) or from S3
-        if Settings().only_store_csv_files_locally:
-            file_location = result.csv_file_path
-            # check if the file exists
-            if not os.path.exists(file_location):
-                raise HTTPException(
-                    status_code=404,
-                    detail="CSV file not found. Possibly deleted/removed from server.",
-                )
-        else:
-            s3 = S3()
-
-            file_location = s3.download(
-                result.csv_file_path, db_connection.file_storage
-            )
-            background_tasks.add_task(delete_file, file_location)
-
-        return FileResponse(
-            file_location,
-            media_type="text/csv",
-        )
-
-    @override
-    def update_response(self, response_id: str) -> Response:
-        response_repository = ResponseRepository(self.storage)
-
-        try:
-            response = response_repository.find_by_id(response_id)
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
-        if not response:
-            raise HTTPException(status_code=404, detail="Question not found")
-
-        start_generated_answer = time.time()
-        try:
-            generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
-            response = generates_nl_answer.execute(response)
-            response.exec_time = time.time() - start_generated_answer
-            response_repository.update(response)
-        except openai.AuthenticationError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
-        except ValueError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
-        except SQLInjectionError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
-        return response
-
-    @override
-    def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
-        question_repository = QuestionRepository(self.storage)
-        query = {}
-        if db_connection_id:
-            query = {"db_connection_id": ObjectId(db_connection_id)}
-
-        return question_repository.find_by(query)
-
-    @override
-    def get_question(self, question_id: str) -> Question:
-        question_repository = QuestionRepository(self.storage)
-
-        try:
-            result = question_repository.find_by_id(question_id)
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
-
-        if not result:
-            raise HTTPException(status_code=404, detail="Question not found")
-
-        return result
-
-    @override
     def add_golden_records(
         self, golden_records: List[GoldenRecordRequest]
     ) -> List[GoldenRecord]:
@@ -530,72 +290,6 @@ class FastAPI(API):
         except SQLInjectionError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
         return result
-
-    @override
-    def create_response(
-        self,
-        run_evaluator: bool = True,
-        sql_response_only: bool = False,
-        generate_csv: bool = False,
-        query_request: CreateResponseRequest = None,  # noqa: ARG002
-    ) -> Response:
-        question_repository = QuestionRepository(self.storage)
-        response_repository = ResponseRepository(self.storage)
-        user_question = question_repository.find_by_id(query_request.question_id)
-        if not user_question:
-            raise HTTPException(status_code=404, detail="Question not found")
-
-        db_connection_repository = DatabaseConnectionRepository(self.storage)
-        database_connection = db_connection_repository.find_by_id(
-            user_question.db_connection_id
-        )
-        if not database_connection:
-            raise HTTPException(status_code=404, detail="Database connection not found")
-
-        try:
-            if not query_request.sql_query:
-                sql_generation = self.system.instance(SQLGenerator)
-                context_store = self.system.instance(ContextStore)
-                context = context_store.retrieve_context_for_question(user_question)
-                start_generated_answer = time.time()
-                response = sql_generation.generate_response(
-                    user_question,
-                    database_connection,
-                    context[0],
-                    generate_csv,
-                )
-            else:
-                response = Response(
-                    question_id=query_request.question_id,
-                    sql_query=query_request.sql_query,
-                )
-                start_generated_answer = time.time()
-
-                generates_nl_answer = GeneratesNlAnswer(self.system, self.storage)
-                response = generates_nl_answer.execute(
-                    response, sql_response_only, generate_csv
-                )
-        except openai.AuthenticationError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
-        except ValueError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
-        except SQLInjectionError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
-
-        if run_evaluator:
-            evaluator = self.system.instance(Evaluator)
-            confidence_score = evaluator.get_confidence_score(
-                user_question, response, database_connection
-            )
-            response.confidence_score = confidence_score
-        if (
-            generate_csv
-            and len(response.sql_query_result.rows) > MAX_ROWS_TO_CREATE_CSV_FILE
-        ):
-            response.sql_query_result = None
-        response.exec_time = time.time() - start_generated_answer
-        response_repository.insert(response)
-        return response
 
     @override
     def delete_golden_record(self, golden_record_id: str) -> dict:

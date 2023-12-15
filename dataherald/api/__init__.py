@@ -2,15 +2,13 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from fastapi import BackgroundTasks
-from fastapi.responses import FileResponse
 
-from dataherald.api.types import Query
+from dataherald.api.types.query import Query
 from dataherald.config import Component
 from dataherald.db_scanner.models.types import QueryHistory, TableDescription
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
     CancelFineTuningRequest,
-    CreateResponseRequest,
     DatabaseConnectionRequest,
     Finetuning,
     FineTuningRequest,
@@ -18,9 +16,6 @@ from dataherald.types import (
     GoldenRecordRequest,
     Instruction,
     InstructionRequest,
-    Question,
-    QuestionRequest,
-    Response,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateInstruction,
@@ -37,36 +32,6 @@ class API(Component, ABC):
     def scan_db(
         self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
     ) -> bool:
-        pass
-
-    @abstractmethod
-    def answer_question(
-        self,
-        run_evaluator: bool = True,
-        generate_csv: bool = False,
-        question_request: QuestionRequest = None,
-    ) -> Response:
-        pass
-
-    @abstractmethod
-    def answer_question_with_timeout(
-        self,
-        run_evaluator: bool = True,
-        generate_csv: bool = False,
-        question_request: QuestionRequest = None,
-    ) -> Response:
-        pass
-
-    @abstractmethod
-    def update_response(self, response_id: str) -> Response:
-        pass
-
-    @abstractmethod
-    def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
-        pass
-
-    @abstractmethod
-    def get_question(self, question_id: str) -> Question:
         pass
 
     @abstractmethod
@@ -116,31 +81,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def create_response(
-        self,
-        run_evaluator: bool = True,
-        sql_response_only: bool = False,
-        generate_csv: bool = False,
-        query_request: CreateResponseRequest = None,
-    ) -> Response:
-        pass
-
-    @abstractmethod
     def get_query_history(self, db_connection_id: str) -> list[QueryHistory]:
-        pass
-
-    @abstractmethod
-    def get_responses(self, question_id: str | None = None) -> list[Response]:
-        pass
-
-    @abstractmethod
-    def get_response(self, response_id: str) -> Response:
-        pass
-
-    @abstractmethod
-    def get_response_file(
-        self, response_id: str, background_tasks: BackgroundTasks
-    ) -> FileResponse:
         pass
 
     @abstractmethod

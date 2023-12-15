@@ -182,3 +182,34 @@ class FineTuningRequest(BaseModel):
 class CancelFineTuningRequest(BaseModel):
     finetuning_id: str
     metadata: dict[str, str] | None = None
+
+
+class Prompt(BaseModel):
+    id: str | None = None
+    text: str
+    db_connection_id: str
+    created_at: str
+    metadata: dict | None
+
+
+class SQLGeneration(BaseModel):
+    id: str | None = None
+    prompt_id: str
+    model: str | None
+    evaluate: bool = False
+    sql: str | None
+    status: str
+    completed_at: str
+    tokens_used: int
+    confidence_score: float
+    error: str | None
+    created_at: str
+    metadata: dict | None
+
+
+class NLGeneration(BaseModel):
+    id: str | None = None
+    sql_generation_id: str
+    nl_answer: str
+    created_at: str
+    metadata: dict | None
