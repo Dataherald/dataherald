@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse
 
 from dataherald.api.types import Query
 from dataherald.config import Component
-from dataherald.db_scanner.models.types import TableDescription
+from dataherald.db_scanner.models.types import QueryHistory, TableDescription
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
 from dataherald.types import (
     CancelFineTuningRequest,
@@ -123,6 +123,10 @@ class API(Component, ABC):
         generate_csv: bool = False,
         query_request: CreateResponseRequest = None,
     ) -> Response:
+        pass
+
+    @abstractmethod
+    def get_query_history(self, db_connection_id: str) -> list[QueryHistory]:
         pass
 
     @abstractmethod
