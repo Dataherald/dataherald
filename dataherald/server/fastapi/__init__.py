@@ -282,7 +282,7 @@ class FastAPI(dataherald.server.Server):
         return []
 
     def create_sql_generation(
-        self, sql_generation_request: SQLGenerationRequest
+        self, prompt_id: str, sql_generation_request: SQLGenerationRequest
     ) -> SQLGenerationResponse:
         pass
 
@@ -292,12 +292,15 @@ class FastAPI(dataherald.server.Server):
         pass
 
     def create_nl_generation(
-        self, nl_generation_request: NLGenerationRequest
+        self, sql_generation_id: str, nl_generation_request: NLGenerationRequest
     ) -> NLGenerationResponse:
         pass
 
     def create_sql_and_nl_generation(
-        self, sql_generation: SQLGenerationRequest, nl_generation: NLGenerationRequest
+        self,
+        sql_generation_id: str,
+        sql_generation: SQLGenerationRequest,
+        nl_generation: NLGenerationRequest,
     ) -> NLGenerationResponse:
         pass
 

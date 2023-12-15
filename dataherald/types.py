@@ -187,7 +187,7 @@ class Prompt(BaseModel):
     id: str | None = None
     text: str
     db_connection_id: str
-    created_at: str
+    created_at: datetime = Field(default_factory=datetime.now)
     metadata: dict | None
 
 
@@ -198,11 +198,11 @@ class SQLGeneration(BaseModel):
     evaluate: bool = False
     sql: str | None
     status: str
-    completed_at: str
+    completed_at: datetime
     tokens_used: int
     confidence_score: float
     error: str | None
-    created_at: str
+    created_at: datetime = Field(default_factory=datetime.now)
     metadata: dict | None
 
 
@@ -210,5 +210,5 @@ class NLGeneration(BaseModel):
     id: str | None = None
     sql_generation_id: str
     nl_answer: str
-    created_at: str
+    created_at: datetime = Field(default_factory=datetime.now)
     metadata: dict | None
