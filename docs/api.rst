@@ -63,9 +63,6 @@ The related endpoints are:
     {
       "question_id": "string",
       "response": "string",
-      "intermediate_steps": [
-        "string"
-      ],
       "sql_query": "string",
       "sql_query_result": {
         "columns": [

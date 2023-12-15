@@ -27,9 +27,6 @@ HTTP 200 code response
           "id": "string",
           "question_id": "string",
           "response": "string",
-          "intermediate_steps": [
-            "string"
-          ],
           "sql_query": "string",
           "sql_query_result": {
             "columns": [
@@ -67,9 +64,6 @@ HTTP 200 code response
           "id": "64c424fa3f4036441e882352",
           "question_id": "64dbd8cf944f867b3c450467",
           "response": "The most expensive zip to rent in Los Angeles city is 90210",
-          "intermediate_steps": [
-            "",
-          ],
           "sql_query": "SELECT "zip_code", MAX("metric_value") as max_rent
             FROM db_table
             WHERE "dh_county_name" = 'Los Angeles' AND "period_start" = '2022-05-01' AND "period_end" = '2022-05-31'

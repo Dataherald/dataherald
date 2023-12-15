@@ -72,7 +72,6 @@ class Response(BaseModel):
     id: str | None = None
     question_id: str | None = None
     response: str | None = None
-    intermediate_steps: list[str] | None = None
     sql_query: str
     sql_query_result: SQLQueryResult | None
     csv_file_path: str | None
