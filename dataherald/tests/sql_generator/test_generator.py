@@ -23,7 +23,6 @@ class TestGenerator(SQLGenerator):
         return Response(
             question_id="651f2d76275132d5b65175eb",
             response="Foo response",
-            intermediate_steps=["foo"],
             sql_query="bar",
             generate_csv=None,
         )
