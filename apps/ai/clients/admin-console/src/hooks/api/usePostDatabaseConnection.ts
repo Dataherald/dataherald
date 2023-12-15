@@ -4,7 +4,7 @@ import { DatabaseConnection } from '@/models/api'
 import { useCallback } from 'react'
 
 const usePostDatabaseConnection = () => {
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
 
   const connectDatabase = useCallback(
     async (dbConnection: DatabaseConnection, file?: File | null) => {

@@ -3,7 +3,7 @@ import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { useCallback } from 'react'
 
 const useSynchronizeSchemas = () => {
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
 
   const synchronizeSchemas = useCallback(
     async (payload: {

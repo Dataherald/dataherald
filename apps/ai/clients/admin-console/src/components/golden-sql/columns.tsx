@@ -10,7 +10,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Badge, badgeVariants } from '@/components/ui/badge'
-import { buildIdHref, formatKey } from '@/lib/utils'
+import { formatKey } from '@/lib/utils'
 import { EGoldenSqlSource, GoldenSqlListItem } from '@/models/api'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
@@ -57,17 +57,12 @@ export const getColumns: (actions: {
     header: 'Source',
     accessorKey: 'source',
     cell: ({ row }) => {
-      const { source, verified_query_id, verified_query_display_id } =
-        row.original
+      const { source, verified_query_id } = row.original
       const badge =
         source === EGoldenSqlSource.VERIFIED_QUERY ? (
           <Link
             className={badgeVariants({ variant: 'success' })}
-            href={buildIdHref(
-              '/queries',
-              verified_query_id as string,
-              verified_query_display_id as string,
-            )}
+            href={`/queries/${verified_query_id as string}`}
           >
             <span className="mr-1">{formatKey(row.getValue('source'))}</span>
             <ExternalLink size={14} strokeWidth={2.5} />

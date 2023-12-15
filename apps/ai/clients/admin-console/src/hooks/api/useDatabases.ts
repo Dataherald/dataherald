@@ -15,7 +15,7 @@ interface DatabasesResponse {
 const useDatabases = (): DatabasesResponse => {
   const endpointUrl = `${API_URL}/table-description/database/list`
   const { token } = useAuth()
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
   const {
     data,
     isLoading,

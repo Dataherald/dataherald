@@ -13,7 +13,7 @@ export const useTableResource = (
   node: TreeNode | null,
 ): UseDatabaseResourceFromTree<TableResource> => {
   const TABLE_DESCRIPTION_ENDPOINT_URL = `${API_URL}/table-description`
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
 
   const isNodeTableResource = node && isTableResource(node.type)
 

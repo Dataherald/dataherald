@@ -4,7 +4,7 @@ import { Query } from '@/models/api'
 import { useCallback } from 'react'
 
 const useQueryResubmit = () => {
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
 
   const resubmitQuery = useCallback(
     async (queryId: string): Promise<Query> =>

@@ -1,3 +1,4 @@
+import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
 import { useCallback } from 'react'
@@ -47,7 +48,26 @@ const useApiFetcher = () => {
     [token, fetchToken, router],
   )
 
-  return apiFetcher
+  const apiDownloadFile = async (endpointUrl: string): Promise<Blob | null> => {
+    try {
+      const response = await fetch(`${API_URL}/${endpointUrl}`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      if (!response.ok) {
+        console.error('Download error:', response.statusText)
+        throw new Error(response.statusText)
+      }
+
+      return await response.blob()
+    } catch (error) {
+      console.error('Download error:', error)
+      throw error
+    }
+  }
+
+  return { apiFetcher, apiDownloadFile }
 }
 
 export default useApiFetcher

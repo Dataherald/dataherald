@@ -3,7 +3,7 @@ import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { useCallback } from 'react'
 
 const useQuerySendMessage = () => {
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
 
   const sendMessage = useCallback(
     async (queryId: string): Promise<void> =>

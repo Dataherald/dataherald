@@ -27,8 +27,8 @@ export interface QueryMetadataProps extends HTMLAttributes<HTMLDivElement> {
   queryId: string
   status: QueryStatus
   confidenceLevel: number | null
-  updatingQuery: boolean
-  onResubmit: () => void
+  updatingQuery?: boolean
+  onResubmit?: () => void
 }
 
 const QueryMetadata: FC<QueryMetadataProps> = ({
@@ -51,63 +51,67 @@ const QueryMetadata: FC<QueryMetadataProps> = ({
   return (
     <div className={cn('flex flex-col gap-1 items-end', className)}>
       <div className="flex items-center gap-2">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="ghost"
-              disabled={updatingQuery}
-              className="flex items-center gap-2 h-9"
-            >
-              <Boxes strokeWidth={1.5} />
-              Resubmit
-            </Button>
-          </AlertDialogTrigger>
+        {onResubmit && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                disabled={updatingQuery}
+                className="flex items-center gap-2 h-9"
+              >
+                <Boxes strokeWidth={1.5} />
+                Resubmit
+              </Button>
+            </AlertDialogTrigger>
 
-          {isNotVerified ? (
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Resubmit Query</AlertDialogTitle>
-              </AlertDialogHeader>
-              <AlertDialogDescription>
-                The platform will generate an entire new response for the
-                question, including the SQL query and the natural language
-                response.
-              </AlertDialogDescription>
-              <AlertDialogDescription>
-                This process can take a couple of minutes. Do you wish to
-                continue?
-              </AlertDialogDescription>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={onResubmit}>
-                  <Boxes className="mr-2" strokeWidth={1} />
-                  Resubmit
-                </AlertDialogAction>
-              </AlertDialogFooter>{' '}
-            </AlertDialogContent>
-          ) : (
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  <div className="flex items-center gap-2">
-                    <Ban size={22} strokeWidth={2.5} />
-                    {`Can't Resubmit Query`}
-                  </div>
-                </AlertDialogTitle>
-              </AlertDialogHeader>
-              <AlertDialogDescription>
-                This query was already{' '}
-                <strong>{isVerified(status) ? 'Verified' : 'Rejected'}</strong>{' '}
-                by an administrator. If you wish to resubmit the query to the
-                platform to get a new response, please mark the query as{' '}
-                <strong>Not Verified</strong> first.
-              </AlertDialogDescription>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Close</AlertDialogCancel>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          )}
-        </AlertDialog>
+            {isNotVerified ? (
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Resubmit Query</AlertDialogTitle>
+                </AlertDialogHeader>
+                <AlertDialogDescription>
+                  The platform will generate an entire new response for the
+                  question, including the SQL query and the natural language
+                  response.
+                </AlertDialogDescription>
+                <AlertDialogDescription>
+                  This process can take a couple of minutes. Do you wish to
+                  continue?
+                </AlertDialogDescription>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={onResubmit}>
+                    <Boxes className="mr-2" strokeWidth={1} />
+                    Resubmit
+                  </AlertDialogAction>
+                </AlertDialogFooter>{' '}
+              </AlertDialogContent>
+            ) : (
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    <div className="flex items-center gap-2">
+                      <Ban size={22} strokeWidth={2.5} />
+                      {`Can't Resubmit Query`}
+                    </div>
+                  </AlertDialogTitle>
+                </AlertDialogHeader>
+                <AlertDialogDescription>
+                  This query was already{' '}
+                  <strong>
+                    {isVerified(status) ? 'Verified' : 'Rejected'}
+                  </strong>{' '}
+                  by an administrator. If you wish to resubmit the query to the
+                  platform to get a new response, please mark the query as{' '}
+                  <strong>Not Verified</strong> first.
+                </AlertDialogDescription>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Close</AlertDialogCancel>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            )}
+          </AlertDialog>
+        )}
         <h1 className="text-xl font-bold">{queryId}</h1>
       </div>
       <div

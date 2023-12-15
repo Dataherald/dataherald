@@ -6,7 +6,7 @@ import { KeyedMutator } from 'swr'
 export const useDeleteGoldenSql = (
   listMutator: KeyedMutator<GoldenSqlList[]>,
 ) => {
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
   const deleteGoldenSqlQuery = async (id: string) => {
     try {
       await apiFetcher(`${API_URL}/golden-sql/${id}`, {

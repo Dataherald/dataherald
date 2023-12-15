@@ -7,7 +7,7 @@ interface GenerateMessageResponse {
 }
 
 const useQueryGenerateMessage = () => {
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
 
   const generateMessage = useCallback(
     async (queryId: string): Promise<GenerateMessageResponse> =>

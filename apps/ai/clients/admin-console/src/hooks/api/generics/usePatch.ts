@@ -2,7 +2,7 @@ import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { useCallback } from 'react'
 
 const usePatch = <T>() => {
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
 
   const patch = useCallback(
     async (url: string, updates: Partial<T>) => {

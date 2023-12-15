@@ -4,7 +4,7 @@ import { Query } from '@/models/api'
 import { useCallback } from 'react'
 
 const useQueryExecution = () => {
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
 
   const executeQuery = useCallback(
     async (queryId: string, sql_query: string): Promise<Query> =>

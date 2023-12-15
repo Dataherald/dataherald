@@ -13,7 +13,7 @@ export const useDatabaseResource = (
   node: TreeNode | null,
 ): UseDatabaseResourceFromTree<DatabaseResource> => {
   const INSTRUCTION_URL = `${API_URL}/instruction`
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
 
   const isNodeDatabaseResource = node && isDatabaseResource(node.type)
 

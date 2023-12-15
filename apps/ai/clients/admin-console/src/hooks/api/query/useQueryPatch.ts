@@ -9,7 +9,7 @@ export interface QueryPatchRequest {
 }
 
 const useQueryPatch = () => {
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
 
   const patchQuery = useCallback(
     async (queryId: string, patches: QueryPatchRequest): Promise<Query> =>

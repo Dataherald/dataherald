@@ -23,7 +23,7 @@ const lato = Lato({
 })
 
 const SWRConfigWithAuth: FC<{ children: ReactNode }> = ({ children }) => {
-  const apiFetcher = useApiFetcher()
+  const { apiFetcher } = useApiFetcher()
   return (
     <SWRConfig
       value={{
