@@ -39,7 +39,7 @@ from dataherald.sql_database.models.types import (
     DatabaseConnection,
 )
 from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
-from dataherald.types import Question, Response
+from dataherald.types import Prompt, SQLGeneration
 from dataherald.utils.agent_prompts import (
     AGENT_PREFIX,
     FORMAT_INSTRUCTIONS,
@@ -598,11 +598,10 @@ class DataheraldSQLAgent(SQLGenerator):
     @override
     def generate_response(
         self,
-        user_question: Question,
+        user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-        generate_csv: bool = False,
-    ) -> Response:
+    ) -> SQLGeneration:
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
         self.llm = self.model.get_model(
@@ -620,7 +619,7 @@ class DataheraldSQLAgent(SQLGenerator):
         if not db_scan:
             raise ValueError("No scanned tables found for database")
         few_shot_examples, instructions = context_store.retrieve_context_for_question(
-            user_question, number_of_samples=self.max_number_of_examples
+            user_prompt, number_of_samples=self.max_number_of_examples
         )
         if few_shot_examples is not None:
             new_fewshot_examples = self.remove_duplicate_examples(few_shot_examples)
@@ -628,7 +627,7 @@ class DataheraldSQLAgent(SQLGenerator):
         else:
             new_fewshot_examples = None
             number_of_samples = 0
-        logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
+        logger.info(f"Generating SQL response to question: {str(user_prompt.dict())}")
         self.database = SQLDatabase.get_sql_engine(database_connection)
         toolkit = SQLDatabaseToolkit(
             db=self.database,
@@ -652,21 +651,21 @@ class DataheraldSQLAgent(SQLGenerator):
         agent_executor.handle_parsing_errors = True
         with get_openai_callback() as cb:
             try:
-                result = agent_executor({"input": user_question.question})
+                result = agent_executor({"input": user_prompt.text})
                 result = self.check_for_time_out_or_tool_limit(result)
             except SQLInjectionError as e:
                 raise SQLInjectionError(e) from e
             except EngineTimeOutORItemLimitError as e:
                 raise EngineTimeOutORItemLimitError(e) from e
             except Exception as e:
-                return Response(
-                    question_id=user_question.id,
-                    total_tokens=cb.total_tokens,
-                    total_cost=cb.total_cost,
-                    sql_query="",
-                    sql_generation_status="INVALID",
-                    sql_query_result=None,
-                    error_message=str(e),
+                return SQLGeneration(
+                    prompt_id=user_prompt.id,
+                    tokens_used=cb.total_tokens,
+                    model="RAG_AGENT",
+                    completed_at=datetime.datetime.now(),
+                    sql="",
+                    status="INVALID",
+                    error=str(e),
                 )
         if "```sql" in result["output"]:
             sql_query = self.remove_markdown(result["output"])
@@ -677,17 +676,15 @@ class DataheraldSQLAgent(SQLGenerator):
                     sql_query = self.remove_markdown(sql_query)
                     sql_query = self.format_sql_query(action.tool_input)
         logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
-        response = Response(
-            question_id=user_question.id,
-            total_tokens=cb.total_tokens,
-            total_cost=cb.total_cost,
-            sql_query=sql_query,
+        response = SQLGeneration(
+            prompt_id=user_prompt.id,
+            tokens_used=cb.total_tokens,
+            model="RAG_AGENT",
+            completed_at=datetime.datetime.now(),
+            sql=sql_query,
         )
         return self.create_sql_query_status(
             self.database,
-            response.sql_query,
+            response.sql,
             response,
-            top_k=TOP_K,
-            generate_csv=generate_csv,
-            database_connection=database_connection,
         )
