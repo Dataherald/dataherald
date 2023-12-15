@@ -70,9 +70,6 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
             action = step[0]
             if type(action) == AgentAction and action.tool == "sql_db_query":
                 sql_query_list.append(self.format_sql_query(action.tool_input))
-        intermediate_steps = self.format_intermediate_representations(
-            result["intermediate_steps"]
-        )
         exec_time = time.time() - start_time
         logger.info(
             f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
@@ -80,7 +77,6 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
         response = Response(
             question_id=user_question.id,
             response=result["output"],
-            intermediate_steps=intermediate_steps,
             exec_time=exec_time,
             total_tokens=cb.total_tokens,
             total_cost=cb.total_cost,

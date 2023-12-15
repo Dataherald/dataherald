@@ -150,9 +150,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     ) -> str:
         """Execute the query, return the results or an error message."""
         if "```sql" in query:
-            logger.info("**** Removing markdown formatting from the query\n")
             query = query.replace("```sql", "").replace("```", "")
-            logger.info(f"**** Query after removing markdown formatting: {query}\n")
         return self.db.run_sql(query, top_k=top_k)[0]
 
     async def _arun(
@@ -670,29 +668,20 @@ class DataheraldSQLAgent(SQLGenerator):
                     sql_query_result=None,
                     error_message=str(e),
                 )
-        sql_query_list = []
-        for step in result["intermediate_steps"]:
-            action = step[0]
-            if type(action) == AgentAction and action.tool == "sql_db_query":
-                query = self.format_sql_query(action.tool_input)
-                if "```sql" in query:
-                    logger.info("**** Removing markdown formatting from the query\n")
-                    query = query.replace("```sql", "").replace("```", "")
-                    logger.info(
-                        f"**** Query after removing markdown formatting: {query}\n"
-                    )
-                sql_query_list.append(query)
-        intermediate_steps = self.format_intermediate_representations(
-            result["intermediate_steps"]
-        )
+        if "```sql" in result["output"]:
+            sql_query = self.remove_markdown(result["output"])
+        else:
+            for step in result["intermediate_steps"]:
+                action = step[0]
+                if type(action) == AgentAction and action.tool == "sql_db_query":
+                    sql_query = self.remove_markdown(sql_query)
+                    sql_query = self.format_sql_query(action.tool_input)
         logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
         response = Response(
             question_id=user_question.id,
-            response=result["output"],
-            intermediate_steps=intermediate_steps,
             total_tokens=cb.total_tokens,
             total_cost=cb.total_cost,
-            sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",
+            sql_query=sql_query,
         )
         return self.create_sql_query_status(
             self.database,
