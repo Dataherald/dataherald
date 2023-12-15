@@ -15,7 +15,7 @@ class TestGenerator(SQLGenerator):
     @override
     def generate_response(
         self,
-        user_question: Prompt,
+        user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,  # noqa: ARG002
     ) -> SQLGeneration:
