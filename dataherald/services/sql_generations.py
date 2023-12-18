@@ -46,7 +46,6 @@ class SQLGenerationService:
                 completed_at=datetime.now(),
                 tokens_used=0,
                 created_at=datetime.now(),
-                metadata=sql_generation_request.metadata,
             )
             sql_generation = create_sql_query_status(
                 db=database, query=sql_generation.sql, sql_generation=sql_generation
@@ -72,4 +71,5 @@ class SQLGenerationService:
             )
             sql_generation.evaluate = sql_generation_request.evaluate
             sql_generation.confidence_score = confidence_score
+        sql_generation.metadata = sql_generation_request.metadata
         return self.sql_generation_repository.insert(sql_generation)
