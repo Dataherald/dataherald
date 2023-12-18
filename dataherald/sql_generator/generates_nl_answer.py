@@ -12,7 +12,7 @@ from sqlalchemy import text
 
 from dataherald.model.chat_model import ChatModel
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
-from dataherald.repositories.question import QuestionRepository
+from dataherald.repositories.prompts import PromptRepository
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.types import NLGeneration, SQLGeneration
 
@@ -38,8 +38,8 @@ class GeneratesNlAnswer:
         sql_generation: SQLGeneration,
         top_k: int = 100,
     ) -> NLGeneration:
-        question_repository = QuestionRepository(self.storage)
-        question = question_repository.find_by_id(sql_generation.prompt_id)
+        prompt_repository = PromptRepository(self.storage)
+        question = prompt_repository.find_by_id(sql_generation.prompt_id)
 
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         database_connection = db_connection_repository.find_by_id(
@@ -55,7 +55,7 @@ class GeneratesNlAnswer:
         if sql_generation.status == "INVALID":
             return NLGeneration(
                 sql_generation_id=sql_generation.id,
-                nl_answer="I don't know",
+                nl_answer="I don't know, the SQL query is invalid.",
                 created_at=datetime.now(),
             )
 
