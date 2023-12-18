@@ -1,5 +1,6 @@
 """A wrapper for the SQL generation functions in langchain"""
 
+import datetime
 import logging
 import os
 import time
@@ -15,7 +16,7 @@ from overrides import override
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
-from dataherald.types import Question, Response
+from dataherald.types import Prompt, SQLGeneration
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +27,11 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
     @override
     def generate_response(
         self,
-        user_question: Question,
+        user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-        generate_csv: bool = False,
-    ) -> Response:  # type: ignore
-        logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
+    ) -> SQLGeneration:  # type: ignore
+        logger.info(f"Generating SQL response to question: {str(user_prompt.dict())}")
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
@@ -58,10 +58,10 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
                 )
 
         question_with_context = (
-            f"{user_question.question} An example of a similar question and the query that was generated \
+            f"{user_prompt.text} An example of a similar question and the query that was generated \
                                 to answer it is the following {samples_prompt_string}"
             if context is not None
-            else user_question.question
+            else user_prompt.text
         )
         with get_openai_callback() as cb:
             result = agent_executor(question_with_context)
@@ -74,18 +74,15 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
         logger.info(
             f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
         )
-        response = Response(
-            question_id=user_question.id,
-            response=result["output"],
-            exec_time=exec_time,
-            total_tokens=cb.total_tokens,
-            total_cost=cb.total_cost,
-            sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",
+        response = SQLGeneration(
+            prompt_id=user_prompt.id,
+            tokens_used=cb.total_tokens,
+            model="LANGCHAIN_SQLAGENT",
+            completed_at=datetime.datetime.now(),
+            sql=sql_query_list[-1] if len(sql_query_list) > 0 else "",
         )
         return self.create_sql_query_status(
             self.database,
-            response.sql_query,
+            response.sql,
             response,
-            generate_csv=generate_csv,
-            database_connection=database_connection,
         )

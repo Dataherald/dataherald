@@ -6,7 +6,7 @@ from dataherald.config import Component, System
 from dataherald.model.chat_model import ChatModel
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
-from dataherald.types import Question, Response
+from dataherald.types import Prompt, SQLGeneration
 
 
 class Evaluation(BaseModel):
@@ -27,14 +27,14 @@ class Evaluator(Component, ABC):
 
     def get_confidence_score(
         self,
-        question: Question,
-        generated_answer: Response,
+        user_prompt: Prompt,
+        sql_generation: SQLGeneration,
         database_connection: DatabaseConnection,
     ) -> confloat:
         """Determines if a generated response from the engine is acceptable considering the ACCEPTANCE_THRESHOLD"""
         evaluation = self.evaluate(
-            question=question,
-            generated_answer=generated_answer,
+            user_prompt=user_prompt,
+            sql_generation=sql_generation,
             database_connection=database_connection,
         )
         return evaluation.score
@@ -42,8 +42,8 @@ class Evaluator(Component, ABC):
     @abstractmethod
     def evaluate(
         self,
-        question: Question,
-        generated_answer: Response,
+        user_prompt: Prompt,
+        sql_generation: SQLGeneration,
         database_connection: DatabaseConnection,
     ) -> Evaluation:
         """Evaluates a question with an SQL pair."""

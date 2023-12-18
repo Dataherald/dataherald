@@ -8,7 +8,7 @@ from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.repositories.golden_records import GoldenRecordRepository
 from dataherald.repositories.instructions import InstructionRepository
-from dataherald.types import GoldenRecord, GoldenRecordRequest, Question
+from dataherald.types import GoldenRecord, GoldenRecordRequest, Prompt
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +19,12 @@ class DefaultContextStore(ContextStore):
 
     @override
     def retrieve_context_for_question(
-        self, nl_question: Question, number_of_samples: int = 3
+        self, prompt: Prompt, number_of_samples: int = 3
     ) -> Tuple[List[dict] | None, List[dict] | None]:
-        logger.info(f"Getting context for {nl_question.question}")
+        logger.info(f"Getting context for {prompt.text}")
         closest_questions = self.vector_store.query(
-            query_texts=[nl_question.question],
-            db_connection_id=nl_question.db_connection_id,
+            query_texts=[prompt.text],
+            db_connection_id=prompt.db_connection_id,
             collection=self.golden_record_collection,
             num_results=number_of_samples,
         )
@@ -47,7 +47,7 @@ class DefaultContextStore(ContextStore):
         instruction_repository = InstructionRepository(self.db)
         all_instructions = instruction_repository.find_all()
         for instruction in all_instructions:
-            if instruction.db_connection_id == nl_question.db_connection_id:
+            if instruction.db_connection_id == prompt.db_connection_id:
                 instructions.append(
                     {
                         "instruction": instruction.instruction,

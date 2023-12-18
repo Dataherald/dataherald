@@ -1,5 +1,6 @@
 """A wrapper for the SQL generation functions in langchain"""
 
+import datetime
 import logging
 import os
 import time
@@ -12,7 +13,7 @@ from overrides import override
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
-from dataherald.types import Question, Response
+from dataherald.types import Prompt, SQLGeneration
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +45,10 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
     @override
     def generate_response(
         self,
-        user_question: Question,
+        user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-        generate_csv: bool = False,
-    ) -> Response:
+    ) -> SQLGeneration:
         start_time = time.time()
         self.llm = self.model.get_model(
             database_connection=database_connection,
@@ -57,7 +57,7 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         )
         self.database = SQLDatabase.get_sql_engine(database_connection)
         logger.info(
-            f"Generating SQL response to question: {str(user_question.dict())} with passed context {context}"
+            f"Generating SQL response to question: {str(user_prompt.dict())} with passed context {context}"
         )
         if context is not None:
             samples_prompt_string = "The following are some similar previous questions and their correct SQL queries from these databases: \
@@ -68,10 +68,10 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
                 )
 
             prompt = PROMPT_WITH_CONTEXT.format(
-                user_question=user_question.question, context=samples_prompt_string
+                user_question=user_prompt.text, context=samples_prompt_string
             )
         else:
-            prompt = PROMPT_WITHOUT_CONTEXT.format(user_question=user_question.question)
+            prompt = PROMPT_WITHOUT_CONTEXT.format(user_question=user_prompt.text)
         # should top_k be an argument?
         db_chain = SQLDatabaseChain.from_llm(
             self.llm, self.database, top_k=3, return_intermediate_steps=True
@@ -83,18 +83,15 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         logger.info(
             f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
         )
-        response = Response(
-            question_id=user_question.id,
-            response=result["result"],
-            exec_time=exec_time,
-            total_cost=cb.total_cost,
-            total_tokens=cb.total_tokens,
-            sql_query=self.format_sql_query(result["intermediate_steps"][1]),
+        response = SQLGeneration(
+            prompt_id=user_prompt.id,
+            tokens_used=cb.total_tokens,
+            model="LANGCHAIN_SQLCHAIN",
+            completed_at=datetime.datetime.now(),
+            sql=self.format_sql_query(result["intermediate_steps"][1]),
         )
         return self.create_sql_query_status(
             self.database,
-            response.sql_query,
+            response.sql,
             response,
-            generate_csv=generate_csv,
-            database_connection=database_connection,
         )

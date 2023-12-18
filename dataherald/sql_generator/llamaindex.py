@@ -1,8 +1,7 @@
 """A wrapper for the SQL generation functions in langchain"""
-
+import datetime
 import logging
 import os
-import time
 from typing import Any, List
 
 import tiktoken
@@ -21,7 +20,7 @@ from sqlalchemy import MetaData
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator import SQLGenerator
-from dataherald.types import Question, Response
+from dataherald.types import Prompt, SQLGeneration
 
 logger = logging.getLogger(__name__)
 
@@ -32,13 +31,11 @@ class LlamaIndexSQLGenerator(SQLGenerator):
     @override
     def generate_response(
         self,
-        user_question: Question,
+        user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-        generate_csv: bool = False,
-    ) -> Response:
-        start_time = time.time()
-        logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
+    ) -> SQLGeneration:
+        logger.info(f"Generating SQL response to question: {str(user_prompt.dict())}")
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
@@ -64,10 +61,10 @@ class LlamaIndexSQLGenerator(SQLGenerator):
                     f"Question: {sample['nl_question']} \nSQL: {sample['sql_query']} \n"
                 )
         question_with_context = (
-            f"{user_question.question} An example of a similar question and the query that was generated to answer it \
+            f"{user_prompt.text} An example of a similar question and the query that was generated to answer it \
                                  is the following {samples_prompt_string}"
             if context is not None
-            else user_question.question
+            else user_prompt.text
         )
         for table_name in metadata_obj.tables.keys():
             table_schema_objs.append(SQLTableSchema(table_name=table_name))
@@ -100,19 +97,15 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         logger.info(
             f"total cost: {str(total_cost)} {str(token_counter.total_llm_token_count)}"
         )
-        exec_time = time.time() - start_time
-        response = Response(
-            question_id=user_question.id,
-            response=result.response,
-            exec_time=exec_time,
-            total_tokens=token_counter.total_llm_token_count,
-            total_cost=total_cost,
-            sql_query=self.format_sql_query(result.metadata["sql_query"]),
+        response = SQLGeneration(
+            prompt_id=user_prompt.id,
+            tokens_used=token_counter.total_llm_token_count,
+            model="LLAMA_INDEX",
+            completed_at=datetime.datetime.now(),
+            sql=self.format_sql_query(result.metadata["sql_query"]),
         )
         return self.create_sql_query_status(
             self.database,
-            response.sql_query,
+            response.sql,
             response,
-            generate_csv=generate_csv,
-            database_connection=database_connection,
         )
