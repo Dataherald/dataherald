@@ -4,6 +4,7 @@ from dataherald.types import Prompt
 
 DB_COLLECTION = "prompts"
 
+
 class PromptNotFoundError(Exception):
     pass
 

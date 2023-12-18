@@ -33,8 +33,7 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
     ) -> SQLGeneration:  # type: ignore
         logger.info(f"Generating SQL response to question: {str(user_prompt.dict())}")
         response = SQLGeneration(
-            prompt_id=user_prompt.id,
-            created_at=datetime.datetime.now()
+            prompt_id=user_prompt.id, created_at=datetime.datetime.now()
         )
         self.llm = self.model.get_model(
             database_connection=database_connection,
@@ -78,7 +77,7 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
         logger.info(
             f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
         )
-        response.sql = sql_query_list[-1] if len(sql_query_list) > 0 else "",
+        response.sql = (sql_query_list[-1] if len(sql_query_list) > 0 else "",)
         response.tokens_used = cb.total_tokens
         response.completed_at = datetime.datetime.now()
         return self.create_sql_query_status(

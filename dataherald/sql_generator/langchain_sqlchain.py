@@ -80,9 +80,7 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         )
         with get_openai_callback() as cb:
             result = db_chain(prompt)
-        logger.info(
-            f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}"
-        )
+        logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
         response.tokens_used = cb.total_tokens
         response.sql = self.format_sql_query(result["intermediate_steps"][1])
         response.completed_at = datetime.datetime.now()
