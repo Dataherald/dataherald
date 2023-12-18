@@ -15,6 +15,10 @@ from dataherald.sql_generator.dataherald_sqlagent import DataheraldSQLAgent
 from dataherald.types import SQLGeneration
 
 
+class SQLGenerationError(Exception):
+    pass
+
+
 class SQLGenerationService:
     def __init__(self, system: System, storage):
         self.system = system
@@ -34,11 +38,10 @@ class SQLGenerationService:
         if sql_generation_request.sql is not None:
             sql_generation = SQLGeneration(
                 prompt_id=prompt_id,
-                model=sql_generation_request.model,
                 sql=sql_generation_request.sql,
-                completed_at=datetime.now(),
                 tokens_used=0,
                 created_at=datetime.now(),
+                completed_at=datetime.now(),
             )
             sql_generation = create_sql_query_status(
                 db=database, query=sql_generation.sql, sql_generation=sql_generation
@@ -52,9 +55,12 @@ class SQLGenerationService:
             else:
                 sql_generator = DataheraldFinetuningAgent(self.system)
                 sql_generator.finetuned_llm_id = sql_generation_request.model
-            sql_generation = sql_generator.generate_response(
-                user_prompt=prompt, database_connection=db_connection
-            )
+            try:
+                sql_generation = sql_generator.generate_response(
+                    user_prompt=prompt, database_connection=db_connection
+                )
+            except Exception as e:
+                raise SQLGenerationError(str(e)) from e
         if sql_generation_request.evaluate:
             evaluator = self.system.instance(Evaluator)
             confidence_score = evaluator.get_confidence_score(

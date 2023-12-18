@@ -16,8 +16,8 @@ class SQLGenerationResponse(BaseModel):
     status: str
     completed_at: str
     sql: str | None
-    tokens_used: int
-    confidence_score: float
+    tokens_used: int | None
+    confidence_score: float | None
     error: str | None
     created_at: str
     metadata: dict | None

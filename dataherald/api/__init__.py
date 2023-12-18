@@ -145,3 +145,38 @@ class API(Component, ABC):
     @abstractmethod
     def get_finetuning_job(self, finetuning_job_id: str) -> Finetuning:
         pass
+
+    @abstractmethod
+    def create_sql_generation(
+        self, prompt_id: str, sql_generation_request: SQLGenerationRequest
+    ) -> SQLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def create_prompt_and_sql_generation(
+        self, prompt: PromptRequest, sql_generation: SQLGenerationRequest
+    ) -> SQLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def create_nl_generation(
+        self, sql_generation_id: str, nl_generation_request: NLGenerationRequest
+    ) -> NLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def create_sql_and_nl_generation(
+        self,
+        prompt_id: str,
+        sql_generation: SQLGenerationRequest,
+        nl_generation: NLGenerationRequest,
+    ) -> NLGenerationResponse:
+        pass
+
+    def create_prompt_sql_and_nl_generation(
+        self,
+        prompt: PromptRequest,
+        sql_generation: SQLGenerationRequest,
+        nl_generation: NLGenerationRequest,
+    ) -> NLGenerationResponse:
+        pass
