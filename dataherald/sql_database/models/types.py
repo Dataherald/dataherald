@@ -1,7 +1,8 @@
 import os
+from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, BaseSettings, Extra, validator
+from pydantic import BaseModel, BaseSettings, Extra, Field, validator
 
 from dataherald.utils.encrypt import FernetEncrypt
 
@@ -84,6 +85,8 @@ class DatabaseConnection(BaseModel):
     llm_api_key: str | None = None
     ssh_settings: SSHSettings | None = None
     file_storage: FileStorage | None = None
+    metadata: dict | None
+    created_at: datetime = Field(default_factory=datetime.now)
 
     @validator("uri", pre=True, always=True)
     def set_uri_without_ssh(cls, v, values):
