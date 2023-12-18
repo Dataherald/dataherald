@@ -16,7 +16,7 @@ from dataherald.db_scanner.repository.base import TableDescriptionRepository
 from dataherald.finetuning import FinetuningModel
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.finetunings import FinetuningsRepository
-from dataherald.repositories.golden_records import GoldenRecordRepository
+from dataherald.repositories.golden_sqls import GoldenSQLRepository
 from dataherald.types import Finetuning
 from dataherald.utils.agent_prompts import FINETUNING_SYSTEM_INFORMATION
 from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
@@ -122,15 +122,15 @@ class OpenAIFineTuning(FinetuningModel):
                 "status": TableDescriptionStatus.SYNCHRONIZED.value,
             }
         )
-        golden_records_repository = GoldenRecordRepository(self.storage)
+        golden_sqls_repository = GoldenSQLRepository(self.storage)
         database_schema = self.format_dataset(db_scan)
         finetuning_dataset_path = f"tmp/{str(uuid.uuid4())}.jsonl"
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.find_by_id(self.fine_tuning_model.id)
-        for golden_record_id in self.fine_tuning_model.golden_records:
-            golden_record = golden_records_repository.find_by_id(golden_record_id)
-            question = golden_record.question
-            query = golden_record.sql_query
+        for golden_sql_id in self.fine_tuning_model.golden_sqls:
+            golden_sql = golden_sqls_repository.find_by_id(golden_sql_id)
+            question = golden_sql.question
+            query = golden_sql.sql_query
             system_prompt = FINETUNING_SYSTEM_INFORMATION + database_schema
             user_prompt = "User Question: " + question + "\n SQL: "
             assistant_prompt = query + "\n"

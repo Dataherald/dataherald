@@ -57,7 +57,7 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
             \n"
             for sample in context:
                 samples_prompt_string += (
-                    f"Question: {sample['nl_question']} \nSQL: {sample['sql_query']} \n"
+                    f"Question: {sample['prompt_text']} \nSQL: {sample['sql']} \n"
                 )
 
         question_with_context = (

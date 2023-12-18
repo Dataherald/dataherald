@@ -41,7 +41,7 @@ from dataherald.repositories.database_connections import (
     DatabaseConnectionRepository,
 )
 from dataherald.repositories.finetunings import FinetuningsRepository
-from dataherald.repositories.golden_records import GoldenRecordRepository
+from dataherald.repositories.golden_sqls import GoldenSQLRepository
 from dataherald.repositories.instructions import InstructionRepository
 from dataherald.repositories.prompts import PromptNotFoundError
 from dataherald.repositories.sql_generations import SQLGenerationNotFoundError
@@ -59,8 +59,8 @@ from dataherald.types import (
     DatabaseConnectionRequest,
     Finetuning,
     FineTuningRequest,
-    GoldenRecord,
-    GoldenRecordRequest,
+    GoldenSQL,
+    GoldenSQLRequest,
     Instruction,
     InstructionRequest,
     ScannerRequest,
@@ -301,12 +301,10 @@ class FastAPI(API):
         )
 
     @override
-    def add_golden_records(
-        self, golden_records: List[GoldenRecordRequest]
-    ) -> List[GoldenRecord]:
+    def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
         """Takes in a list of NL <> SQL pairs and stores them to be used in prompts to the LLM"""
         context_store = self.system.instance(ContextStore)
-        return context_store.add_golden_records(golden_records)
+        return context_store.add_golden_sqls(golden_sqls)
 
     @override
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
@@ -325,23 +323,23 @@ class FastAPI(API):
         return result
 
     @override
-    def delete_golden_record(self, golden_record_id: str) -> dict:
+    def delete_golden_sql(self, golden_sql_id: str) -> dict:
         context_store = self.system.instance(ContextStore)
-        status = context_store.remove_golden_records([golden_record_id])
+        status = context_store.remove_golden_sqls([golden_sql_id])
         return {"status": status}
 
     @override
-    def get_golden_records(
+    def get_golden_sqls(
         self, db_connection_id: str = None, page: int = 1, limit: int = 10
-    ) -> List[GoldenRecord]:
-        golden_records_repository = GoldenRecordRepository(self.storage)
+    ) -> List[GoldenSQL]:
+        golden_sqls_repository = GoldenSQLRepository(self.storage)
         if db_connection_id:
-            return golden_records_repository.find_by(
+            return golden_sqls_repository.find_by(
                 {"db_connection_id": ObjectId(db_connection_id)},
                 page=page,
                 limit=limit,
             )
-        return golden_records_repository.find_all(page=page, limit=limit)
+        return golden_sqls_repository.find_all(page=page, limit=limit)
 
     @override
     def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
@@ -403,24 +401,24 @@ class FastAPI(API):
         if not db_connection:
             raise HTTPException(status_code=404, detail="Database connection not found")
 
-        golden_records_repository = GoldenRecordRepository(self.storage)
-        golden_records = []
-        if fine_tuning_request.golden_records:
-            for golden_record_id in fine_tuning_request.golden_records:
-                golden_record = golden_records_repository.find_by_id(golden_record_id)
-                if not golden_record:
+        golden_sqls_repository = GoldenSQLRepository(self.storage)
+        golden_sqls = []
+        if fine_tuning_request.golden_sqls:
+            for golden_sql_id in fine_tuning_request.golden_sqls:
+                golden_sql = golden_sqls_repository.find_by_id(golden_sql_id)
+                if not golden_sql:
                     raise HTTPException(
                         status_code=404, detail="Golden record not found"
                     )
-                golden_records.append(golden_record)
+                golden_sqls.append(golden_sql)
         else:
-            golden_records = golden_records_repository.find_by(
+            golden_sqls = golden_sqls_repository.find_by(
                 {"db_connection_id": ObjectId(fine_tuning_request.db_connection_id)},
                 page=0,
                 limit=0,
             )
-            if not golden_records:
-                raise HTTPException(status_code=404, detail="No golden records found")
+            if not golden_sqls:
+                raise HTTPException(status_code=404, detail="No golden sqls found")
 
         if fine_tuning_request.base_llm.model_name not in OPENAI_CONTEXT_WIDNOW_SIZES:
             raise HTTPException(
@@ -434,9 +432,7 @@ class FastAPI(API):
                 db_connection_id=fine_tuning_request.db_connection_id,
                 alias=fine_tuning_request.alias,
                 base_llm=fine_tuning_request.base_llm,
-                golden_records=[
-                    str(golden_record.id) for golden_record in golden_records
-                ],
+                golden_sqls=[str(golden_sql.id) for golden_sql in golden_sqls],
             )
         )
 

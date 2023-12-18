@@ -442,7 +442,9 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
         returned_output = ""
         for example in self.few_shot_examples[:number_of_samples]:
             if "used" not in example:
-                returned_output += f"Question: {example['nl_question']} -> SQL: {example['sql_query']}\n"
+                returned_output += (
+                    f"Question: {example['prompt_text']} -> SQL: {example['sql']}\n"
+                )
                 example["used"] = True
         if returned_output == "":
             returned_output = "No previously asked Question/SQL pairs are available"
@@ -526,8 +528,8 @@ class DataheraldSQLAgent(SQLGenerator):
         returned_result = []
         seen_list = []
         for example in fewshot_exmaples:
-            if example["nl_question"] not in seen_list:
-                seen_list.append(example["nl_question"])
+            if example["prompt_text"] not in seen_list:
+                seen_list.append(example["prompt_text"])
                 returned_result.append(example)
         return returned_result
 

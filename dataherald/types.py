@@ -50,15 +50,15 @@ class Instruction(BaseModel):
     db_connection_id: str
 
 
-class GoldenRecordRequest(DBConnectionValidation):
+class GoldenSQLRequest(DBConnectionValidation):
     question: str = Field(None, min_length=3)
     sql_query: str = Field(None, min_length=3)
 
 
-class GoldenRecord(BaseModel):
+class GoldenSQL(BaseModel):
     id: str | None = None
-    question: str
-    sql_query: str
+    prompt_text: str
+    sql: str
     db_connection_id: str
 
 
@@ -166,7 +166,7 @@ class Finetuning(BaseModel):
     finetuning_job_id: str | None = None
     model_id: str | None = None
     created_at: datetime = Field(default_factory=datetime.now)
-    golden_records: list[str] | None = None
+    golden_sqls: list[str] | None = None
     metadata: dict[str, str] | None = None
 
 
@@ -174,7 +174,7 @@ class FineTuningRequest(BaseModel):
     db_connection_id: str
     alias: str
     base_llm: BaseLLM
-    golden_records: list[str] | None = None
+    golden_sqls: list[str] | None = None
     metadata: dict[str, str] | None = None
 
 
