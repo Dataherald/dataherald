@@ -4,6 +4,16 @@ from typing import List
 from fastapi import BackgroundTasks
 
 from dataherald.api.types.query import Query
+from dataherald.api.types.requests import (
+    NLGenerationRequest,
+    PromptRequest,
+    SQLGenerationRequest,
+)
+from dataherald.api.types.responses import (
+    NLGenerationResponse,
+    PromptResponse,
+    SQLGenerationResponse,
+)
 from dataherald.config import Component
 from dataherald.db_scanner.models.types import QueryHistory, TableDescription
 from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
@@ -68,6 +78,10 @@ class API(Component, ABC):
 
     @abstractmethod
     def get_table_description(self, table_description_id: str) -> TableDescription:
+        pass
+
+    @abstractmethod
+    def create_prompt(self, prompt_request: PromptRequest) -> PromptResponse:
         pass
 
     @abstractmethod

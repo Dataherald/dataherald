@@ -11,6 +11,12 @@ from overrides import override
 
 from dataherald.api import API
 from dataherald.api.types.query import Query
+from dataherald.api.types.requests import (
+    PromptRequest,
+)
+from dataherald.api.types.responses import (
+    PromptResponse,
+)
 from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
@@ -26,10 +32,14 @@ from dataherald.db_scanner.repository.base import (
 )
 from dataherald.db_scanner.repository.query_history import QueryHistoryRepository
 from dataherald.finetuning.openai_finetuning import OpenAIFineTuning
-from dataherald.repositories.database_connections import DatabaseConnectionRepository
+from dataherald.repositories.database_connections import (
+    DatabaseConnectionNotFoundError,
+    DatabaseConnectionRepository,
+)
 from dataherald.repositories.finetunings import FinetuningsRepository
 from dataherald.repositories.golden_records import GoldenRecordRepository
 from dataherald.repositories.instructions import InstructionRepository
+from dataherald.services.prompts import PromptService
 from dataherald.sql_database.base import (
     InvalidDBConnectionError,
     SQLDatabase,
@@ -259,6 +269,21 @@ class FastAPI(API):
         if not result:
             raise HTTPException(status_code=404, detail="Table description not found")
         return result
+
+    @override
+    def create_prompt(self, prompt_request: PromptRequest) -> PromptResponse:
+        prompt_service = PromptService(self.storage)
+        try:
+            prompt = prompt_service.create(prompt_request)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except DatabaseConnectionNotFoundError:
+            raise HTTPException(  # noqa: B904
+                status_code=404, detail="Database connection not found"
+            )
+        prompt_dict = prompt.dict()
+        prompt_dict["created_at"] = str(prompt.created_at)
+        return PromptResponse(**prompt_dict)
 
     @override
     def get_query_history(self, db_connection_id: str) -> list[QueryHistory]:

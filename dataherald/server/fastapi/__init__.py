@@ -273,7 +273,7 @@ class FastAPI(dataherald.server.Server):
         return self._api.scan_db(scanner_request, background_tasks)
 
     def create_prompt(self, prompt_request: PromptRequest) -> PromptResponse:
-        pass
+        return self._api.create_prompt(prompt_request)
 
     def get_prompt(self, prompt_id: str) -> PromptResponse:
         pass
