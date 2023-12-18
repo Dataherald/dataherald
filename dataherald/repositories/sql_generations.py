@@ -5,6 +5,10 @@ from dataherald.types import SQLGeneration
 DB_COLLECTION = "sql_generations"
 
 
+class SQLGenerationNotFoundError(Exception):
+    pass
+
+
 class SQLGenerationRepository:
     def __init__(self, storage):
         self.storage = storage

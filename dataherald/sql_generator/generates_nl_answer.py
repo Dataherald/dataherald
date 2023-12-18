@@ -21,7 +21,7 @@ If the sql query result doesn't answer the question just say 'I don't know'
 """
 
 HUMAN_TEMPLATE = """ Answer the question given the sql query and the sql query result.
-Question: {question}
+Question: {prompt}
 SQL query: {sql_query}
 SQL query result: {sql_query_result}
 """
@@ -39,11 +39,11 @@ class GeneratesNlAnswer:
         top_k: int = 100,
     ) -> NLGeneration:
         prompt_repository = PromptRepository(self.storage)
-        question = prompt_repository.find_by_id(sql_generation.prompt_id)
+        prompt = prompt_repository.find_by_id(sql_generation.prompt_id)
 
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         database_connection = db_connection_repository.find_by_id(
-            question.db_connection_id
+            prompt.db_connection_id
         )
         self.llm = self.model.get_model(
             database_connection=database_connection,
@@ -95,7 +95,7 @@ class GeneratesNlAnswer:
         )
         chain = LLMChain(llm=self.llm, prompt=chat_prompt)
         nl_resp = chain.run(
-            question=question.question,
+            prompt=prompt.text,
             sql_query=sql_generation.sql,
             sql_query_result="\n".join([str(row) for row in rows]),
         )
