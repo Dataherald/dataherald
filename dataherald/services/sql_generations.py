@@ -3,10 +3,7 @@ from datetime import datetime
 from dataherald.api.types.requests import SQLGenerationRequest
 from dataherald.config import System
 from dataherald.eval import Evaluator
-from dataherald.repositories.database_connections import (
-    DatabaseConnectionNotFoundError,
-    DatabaseConnectionRepository,
-)
+from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.prompts import PromptNotFoundError, PromptRepository
 from dataherald.repositories.sql_generations import SQLGenerationRepository
 from dataherald.sql_database.base import SQLDatabase
@@ -33,10 +30,6 @@ class SQLGenerationService:
             raise PromptNotFoundError(f"Prompt {prompt_id} not found")
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         db_connection = db_connection_repository.find_by_id(prompt.db_connection_id)
-        if not db_connection:
-            raise DatabaseConnectionNotFoundError(
-                f"Database connection {prompt.db_connection_id} not found"
-            )
         database = SQLDatabase.get_sql_engine(db_connection)
         if sql_generation_request.sql is not None:
             sql_generation = SQLGeneration(
