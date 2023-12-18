@@ -183,7 +183,7 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/prompts/{sql_generation_id}/sql-generations/nl-generations",
+            "/api/v1/prompts/{prompt_id}/sql-generations/nl-generations",
             self.create_sql_and_nl_generation,
             methods=["POST"],
             status_code=201,
@@ -284,25 +284,27 @@ class FastAPI(dataherald.server.Server):
     def create_sql_generation(
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest
     ) -> SQLGenerationResponse:
-        pass
+        return self._api.create_sql_generation(prompt_id, sql_generation_request)
 
     def create_prompt_and_sql_generation(
         self, prompt: PromptRequest, sql_generation: SQLGenerationRequest
     ) -> SQLGenerationResponse:
-        pass
+        return self._api.create_prompt_and_sql_generation(prompt, sql_generation)
 
     def create_nl_generation(
         self, sql_generation_id: str, nl_generation_request: NLGenerationRequest
     ) -> NLGenerationResponse:
-        pass
+        return self._api.create_nl_generation(sql_generation_id, nl_generation_request)
 
     def create_sql_and_nl_generation(
         self,
-        sql_generation_id: str,
+        prompt_id: str,
         sql_generation: SQLGenerationRequest,
         nl_generation: NLGenerationRequest,
     ) -> NLGenerationResponse:
-        pass
+        return self._api.create_sql_and_nl_generation(
+            prompt_id, sql_generation, nl_generation
+        )
 
     def create_prompt_sql_and_nl_generation(
         self,
@@ -310,7 +312,9 @@ class FastAPI(dataherald.server.Server):
         sql_generation: SQLGenerationRequest,
         nl_generation: NLGenerationRequest,
     ) -> NLGenerationResponse:
-        pass
+        return self._api.create_prompt_sql_and_nl_generation(
+            prompt, sql_generation, nl_generation
+        )
 
     def root(self) -> dict[str, int]:
         return {"nanosecond heartbeat": self._api.heartbeat()}

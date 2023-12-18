@@ -12,10 +12,14 @@ from overrides import override
 from dataherald.api import API
 from dataherald.api.types.query import Query
 from dataherald.api.types.requests import (
+    NLGenerationRequest,
     PromptRequest,
+    SQLGenerationRequest,
 )
 from dataherald.api.types.responses import (
+    NLGenerationResponse,
     PromptResponse,
+    SQLGenerationResponse,
 )
 from dataherald.config import System
 from dataherald.context_store import ContextStore
@@ -39,7 +43,11 @@ from dataherald.repositories.database_connections import (
 from dataherald.repositories.finetunings import FinetuningsRepository
 from dataherald.repositories.golden_records import GoldenRecordRepository
 from dataherald.repositories.instructions import InstructionRepository
+from dataherald.repositories.prompts import PromptNotFoundError
+from dataherald.repositories.sql_generations import SQLGenerationNotFoundError
+from dataherald.services.nl_generations import NLGenerationError, NLGenerationService
 from dataherald.services.prompts import PromptService
+from dataherald.services.sql_generations import SQLGenerationError, SQLGenerationService
 from dataherald.sql_database.base import (
     InvalidDBConnectionError,
     SQLDatabase,
@@ -470,3 +478,164 @@ class FastAPI(API):
             raise HTTPException(status_code=404, detail="Model not found")
         openai_fine_tuning = OpenAIFineTuning(self.storage, model)
         return openai_fine_tuning.retrieve_finetuning_job()
+
+    @override
+    def create_sql_generation(
+        self, prompt_id: str, sql_generation_request: SQLGenerationRequest
+    ) -> SQLGenerationResponse:
+        sql_generation_service = SQLGenerationService(self.system, self.storage)
+        try:
+            sql_generation = sql_generation_service.create(
+                prompt_id, sql_generation_request
+            )
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except PromptNotFoundError as e:
+            raise HTTPException(status_code=404, detail="Prompt not found") from e
+        except SQLGenerationError as e:
+            raise HTTPException(
+                status_code=400, detail="Error raised during SQL generation"
+            ) from e
+        sql_generation_dict = sql_generation.dict()
+        sql_generation_dict["created_at"] = str(sql_generation.created_at)
+        sql_generation_dict["completed_at"] = str(sql_generation.completed_at)
+        return SQLGenerationResponse(**sql_generation_dict)
+
+    @override
+    def create_prompt_and_sql_generation(
+        self, prompt: PromptRequest, sql_generation: SQLGenerationRequest
+    ) -> SQLGenerationResponse:
+        prompt_service = PromptService(self.storage)
+        try:
+            prompt = prompt_service.create(prompt)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except DatabaseConnectionNotFoundError:
+            raise HTTPException(  # noqa: B904
+                status_code=404, detail="Database connection not found"
+            )
+
+        sql_generation_service = SQLGenerationService(self.system, self.storage)
+        try:
+            sql_generation = sql_generation_service.create(prompt.id, sql_generation)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except PromptNotFoundError as e:
+            raise HTTPException(status_code=404, detail="Prompt not found") from e
+        except SQLGenerationError as e:
+            raise HTTPException(
+                status_code=400, detail="Error raised during SQL generation"
+            ) from e
+        sql_generation_dict = sql_generation.dict()
+        sql_generation_dict["created_at"] = str(sql_generation.created_at)
+        sql_generation_dict["completed_at"] = str(sql_generation.completed_at)
+        return SQLGenerationResponse(**sql_generation_dict)
+
+    @override
+    def create_nl_generation(
+        self, sql_generation_id: str, nl_generation_request: NLGenerationRequest
+    ) -> NLGenerationResponse:
+        nl_generation_service = NLGenerationService(self.system, self.storage)
+        try:
+            nl_generation = nl_generation_service.create(
+                sql_generation_id, nl_generation_request
+            )
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except SQLGenerationNotFoundError as e:
+            raise HTTPException(
+                status_code=400, detail="SQL Generation not found"
+            ) from e
+        except NLGenerationError as e:
+            raise HTTPException(
+                status_code=400, detail="Error raised during NL generation"
+            ) from e
+        nl_generation_dict = nl_generation.dict()
+        nl_generation_dict["created_at"] = str(nl_generation.created_at)
+        return NLGenerationResponse(**nl_generation_dict)
+
+    @override
+    def create_sql_and_nl_generation(
+        self,
+        prompt_id: str,
+        sql_generation: SQLGenerationRequest,
+        nl_generation: NLGenerationRequest,
+    ) -> NLGenerationResponse:
+        sql_generation_service = SQLGenerationService(self.system, self.storage)
+        try:
+            sql_generation = sql_generation_service.create(prompt_id, sql_generation)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except PromptNotFoundError as e:
+            raise HTTPException(status_code=404, detail="Prompt not found") from e
+        except SQLGenerationError as e:
+            raise HTTPException(
+                status_code=400, detail="Error raised during SQL generation"
+            ) from e
+
+        nl_generation_service = NLGenerationService(self.system, self.storage)
+        try:
+            nl_generation = nl_generation_service.create(
+                sql_generation.id, nl_generation
+            )
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except SQLGenerationNotFoundError as e:
+            raise HTTPException(
+                status_code=400, detail="SQL Generation not found"
+            ) from e
+        except NLGenerationError as e:
+            raise HTTPException(
+                status_code=400, detail="Error raised during NL generation"
+            ) from e
+        nl_generation_dict = nl_generation.dict()
+        nl_generation_dict["created_at"] = str(nl_generation.created_at)
+        return NLGenerationResponse(**nl_generation_dict)
+
+    @override
+    def create_prompt_sql_and_nl_generation(
+        self,
+        prompt: PromptRequest,
+        sql_generation: SQLGenerationRequest,
+        nl_generation: NLGenerationRequest,
+    ) -> NLGenerationResponse:
+        prompt_service = PromptService(self.storage)
+        try:
+            prompt = prompt_service.create(prompt)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except DatabaseConnectionNotFoundError:
+            raise HTTPException(  # noqa: B904
+                status_code=404, detail="Database connection not found"
+            )
+
+        sql_generation_service = SQLGenerationService(self.system, self.storage)
+        try:
+            sql_generation = sql_generation_service.create(prompt.id, sql_generation)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except PromptNotFoundError as e:
+            raise HTTPException(status_code=404, detail="Prompt not found") from e
+        except SQLGenerationError as e:
+            raise HTTPException(
+                status_code=400, detail="Error raised during SQL generation"
+            ) from e
+
+        nl_generation_service = NLGenerationService(self.system, self.storage)
+        try:
+            nl_generation = nl_generation_service.create(
+                sql_generation.id, nl_generation
+            )
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except SQLGenerationNotFoundError as e:
+            raise HTTPException(
+                status_code=400, detail="SQL Generation not found"
+            ) from e
+        except NLGenerationError as e:
+            raise HTTPException(
+                status_code=400, detail="Error raised during NL generation"
+            ) from e
+        nl_generation_dict = nl_generation.dict()
+        nl_generation_dict["created_at"] = str(nl_generation.created_at)
+        return NLGenerationResponse(**nl_generation_dict)

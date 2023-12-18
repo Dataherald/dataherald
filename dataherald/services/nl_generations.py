@@ -9,6 +9,10 @@ from dataherald.sql_generator.generates_nl_answer import GeneratesNlAnswer
 from dataherald.types import NLGeneration
 
 
+class NLGenerationError(Exception):
+    pass
+
+
 class NLGenerationService:
     def __init__(self, system: System, storage):
         self.system = system
@@ -25,9 +29,12 @@ class NLGenerationService:
                 f"SQL Generation {sql_generation_id} not found"
             )
         nl_generator = GeneratesNlAnswer(self.system, self.storage)
-        nl_generation = nl_generator.execute(
-            sql_generation=sql_generation,
-            top_k=nl_generation_request.max_rows,
-        )
+        try:
+            nl_generation = nl_generator.execute(
+                sql_generation=sql_generation,
+                top_k=nl_generation_request.max_rows,
+            )
+        except Exception as e:
+            raise NLGenerationError(e) from e
         nl_generation.metadata = nl_generation_request.metadata
         return self.nl_generation_repository.insert(nl_generation)

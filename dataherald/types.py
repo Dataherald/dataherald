@@ -197,10 +197,10 @@ class SQLGeneration(BaseModel):
     model: str | None
     evaluate: bool = False
     sql: str | None
-    status: str
-    completed_at: datetime
-    tokens_used: int
-    confidence_score: float
+    status: str = "INVALID"
+    completed_at: datetime | None
+    tokens_used: int | None
+    confidence_score: float | None
     error: str | None
     created_at: datetime = Field(default_factory=datetime.now)
     metadata: dict | None
