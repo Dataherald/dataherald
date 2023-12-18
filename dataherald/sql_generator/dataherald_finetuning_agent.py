@@ -189,6 +189,7 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
     Use this tool to generate SQL queries.
     Pass the user question as the input to the tool.
     """
+    finetuned_llm_id: str = Field(exclude=True)
     args_schema: Type[BaseModel] = QuestionInput
     db_scan: List[TableDescription]
     instructions: List[dict] | None = Field(exclude=True, default=None)
@@ -283,9 +284,7 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
         else:
             user_prompt = "User Question: " + question
         response = openai.ChatCompletion.create(
-            model=os.getenv(
-                "FINETUNED_MODEL", "gpt-4-1106-preview"
-            ),  # gpt-4-1106-preview is included only for avoiding the error
+            model=self.finetuned_llm_id,
             api_key=self.api_key,
             temperature=0.0,
             messages=[
@@ -349,6 +348,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     instructions: List[dict] | None = Field(exclude=True, default=None)
     db_scan: List[TableDescription] = Field(exclude=True)
     api_key: str = Field(exclude=True)
+    finetuned_llm_id: str = Field(exclude=True)
 
     @property
     def dialect(self) -> str:
@@ -371,6 +371,7 @@ class SQLDatabaseToolkit(BaseToolkit):
                 db_scan=self.db_scan,
                 instructions=self.instructions,
                 api_key=self.api_key,
+                finetuned_llm_id=self.finetuned_llm_id,
             )
         )
         tools.append(SchemaSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
@@ -384,6 +385,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
     """
 
     llm: Any = None
+    finetuned_llm_id: str = Field(exclude=True)
 
     def create_sql_agent(
         self,
@@ -454,6 +456,10 @@ class DataheraldFinetuningAgent(SQLGenerator):
         """
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
+        response = SQLGeneration(
+            prompt_id=user_prompt.id,
+            created_at=datetime.datetime.now(),
+        )
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
@@ -478,6 +484,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
             instructions=instructions,
             db_scan=db_scan,
             api_key=database_connection.decrypt_api_key(),
+            finetuned_llm_id=self.finetuned_llm_id,
         )
         agent_executor = self.create_sql_agent(
             toolkit=toolkit,
@@ -513,13 +520,9 @@ class DataheraldFinetuningAgent(SQLGenerator):
                     sql_query = self.remove_markdown(sql_query)
                     sql_query = self.format_sql_query(action.tool_input)
         logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
-        response = SQLGeneration(
-            prompt_id=user_prompt.id,
-            tokens_used=cb.total_tokens,
-            model="RAG_AGENT",
-            completed_at=datetime.datetime.now(),
-            sql=sql_query,
-        )
+        response.sql = sql_query
+        response.tokens_used = cb.total_tokens
+        response.completed_at = datetime.datetime.now()
         return self.create_sql_query_status(
             self.database,
             response.sql,

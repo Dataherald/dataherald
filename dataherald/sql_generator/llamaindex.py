@@ -36,6 +36,10 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         context: List[dict] = None,
     ) -> SQLGeneration:
         logger.info(f"Generating SQL response to question: {str(user_prompt.dict())}")
+        response = SQLGeneration(
+            prompt_id=user_prompt.id,
+            created_at=datetime.datetime.now(),
+        )
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
@@ -97,13 +101,9 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         logger.info(
             f"total cost: {str(total_cost)} {str(token_counter.total_llm_token_count)}"
         )
-        response = SQLGeneration(
-            prompt_id=user_prompt.id,
-            tokens_used=token_counter.total_llm_token_count,
-            model="LLAMA_INDEX",
-            completed_at=datetime.datetime.now(),
-            sql=self.format_sql_query(result.metadata["sql_query"]),
-        )
+        response.tokens_used = token_counter.total_llm_token_count
+        response.sql = self.format_sql_query(result.metadata["sql_query"])
+        response.completed_at = datetime.datetime.now()
         return self.create_sql_query_status(
             self.database,
             response.sql,

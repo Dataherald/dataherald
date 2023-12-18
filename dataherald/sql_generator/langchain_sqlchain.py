@@ -3,7 +3,6 @@
 import datetime
 import logging
 import os
-import time
 from typing import Any, List
 
 from langchain import SQLDatabaseChain
@@ -49,7 +48,10 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         database_connection: DatabaseConnection,
         context: List[dict] = None,
     ) -> SQLGeneration:
-        start_time = time.time()
+        response = SQLGeneration(
+            prompt_id=user_prompt.id,
+            created_at=datetime.datetime.now(),
+        )
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
@@ -78,18 +80,12 @@ class LangChainSQLChainSQLGenerator(SQLGenerator):
         )
         with get_openai_callback() as cb:
             result = db_chain(prompt)
-
-        exec_time = time.time() - start_time
         logger.info(
-            f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)} time: {str(exec_time)}"
+            f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}"
         )
-        response = SQLGeneration(
-            prompt_id=user_prompt.id,
-            tokens_used=cb.total_tokens,
-            model="LANGCHAIN_SQLCHAIN",
-            completed_at=datetime.datetime.now(),
-            sql=self.format_sql_query(result["intermediate_steps"][1]),
-        )
+        response.tokens_used = cb.total_tokens
+        response.sql = self.format_sql_query(result["intermediate_steps"][1])
+        response.completed_at = datetime.datetime.now()
         return self.create_sql_query_status(
             self.database,
             response.sql,
