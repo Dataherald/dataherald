@@ -5,6 +5,10 @@ from dataherald.types import Prompt
 DB_COLLECTION = "prompts"
 
 
+class PromptNotFoundError(Exception):
+    pass
+
+
 class PromptRepository:
     def __init__(self, storage):
         self.storage = storage

@@ -604,6 +604,10 @@ class DataheraldSQLAgent(SQLGenerator):
     ) -> SQLGeneration:
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
+        response = SQLGeneration(
+            prompt_id=user_prompt.id,
+            created_at=datetime.datetime.now(),
+        )
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
@@ -676,13 +680,9 @@ class DataheraldSQLAgent(SQLGenerator):
                     sql_query = self.remove_markdown(sql_query)
                     sql_query = self.format_sql_query(action.tool_input)
         logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
-        response = SQLGeneration(
-            prompt_id=user_prompt.id,
-            tokens_used=cb.total_tokens,
-            model="RAG_AGENT",
-            completed_at=datetime.datetime.now(),
-            sql=sql_query,
-        )
+        response.sql = sql_query
+        response.tokens_used = cb.total_tokens
+        response.completed_at = datetime.datetime.now()
         return self.create_sql_query_status(
             self.database,
             response.sql,
