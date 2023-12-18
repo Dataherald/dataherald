@@ -6,9 +6,9 @@ from sql_metadata import Parser
 
 from dataherald.config import System
 from dataherald.context_store import ContextStore
-from dataherald.repositories.golden_records import GoldenRecordRepository
+from dataherald.repositories.golden_sqls import GoldenSQLRepository
 from dataherald.repositories.instructions import InstructionRepository
-from dataherald.types import GoldenRecord, GoldenRecordRequest, Prompt
+from dataherald.types import GoldenSQL, GoldenSQLRequest, Prompt
 
 logger = logging.getLogger(__name__)
 
@@ -25,19 +25,19 @@ class DefaultContextStore(ContextStore):
         closest_questions = self.vector_store.query(
             query_texts=[prompt.text],
             db_connection_id=prompt.db_connection_id,
-            collection=self.golden_record_collection,
+            collection=self.golden_sql_collection,
             num_results=number_of_samples,
         )
 
         samples = []
-        golden_records_repository = GoldenRecordRepository(self.db)
+        golden_sqls_repository = GoldenSQLRepository(self.db)
         for question in closest_questions:
-            golden_record = golden_records_repository.find_by_id(question["id"])
-            if golden_record is not None:
+            golden_sql = golden_sqls_repository.find_by_id(question["id"])
+            if golden_sql is not None:
                 samples.append(
                     {
-                        "nl_question": golden_record.question,
-                        "sql_query": golden_record.sql_query,
+                        "prompt_text": golden_sql.prompt_text,
+                        "sql": golden_sql.sql,
                         "score": question["score"],
                     }
                 )
@@ -59,45 +59,43 @@ class DefaultContextStore(ContextStore):
         return samples, instructions
 
     @override
-    def add_golden_records(
-        self, golden_records: List[GoldenRecordRequest]
-    ) -> List[GoldenRecord]:
-        """Creates embeddings of the questions and adds them to the VectorDB. Also adds the golden records to the DB"""
-        golden_records_repository = GoldenRecordRepository(self.db)
-        retruned_golden_records = []
-        for record in golden_records:
+    def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
+        """Creates embeddings of the questions and adds them to the VectorDB. Also adds the golden sqls to the DB"""
+        golden_sqls_repository = GoldenSQLRepository(self.db)
+        retruned_golden_sqls = []
+        for record in golden_sqls:
             tables = Parser(record.sql_query).tables
             question = record.question
-            golden_record = GoldenRecord(
+            golden_sql = GoldenSQL(
                 question=question,
                 sql_query=record.sql_query,
                 db_connection_id=record.db_connection_id,
             )
-            retruned_golden_records.append(golden_record)
-            golden_record = golden_records_repository.insert(golden_record)
+            retruned_golden_sqls.append(golden_sql)
+            golden_sql = golden_sqls_repository.insert(golden_sql)
             self.vector_store.add_record(
                 documents=question,
                 db_connection_id=record.db_connection_id,
-                collection=self.golden_record_collection,
+                collection=self.golden_sql_collection,
                 metadata=[
                     {
                         "tables_used": tables[0],
                         "db_connection_id": record.db_connection_id,
                     }
                 ],  # this should be updated for multiple tables
-                ids=[str(golden_record.id)],
+                ids=[str(golden_sql.id)],
             )
-        return retruned_golden_records
+        return retruned_golden_sqls
 
     @override
-    def remove_golden_records(self, ids: List) -> bool:
-        """Removes the golden records from the DB and the VectorDB"""
-        golden_records_repository = GoldenRecordRepository(self.db)
+    def remove_golden_sqls(self, ids: List) -> bool:
+        """Removes the golden sqls from the DB and the VectorDB"""
+        golden_sqls_repository = GoldenSQLRepository(self.db)
         for id in ids:
             self.vector_store.delete_record(
-                collection=self.golden_record_collection, id=id
+                collection=self.golden_sql_collection, id=id
             )
-            deleted = golden_records_repository.delete_by_id(id)
+            deleted = golden_sqls_repository.delete_by_id(id)
             if deleted == 0:
                 logger.warning(f"Golden record with id {id} not found")
         return True

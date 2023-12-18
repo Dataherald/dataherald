@@ -27,8 +27,8 @@ from dataherald.types import (
     DatabaseConnectionRequest,
     Finetuning,
     FineTuningRequest,
-    GoldenRecord,
-    GoldenRecordRequest,
+    GoldenSQL,
+    GoldenSQLRequest,
     Instruction,
     InstructionRequest,
     ScannerRequest,
@@ -115,25 +115,25 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/golden-records/{golden_record_id}",
-            self.delete_golden_record,
+            "/api/v1/golden-sqls/{golden_sql_id}",
+            self.delete_golden_sql,
             methods=["DELETE"],
-            tags=["Golden records"],
+            tags=["Golden SQLs"],
         )
 
         self.router.add_api_route(
-            "/api/v1/golden-records",
-            self.add_golden_records,
+            "/api/v1/golden-sqls",
+            self.add_golden_sqls,
             methods=["POST"],
             status_code=201,
-            tags=["Golden records"],
+            tags=["Golden SQLs"],
         )
 
         self.router.add_api_route(
-            "/api/v1/golden-records",
-            self.get_golden_records,
+            "/api/v1/golden-sqls",
+            self.get_golden_sqls,
             methods=["GET"],
-            tags=["Golden records"],
+            tags=["Golden SQLs"],
         )
 
         self.router.add_api_route(
@@ -366,27 +366,25 @@ class FastAPI(dataherald.server.Server):
         """Executes a query on the given db_connection_id"""
         return self._api.execute_sql_query(query)
 
-    def delete_golden_record(self, golden_record_id: str) -> dict:
+    def delete_golden_sql(self, golden_sql_id: str) -> dict:
         """Deletes a golden record"""
-        return self._api.delete_golden_record(golden_record_id)
+        return self._api.delete_golden_sql(golden_sql_id)
 
-    def add_golden_records(
-        self, golden_records: List[GoldenRecordRequest]
-    ) -> List[GoldenRecord]:
-        created_records = self._api.add_golden_records(golden_records)
+    def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
+        created_records = self._api.add_golden_sqls(golden_sqls)
 
         # Return a JSONResponse with status code 201 and the location header.
-        golden_records_as_dicts = [record.dict() for record in created_records]
+        golden_sqls_as_dicts = [record.dict() for record in created_records]
 
         return JSONResponse(
-            content=golden_records_as_dicts, status_code=status.HTTP_201_CREATED
+            content=golden_sqls_as_dicts, status_code=status.HTTP_201_CREATED
         )
 
-    def get_golden_records(
+    def get_golden_sqls(
         self, db_connection_id: str = None, page: int = 1, limit: int = 10
-    ) -> List[GoldenRecord]:
-        """Gets golden records"""
-        return self._api.get_golden_records(db_connection_id, page, limit)
+    ) -> List[GoldenSQL]:
+        """Gets golden sqls"""
+        return self._api.get_golden_sqls(db_connection_id, page, limit)
 
     def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
         """Adds an instruction"""

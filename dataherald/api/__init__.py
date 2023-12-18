@@ -22,8 +22,8 @@ from dataherald.types import (
     DatabaseConnectionRequest,
     Finetuning,
     FineTuningRequest,
-    GoldenRecord,
-    GoldenRecordRequest,
+    GoldenSQL,
+    GoldenSQLRequest,
     Instruction,
     InstructionRequest,
     ScannerRequest,
@@ -85,9 +85,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def add_golden_records(
-        self, golden_records: List[GoldenRecordRequest]
-    ) -> List[GoldenRecord]:
+    def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
         pass
 
     @abstractmethod
@@ -99,13 +97,13 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def delete_golden_record(self, golden_record_id: str) -> dict:
+    def delete_golden_sql(self, golden_sql_id: str) -> dict:
         pass
 
     @abstractmethod
-    def get_golden_records(
+    def get_golden_sqls(
         self, db_connection_id: str = None, page: int = 1, limit: int = 10
-    ) -> List[GoldenRecord]:
+    ) -> List[GoldenSQL]:
         pass
 
     @abstractmethod
