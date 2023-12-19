@@ -171,9 +171,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def get_sql_generation(
-        self, sql_generation_id: str
-    ) -> SQLGenerationResponse:
+    def get_sql_generation(self, sql_generation_id: str) -> SQLGenerationResponse:
         pass
 
     @abstractmethod
@@ -206,7 +204,5 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def get_nl_generation(
-        self, nl_generation_id: str
-    ) -> NLGenerationResponse:
+    def get_nl_generation(self, nl_generation_id: str) -> NLGenerationResponse:
         pass

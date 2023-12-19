@@ -324,9 +324,7 @@ class FastAPI(dataherald.server.Server):
     ) -> list[SQLGenerationResponse]:
         return self._api.get_sql_generations(prompt_id)
 
-    def get_sql_generation(
-        self, sql_generation_id: str
-    ) -> SQLGenerationResponse:
+    def get_sql_generation(self, sql_generation_id: str) -> SQLGenerationResponse:
         return self._api.get_sql_generation(sql_generation_id)
 
     def create_nl_generation(
@@ -359,9 +357,7 @@ class FastAPI(dataherald.server.Server):
     ) -> list[NLGenerationResponse]:
         return self._api.get_nl_generations(sql_generation_id)
 
-    def get_nl_generation(
-        self, nl_generation_id: str
-    ) -> NLGenerationResponse:
+    def get_nl_generation(self, nl_generation_id: str) -> NLGenerationResponse:
         return self._api.get_nl_generation(nl_generation_id)
 
     def root(self) -> dict[str, int]:

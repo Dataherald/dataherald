@@ -576,9 +576,7 @@ class FastAPI(API):
         return result
 
     @override
-    def get_sql_generation(
-        self, sql_generation_id: str
-    ) -> SQLGenerationResponse:
+    def get_sql_generation(self, sql_generation_id: str) -> SQLGenerationResponse:
         sql_generation_service = SQLGenerationService(self.system, self.storage)
         try:
             sql_generations = sql_generation_service.get(
@@ -704,9 +702,7 @@ class FastAPI(API):
         return result
 
     @override
-    def get_nl_generation(
-        self, nl_generation_id: str
-    ) -> NLGenerationResponse:
+    def get_nl_generation(self, nl_generation_id: str) -> NLGenerationResponse:
         nl_generation_service = NLGenerationService(self.system, self.storage)
         try:
             nl_generations = nl_generation_service.get(
