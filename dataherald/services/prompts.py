@@ -28,3 +28,6 @@ class PromptService:
             metadata=prompt_request.metadata,
         )
         return self.prompt_repository.insert(prompt)
+
+    def get(self, query) -> list[Prompt]:
+        return self.prompt_repository.find_by(query)

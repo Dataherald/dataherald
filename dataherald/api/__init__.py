@@ -85,6 +85,14 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
+    def get_prompt(self, prompt_id) -> PromptResponse:
+        pass
+
+    @abstractmethod
+    def get_prompts(self, db_connection_id: str | None = None) -> List[PromptResponse]:
+        pass
+
+    @abstractmethod
     def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
         pass
 
