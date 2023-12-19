@@ -70,8 +70,9 @@ if __name__ == "__main__":
                     "question": question["question"],
                     "original_confidence": original_response["confidence_score"],
                     "original_sql_query": original_response["sql_query"],
-                    "status": query["status"],
-                    "final_sql_confidence": None
+                    "original_status": original_response["sql_generation_status"],
+                    "latest_status": query["status"],
+                    "final_confidence": None
                     if len(responses) == 1
                     else final_response["confidence_score"],
                     "final_sql_query": None
