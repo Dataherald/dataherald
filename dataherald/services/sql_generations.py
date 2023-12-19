@@ -83,8 +83,7 @@ class SQLGenerationService:
         return self.sql_generation_repository.find_by(query)
 
     def execute(self, sql_generation_id: str, query: Query) -> tuple[str, dict]:
-        sql_generation_repository = SQLGenerationRepository(self.storage)
-        sql_generation = sql_generation_repository.find_by_id(sql_generation_id)
+        sql_generation = self.sql_generation_repository.find_by_id(sql_generation_id)
         if not sql_generation:
             raise SQLGenerationNotFoundError(
                 f"SQL Generation {sql_generation_id} not found"
