@@ -18,6 +18,7 @@ from langchain.callbacks.manager import (
 from langchain.chains.llm import LLMChain
 from langchain.schema import AgentAction
 from langchain.tools.base import BaseTool
+from openai import OpenAI
 from overrides import override
 from pydantic import BaseModel, Field
 from sqlalchemy.exc import SQLAlchemyError
@@ -26,6 +27,8 @@ from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.db_scanner.models.types import TableDescription, TableDescriptionStatus
 from dataherald.db_scanner.repository.base import TableDescriptionRepository
+from dataherald.finetuning.openai_finetuning import OpenAIFineTuning
+from dataherald.repositories.finetunings import FinetuningsRepository
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.sql_database.models.types import (
     DatabaseConnection,
@@ -188,81 +191,10 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
     Use this tool to generate SQL queries.
     Pass the user question as the input to the tool.
     """
-    finetuned_llm_id: str = Field(exclude=True)
+    finetuning_model_id: str = Field(exclude=True)
     args_schema: Type[BaseModel] = QuestionInput
     db_scan: List[TableDescription]
-    instructions: List[dict] | None = Field(exclude=True, default=None)
     api_key: str = Field(exclude=True)
-
-    def format_columns(self, table: TableDescription, top_k: int = 100) -> str:
-        """
-        format_columns formats the columns.
-
-        Args:
-            table: The table to format.
-            top_k: The number of categories to show.
-
-        Returns:
-            The formatted columns in string format.
-        """
-        columns_information = ""
-        for column in table.columns:
-            name = column.name
-            is_primary_key = column.is_primary_key
-            if is_primary_key:
-                primary_key_text = (
-                    f"this column is a primary key of the table {table.table_name},"
-                )
-            else:
-                primary_key_text = ""
-            foreign_key = column.foreign_key
-            if foreign_key:
-                foreign_key_text = (
-                    f"this column has a foreign key to the table {foreign_key},"
-                )
-            else:
-                foreign_key_text = ""
-            categories = column.categories
-            if categories:
-                if len(categories) <= top_k:
-                    categories_text = f"Categories: {categories},"
-                else:
-                    categories_text = ""
-            else:
-                categories_text = ""
-            if primary_key_text or foreign_key_text or categories_text:
-                columns_information += (
-                    f"{name}: {primary_key_text}{foreign_key_text}{categories_text}\n"
-                )
-        return columns_information
-
-    def format_database_schema(
-        self, db_scan: List[TableDescription], top_k: int = 100
-    ) -> str:
-        """
-        format_database_schema formats the database schema.
-
-        Args:
-            db_scan: The database schema.
-
-        Returns:
-            The formatted database schema in string format.
-        """
-        schema_of_database = ""
-        for table in db_scan:
-            tables_schema = table.table_schema
-            schema_of_database += f"{tables_schema}\n"
-            schema_of_database += "# Categorical Columns:\n"
-            columns_information = self.format_columns(table, top_k)
-            schema_of_database += columns_information
-            sample_rows = table.examples
-            schema_of_database += "# Sample rows:\n"
-            for item in sample_rows:
-                for key, value in item.items():
-                    schema_of_database += f"{key}: {value}, "
-                schema_of_database += "\n"
-            schema_of_database += "\n\n"
-        return schema_of_database
 
     @catch_exceptions()
     def _run(
@@ -271,28 +203,20 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Execute the query, return the results or an error message."""
-        system_prompt = FINETUNING_SYSTEM_INFORMATION + self.format_database_schema(
+        system_prompt = FINETUNING_SYSTEM_INFORMATION + OpenAIFineTuning.format_dataset(
             self.db_scan
         )
-        if self.instructions:
-            user_prompt = "Database administrator rules that should be followed:\n"
-            for index, instruction in enumerate(self.instructions):
-                user_prompt += f"{index+1}) {instruction['instruction']}\n"
-            user_prompt += "\n\n"
-            user_prompt += "User Question: " + question
-        else:
-            user_prompt = "User Question: " + question
-        response = openai.ChatCompletion.create(
-            model=self.finetuned_llm_id,
-            api_key=self.api_key,
+        user_prompt = "User Question: " + question + "\n SQL: "
+        client = OpenAI(api_key=self.api_key)
+        response = client.chat.completions.create(
+            model=self.finetuning_model_id,
             temperature=0.0,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
         )
-
-        return response.choices[0]["message"]["content"]
+        return response.choices[0].message.content
 
     async def _arun(
         self,
@@ -347,7 +271,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     instructions: List[dict] | None = Field(exclude=True, default=None)
     db_scan: List[TableDescription] = Field(exclude=True)
     api_key: str = Field(exclude=True)
-    finetuned_llm_id: str = Field(exclude=True)
+    finetuning_model_id: str = Field(exclude=True)
 
     @property
     def dialect(self) -> str:
@@ -368,9 +292,8 @@ class SQLDatabaseToolkit(BaseToolkit):
             GenerateSQL(
                 db=self.db,
                 db_scan=self.db_scan,
-                instructions=self.instructions,
                 api_key=self.api_key,
-                finetuned_llm_id=self.finetuned_llm_id,
+                finetuning_model_id=self.finetuning_model_id,
             )
         )
         tools.append(SchemaSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
@@ -384,7 +307,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
     """
 
     llm: Any = None
-    finetuned_llm_id: str = Field(exclude=True)
+    finetuning_id: str = Field(exclude=True)
 
     def create_sql_agent(
         self,
@@ -404,8 +327,9 @@ class DataheraldFinetuningAgent(SQLGenerator):
     ) -> AgentExecutor:
         tools = toolkit.get_tools()
         admin_instructions = ""
-        for index, instruction in enumerate(toolkit.instructions):
-            admin_instructions += f"{index+1}) {instruction['instruction']}\n"
+        if toolkit.instructions:
+            for index, instruction in enumerate(toolkit.instructions):
+                admin_instructions += f"{index+1}) {instruction['instruction']}\n"
         prefix = prefix.format(
             dialect=toolkit.dialect, admin_instructions=admin_instructions
         )
@@ -458,6 +382,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         response = SQLGeneration(
             prompt_id=user_prompt.id,
             created_at=datetime.datetime.now(),
+            finetuning_id=self.finetuning_id,
         )
         self.llm = self.model.get_model(
             database_connection=database_connection,
@@ -476,6 +401,8 @@ class DataheraldFinetuningAgent(SQLGenerator):
         _, instructions = context_store.retrieve_context_for_question(
             user_prompt, number_of_samples=1
         )
+        finetunings_repository = FinetuningsRepository(storage)
+        finetuning = finetunings_repository.find_by_id(self.finetuning_id)
 
         self.database = SQLDatabase.get_sql_engine(database_connection)
         toolkit = SQLDatabaseToolkit(
@@ -483,7 +410,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
             instructions=instructions,
             db_scan=db_scan,
             api_key=database_connection.decrypt_api_key(),
-            finetuned_llm_id=self.finetuned_llm_id,
+            finetuning_model_id=finetuning.model_id,
         )
         agent_executor = self.create_sql_agent(
             toolkit=toolkit,
@@ -504,12 +431,13 @@ class DataheraldFinetuningAgent(SQLGenerator):
                 return SQLGeneration(
                     prompt_id=user_prompt.id,
                     tokens_used=cb.total_tokens,
-                    model="FineTuning_Agent",
+                    finetuning_id=self.finetuned_llm_id,
                     completed_at=datetime.datetime.now(),
                     sql="",
                     status="INVALID",
                     error=str(e),
                 )
+        sql_query = ""
         if "```sql" in result["output"]:
             sql_query = self.remove_markdown(result["output"])
         else:

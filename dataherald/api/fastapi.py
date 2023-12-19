@@ -335,7 +335,10 @@ class FastAPI(API):
     def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
         """Takes in a list of NL <> SQL pairs and stores them to be used in prompts to the LLM"""
         context_store = self.system.instance(ContextStore)
-        return context_store.add_golden_sqls(golden_sqls)
+        golden_records = context_store.add_golden_sqls(golden_sqls)
+        for golden_record in golden_records:
+            golden_record.created_at = str(golden_record.created_at)
+        return golden_records
 
     @override
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
@@ -521,11 +524,9 @@ class FastAPI(API):
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except PromptNotFoundError as e:
-            raise HTTPException(status_code=404, detail="Prompt not found") from e
+            raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLGenerationError as e:
-            raise HTTPException(
-                status_code=400, detail="Error raised during SQL generation"
-            ) from e
+            raise HTTPException(status_code=400, detail=str(e)) from e
         sql_generation_dict = sql_generation.dict()
         sql_generation_dict["created_at"] = str(sql_generation.created_at)
         sql_generation_dict["completed_at"] = str(sql_generation.completed_at)
@@ -540,10 +541,8 @@ class FastAPI(API):
             prompt = prompt_service.create(prompt)
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        except DatabaseConnectionNotFoundError:
-            raise HTTPException(  # noqa: B904
-                status_code=404, detail="Database connection not found"
-            )
+        except DatabaseConnectionNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
 
         sql_generation_service = SQLGenerationService(self.system, self.storage)
         try:
@@ -551,11 +550,9 @@ class FastAPI(API):
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except PromptNotFoundError as e:
-            raise HTTPException(status_code=404, detail="Prompt not found") from e
+            raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLGenerationError as e:
-            raise HTTPException(
-                status_code=400, detail="Error raised during SQL generation"
-            ) from e
+            raise HTTPException(status_code=400, detail=str(e)) from e
         sql_generation_dict = sql_generation.dict()
         sql_generation_dict["created_at"] = str(sql_generation.created_at)
         sql_generation_dict["completed_at"] = str(sql_generation.completed_at)
@@ -573,13 +570,9 @@ class FastAPI(API):
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except SQLGenerationNotFoundError as e:
-            raise HTTPException(
-                status_code=400, detail="SQL Generation not found"
-            ) from e
+            raise HTTPException(status_code=400, detail=str(e)) from e
         except NLGenerationError as e:
-            raise HTTPException(
-                status_code=400, detail="Error raised during NL generation"
-            ) from e
+            raise HTTPException(status_code=400, detail=str(e)) from e
         nl_generation_dict = nl_generation.dict()
         nl_generation_dict["created_at"] = str(nl_generation.created_at)
         return NLGenerationResponse(**nl_generation_dict)
@@ -597,11 +590,9 @@ class FastAPI(API):
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except PromptNotFoundError as e:
-            raise HTTPException(status_code=404, detail="Prompt not found") from e
+            raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLGenerationError as e:
-            raise HTTPException(
-                status_code=400, detail="Error raised during SQL generation"
-            ) from e
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
         nl_generation_service = NLGenerationService(self.system, self.storage)
         try:
@@ -611,13 +602,9 @@ class FastAPI(API):
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except SQLGenerationNotFoundError as e:
-            raise HTTPException(
-                status_code=400, detail="SQL Generation not found"
-            ) from e
+            raise HTTPException(status_code=400, detail=str(e)) from e
         except NLGenerationError as e:
-            raise HTTPException(
-                status_code=400, detail="Error raised during NL generation"
-            ) from e
+            raise HTTPException(status_code=400, detail=str(e)) from e
         nl_generation_dict = nl_generation.dict()
         nl_generation_dict["created_at"] = str(nl_generation.created_at)
         return NLGenerationResponse(**nl_generation_dict)
@@ -634,10 +621,8 @@ class FastAPI(API):
             prompt = prompt_service.create(prompt)
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        except DatabaseConnectionNotFoundError:
-            raise HTTPException(  # noqa: B904
-                status_code=404, detail="Database connection not found"
-            )
+        except DatabaseConnectionNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e  # noqa: B904
 
         sql_generation_service = SQLGenerationService(self.system, self.storage)
         try:
@@ -645,11 +630,9 @@ class FastAPI(API):
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except PromptNotFoundError as e:
-            raise HTTPException(status_code=404, detail="Prompt not found") from e
+            raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLGenerationError as e:
-            raise HTTPException(
-                status_code=400, detail="Error raised during SQL generation"
-            ) from e
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
         nl_generation_service = NLGenerationService(self.system, self.storage)
         try:
@@ -659,13 +642,9 @@ class FastAPI(API):
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except SQLGenerationNotFoundError as e:
-            raise HTTPException(
-                status_code=400, detail="SQL Generation not found"
-            ) from e
+            raise HTTPException(status_code=400, detail=str(e)) from e
         except NLGenerationError as e:
-            raise HTTPException(
-                status_code=400, detail="Error raised during NL generation"
-            ) from e
+            raise HTTPException(status_code=400, detail=str(e)) from e
         nl_generation_dict = nl_generation.dict()
         nl_generation_dict["created_at"] = str(nl_generation.created_at)
         return NLGenerationResponse(**nl_generation_dict)

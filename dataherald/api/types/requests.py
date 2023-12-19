@@ -8,7 +8,7 @@ class PromptRequest(BaseModel):
 
 
 class SQLGenerationRequest(BaseModel):
-    model: str | None
+    finetuning_id: str | None
     evaluate: bool = False
     sql: str | None
     metadata: dict | None

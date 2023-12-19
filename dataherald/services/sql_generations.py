@@ -48,13 +48,13 @@ class SQLGenerationService:
             )
         else:  # noqa: PLR5501
             if (
-                sql_generation_request.model is None
-                or sql_generation_request.model == ""
+                sql_generation_request.finetuning_id is None
+                or sql_generation_request.finetuning_id == ""
             ):
                 sql_generator = DataheraldSQLAgent(self.system)
             else:
                 sql_generator = DataheraldFinetuningAgent(self.system)
-                sql_generator.finetuned_llm_id = sql_generation_request.model
+                sql_generator.finetuning_id = sql_generation_request.finetuning_id
             try:
                 sql_generation = sql_generator.generate_response(
                     user_prompt=prompt, database_connection=db_connection

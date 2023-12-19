@@ -64,18 +64,18 @@ class DefaultContextStore(ContextStore):
         golden_sqls_repository = GoldenSQLRepository(self.db)
         retruned_golden_sqls = []
         for record in golden_sqls:
-            tables = Parser(record.sql_query).tables
-            question = record.question
+            tables = Parser(record.sql).tables
+            prompt_text = record.prompt_text
             golden_sql = GoldenSQL(
-                question=question,
-                sql_query=record.sql_query,
+                prompt_text=prompt_text,
+                sql=record.sql,
                 db_connection_id=record.db_connection_id,
                 metadata=record.metadata,
             )
             retruned_golden_sqls.append(golden_sql)
             golden_sql = golden_sqls_repository.insert(golden_sql)
             self.vector_store.add_record(
-                documents=question,
+                documents=prompt_text,
                 db_connection_id=record.db_connection_id,
                 collection=self.golden_sql_collection,
                 metadata=[

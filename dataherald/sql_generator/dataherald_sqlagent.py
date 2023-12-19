@@ -666,12 +666,12 @@ class DataheraldSQLAgent(SQLGenerator):
                 return SQLGeneration(
                     prompt_id=user_prompt.id,
                     tokens_used=cb.total_tokens,
-                    model="RAG_AGENT",
                     completed_at=datetime.datetime.now(),
                     sql="",
                     status="INVALID",
                     error=str(e),
                 )
+        sql_query = ""
         if "```sql" in result["output"]:
             sql_query = self.remove_markdown(result["output"])
         else:

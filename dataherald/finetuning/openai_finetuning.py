@@ -128,8 +128,8 @@ class OpenAIFineTuning(FinetuningModel):
         model = model_repository.find_by_id(self.fine_tuning_model.id)
         for golden_sql_id in self.fine_tuning_model.golden_sqls:
             golden_sql = golden_sqls_repository.find_by_id(golden_sql_id)
-            question = golden_sql.question
-            query = golden_sql.sql_query
+            question = golden_sql.prompt_text
+            query = golden_sql.sql
             system_prompt = FINETUNING_SYSTEM_INFORMATION + database_schema
             user_prompt = "User Question: " + question + "\n SQL: "
             assistant_prompt = query + "\n"
