@@ -7,6 +7,14 @@ from dataherald.config import System
 from dataherald.db import DB
 from dataherald.vector_store import VectorStore
 
+
+def update_object_id_fields(field_name: str, collection_name: str):
+    for obj in storage.find_all(collection_name):
+        if obj[field_name] and obj[field_name] != "":
+            obj[field_name] = str(obj[field_name])
+            storage.update_or_create(collection_name, {"_id": obj["_id"]}, obj)
+
+
 if __name__ == "__main__":
     settings = dataherald.config.Settings()
     system = System(settings)
@@ -26,6 +34,11 @@ if __name__ == "__main__":
         storage.rename_field("golden_sqls", "question", "prompt_text")
     except Exception:  # noqa: S110
         pass
+
+    # Change datatype
+    update_object_id_fields("db_connection_id", "table_descriptions")
+    update_object_id_fields("db_connection_id", "golden_sqls")
+    update_object_id_fields("db_connection_id", "instructions")
 
     try:
         vector_store.delete_collection(golden_sql_collection)

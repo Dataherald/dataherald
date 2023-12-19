@@ -6,7 +6,6 @@ import uuid
 from typing import Any, List
 
 import tiktoken
-from bson.objectid import ObjectId
 from openai import OpenAI
 from overrides import override
 from tiktoken import Encoding
@@ -118,7 +117,7 @@ class OpenAIFineTuning(FinetuningModel):
         repository = TableDescriptionRepository(self.storage)
         db_scan = repository.get_all_tables_by_db(
             {
-                "db_connection_id": ObjectId(db_connection_id),
+                "db_connection_id": str(db_connection_id),
                 "status": TableDescriptionStatus.SYNCHRONIZED.value,
             }
         )

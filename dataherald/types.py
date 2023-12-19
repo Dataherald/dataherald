@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 
 from bson.errors import InvalidId
@@ -20,39 +20,34 @@ class DBConnectionValidation(BaseModel):
         return v
 
 
-class CreateResponseRequest(BaseModel):
-    question_id: str
-    sql_query: str | None = Field(None, min_length=3)
-
-
 class SQLQueryResult(BaseModel):
     columns: list[str]
     rows: list[dict]
 
 
-class Question(BaseModel):
-    id: str | None = None
-    question: str
-    db_connection_id: str
-
-
 class UpdateInstruction(BaseModel):
     instruction: str
+    metadata: dict | None
 
 
 class InstructionRequest(DBConnectionValidation):
     instruction: str = Field(None, min_length=3)
+    metadata: dict | None
 
 
 class Instruction(BaseModel):
     id: str | None = None
     instruction: str
     db_connection_id: str
+    created_at: datetime = Field(default_factory=datetime.now)
+    metadata: dict | None
 
 
 class GoldenSQLRequest(DBConnectionValidation):
     question: str = Field(None, min_length=3)
     sql_query: str = Field(None, min_length=3)
+    created_at: datetime = Field(default_factory=datetime.now)
+    metadata: dict | None
 
 
 class GoldenSQL(BaseModel):
@@ -60,38 +55,14 @@ class GoldenSQL(BaseModel):
     prompt_text: str
     sql: str
     db_connection_id: str
+    created_at: datetime = Field(default_factory=datetime.now)
+    metadata: dict | None
 
 
 class SQLGenerationStatus(Enum):
     NONE = "NONE"
     VALID = "VALID"
     INVALID = "INVALID"
-
-
-class Response(BaseModel):
-    id: str | None = None
-    question_id: str | None = None
-    response: str | None = None
-    sql_query: str
-    sql_query_result: SQLQueryResult | None
-    csv_file_path: str | None
-    sql_generation_status: str = "INVALID"
-    error_message: str | None
-    exec_time: float | None = None
-    total_tokens: int | None = None
-    total_cost: float | None = None
-    confidence_score: float | None = None
-    created_at: datetime = Field(default_factory=datetime.now)
-
-    @validator("created_at", pre=True)
-    def parse_datetime_with_timezone(cls, value):
-        if not value:
-            return None
-        return value.replace(tzinfo=timezone.utc)  # Set the timezone to UTC
-
-    @validator("question_id", pre=True)
-    def parse_question_id(cls, value):
-        return str(value)
 
 
 class SupportedDatabase(Enum):
@@ -102,12 +73,9 @@ class SupportedDatabase(Enum):
     BIGQUERY = "BIGQUERY"
 
 
-class QuestionRequest(DBConnectionValidation):
-    question: str = Field(None, min_length=3)
-
-
 class ScannerRequest(DBConnectionValidation):
     table_names: list[str] | None
+    metadata: dict | None
 
 
 class DatabaseConnectionRequest(BaseModel):
@@ -118,6 +86,7 @@ class DatabaseConnectionRequest(BaseModel):
     llm_api_key: str | None
     ssh_settings: SSHSettings | None
     file_storage: FileStorage | None
+    metadata: dict | None
 
 
 class ForeignKeyDetail(BaseModel):
@@ -138,6 +107,7 @@ class ColumnDescriptionRequest(BaseModel):
 class TableDescriptionRequest(BaseModel):
     description: str | None
     columns: list[ColumnDescriptionRequest] | None
+    metadata: dict | None
 
 
 class FineTuningStatus(Enum):

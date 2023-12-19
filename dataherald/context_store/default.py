@@ -70,6 +70,7 @@ class DefaultContextStore(ContextStore):
                 question=question,
                 sql_query=record.sql_query,
                 db_connection_id=record.db_connection_id,
+                metadata=record.metadata,
             )
             retruned_golden_sqls.append(golden_sql)
             golden_sql = golden_sqls_repository.insert(golden_sql)

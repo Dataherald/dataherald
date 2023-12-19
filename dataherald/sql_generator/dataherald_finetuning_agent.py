@@ -5,7 +5,6 @@ from functools import wraps
 from typing import Any, Callable, Dict, List, Type
 
 import openai
-from bson.objectid import ObjectId
 from google.api_core.exceptions import GoogleAPIError
 from langchain.agents.agent import AgentExecutor
 from langchain.agents.agent_toolkits.base import BaseToolkit
@@ -468,7 +467,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         repository = TableDescriptionRepository(storage)
         db_scan = repository.get_all_tables_by_db(
             {
-                "db_connection_id": ObjectId(database_connection.id),
+                "db_connection_id": str(database_connection.id),
                 "status": TableDescriptionStatus.SYNCHRONIZED.value,
             }
         )

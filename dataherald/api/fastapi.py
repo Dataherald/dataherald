@@ -5,7 +5,7 @@ import time
 from typing import List
 
 from bson import json_util
-from bson.objectid import InvalidId, ObjectId
+from bson.objectid import InvalidId
 from fastapi import BackgroundTasks, HTTPException
 from overrides import override
 
@@ -138,8 +138,7 @@ class FastAPI(API):
             scanner_request.table_names = all_tables
 
         scanner.synchronizing(
-            scanner_request.table_names,
-            scanner_request.db_connection_id,
+            scanner_request,
             TableDescriptionRepository(self.storage),
         )
 
@@ -161,6 +160,7 @@ class FastAPI(API):
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
                 file_storage=database_connection_request.file_storage,
+                metadata=database_connection_request.metadata,
             )
 
             SQLDatabase.get_sql_engine(db_connection, True)
@@ -196,6 +196,7 @@ class FastAPI(API):
                 use_ssh=database_connection_request.use_ssh,
                 ssh_settings=database_connection_request.ssh_settings,
                 file_storage=database_connection_request.file_storage,
+                metadata=database_connection_request.metadata,
             )
 
             SQLDatabase.get_sql_engine(db_connection, True)
@@ -237,7 +238,7 @@ class FastAPI(API):
     ) -> list[TableDescription]:
         scanner_repository = TableDescriptionRepository(self.storage)
         table_descriptions = scanner_repository.find_by(
-            {"db_connection_id": ObjectId(db_connection_id), "table_name": table_name}
+            {"db_connection_id": str(db_connection_id), "table_name": table_name}
         )
 
         if db_connection_id:
@@ -297,7 +298,7 @@ class FastAPI(API):
     def get_query_history(self, db_connection_id: str) -> list[QueryHistory]:
         query_history_repository = QueryHistoryRepository(self.storage)
         return query_history_repository.find_by(
-            {"db_connection_id": ObjectId(db_connection_id)}
+            {"db_connection_id": str(db_connection_id)}
         )
 
     @override
@@ -335,7 +336,7 @@ class FastAPI(API):
         golden_sqls_repository = GoldenSQLRepository(self.storage)
         if db_connection_id:
             return golden_sqls_repository.find_by(
-                {"db_connection_id": ObjectId(db_connection_id)},
+                {"db_connection_id": str(db_connection_id)},
                 page=page,
                 limit=limit,
             )
@@ -347,6 +348,7 @@ class FastAPI(API):
         instruction = Instruction(
             instruction=instruction_request.instruction,
             db_connection_id=instruction_request.db_connection_id,
+            metadata=instruction_request.metadata,
         )
         return instruction_repository.insert(instruction)
 
@@ -357,7 +359,7 @@ class FastAPI(API):
         instruction_repository = InstructionRepository(self.storage)
         if db_connection_id:
             return instruction_repository.find_by(
-                {"db_connection_id": ObjectId(db_connection_id)},
+                {"db_connection_id": str(db_connection_id)},
                 page=page,
                 limit=limit,
             )
@@ -385,6 +387,7 @@ class FastAPI(API):
             id=instruction_id,
             instruction=instruction_request.instruction,
             db_connection_id=instruction.db_connection_id,
+            metadata=instruction_request.metadata,
         )
         instruction_repository.update(updated_instruction)
         return json.loads(json_util.dumps(updated_instruction))
@@ -413,7 +416,7 @@ class FastAPI(API):
                 golden_sqls.append(golden_sql)
         else:
             golden_sqls = golden_sqls_repository.find_by(
-                {"db_connection_id": ObjectId(fine_tuning_request.db_connection_id)},
+                {"db_connection_id": str(fine_tuning_request.db_connection_id)},
                 page=0,
                 limit=0,
             )
@@ -433,6 +436,7 @@ class FastAPI(API):
                 alias=fine_tuning_request.alias,
                 base_llm=fine_tuning_request.base_llm,
                 golden_sqls=[str(golden_sql.id) for golden_sql in golden_sqls],
+                metadata=fine_tuning_request.metadata,
             )
         )
 
