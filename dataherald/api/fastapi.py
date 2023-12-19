@@ -341,20 +341,18 @@ class FastAPI(API):
         return golden_sqls
 
     @override
-    def execute_sql_query(self, query: Query) -> tuple[str, dict]:
+    def execute_sql_query(
+        self, sql_generation_id: str, query: Query
+    ) -> tuple[str, dict]:
         """Executes a SQL query against the database and returns the results"""
-        db_connection_repository = DatabaseConnectionRepository(self.storage)
-        database_connection = db_connection_repository.find_by_id(
-            query.db_connection_id
-        )
-        if not database_connection:
-            raise HTTPException(status_code=404, detail="Database connection not found")
-        database = SQLDatabase.get_sql_engine(database_connection)
+        sql_generation_service = SQLGenerationService(self.system, self.storage)
         try:
-            result = database.run_sql(query.sql_query)
-        except SQLInjectionError as e:
+            results = sql_generation_service.execute(sql_generation_id, query)
+        except SQLGenerationNotFoundError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
-        return result
+        except SQLInjectionError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        return results
 
     @override
     def delete_golden_sql(self, golden_sql_id: str) -> dict:
