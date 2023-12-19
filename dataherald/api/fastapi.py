@@ -559,6 +559,44 @@ class FastAPI(API):
         return SQLGenerationResponse(**sql_generation_dict)
 
     @override
+    def get_sql_generations(
+        self, prompt_id: str | None = None
+    ) -> list[SQLGenerationResponse]:
+        sql_generation_service = SQLGenerationService(self.system, self.storage)
+        query = {}
+        if prompt_id:
+            query["prompt_id"] = prompt_id
+        sql_generations = sql_generation_service.get(query)
+        result = []
+        for sql_generation in sql_generations:
+            sql_generation_dict = sql_generation.dict()
+            sql_generation_dict["created_at"] = str(sql_generation.created_at)
+            sql_generation_dict["completed_at"] = str(sql_generation.completed_at)
+            result.append(SQLGenerationResponse(**sql_generation_dict))
+        return result
+
+    @override
+    def get_sql_generation(
+        self, sql_generation_id: str
+    ) -> SQLGenerationResponse:
+        sql_generation_service = SQLGenerationService(self.system, self.storage)
+        try:
+            sql_generations = sql_generation_service.get(
+                {"_id": ObjectId(sql_generation_id)}
+            )
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if len(sql_generations) == 0:
+            raise HTTPException(
+                status_code=404, detail=f"SQL Generation {sql_generation_id} not found"
+            )
+        sql_generation_dict = sql_generations[0].dict()
+        sql_generation_dict["created_at"] = str(sql_generations[0].created_at)
+        sql_generation_dict["completed_at"] = str(sql_generations[0].completed_at)
+        return SQLGenerationResponse(**sql_generation_dict)
+
+    @override
     def create_nl_generation(
         self, sql_generation_id: str, nl_generation_request: NLGenerationRequest
     ) -> NLGenerationResponse:
@@ -647,4 +685,41 @@ class FastAPI(API):
             raise HTTPException(status_code=400, detail=str(e)) from e
         nl_generation_dict = nl_generation.dict()
         nl_generation_dict["created_at"] = str(nl_generation.created_at)
+        return NLGenerationResponse(**nl_generation_dict)
+
+    @override
+    def get_nl_generations(
+        self, sql_generation_id: str | None = None
+    ) -> list[NLGenerationResponse]:
+        nl_generation_service = NLGenerationService(self.system, self.storage)
+        query = {}
+        if sql_generation_id:
+            query["sql_generation_id"] = sql_generation_id
+        nl_generations = nl_generation_service.get(query)
+        result = []
+        for nl_generation in nl_generations:
+            nl_generation_dict = nl_generation.dict()
+            nl_generation_dict["created_at"] = str(nl_generation.created_at)
+            result.append(NLGenerationResponse(**nl_generation_dict))
+        return result
+
+    @override
+    def get_nl_generation(
+        self, nl_generation_id: str
+    ) -> NLGenerationResponse:
+        nl_generation_service = NLGenerationService(self.system, self.storage)
+        try:
+            nl_generations = nl_generation_service.get(
+                {"_id": ObjectId(nl_generation_id)}
+            )
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if len(nl_generations) == 0:
+            raise HTTPException(
+                status_code=404,
+                detail=f"NL Generation {nl_generation_id} not found",
+            )
+        nl_generation_dict = nl_generations[0].dict()
+        nl_generation_dict["created_at"] = str(nl_generations[0].created_at)
         return NLGenerationResponse(**nl_generation_dict)

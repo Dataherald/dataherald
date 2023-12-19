@@ -165,6 +165,18 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
+    def get_sql_generations(
+        self, prompt_id: str | None = None
+    ) -> list[SQLGenerationResponse]:
+        pass
+
+    @abstractmethod
+    def get_sql_generation(
+        self, sql_generation_id: str
+    ) -> SQLGenerationResponse:
+        pass
+
+    @abstractmethod
     def create_nl_generation(
         self, sql_generation_id: str, nl_generation_request: NLGenerationRequest
     ) -> NLGenerationResponse:
@@ -184,5 +196,17 @@ class API(Component, ABC):
         prompt: PromptRequest,
         sql_generation: SQLGenerationRequest,
         nl_generation: NLGenerationRequest,
+    ) -> NLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def get_nl_generations(
+        self, sql_generation_id: str | None = None
+    ) -> list[NLGenerationResponse]:
+        pass
+
+    @abstractmethod
+    def get_nl_generation(
+        self, nl_generation_id: str
     ) -> NLGenerationResponse:
         pass

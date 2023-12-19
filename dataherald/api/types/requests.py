@@ -15,5 +15,5 @@ class SQLGenerationRequest(BaseModel):
 
 
 class NLGenerationRequest(BaseModel):
-    max_rows: int
+    max_rows: int = 100
     metadata: dict | None

@@ -175,6 +175,20 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/sql-generations",
+            self.get_sql_generations,
+            methods=["GET"],
+            tags=["SQL Generation"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/sql-generations/{sql_generation_id}",
+            self.get_sql_generation,
+            methods=["GET"],
+            tags=["SQL Generation"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/sql-generations/{sql_generation_id}/nl-generations",
             self.create_nl_generation,
             methods=["POST"],
@@ -195,6 +209,20 @@ class FastAPI(dataherald.server.Server):
             self.create_prompt_sql_and_nl_generation,
             methods=["POST"],
             status_code=201,
+            tags=["NL Generation"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/nl-generations",
+            self.get_nl_generations,
+            methods=["GET"],
+            tags=["NL Generation"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/nl-generations/{nl_generation_id}",
+            self.get_nl_generation,
+            methods=["GET"],
             tags=["NL Generation"],
         )
 
@@ -291,6 +319,16 @@ class FastAPI(dataherald.server.Server):
     ) -> SQLGenerationResponse:
         return self._api.create_prompt_and_sql_generation(prompt, sql_generation)
 
+    def get_sql_generations(
+        self, prompt_id: str | None = None
+    ) -> list[SQLGenerationResponse]:
+        return self._api.get_sql_generations(prompt_id)
+
+    def get_sql_generation(
+        self, sql_generation_id: str
+    ) -> SQLGenerationResponse:
+        return self._api.get_sql_generation(sql_generation_id)
+
     def create_nl_generation(
         self, sql_generation_id: str, nl_generation_request: NLGenerationRequest
     ) -> NLGenerationResponse:
@@ -315,6 +353,16 @@ class FastAPI(dataherald.server.Server):
         return self._api.create_prompt_sql_and_nl_generation(
             prompt, sql_generation, nl_generation
         )
+
+    def get_nl_generations(
+        self, sql_generation_id: str | None = None
+    ) -> list[NLGenerationResponse]:
+        return self._api.get_nl_generations(sql_generation_id)
+
+    def get_nl_generation(
+        self, nl_generation_id: str
+    ) -> NLGenerationResponse:
+        return self._api.get_nl_generation(nl_generation_id)
 
     def root(self) -> dict[str, int]:
         return {"nanosecond heartbeat": self._api.heartbeat()}

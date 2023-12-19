@@ -72,3 +72,6 @@ class SQLGenerationService:
             sql_generation.confidence_score = confidence_score
         sql_generation.metadata = sql_generation_request.metadata
         return self.sql_generation_repository.insert(sql_generation)
+
+    def get(self, query) -> list[SQLGeneration]:
+        return self.sql_generation_repository.find_by(query)

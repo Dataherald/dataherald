@@ -38,3 +38,6 @@ class NLGenerationService:
             raise NLGenerationError(e) from e
         nl_generation.metadata = nl_generation_request.metadata
         return self.nl_generation_repository.insert(nl_generation)
+
+    def get(self, query) -> list[NLGeneration]:
+        return self.nl_generation_repository.find_by(query)
