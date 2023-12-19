@@ -276,10 +276,10 @@ class FastAPI(dataherald.server.Server):
         return self._api.create_prompt(prompt_request)
 
     def get_prompt(self, prompt_id: str) -> PromptResponse:
-        pass
+        return self._api.get_prompt(prompt_id)
 
-    def get_prompts(self) -> list[PromptResponse]:
-        return []
+    def get_prompts(self, db_connection_id: str | None = None) -> list[PromptResponse]:
+        return self._api.get_prompts(db_connection_id)
 
     def create_sql_generation(
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest

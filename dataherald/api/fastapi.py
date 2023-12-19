@@ -5,7 +5,7 @@ import time
 from typing import List
 
 from bson import json_util
-from bson.objectid import InvalidId
+from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
 from overrides import override
 
@@ -293,6 +293,36 @@ class FastAPI(API):
         prompt_dict = prompt.dict()
         prompt_dict["created_at"] = str(prompt.created_at)
         return PromptResponse(**prompt_dict)
+
+    @override
+    def get_prompt(self, prompt_id) -> PromptResponse:
+        prompt_service = PromptService(self.storage)
+        try:
+            prompts = prompt_service.get({"_id": ObjectId(prompt_id)})
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if len(prompts) == 0:
+            raise HTTPException(  # noqa: B904
+                status_code=404, detail=f"Prompt {prompt_id} not found"
+            )
+        prompt_dict = prompts[0].dict()
+        prompt_dict["created_at"] = str(prompts[0].created_at)
+        return PromptResponse(**prompt_dict)
+
+    @override
+    def get_prompts(self, db_connection_id: str | None = None) -> List[PromptResponse]:
+        prompt_service = PromptService(self.storage)
+        query = {}
+        if db_connection_id:
+            query["db_connection_id"] = db_connection_id
+        prompts = prompt_service.get(query)
+        result = []
+        for prompt in prompts:
+            prompt_dict = prompt.dict()
+            prompt_dict["created_at"] = str(prompt.created_at)
+            result.append(PromptResponse(**prompt_dict))
+        return result
 
     @override
     def get_query_history(self, db_connection_id: str) -> list[QueryHistory]:
