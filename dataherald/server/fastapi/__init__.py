@@ -13,6 +13,7 @@ from dataherald.api.types.requests import (
     NLGenerationRequest,
     PromptRequest,
     SQLGenerationRequest,
+    UpdateMetadataRequest,
 )
 from dataherald.api.types.responses import (
     NLGenerationResponse,
@@ -137,6 +138,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/golden-sqls/{golden_sql_id}",
+            self.update_golden_sql,
+            methods=["PUT"],
+            tags=["Golden SQLs"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/prompts",
             self.create_prompt,
             methods=["POST"],
@@ -155,6 +163,13 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/prompts",
             self.get_prompts,
             methods=["GET"],
+            tags=["Prompts"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/prompts/{prompt_id}",
+            self.update_prompt,
+            methods=["PUT"],
             tags=["Prompts"],
         )
 
@@ -185,6 +200,13 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/sql-generations/{sql_generation_id}",
             self.get_sql_generation,
             methods=["GET"],
+            tags=["SQL Generation"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/sql-generations/{sql_generation_id}",
+            self.update_sql_generation,
+            methods=["PUT"],
             tags=["SQL Generation"],
         )
 
@@ -234,6 +256,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/nl-generations/{nl_generation_id}",
+            self.update_nl_generation,
+            methods=["PUT"],
+            tags=["NL Generation"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/instructions",
             self.add_instruction,
             methods=["POST"],
@@ -278,6 +307,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/finetunings/{finetuning_id}",
+            self.update_finetuning_job,
+            methods=["PUT"],
+            tags=["Finetunings"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/finetunings/{finetuning_id}/cancel",
             self.cancel_finetuning_job,
             methods=["POST"],
@@ -305,6 +341,11 @@ class FastAPI(dataherald.server.Server):
     def get_prompt(self, prompt_id: str) -> PromptResponse:
         return self._api.get_prompt(prompt_id)
 
+    def update_prompt(
+        self, prompt_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> PromptResponse:
+        return self._api.update_prompt(prompt_id, update_metadata_request)
+
     def get_prompts(self, db_connection_id: str | None = None) -> list[PromptResponse]:
         return self._api.get_prompts(db_connection_id)
 
@@ -325,6 +366,13 @@ class FastAPI(dataherald.server.Server):
 
     def get_sql_generation(self, sql_generation_id: str) -> SQLGenerationResponse:
         return self._api.get_sql_generation(sql_generation_id)
+
+    def update_sql_generation(
+        self, sql_generation_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> SQLGenerationResponse:
+        return self._api.update_sql_generation(
+            sql_generation_id, update_metadata_request
+        )
 
     def create_nl_generation(
         self, sql_generation_id: str, nl_generation_request: NLGenerationRequest
@@ -358,6 +406,11 @@ class FastAPI(dataherald.server.Server):
 
     def get_nl_generation(self, nl_generation_id: str) -> NLGenerationResponse:
         return self._api.get_nl_generation(nl_generation_id)
+
+    def update_nl_generation(
+        self, nl_generation_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> NLGenerationResponse:
+        return self._api.update_nl_generation(nl_generation_id, update_metadata_request)
 
     def root(self) -> dict[str, int]:
         return {"nanosecond heartbeat": self._api.heartbeat()}
@@ -435,6 +488,12 @@ class FastAPI(dataherald.server.Server):
         """Gets golden sqls"""
         return self._api.get_golden_sqls(db_connection_id, page, limit)
 
+    def update_golden_sql(
+        self, golden_sql_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> GoldenSQL:
+        """Gets golden sqls"""
+        return self._api.update_golden_sql(golden_sql_id, update_metadata_request)
+
     def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
         """Adds an instruction"""
         created_records = self._api.add_instruction(instruction_request)
@@ -479,3 +538,11 @@ class FastAPI(dataherald.server.Server):
     def get_finetuning_job(self, finetuning_job_id: str) -> Finetuning:
         """Gets fine tuning jobs"""
         return self._api.get_finetuning_job(finetuning_job_id)
+
+    def update_finetuning_job(
+        self, finetuning_job_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> Finetuning:
+        """Gets fine tuning jobs"""
+        return self._api.update_finetuning_job(
+            finetuning_job_id, update_metadata_request
+        )

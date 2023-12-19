@@ -8,6 +8,7 @@ from dataherald.api.types.requests import (
     NLGenerationRequest,
     PromptRequest,
     SQLGenerationRequest,
+    UpdateMetadataRequest,
 )
 from dataherald.api.types.responses import (
     NLGenerationResponse,
@@ -89,6 +90,12 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
+    def update_prompt(
+        self, prompt_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> PromptResponse:
+        pass
+
+    @abstractmethod
     def get_prompts(self, db_connection_id: str | None = None) -> List[PromptResponse]:
         pass
 
@@ -114,6 +121,12 @@ class API(Component, ABC):
     def get_golden_sqls(
         self, db_connection_id: str = None, page: int = 1, limit: int = 10
     ) -> List[GoldenSQL]:
+        pass
+
+    @abstractmethod
+    def update_golden_sql(
+        self, golden_sql_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> GoldenSQL:
         pass
 
     @abstractmethod
@@ -155,6 +168,12 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
+    def update_finetuning_job(
+        self, finetuning_job_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> Finetuning:
+        pass
+
+    @abstractmethod
     def create_sql_generation(
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest
     ) -> SQLGenerationResponse:
@@ -174,6 +193,12 @@ class API(Component, ABC):
 
     @abstractmethod
     def get_sql_generation(self, sql_generation_id: str) -> SQLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def update_sql_generation(
+        self, sql_generation_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> SQLGenerationResponse:
         pass
 
     @abstractmethod
@@ -207,4 +232,10 @@ class API(Component, ABC):
 
     @abstractmethod
     def get_nl_generation(self, nl_generation_id: str) -> NLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def update_nl_generation(
+        self, nl_generation_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> NLGenerationResponse:
         pass

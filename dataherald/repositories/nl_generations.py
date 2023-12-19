@@ -5,6 +5,10 @@ from dataherald.types import NLGeneration
 DB_COLLECTION = "nl_generations"
 
 
+class NLGenerationNotFoundError(Exception):
+    pass
+
+
 class NLGenerationRepository:
     def __init__(self, storage):
         self.storage = storage
@@ -14,6 +18,16 @@ class NLGenerationRepository:
         nl_generation_dict["sql_generation_id"] = str(nl_generation.sql_generation_id)
         nl_generation.id = str(
             self.storage.insert_one(DB_COLLECTION, nl_generation_dict)
+        )
+        return nl_generation
+
+    def update(self, nl_generation: NLGeneration) -> NLGeneration:
+        nl_generation_dict = nl_generation.dict(exclude={"id"})
+        nl_generation_dict["sql_generation_id"] = str(nl_generation.sql_generation_id)
+        self.storage.update_or_create(
+            DB_COLLECTION,
+            {"_id": ObjectId(nl_generation.id)},
+            nl_generation_dict,
         )
         return nl_generation
 
