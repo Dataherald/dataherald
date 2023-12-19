@@ -21,6 +21,16 @@ class SQLGenerationRepository:
         )
         return sql_generation
 
+    def update(self, sql_generation: SQLGeneration) -> SQLGeneration:
+        sql_generation_dict = sql_generation.dict(exclude={"id"})
+        sql_generation_dict["prompt_id"] = str(sql_generation.prompt_id)
+        self.storage.update_or_create(
+            DB_COLLECTION,
+            {"_id": ObjectId(sql_generation.id)},
+            sql_generation_dict,
+        )
+        return sql_generation
+
     def find_one(self, query: dict) -> SQLGeneration | None:
         row = self.storage.find_one(DB_COLLECTION, query)
         if not row:

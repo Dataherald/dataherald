@@ -34,6 +34,11 @@ class SQLGenerationService:
     def create(
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest
     ) -> SQLGeneration:
+        initial_sql_generation = SQLGeneration(
+            prompt_id=prompt_id,
+            created_at=datetime.now(),
+        )
+        self.sql_generation_repository.insert(initial_sql_generation)
         prompt_repository = PromptRepository(self.storage)
         prompt = prompt_repository.find_by_id(prompt_id)
         if not prompt:
@@ -43,11 +48,8 @@ class SQLGenerationService:
         database = SQLDatabase.get_sql_engine(db_connection)
         if sql_generation_request.sql is not None:
             sql_generation = SQLGeneration(
-                prompt_id=prompt_id,
                 sql=sql_generation_request.sql,
                 tokens_used=0,
-                created_at=datetime.now(),
-                completed_at=datetime.now(),
             )
             sql_generation = create_sql_query_status(
                 db=database, query=sql_generation.sql, sql_generation=sql_generation
@@ -61,6 +63,9 @@ class SQLGenerationService:
             else:
                 sql_generator = DataheraldFinetuningAgent(self.system)
                 sql_generator.finetuning_id = sql_generation_request.finetuning_id
+                initial_sql_generation.finetuning_id = (
+                    sql_generation_request.finetuning_id
+                )
             try:
                 sql_generation = sql_generator.generate_response(
                     user_prompt=prompt, database_connection=db_connection
@@ -74,10 +79,14 @@ class SQLGenerationService:
                 sql_generation=sql_generation,
                 database_connection=db_connection,
             )
-            sql_generation.evaluate = sql_generation_request.evaluate
-            sql_generation.confidence_score = confidence_score
-        sql_generation.metadata = sql_generation_request.metadata
-        return self.sql_generation_repository.insert(sql_generation)
+            initial_sql_generation.evaluate = sql_generation_request.evaluate
+            initial_sql_generation.confidence_score = confidence_score
+        initial_sql_generation.sql = sql_generation.sql
+        initial_sql_generation.tokens_used = sql_generation.tokens_used
+        initial_sql_generation.completed_at = datetime.now()
+        initial_sql_generation.metadata = initial_sql_generation.metadata
+        initial_sql_generation.status = sql_generation.status
+        return self.sql_generation_repository.update(initial_sql_generation)
 
     def get(self, query) -> list[SQLGeneration]:
         return self.sql_generation_repository.find_by(query)
