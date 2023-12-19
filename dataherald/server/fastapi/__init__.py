@@ -189,6 +189,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/sql-generations/{sql_generation_id}/execute",
+            self.execute_sql_query,
+            methods=["POST"],
+            tags=["SQL Generation"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/sql-generations/{sql_generation_id}/nl-generations",
             self.create_nl_generation,
             methods=["POST"],
@@ -224,14 +231,6 @@ class FastAPI(dataherald.server.Server):
             self.get_nl_generation,
             methods=["GET"],
             tags=["NL Generation"],
-        )
-
-        self.router.add_api_route(
-            "/api/v1/sql-query-executions",
-            self.execute_sql_query,
-            methods=["POST"],
-            status_code=201,
-            tags=["SQL queries"],
         )
 
         self.router.add_api_route(
@@ -410,9 +409,11 @@ class FastAPI(dataherald.server.Server):
         """Get description"""
         return self._api.get_query_history(db_connection_id)
 
-    def execute_sql_query(self, query: Query) -> tuple[str, dict]:
+    def execute_sql_query(
+        self, sql_generation_id: str, query: Query
+    ) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""
-        return self._api.execute_sql_query(query)
+        return self._api.execute_sql_query(sql_generation_id, query)
 
     def delete_golden_sql(self, golden_sql_id: str) -> dict:
         """Deletes a golden record"""

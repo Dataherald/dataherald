@@ -97,7 +97,9 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def execute_sql_query(self, query: Query) -> tuple[str, dict]:
+    def execute_sql_query(
+        self, sql_generation_id: str, query: Query
+    ) -> tuple[str, dict]:
         pass
 
     @abstractmethod

@@ -1,11 +1,17 @@
 from datetime import datetime
 
+from dataherald.api.types.query import Query
 from dataherald.api.types.requests import SQLGenerationRequest
 from dataherald.config import System
 from dataherald.eval import Evaluator
-from dataherald.repositories.database_connections import DatabaseConnectionRepository
+from dataherald.repositories.database_connections import (
+    DatabaseConnectionRepository,
+)
 from dataherald.repositories.prompts import PromptNotFoundError, PromptRepository
-from dataherald.repositories.sql_generations import SQLGenerationRepository
+from dataherald.repositories.sql_generations import (
+    SQLGenerationNotFoundError,
+    SQLGenerationRepository,
+)
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_generator.create_sql_query_status import create_sql_query_status
 from dataherald.sql_generator.dataherald_finetuning_agent import (
@@ -75,3 +81,17 @@ class SQLGenerationService:
 
     def get(self, query) -> list[SQLGeneration]:
         return self.sql_generation_repository.find_by(query)
+
+    def execute(self, sql_generation_id: str, query: Query) -> tuple[str, dict]:
+        sql_generation_repository = SQLGenerationRepository(self.storage)
+        sql_generation = sql_generation_repository.find_by_id(sql_generation_id)
+        if not sql_generation:
+            raise SQLGenerationNotFoundError(
+                f"SQL Generation {sql_generation_id} not found"
+            )
+        prompt_repository = PromptRepository(self.storage)
+        prompt = prompt_repository.find_by_id(sql_generation.prompt_id)
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        db_connection = db_connection_repository.find_by_id(prompt.db_connection_id)
+        database = SQLDatabase.get_sql_engine(db_connection)
+        return database.run_sql(sql_generation.sql, query.max_rows)
