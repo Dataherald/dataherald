@@ -335,10 +335,10 @@ class FastAPI(API):
     def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
         """Takes in a list of NL <> SQL pairs and stores them to be used in prompts to the LLM"""
         context_store = self.system.instance(ContextStore)
-        golden_records = context_store.add_golden_sqls(golden_sqls)
-        for golden_record in golden_records:
-            golden_record.created_at = str(golden_record.created_at)
-        return golden_records
+        golden_sqls = context_store.add_golden_sqls(golden_sqls)
+        for golden_sql in golden_sqls:
+            golden_sql.created_at = str(golden_sql.created_at)
+        return golden_sqls
 
     @override
     def execute_sql_query(self, query: Query) -> tuple[str, dict]:
