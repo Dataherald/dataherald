@@ -12,7 +12,7 @@ class PromptResponse(BaseModel):
 class SQLGenerationResponse(BaseModel):
     id: str
     prompt_id: str
-    model: str | None
+    finetuning_id: str | None
     status: str
     completed_at: str
     sql: str | None

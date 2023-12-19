@@ -8,12 +8,12 @@ class PromptRequest(BaseModel):
 
 
 class SQLGenerationRequest(BaseModel):
-    model: str | None
+    finetuning_id: str | None
     evaluate: bool = False
     sql: str | None
     metadata: dict | None
 
 
 class NLGenerationRequest(BaseModel):
-    max_rows: int
+    max_rows: int = 100
     metadata: dict | None

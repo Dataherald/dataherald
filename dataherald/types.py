@@ -44,8 +44,8 @@ class Instruction(BaseModel):
 
 
 class GoldenSQLRequest(DBConnectionValidation):
-    question: str = Field(None, min_length=3)
-    sql_query: str = Field(None, min_length=3)
+    prompt_text: str = Field(None, min_length=3)
+    sql: str = Field(None, min_length=3)
     created_at: datetime = Field(default_factory=datetime.now)
     metadata: dict | None
 
@@ -164,7 +164,7 @@ class Prompt(BaseModel):
 class SQLGeneration(BaseModel):
     id: str | None = None
     prompt_id: str
-    model: str | None
+    finetuning_id: str | None
     evaluate: bool = False
     sql: str | None
     status: str = "INVALID"
