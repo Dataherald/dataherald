@@ -38,7 +38,7 @@ class SQLGenerationResponse(BaseResponse):
 
 class NLGenerationResponse(BaseResponse):
     sql_generation_id: str
-    nl_answer: str
+    text: str
 
 
 class InstructionResponse(BaseResponse):
