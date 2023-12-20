@@ -1,5 +1,8 @@
 import os
+from datetime import timedelta
 
+from pymongo import ASCENDING
+from pymongo.errors import DuplicateKeyError
 from sql_metadata import Parser
 
 import dataherald.config
@@ -32,6 +35,7 @@ if __name__ == "__main__":
         # Rename fields
         storage.rename_field("golden_sqls", "sql_query", "sql")
         storage.rename_field("golden_sqls", "question", "prompt_text")
+        print("Collections remaned...")
     except Exception:  # noqa: S110
         pass
 
@@ -39,9 +43,12 @@ if __name__ == "__main__":
     update_object_id_fields("db_connection_id", "table_descriptions")
     update_object_id_fields("db_connection_id", "golden_sqls")
     update_object_id_fields("db_connection_id", "instructions")
+    update_object_id_fields("question_id", "responses")
+    print("Data types changed...")
 
     try:
         vector_store.delete_collection(golden_sql_collection)
+        print("Vector store deleted...")
     except Exception:  # noqa: S110
         pass
     # Upload golden records
@@ -63,3 +70,72 @@ if __name__ == "__main__":
             ],  # this should be updated for multiple tables
             ids=[str(golden_sql["_id"])],
         )
+    print("Golden sqls uploaded...")
+
+    # Migrate questions in prompts collection
+    questions = storage.find_all("questions")
+    for question in questions:
+        responses = storage.find(
+            "responses", {"question_id": str(question["_id"])}, [("_id", ASCENDING)]
+        )
+        try:
+            storage.insert_one(
+                "prompts",
+                {
+                    "_id": question["_id"],
+                    "db_connection_id": str(question["db_connection_id"]),
+                    "text": question["question"],
+                    "created_at": None
+                    if len(responses) == 0
+                    else responses[0]["created_at"],
+                    "metadata": None,
+                },
+            )
+        except DuplicateKeyError:
+            continue
+    print("Prompts created...")
+
+    # Migrate responses in sql_questions and nl_questions collections
+    responses = storage.find_all("responses")
+    for response in responses:
+        # create sql_generation
+        try:
+            storage.insert_one(
+                "sql_generations",
+                {
+                    "_id": response["_id"],
+                    "prompt_id": str(response["question_id"]),
+                    "evaluate": False if response["confidence_score"] is None else True,
+                    "sql": response["sql_query"],
+                    "status": "VALID"
+                    if response["sql_generation_status"] == "VALID"
+                    else "INVALID",
+                    "completed_at": response["created_at"]
+                    + timedelta(seconds=response["exec_time"])
+                    if response["exec_time"]
+                    else None,
+                    "tokens_used": response["total_tokens"],
+                    "confidence_score": response["confidence_score"],
+                    "error": response["error_message"],
+                    "created_at": response["created_at"],
+                    "metadata": None,
+                },
+            )
+        except DuplicateKeyError:
+            continue
+
+        # create nl_genertion
+        if response["response"]:
+            storage.insert_one(
+                "nl_generations",
+                {
+                    "sql_generation_id": response["question_id"],
+                    "nl_answer": response["response"],
+                    "created_at": response["created_at"]
+                    + timedelta(seconds=response["exec_time"])
+                    if response["exec_time"]
+                    else response["created_at"],
+                    "metadata": None,
+                },
+            )
+    print("SQL_generations and NL_generations created...")
