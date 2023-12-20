@@ -178,6 +178,6 @@ class SQLGeneration(BaseModel):
 class NLGeneration(BaseModel):
     id: str | None = None
     sql_generation_id: str
-    nl_answer: str
+    text: str
     created_at: datetime = Field(default_factory=datetime.now)
     metadata: dict | None

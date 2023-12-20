@@ -137,7 +137,7 @@ if __name__ == "__main__":
                 "nl_generations",
                 {
                     "sql_generation_id": str(response["_id"]),
-                    "nl_answer": response["response"],
+                    "text": response["response"],
                     "created_at": response["created_at"]
                     + timedelta(seconds=response["exec_time"])
                     if response["exec_time"]

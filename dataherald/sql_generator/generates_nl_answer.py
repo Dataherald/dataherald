@@ -55,7 +55,7 @@ class GeneratesNlAnswer:
         if sql_generation.status == "INVALID":
             return NLGeneration(
                 sql_generation_id=sql_generation.id,
-                nl_answer="I don't know, the SQL query is invalid.",
+                text="I don't know, the SQL query is invalid.",
                 created_at=datetime.now(),
             )
 
@@ -102,6 +102,6 @@ class GeneratesNlAnswer:
 
         return NLGeneration(
             sql_generation_id=sql_generation.id,
-            nl_answer=nl_resp,
+            text=nl_resp,
             created_at=datetime.now(),
         )
