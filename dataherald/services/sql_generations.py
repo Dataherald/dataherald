@@ -37,6 +37,7 @@ class SQLGenerationService:
         initial_sql_generation = SQLGeneration(
             prompt_id=prompt_id,
             created_at=datetime.now(),
+            metadata=sql_generation_request.metadata,
         )
         self.sql_generation_repository.insert(initial_sql_generation)
         prompt_repository = PromptRepository(self.storage)
@@ -85,7 +86,6 @@ class SQLGenerationService:
         initial_sql_generation.sql = sql_generation.sql
         initial_sql_generation.tokens_used = sql_generation.tokens_used
         initial_sql_generation.completed_at = datetime.now()
-        initial_sql_generation.metadata = initial_sql_generation.metadata
         initial_sql_generation.status = sql_generation.status
         return self.sql_generation_repository.update(initial_sql_generation)
 
