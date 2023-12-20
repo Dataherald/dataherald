@@ -1,10 +1,10 @@
 import os
-from typing import Any, List
+from typing import List
 
 import fastapi
 from fastapi import BackgroundTasks, status
 from fastapi import FastAPI as _FastAPI
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 
 import dataherald
@@ -16,13 +16,16 @@ from dataherald.api.types.requests import (
     UpdateMetadataRequest,
 )
 from dataherald.api.types.responses import (
+    DatabaseConnectionResponse,
+    InstructionResponse,
     NLGenerationResponse,
     PromptResponse,
     SQLGenerationResponse,
+    TableDescriptionResponse,
 )
 from dataherald.config import Settings
-from dataherald.db_scanner.models.types import QueryHistory, TableDescription
-from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
+from dataherald.db_scanner.models.types import QueryHistory
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import (
     CancelFineTuningRequest,
     DatabaseConnectionRequest,
@@ -30,7 +33,6 @@ from dataherald.types import (
     FineTuningRequest,
     GoldenSQL,
     GoldenSQLRequest,
-    Instruction,
     InstructionRequest,
     ScannerRequest,
     TableDescriptionRequest,
@@ -420,7 +422,7 @@ class FastAPI(dataherald.server.Server):
 
     def create_database_connection(
         self, database_connection_request: DatabaseConnectionRequest
-    ) -> DatabaseConnection:
+    ) -> DatabaseConnectionResponse:
         """Creates a database connection"""
         return self._api.create_database_connection(database_connection_request)
 
@@ -442,7 +444,7 @@ class FastAPI(dataherald.server.Server):
         self,
         table_description_id: str,
         table_description_request: TableDescriptionRequest,
-    ) -> TableDescription:
+    ) -> TableDescriptionResponse:
         """Add descriptions for tables and columns"""
         return self._api.update_table_description(
             table_description_id, table_description_request
@@ -450,11 +452,13 @@ class FastAPI(dataherald.server.Server):
 
     def list_table_descriptions(
         self, db_connection_id: str, table_name: str | None = None
-    ) -> list[TableDescription]:
+    ) -> list[TableDescriptionResponse]:
         """List table descriptions"""
         return self._api.list_table_descriptions(db_connection_id, table_name)
 
-    def get_table_description(self, table_description_id: str) -> TableDescription:
+    def get_table_description(
+        self, table_description_id: str
+    ) -> TableDescriptionResponse:
         """Get description"""
         return self._api.get_table_description(table_description_id)
 
@@ -494,7 +498,9 @@ class FastAPI(dataherald.server.Server):
         """Gets golden sqls"""
         return self._api.update_golden_sql(golden_sql_id, update_metadata_request)
 
-    def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
+    def add_instruction(
+        self, instruction_request: InstructionRequest
+    ) -> InstructionResponse:
         """Adds an instruction"""
         created_records = self._api.add_instruction(instruction_request)
 
@@ -507,7 +513,7 @@ class FastAPI(dataherald.server.Server):
 
     def get_instructions(
         self, db_connection_id: str = None, page: int = 1, limit: int = 10
-    ) -> List[Instruction]:
+    ) -> List[InstructionResponse]:
         """Gets instructions"""
         return self._api.get_instructions(db_connection_id, page, limit)
 
@@ -519,7 +525,7 @@ class FastAPI(dataherald.server.Server):
         self,
         instruction_id: str,
         instruction_request: UpdateInstruction,
-    ) -> Instruction:
+    ) -> InstructionResponse:
         """Updates an instruction"""
         return self._api.update_instruction(instruction_id, instruction_request)
 

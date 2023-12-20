@@ -11,13 +11,16 @@ from dataherald.api.types.requests import (
     UpdateMetadataRequest,
 )
 from dataherald.api.types.responses import (
+    DatabaseConnectionResponse,
+    InstructionResponse,
     NLGenerationResponse,
     PromptResponse,
     SQLGenerationResponse,
+    TableDescriptionResponse,
 )
 from dataherald.config import Component
-from dataherald.db_scanner.models.types import QueryHistory, TableDescription
-from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
+from dataherald.db_scanner.models.types import QueryHistory
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import (
     CancelFineTuningRequest,
     DatabaseConnectionRequest,
@@ -25,7 +28,6 @@ from dataherald.types import (
     FineTuningRequest,
     GoldenSQL,
     GoldenSQLRequest,
-    Instruction,
     InstructionRequest,
     ScannerRequest,
     TableDescriptionRequest,
@@ -48,7 +50,7 @@ class API(Component, ABC):
     @abstractmethod
     def create_database_connection(
         self, database_connection_request: DatabaseConnectionRequest
-    ) -> DatabaseConnection:
+    ) -> DatabaseConnectionResponse:
         pass
 
     @abstractmethod
@@ -68,17 +70,19 @@ class API(Component, ABC):
         self,
         table_description_id: str,
         table_description_request: TableDescriptionRequest,
-    ) -> TableDescription:
+    ) -> TableDescriptionResponse:
         pass
 
     @abstractmethod
     def list_table_descriptions(
         self, db_connection_id: str, table_name: str | None = None
-    ) -> list[TableDescription]:
+    ) -> list[TableDescriptionResponse]:
         pass
 
     @abstractmethod
-    def get_table_description(self, table_description_id: str) -> TableDescription:
+    def get_table_description(
+        self, table_description_id: str
+    ) -> TableDescriptionResponse:
         pass
 
     @abstractmethod
@@ -130,13 +134,15 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
+    def add_instruction(
+        self, instruction_request: InstructionRequest
+    ) -> InstructionResponse:
         pass
 
     @abstractmethod
     def get_instructions(
         self, db_connection_id: str = None, page: int = 1, limit: int = 10
-    ) -> List[Instruction]:
+    ) -> List[InstructionResponse]:
         pass
 
     @abstractmethod
@@ -148,7 +154,7 @@ class API(Component, ABC):
         self,
         instruction_id: str,
         instruction_request: UpdateInstruction,
-    ) -> Instruction:
+    ) -> InstructionResponse:
         pass
 
     @abstractmethod
