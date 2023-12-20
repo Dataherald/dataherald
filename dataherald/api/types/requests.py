@@ -14,9 +14,21 @@ class SQLGenerationRequest(BaseModel):
     metadata: dict | None
 
 
+class PromptSQLGenerationRequest(SQLGenerationRequest):
+    prompt: PromptRequest
+
+
 class NLGenerationRequest(BaseModel):
     max_rows: int = 100
     metadata: dict | None
+
+
+class NLGenerationsSQLGenerationRequest(NLGenerationRequest):
+    sql_generation: SQLGenerationRequest
+
+
+class PromptSQLGenerationNLGenerationRequest(NLGenerationRequest):
+    sql_generation: PromptSQLGenerationRequest
 
 
 class UpdateMetadataRequest(BaseModel):
