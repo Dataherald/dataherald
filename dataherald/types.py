@@ -46,7 +46,6 @@ class Instruction(BaseModel):
 class GoldenSQLRequest(DBConnectionValidation):
     prompt_text: str = Field(None, min_length=3)
     sql: str = Field(None, min_length=3)
-    created_at: datetime = Field(default_factory=datetime.now)
     metadata: dict | None
 
 
