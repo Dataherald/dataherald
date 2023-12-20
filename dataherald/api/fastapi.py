@@ -12,7 +12,10 @@ from dataherald.api import API
 from dataherald.api.types.query import Query
 from dataherald.api.types.requests import (
     NLGenerationRequest,
+    NLGenerationsSQLGenerationRequest,
     PromptRequest,
+    PromptSQLGenerationNLGenerationRequest,
+    PromptSQLGenerationRequest,
     SQLGenerationRequest,
     UpdateMetadataRequest,
 )
@@ -589,11 +592,11 @@ class FastAPI(API):
 
     @override
     def create_prompt_and_sql_generation(
-        self, prompt: PromptRequest, sql_generation: SQLGenerationRequest
+        self, prompt_sql_generation_request: PromptSQLGenerationRequest
     ) -> SQLGenerationResponse:
         prompt_service = PromptService(self.storage)
         try:
-            prompt = prompt_service.create(prompt)
+            prompt = prompt_service.create(prompt_sql_generation_request.prompt)
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except DatabaseConnectionNotFoundError as e:
@@ -601,7 +604,9 @@ class FastAPI(API):
 
         sql_generation_service = SQLGenerationService(self.system, self.storage)
         try:
-            sql_generation = sql_generation_service.create(prompt.id, sql_generation)
+            sql_generation = sql_generation_service.create(
+                prompt.id, prompt_sql_generation_request
+            )
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except PromptNotFoundError as e:
@@ -674,12 +679,13 @@ class FastAPI(API):
     def create_sql_and_nl_generation(
         self,
         prompt_id: str,
-        sql_generation: SQLGenerationRequest,
-        nl_generation: NLGenerationRequest,
+        nl_generation_sql_generation_request: NLGenerationsSQLGenerationRequest,
     ) -> NLGenerationResponse:
         sql_generation_service = SQLGenerationService(self.system, self.storage)
         try:
-            sql_generation = sql_generation_service.create(prompt_id, sql_generation)
+            sql_generation = sql_generation_service.create(
+                prompt_id, nl_generation_sql_generation_request.sql_generation
+            )
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except PromptNotFoundError as e:
@@ -690,7 +696,7 @@ class FastAPI(API):
         nl_generation_service = NLGenerationService(self.system, self.storage)
         try:
             nl_generation = nl_generation_service.create(
-                sql_generation.id, nl_generation
+                sql_generation.id, nl_generation_sql_generation_request
             )
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
@@ -704,14 +710,11 @@ class FastAPI(API):
 
     @override
     def create_prompt_sql_and_nl_generation(
-        self,
-        prompt: PromptRequest,
-        sql_generation: SQLGenerationRequest,
-        nl_generation: NLGenerationRequest,
+        self, request: PromptSQLGenerationNLGenerationRequest
     ) -> NLGenerationResponse:
         prompt_service = PromptService(self.storage)
         try:
-            prompt = prompt_service.create(prompt)
+            prompt = prompt_service.create(request.sql_generation.prompt)
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except DatabaseConnectionNotFoundError as e:
@@ -719,7 +722,9 @@ class FastAPI(API):
 
         sql_generation_service = SQLGenerationService(self.system, self.storage)
         try:
-            sql_generation = sql_generation_service.create(prompt.id, sql_generation)
+            sql_generation = sql_generation_service.create(
+                prompt.id, request.sql_generation
+            )
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except PromptNotFoundError as e:
@@ -729,9 +734,7 @@ class FastAPI(API):
 
         nl_generation_service = NLGenerationService(self.system, self.storage)
         try:
-            nl_generation = nl_generation_service.create(
-                sql_generation.id, nl_generation
-            )
+            nl_generation = nl_generation_service.create(sql_generation.id, request)
         except InvalidId as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         except SQLGenerationNotFoundError as e:

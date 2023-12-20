@@ -11,7 +11,10 @@ import dataherald
 from dataherald.api.types.query import Query
 from dataherald.api.types.requests import (
     NLGenerationRequest,
+    NLGenerationsSQLGenerationRequest,
     PromptRequest,
+    PromptSQLGenerationNLGenerationRequest,
+    PromptSQLGenerationRequest,
     SQLGenerationRequest,
     UpdateMetadataRequest,
 )
@@ -357,9 +360,9 @@ class FastAPI(dataherald.server.Server):
         return self._api.create_sql_generation(prompt_id, sql_generation_request)
 
     def create_prompt_and_sql_generation(
-        self, prompt: PromptRequest, sql_generation: SQLGenerationRequest
+        self, prompt_sql_generation_request: PromptSQLGenerationRequest
     ) -> SQLGenerationResponse:
-        return self._api.create_prompt_and_sql_generation(prompt, sql_generation)
+        return self._api.create_prompt_and_sql_generation(prompt_sql_generation_request)
 
     def get_sql_generations(
         self, prompt_id: str | None = None
@@ -384,22 +387,16 @@ class FastAPI(dataherald.server.Server):
     def create_sql_and_nl_generation(
         self,
         prompt_id: str,
-        sql_generation: SQLGenerationRequest,
-        nl_generation: NLGenerationRequest,
+        nl_generation_sql_generation_request: NLGenerationsSQLGenerationRequest,
     ) -> NLGenerationResponse:
         return self._api.create_sql_and_nl_generation(
-            prompt_id, sql_generation, nl_generation
+            prompt_id, nl_generation_sql_generation_request
         )
 
     def create_prompt_sql_and_nl_generation(
-        self,
-        prompt: PromptRequest,
-        sql_generation: SQLGenerationRequest,
-        nl_generation: NLGenerationRequest,
+        self, request: PromptSQLGenerationNLGenerationRequest
     ) -> NLGenerationResponse:
-        return self._api.create_prompt_sql_and_nl_generation(
-            prompt, sql_generation, nl_generation
-        )
+        return self._api.create_prompt_sql_and_nl_generation(request)
 
     def get_nl_generations(
         self, sql_generation_id: str | None = None

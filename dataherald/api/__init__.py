@@ -6,7 +6,10 @@ from fastapi import BackgroundTasks
 from dataherald.api.types.query import Query
 from dataherald.api.types.requests import (
     NLGenerationRequest,
+    NLGenerationsSQLGenerationRequest,
     PromptRequest,
+    PromptSQLGenerationNLGenerationRequest,
+    PromptSQLGenerationRequest,
     SQLGenerationRequest,
     UpdateMetadataRequest,
 )
@@ -187,7 +190,7 @@ class API(Component, ABC):
 
     @abstractmethod
     def create_prompt_and_sql_generation(
-        self, prompt: PromptRequest, sql_generation: SQLGenerationRequest
+        self, prompt_sql_generation_request: PromptSQLGenerationRequest
     ) -> SQLGenerationResponse:
         pass
 
@@ -217,16 +220,12 @@ class API(Component, ABC):
     def create_sql_and_nl_generation(
         self,
         prompt_id: str,
-        sql_generation: SQLGenerationRequest,
-        nl_generation: NLGenerationRequest,
+        nl_generation_sql_generation_request: NLGenerationsSQLGenerationRequest,
     ) -> NLGenerationResponse:
         pass
 
     def create_prompt_sql_and_nl_generation(
-        self,
-        prompt: PromptRequest,
-        sql_generation: SQLGenerationRequest,
-        nl_generation: NLGenerationRequest,
+        self, request: PromptSQLGenerationNLGenerationRequest
     ) -> NLGenerationResponse:
         pass
 
