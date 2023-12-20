@@ -90,7 +90,7 @@ class FastAPI(dataherald.server.Server):
         self.router.add_api_route(
             "/api/v1/table-descriptions/{table_description_id}",
             self.update_table_description,
-            methods=["PATCH"],
+            methods=["PUT"],
             tags=["Table descriptions"],
         )
 
