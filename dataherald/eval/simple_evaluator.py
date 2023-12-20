@@ -120,7 +120,15 @@ class SimpleEvaluator(Evaluator):
         user_question = user_prompt.text
         sql = sql_generation.sql
         dialect = database.dialect
-        tables = Parser(sql).tables
+        try:
+            tables = Parser(sql).tables
+        except Exception as e:
+            logger.info(
+                f"(Simple evaluator) error while parsing the SQL query: {str(e)}. Returning score 0"
+            )
+            return Evaluation(
+                question_id=user_prompt.id, answer_id=sql_generation.id, score=0
+            )
         schema = ""
         for scanned_table in db_scan:
             if scanned_table.table_name in tables:
