@@ -6,6 +6,7 @@ from typing import List
 from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
 from overrides import override
+from sqlalchemy.exc import SQLAlchemyError
 
 from dataherald.api import API
 from dataherald.api.types.query import Query
@@ -377,6 +378,8 @@ class FastAPI(API):
         except SQLGenerationNotFoundError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLInjectionError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except SQLAlchemyError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         return results
 
