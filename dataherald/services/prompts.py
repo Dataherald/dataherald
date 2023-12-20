@@ -3,7 +3,7 @@ from dataherald.repositories.database_connections import (
     DatabaseConnectionNotFoundError,
     DatabaseConnectionRepository,
 )
-from dataherald.repositories.prompts import PromptRepository
+from dataherald.repositories.prompts import PromptNotFoundError, PromptRepository
 from dataherald.types import Prompt
 
 
@@ -31,3 +31,10 @@ class PromptService:
 
     def get(self, query) -> list[Prompt]:
         return self.prompt_repository.find_by(query)
+
+    def update_metadata(self, prompt_id, metadata_request) -> Prompt:
+        prompt = self.prompt_repository.find_by_id(prompt_id)
+        if not prompt:
+            raise PromptNotFoundError(f"Prompt {prompt_id} not found")
+        prompt.metadata = metadata_request.metadata
+        return self.prompt_repository.update(prompt)

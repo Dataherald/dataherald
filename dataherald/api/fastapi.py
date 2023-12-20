@@ -15,6 +15,7 @@ from dataherald.api.types.requests import (
     NLGenerationRequest,
     PromptRequest,
     SQLGenerationRequest,
+    UpdateMetadataRequest,
 )
 from dataherald.api.types.responses import (
     NLGenerationResponse,
@@ -43,6 +44,7 @@ from dataherald.repositories.database_connections import (
 from dataherald.repositories.finetunings import FinetuningsRepository
 from dataherald.repositories.golden_sqls import GoldenSQLRepository
 from dataherald.repositories.instructions import InstructionRepository
+from dataherald.repositories.nl_generations import NLGenerationNotFoundError
 from dataherald.repositories.prompts import PromptNotFoundError
 from dataherald.repositories.sql_generations import SQLGenerationNotFoundError
 from dataherald.services.nl_generations import NLGenerationError, NLGenerationService
@@ -311,6 +313,19 @@ class FastAPI(API):
         return PromptResponse(**prompt_dict)
 
     @override
+    def update_prompt(
+        self, prompt_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> PromptResponse:
+        prompt_service = PromptService(self.storage)
+        try:
+            prompt = prompt_service.update_metadata(prompt_id, update_metadata_request)
+        except PromptNotFoundError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        prompt_dict = prompt.dict()
+        prompt_dict["created_at"] = str(prompt.created_at)
+        return PromptResponse(**prompt_dict)
+
+    @override
     def get_prompts(self, db_connection_id: str | None = None) -> List[PromptResponse]:
         prompt_service = PromptService(self.storage)
         query = {}
@@ -372,6 +387,18 @@ class FastAPI(API):
                 limit=limit,
             )
         return golden_sqls_repository.find_all(page=page, limit=limit)
+
+    @override
+    def update_golden_sql(
+        self, golden_sql_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> GoldenSQL:
+        golden_sqls_repository = GoldenSQLRepository(self.storage)
+        golden_sql = golden_sqls_repository.find_by_id(golden_sql_id)
+        if not golden_sql:
+            raise HTTPException(status_code=404, detail="Golden record not found")
+        golden_sql.metadata = update_metadata_request.metadata
+        golden_sqls_repository.update(golden_sql)
+        return golden_sql
 
     @override
     def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
@@ -511,6 +538,17 @@ class FastAPI(API):
         return openai_fine_tuning.retrieve_finetuning_job()
 
     @override
+    def update_finetuning_job(
+        self, finetuning_job_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> Finetuning:
+        model_repository = FinetuningsRepository(self.storage)
+        model = model_repository.find_by_id(finetuning_job_id)
+        if not model:
+            raise HTTPException(status_code=404, detail="Model not found")
+        model.metadata = update_metadata_request.metadata
+        return model_repository.update(model)
+
+    @override
     def create_sql_generation(
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest
     ) -> SQLGenerationResponse:
@@ -590,6 +628,21 @@ class FastAPI(API):
         sql_generation_dict = sql_generations[0].dict()
         sql_generation_dict["created_at"] = str(sql_generations[0].created_at)
         sql_generation_dict["completed_at"] = str(sql_generations[0].completed_at)
+        return SQLGenerationResponse(**sql_generation_dict)
+
+    @override
+    def update_sql_generation(
+        self, sql_generation_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> SQLGenerationResponse:
+        sql_generation_service = SQLGenerationService(self.system, self.storage)
+        try:
+            sql_generation = sql_generation_service.update_metadata(
+                sql_generation_id, update_metadata_request
+            )
+        except SQLGenerationNotFoundError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        sql_generation_dict = sql_generation.dict()
+        sql_generation_dict["created_at"] = str(sql_generation.created_at)
         return SQLGenerationResponse(**sql_generation_dict)
 
     @override
@@ -698,6 +751,21 @@ class FastAPI(API):
             nl_generation_dict["created_at"] = str(nl_generation.created_at)
             result.append(NLGenerationResponse(**nl_generation_dict))
         return result
+
+    @override
+    def update_nl_generation(
+        self, nl_generation_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> NLGenerationResponse:
+        nl_generation_service = NLGenerationService(self.system, self.storage)
+        try:
+            nl_generation = nl_generation_service.update_metadata(
+                nl_generation_id, update_metadata_request
+            )
+        except NLGenerationNotFoundError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        nl_generation_dict = nl_generation.dict()
+        nl_generation_dict["created_at"] = str(nl_generation.created_at)
+        return NLGenerationResponse(**nl_generation_dict)
 
     @override
     def get_nl_generation(self, nl_generation_id: str) -> NLGenerationResponse:

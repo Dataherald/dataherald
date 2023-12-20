@@ -39,3 +39,11 @@ class PromptRepository:
             row["id"] = str(row["_id"])
             result.append(Prompt(**row))
         return result
+
+    def update(self, prompt: Prompt) -> Prompt:
+        self.storage.update_or_create(
+            DB_COLLECTION,
+            {"_id": ObjectId(prompt.id)},
+            prompt.dict(exclude={"id"}),
+        )
+        return prompt

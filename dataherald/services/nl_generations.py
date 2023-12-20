@@ -1,6 +1,9 @@
 from dataherald.api.types.requests import NLGenerationRequest
 from dataherald.config import System
-from dataherald.repositories.nl_generations import NLGenerationRepository
+from dataherald.repositories.nl_generations import (
+    NLGenerationNotFoundError,
+    NLGenerationRepository,
+)
 from dataherald.repositories.sql_generations import (
     SQLGenerationNotFoundError,
     SQLGenerationRepository,
@@ -41,3 +44,12 @@ class NLGenerationService:
 
     def get(self, query) -> list[NLGeneration]:
         return self.nl_generation_repository.find_by(query)
+
+    def update_metadata(self, nl_generation_id, metadata_request) -> NLGeneration:
+        nl_generation = self.nl_generation_repository.find_by_id(nl_generation_id)
+        if not nl_generation:
+            raise NLGenerationNotFoundError(
+                f"NL generation {nl_generation_id} not found"
+            )
+        nl_generation.metadata = metadata_request.metadata
+        return self.nl_generation_repository.update(nl_generation)

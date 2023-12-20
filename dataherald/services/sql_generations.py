@@ -103,3 +103,12 @@ class SQLGenerationService:
         db_connection = db_connection_repository.find_by_id(prompt.db_connection_id)
         database = SQLDatabase.get_sql_engine(db_connection)
         return database.run_sql(sql_generation.sql, query.max_rows)
+
+    def update_metadata(self, sql_generation_id, metadata_request) -> SQLGeneration:
+        sql_generation = self.sql_generation_repository.find_by_id(sql_generation_id)
+        if not sql_generation:
+            raise SQLGenerationNotFoundError(
+                f"Sql generation {sql_generation_id} not found"
+            )
+        sql_generation.metadata = metadata_request.metadata
+        return self.sql_generation_repository.update(sql_generation)
