@@ -643,6 +643,7 @@ class FastAPI(API):
             raise HTTPException(status_code=400, detail=str(e)) from e
         sql_generation_dict = sql_generation.dict()
         sql_generation_dict["created_at"] = str(sql_generation.created_at)
+        sql_generation_dict["completed_at"] = str(sql_generation.completed_at)
         return SQLGenerationResponse(**sql_generation_dict)
 
     @override
