@@ -236,6 +236,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         df["similarities"] = df.table_embedding.apply(
             lambda x: self.cosine_similarity(x, question_embedding)
         )
+        df = df.sort_values(by='similarities', ascending=True)
         table_relevance = ""
         for _, row in df.iterrows():
             table_relevance += (
