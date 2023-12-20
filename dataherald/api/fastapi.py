@@ -25,6 +25,7 @@ from dataherald.api.types.responses import (
 )
 from dataherald.config import System
 from dataherald.context_store import ContextStore
+from dataherald.context_store.default import MalformedGoldenSQLError
 from dataherald.db import DB
 from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.models.types import (
@@ -357,7 +358,10 @@ class FastAPI(API):
     def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
         """Takes in a list of NL <> SQL pairs and stores them to be used in prompts to the LLM"""
         context_store = self.system.instance(ContextStore)
-        golden_sqls = context_store.add_golden_sqls(golden_sqls)
+        try:
+            golden_sqls = context_store.add_golden_sqls(golden_sqls)
+        except MalformedGoldenSQLError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         for golden_sql in golden_sqls:
             golden_sql.created_at = str(golden_sql.created_at)
         return golden_sqls

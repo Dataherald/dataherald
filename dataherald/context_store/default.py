@@ -12,6 +12,9 @@ from dataherald.types import GoldenSQL, GoldenSQLRequest, Prompt
 
 logger = logging.getLogger(__name__)
 
+class MalformedGoldenSQLError(Exception):
+    pass
+
 
 class DefaultContextStore(ContextStore):
     def __init__(self, system: System):
@@ -64,7 +67,12 @@ class DefaultContextStore(ContextStore):
         golden_sqls_repository = GoldenSQLRepository(self.db)
         retruned_golden_sqls = []
         for record in golden_sqls:
-            tables = Parser(record.sql).tables
+            try:
+                tables = Parser(record.sql).tables
+            except Exception as e:
+                raise MalformedGoldenSQLError(
+                    f"SQL {record.sql} is malformed. Please check the syntax."
+                ) from e
             prompt_text = record.prompt_text
             golden_sql = GoldenSQL(
                 prompt_text=prompt_text,
