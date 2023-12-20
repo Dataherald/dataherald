@@ -136,7 +136,7 @@ if __name__ == "__main__":
             storage.insert_one(
                 "nl_generations",
                 {
-                    "sql_generation_id": response["question_id"],
+                    "sql_generation_id": str(response["_id"]),
                     "nl_answer": response["response"],
                     "created_at": response["created_at"]
                     + timedelta(seconds=response["exec_time"])

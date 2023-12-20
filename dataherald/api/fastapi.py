@@ -1,10 +1,8 @@
-import json
 import logging
 import os
 import time
 from typing import List
 
-from bson import json_util
 from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
 from overrides import override
@@ -18,9 +16,12 @@ from dataherald.api.types.requests import (
     UpdateMetadataRequest,
 )
 from dataherald.api.types.responses import (
+    DatabaseConnectionResponse,
+    InstructionResponse,
     NLGenerationResponse,
     PromptResponse,
     SQLGenerationResponse,
+    TableDescriptionResponse,
 )
 from dataherald.config import System
 from dataherald.context_store import ContextStore
@@ -152,7 +153,7 @@ class FastAPI(API):
     @override
     def create_database_connection(
         self, database_connection_request: DatabaseConnectionRequest
-    ) -> DatabaseConnection:
+    ) -> DatabaseConnectionResponse:
         try:
             db_connection = DatabaseConnection(
                 alias=database_connection_request.alias,
@@ -175,19 +176,24 @@ class FastAPI(API):
             )
 
         db_connection_repository = DatabaseConnectionRepository(self.storage)
-        return db_connection_repository.insert(db_connection)
+        db_connection = db_connection_repository.insert(db_connection)
+        return DatabaseConnectionResponse(**db_connection.dict())
 
     @override
-    def list_database_connections(self) -> list[DatabaseConnection]:
+    def list_database_connections(self) -> list[DatabaseConnectionResponse]:
         db_connection_repository = DatabaseConnectionRepository(self.storage)
-        return db_connection_repository.find_all()
+        db_connections = db_connection_repository.find_all()
+        return [
+            DatabaseConnectionResponse(**db_connection.dict())
+            for db_connection in db_connections
+        ]
 
     @override
     def update_database_connection(
         self,
         db_connection_id: str,
         database_connection_request: DatabaseConnectionRequest,
-    ) -> DatabaseConnection:
+    ) -> DatabaseConnectionResponse:
         try:
             db_connection = DatabaseConnection(
                 id=db_connection_id,
@@ -210,14 +216,15 @@ class FastAPI(API):
                 detail=f"{e}",
             )
         db_connection_repository = DatabaseConnectionRepository(self.storage)
-        return db_connection_repository.update(db_connection)
+        db_connection = db_connection_repository.update(db_connection)
+        return DatabaseConnectionResponse(**db_connection.dict())
 
     @override
     def update_table_description(
         self,
         table_description_id: str,
         table_description_request: TableDescriptionRequest,
-    ) -> TableDescription:
+    ) -> TableDescriptionResponse:
         scanner_repository = TableDescriptionRepository(self.storage)
         try:
             table = scanner_repository.find_by_id(table_description_id)
@@ -230,14 +237,17 @@ class FastAPI(API):
             )
 
         try:
-            return scanner_repository.update_fields(table, table_description_request)
+            table_description = scanner_repository.update_fields(
+                table, table_description_request
+            )
+            return TableDescriptionResponse(**table_description)
         except InvalidColumnNameError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
     @override
     def list_table_descriptions(
         self, db_connection_id: str, table_name: str | None = None
-    ) -> list[TableDescription]:
+    ) -> list[TableDescriptionResponse]:
         scanner_repository = TableDescriptionRepository(self.storage)
         table_descriptions = scanner_repository.find_by(
             {"db_connection_id": str(db_connection_id), "table_name": table_name}
@@ -266,10 +276,15 @@ class FastAPI(API):
                     )
                 )
 
-        return table_descriptions
+        return [
+            TableDescriptionResponse(**table_description.dict())
+            for table_description in table_descriptions
+        ]
 
     @override
-    def get_table_description(self, table_description_id: str) -> TableDescription:
+    def get_table_description(
+        self, table_description_id: str
+    ) -> TableDescriptionResponse:
         scanner_repository = TableDescriptionRepository(self.storage)
 
         try:
@@ -279,7 +294,7 @@ class FastAPI(API):
 
         if not result:
             raise HTTPException(status_code=404, detail="Table description not found")
-        return result
+        return TableDescriptionResponse(**result.dict())
 
     @override
     def create_prompt(self, prompt_request: PromptRequest) -> PromptResponse:
@@ -292,9 +307,7 @@ class FastAPI(API):
             raise HTTPException(  # noqa: B904
                 status_code=404, detail="Database connection not found"
             )
-        prompt_dict = prompt.dict()
-        prompt_dict["created_at"] = str(prompt.created_at)
-        return PromptResponse(**prompt_dict)
+        return PromptResponse(**prompt.dict())
 
     @override
     def get_prompt(self, prompt_id) -> PromptResponse:
@@ -308,9 +321,7 @@ class FastAPI(API):
             raise HTTPException(  # noqa: B904
                 status_code=404, detail=f"Prompt {prompt_id} not found"
             )
-        prompt_dict = prompts[0].dict()
-        prompt_dict["created_at"] = str(prompts[0].created_at)
-        return PromptResponse(**prompt_dict)
+        return PromptResponse(**prompts[0].dict())
 
     @override
     def update_prompt(
@@ -321,9 +332,7 @@ class FastAPI(API):
             prompt = prompt_service.update_metadata(prompt_id, update_metadata_request)
         except PromptNotFoundError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        prompt_dict = prompt.dict()
-        prompt_dict["created_at"] = str(prompt.created_at)
-        return PromptResponse(**prompt_dict)
+        return PromptResponse(**prompt.dict())
 
     @override
     def get_prompts(self, db_connection_id: str | None = None) -> List[PromptResponse]:
@@ -334,9 +343,7 @@ class FastAPI(API):
         prompts = prompt_service.get(query)
         result = []
         for prompt in prompts:
-            prompt_dict = prompt.dict()
-            prompt_dict["created_at"] = str(prompt.created_at)
-            result.append(PromptResponse(**prompt_dict))
+            result.append(PromptResponse(**prompt.dict()))
         return result
 
     @override
@@ -401,27 +408,35 @@ class FastAPI(API):
         return golden_sql
 
     @override
-    def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
+    def add_instruction(
+        self, instruction_request: InstructionRequest
+    ) -> InstructionResponse:
         instruction_repository = InstructionRepository(self.storage)
         instruction = Instruction(
             instruction=instruction_request.instruction,
             db_connection_id=instruction_request.db_connection_id,
             metadata=instruction_request.metadata,
         )
-        return instruction_repository.insert(instruction)
+        instruction = instruction_repository.insert(instruction)
+        return InstructionResponse(**instruction.dict())
 
     @override
     def get_instructions(
         self, db_connection_id: str = None, page: int = 1, limit: int = 10
-    ) -> List[Instruction]:
+    ) -> List[InstructionResponse]:
         instruction_repository = InstructionRepository(self.storage)
         if db_connection_id:
-            return instruction_repository.find_by(
+            instructions = instruction_repository.find_by(
                 {"db_connection_id": str(db_connection_id)},
                 page=page,
                 limit=limit,
             )
-        return instruction_repository.find_all(page=page, limit=limit)
+        else:
+            instructions = instruction_repository.find_all(page=page, limit=limit)
+        result = []
+        for instruction in instructions:
+            result.append(InstructionResponse(**instruction.dict()))
+        return result
 
     @override
     def delete_instruction(self, instruction_id: str) -> dict:
@@ -436,7 +451,7 @@ class FastAPI(API):
         self,
         instruction_id: str,
         instruction_request: UpdateInstruction,
-    ) -> Instruction:
+    ) -> InstructionResponse:
         instruction_repository = InstructionRepository(self.storage)
         instruction = instruction_repository.find_by_id(instruction_id)
         if not instruction:
@@ -448,7 +463,7 @@ class FastAPI(API):
             metadata=instruction_request.metadata,
         )
         instruction_repository.update(updated_instruction)
-        return json.loads(json_util.dumps(updated_instruction))
+        return InstructionResponse(**updated_instruction.dict())
 
     @override
     def create_finetuning_job(
@@ -563,10 +578,7 @@ class FastAPI(API):
             raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLGenerationError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        sql_generation_dict = sql_generation.dict()
-        sql_generation_dict["created_at"] = str(sql_generation.created_at)
-        sql_generation_dict["completed_at"] = str(sql_generation.completed_at)
-        return SQLGenerationResponse(**sql_generation_dict)
+        return SQLGenerationResponse(**sql_generation.dict())
 
     @override
     def create_prompt_and_sql_generation(
@@ -589,10 +601,7 @@ class FastAPI(API):
             raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLGenerationError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        sql_generation_dict = sql_generation.dict()
-        sql_generation_dict["created_at"] = str(sql_generation.created_at)
-        sql_generation_dict["completed_at"] = str(sql_generation.completed_at)
-        return SQLGenerationResponse(**sql_generation_dict)
+        return SQLGenerationResponse(**sql_generation.dict())
 
     @override
     def get_sql_generations(
@@ -605,10 +614,7 @@ class FastAPI(API):
         sql_generations = sql_generation_service.get(query)
         result = []
         for sql_generation in sql_generations:
-            sql_generation_dict = sql_generation.dict()
-            sql_generation_dict["created_at"] = str(sql_generation.created_at)
-            sql_generation_dict["completed_at"] = str(sql_generation.completed_at)
-            result.append(SQLGenerationResponse(**sql_generation_dict))
+            result.append(SQLGenerationResponse(**sql_generation.dict()))
         return result
 
     @override
@@ -625,10 +631,7 @@ class FastAPI(API):
             raise HTTPException(
                 status_code=404, detail=f"SQL Generation {sql_generation_id} not found"
             )
-        sql_generation_dict = sql_generations[0].dict()
-        sql_generation_dict["created_at"] = str(sql_generations[0].created_at)
-        sql_generation_dict["completed_at"] = str(sql_generations[0].completed_at)
-        return SQLGenerationResponse(**sql_generation_dict)
+        return SQLGenerationResponse(**sql_generations[0].dict())
 
     @override
     def update_sql_generation(
@@ -641,10 +644,7 @@ class FastAPI(API):
             )
         except SQLGenerationNotFoundError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        sql_generation_dict = sql_generation.dict()
-        sql_generation_dict["created_at"] = str(sql_generation.created_at)
-        sql_generation_dict["completed_at"] = str(sql_generation.completed_at)
-        return SQLGenerationResponse(**sql_generation_dict)
+        return SQLGenerationResponse(**sql_generation.dict())
 
     @override
     def create_nl_generation(
@@ -661,9 +661,7 @@ class FastAPI(API):
             raise HTTPException(status_code=400, detail=str(e)) from e
         except NLGenerationError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        nl_generation_dict = nl_generation.dict()
-        nl_generation_dict["created_at"] = str(nl_generation.created_at)
-        return NLGenerationResponse(**nl_generation_dict)
+        return NLGenerationResponse(**nl_generation.dict())
 
     @override
     def create_sql_and_nl_generation(
@@ -733,9 +731,7 @@ class FastAPI(API):
             raise HTTPException(status_code=400, detail=str(e)) from e
         except NLGenerationError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        nl_generation_dict = nl_generation.dict()
-        nl_generation_dict["created_at"] = str(nl_generation.created_at)
-        return NLGenerationResponse(**nl_generation_dict)
+        return NLGenerationResponse(**nl_generation.dict())
 
     @override
     def get_nl_generations(
@@ -748,9 +744,7 @@ class FastAPI(API):
         nl_generations = nl_generation_service.get(query)
         result = []
         for nl_generation in nl_generations:
-            nl_generation_dict = nl_generation.dict()
-            nl_generation_dict["created_at"] = str(nl_generation.created_at)
-            result.append(NLGenerationResponse(**nl_generation_dict))
+            result.append(NLGenerationResponse(**nl_generation.dict()))
         return result
 
     @override
@@ -764,9 +758,7 @@ class FastAPI(API):
             )
         except NLGenerationNotFoundError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        nl_generation_dict = nl_generation.dict()
-        nl_generation_dict["created_at"] = str(nl_generation.created_at)
-        return NLGenerationResponse(**nl_generation_dict)
+        return NLGenerationResponse(**nl_generation.dict())
 
     @override
     def get_nl_generation(self, nl_generation_id: str) -> NLGenerationResponse:
@@ -783,6 +775,4 @@ class FastAPI(API):
                 status_code=404,
                 detail=f"NL Generation {nl_generation_id} not found",
             )
-        nl_generation_dict = nl_generations[0].dict()
-        nl_generation_dict["created_at"] = str(nl_generations[0].created_at)
-        return NLGenerationResponse(**nl_generation_dict)
+        return NLGenerationResponse(**nl_generations[0].dict())
