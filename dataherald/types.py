@@ -137,7 +137,7 @@ class Finetuning(BaseModel):
     model_id: str | None = None
     created_at: datetime = Field(default_factory=datetime.now)
     golden_sqls: list[str] | None = None
-    metadata: dict[str, str] | None = None
+    metadata: dict | None
 
 
 class FineTuningRequest(BaseModel):
@@ -145,12 +145,12 @@ class FineTuningRequest(BaseModel):
     alias: str
     base_llm: BaseLLM
     golden_sqls: list[str] | None = None
-    metadata: dict[str, str] | None = None
+    metadata: dict | None
 
 
 class CancelFineTuningRequest(BaseModel):
     finetuning_id: str
-    metadata: dict[str, str] | None = None
+    metadata: dict | None
 
 
 class Prompt(BaseModel):
