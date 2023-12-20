@@ -48,6 +48,7 @@ class SQLGenerationService:
         database = SQLDatabase.get_sql_engine(db_connection)
         if sql_generation_request.sql is not None:
             sql_generation = SQLGeneration(
+                prompt_id=prompt_id,
                 sql=sql_generation_request.sql,
                 tokens_used=0,
             )
