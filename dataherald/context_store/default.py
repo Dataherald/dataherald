@@ -12,6 +12,7 @@ from dataherald.types import GoldenSQL, GoldenSQLRequest, Prompt
 
 logger = logging.getLogger(__name__)
 
+
 class MalformedGoldenSQLError(Exception):
     pass
 
