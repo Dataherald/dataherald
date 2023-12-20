@@ -29,21 +29,28 @@ if __name__ == "__main__":
     )
     vector_store = system.instance(VectorStore)
 
-    try:
-        # Re-name collections
-        storage.rename("golden_records", "golden_sqls")
-        # Rename fields
-        storage.rename_field("golden_sqls", "sql_query", "sql")
-        storage.rename_field("golden_sqls", "question", "prompt_text")
-        print("Collections remaned...")
-    except Exception:  # noqa: S110
-        pass
+    golden_records = storage.find_all("golden_records")
+    for golden_record in golden_records:
+        try:
+            storage.insert_one(
+                "golden_sqls",
+                {
+                    "_id": golden_record["_id"],
+                    "db_connection_id": str(golden_record["db_connection_id"]),
+                    "prompt_text": golden_record["question"],
+                    "sql": golden_record["sql_query"],
+                },
+            )
+        except DuplicateKeyError:
+            pass
+    print("Golden sql remaned...")
 
     # Change datatype
     update_object_id_fields("db_connection_id", "table_descriptions")
     update_object_id_fields("db_connection_id", "golden_sqls")
     update_object_id_fields("db_connection_id", "instructions")
     update_object_id_fields("question_id", "responses")
+    update_object_id_fields("db_connection_id", "questions")
     print("Data types changed...")
 
     try:
