@@ -18,23 +18,18 @@ export const mapQuery = <T extends Query | QueryListItem>({
     confidence_score: confidence_score * 100,
   } as T)
 
-export const QUERY_STATUS_BUTTONS_CLASSES: ResourceButtonClasses<QueryStatus> =
-  {
-    [EQueryStatus.INITIALIZED]: 'bg-primary', // TODO: @valak please replace this and more
-    [EQueryStatus.REJECTED]: 'bg-primary hover:bg-blue-600',
-    [EQueryStatus.ERROR]:
-      'border border-primary bg-white text-primary hover:bg-blue-50',
-    [EQueryStatus.NOT_VERIFIED]:
-      'border border-primary bg-white text-primary hover:bg-blue-50',
-    [EQueryStatus.VERIFIED]: 'bg-green-700 hover:bg-green-600',
-  }
+export const QUERY_STATUS_BUTTONS_CLASSES: ResourceButtonClasses<
+  Exclude<EQueryStatus.INITIALIZED, QueryStatus>
+> = {
+  [EQueryStatus.REJECTED]: 'bg-primary hover:bg-blue-600',
+  [EQueryStatus.ERROR]:
+    'border border-primary bg-white text-primary hover:bg-blue-50',
+  [EQueryStatus.NOT_VERIFIED]:
+    'border border-primary bg-white text-primary hover:bg-blue-50',
+  [EQueryStatus.VERIFIED]: 'bg-green-700 hover:bg-green-600',
+}
 
 export const QUERY_STATUS_COLORS: ResourceColors<QueryWorkspaceStatus> = {
-  [EQueryStatus.INITIALIZED]: {
-    text: 'text-yellow-700',
-    border: 'border-yellow-700',
-    background: 'bg-yellow-100',
-  },
   [EQueryStatus.REJECTED]: {
     text: 'text-red-500',
     border: 'border-red-500',
@@ -53,7 +48,6 @@ export const QUERY_STATUS_COLORS: ResourceColors<QueryWorkspaceStatus> = {
 }
 
 export const QUERY_STATUS_EXPLANATION: Record<QueryWorkspaceStatus, string> = {
-  [EQueryStatus.INITIALIZED]: `The question is waiting to be answered`,
   [EQueryStatus.REJECTED]: `The question is invalid, such as in the case of insufficient data or an unanswerable question`,
   [EQueryStatus.NOT_VERIFIED]:
     'The query is not used to improve the platform accuracy',

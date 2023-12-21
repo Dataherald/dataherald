@@ -15,7 +15,6 @@ export enum EDomainQueryStatus {
 export type DomainQueryStatus = keyof typeof EDomainQueryStatus
 
 export enum EDomainQueryWorkspaceStatus {
-  INITIALIZED = 'INITIALIZED',
   VERIFIED = 'VERIFIED',
   NOT_VERIFIED = 'NOT_VERIFIED',
   REJECTED = 'REJECTED',
