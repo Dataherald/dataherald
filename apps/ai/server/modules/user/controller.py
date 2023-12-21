@@ -7,7 +7,7 @@ from modules.user.service import UserService
 from utils.auth import Authorize, VerifyToken
 
 router = APIRouter(
-    prefix="/user",
+    prefix="/users",
     responses={404: {"description": "Not found"}},
 )
 
@@ -16,7 +16,7 @@ user_service = UserService()
 authorize = Authorize()
 
 
-@router.get("/list")
+@router.get("")
 async def get_users(token: str = Depends(token_auth_scheme)) -> list[UserResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return user_service.get_users(user.organization_id)

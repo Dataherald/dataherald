@@ -10,7 +10,7 @@ interface OrganizationsResponse {
 }
 
 const useOrganizations = (): OrganizationsResponse => {
-  const endpointUrl = `${API_URL}/organization/list`
+  const endpointUrl = `${API_URL}/organizations`
   const { token } = useAuth()
   const { data, isLoading, error } = useSWR<Organizations>(
     token ? endpointUrl : null,

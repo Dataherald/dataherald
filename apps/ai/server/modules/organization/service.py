@@ -1,5 +1,6 @@
+from datetime import datetime
+
 import openai
-from bson import ObjectId
 from fastapi import HTTPException, status
 
 from modules.organization.models.entities import Organization, SlackInstallation
@@ -14,21 +15,17 @@ class OrganizationService:
         self.repo = OrganizationRepository()
 
     def get_organizations(self) -> list[OrganizationResponse]:
-        organizations = self.repo.get_organizations()
-        return [self._get_mapped_organization_response(org) for org in organizations]
+        return self.repo.get_organizations()
 
     def get_organization(self, org_id: str) -> OrganizationResponse:
-        organization = self.repo.get_organization(org_id)
-        if organization:
-            return self._get_mapped_organization_response(organization)
-        return None
+        return self.repo.get_organization(org_id)
 
     def get_organization_by_slack_workspace_id(
         self, workspace_id: str
     ) -> OrganizationResponse:
         organization = self.repo.get_organization_by_slack_workspace_id(workspace_id)
         if organization:
-            return self._get_mapped_organization_response(organization)
+            return organization
 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Organization not found"
@@ -42,12 +39,9 @@ class OrganizationService:
             org_request.llm_api_key = self._encrypt_llm_credentials(
                 org_request.llm_api_key
             )
-        new_org_data = Organization(**org_request.dict())
-        new_org_data.db_connection_id = (
-            ObjectId(new_org_data.db_connection_id)
-            if new_org_data.db_connection_id
-            else None
-        )
+        new_org_data = Organization(**org_request.dict(), created_at=datetime.now())
+        new_org_data.db_connection_id = new_org_data.db_connection_id
+
         new_org_data.confidence_threshold = (
             1.0
             if new_org_data.confidence_threshold is None
@@ -57,7 +51,7 @@ class OrganizationService:
         new_id = self.repo.add_organization(new_org_data.dict(exclude_unset=True))
         if new_id:
             new_org = self.repo.get_organization(new_id)
-            return self._get_mapped_organization_response(new_org)
+            return OrganizationResponse(**new_org.dict())
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -73,11 +67,8 @@ class OrganizationService:
                 org_request.llm_api_key
             )
         updated_org_data = Organization(**org_request.dict(exclude_unset=True))
-        updated_org_data.db_connection_id = (
-            ObjectId(updated_org_data.db_connection_id)
-            if updated_org_data.db_connection_id
-            else None
-        )
+        updated_org_data.db_connection_id = updated_org_data.db_connection_id
+
         if (
             self.repo.update_organization(
                 org_id, updated_org_data.dict(exclude_unset=True)
@@ -89,7 +80,7 @@ class OrganizationService:
             if new_org.llm_api_key:
                 self.repo.update_db_connections_llm_api_key(org_id, new_org.llm_api_key)
 
-            return self._get_mapped_organization_response(new_org)
+            return new_org
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -120,7 +111,7 @@ class OrganizationService:
                 == 1
             ):
                 updated_org = self.repo.get_organization(str(current_org.id))
-                return self._get_mapped_organization_response(updated_org)
+                return OrganizationResponse(**updated_org.dict())
 
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -131,12 +122,12 @@ class OrganizationService:
             name=slack_installation_request.team.name,
             slack_installation=slack_installation_request,
             confidence_threshold=1.0,
+            created_at=datetime.now(),
         )
 
         new_id = self.repo.add_organization(new_org_data.dict(exclude={"id"}))
         if new_id:
-            new_org = self.repo.get_organization(new_id)
-            return self._get_mapped_organization_response(new_org)
+            return self.repo.get_organization(new_id)
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -161,27 +152,16 @@ class OrganizationService:
     ) -> OrganizationResponse:
         if (
             self.repo.update_organization(
-                org_id, {"db_connection_id": ObjectId(db_connection_id)}
+                org_id, {"db_connection_id": db_connection_id}
             )
             == 1
         ):
-            new_org = self.repo.get_organization(org_id)
-            return self._get_mapped_organization_response(new_org)
+            return self.repo.get_organization(org_id)
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Organization not found or cannot be updated",
         )
-
-    def _get_mapped_organization_response(
-        self, organization: Organization
-    ) -> OrganizationResponse:
-        org_dict = organization.dict()
-        org_dict["id"] = str(org_dict["id"])
-        org_dict["db_connection_id"] = (
-            str(org_dict["db_connection_id"]) if org_dict["db_connection_id"] else None
-        )
-        return OrganizationResponse(**org_dict)
 
     def _encrypt_llm_credentials(self, llm_api_key: str) -> str:
         fernet_encrypt = FernetEncrypt()

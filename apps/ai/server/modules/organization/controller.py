@@ -11,7 +11,7 @@ from modules.organization.service import OrganizationService
 from utils.auth import Authorize, VerifyToken
 
 router = APIRouter(
-    prefix="/organization",
+    prefix="/organizations",
     responses={404: {"description": "Not found"}},
 )
 
@@ -20,7 +20,7 @@ token_auth_scheme = HTTPBearer()
 org_service = OrganizationService()
 
 
-@router.get("/list")
+@router.get("")
 async def get_organizations(
     token: str = Depends(token_auth_scheme),
 ) -> list[OrganizationResponse]:

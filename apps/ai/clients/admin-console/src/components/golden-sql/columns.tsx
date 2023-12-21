@@ -23,46 +23,46 @@ export const getColumns: (actions: {
   {
     id: 'id',
     header: () => <div className="min-w-[70px]">ID</div>,
-    accessorKey: 'display_id',
+    accessorKey: 'metadata.dh_internal.display_id',
   },
   {
-    id: 'question',
+    id: 'prompt_text',
     header: 'Question',
-    accessorKey: 'question',
+    accessorKey: 'prompt_text',
     cell: ({ row }) => (
       <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
-        {row.getValue('question')}
+        {row.getValue('prompt_text')}
       </div>
     ),
   },
   {
-    id: 'sql_query',
+    id: 'sql',
     header: 'SQL Query',
-    accessorKey: 'sql_query',
+    accessorKey: 'sql',
     cell: ({ row }) => (
       <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
-        {row.getValue('sql_query')}
+        {row.getValue('sql')}
       </div>
     ),
   },
   {
-    id: 'created_time',
+    id: 'created_at',
     header: () => <div className="min-w-[140px]">Time added</div>,
-    accessorKey: 'created_time',
+    accessorKey: 'created_at',
     cell: ({ row }) =>
-      format(new Date(row.getValue('created_time')), 'yyyy-MM-dd hh:mm a'),
+      format(new Date(row.getValue('created_at')), 'yyyy-MM-dd hh:mm a'),
   },
   {
     id: 'source',
     header: 'Source',
-    accessorKey: 'source',
+    accessorKey: 'metadata.dh_internal.source',
     cell: ({ row }) => {
-      const { source, verified_query_id } = row.original
+      const { source, prompt_id } = row.original.metadata.dh_internal
       const badge =
         source === EGoldenSqlSource.VERIFIED_QUERY ? (
           <Link
             className={badgeVariants({ variant: 'success' })}
-            href={`/queries/${verified_query_id as string}`}
+            href={`/queries/${prompt_id as string}`}
           >
             <span className="mr-1">{formatKey(row.getValue('source'))}</span>
             <ExternalLink size={14} strokeWidth={2.5} />
@@ -76,7 +76,8 @@ export const getColumns: (actions: {
   {
     id: 'delete',
     cell: ({ row }) => {
-      const { id, source } = row.original
+      const { id } = row.original
+      const { source } = row.original.metadata.dh_internal
       const handleDeleteConfirm = () => deleteAction(id)
       const deleteText: JSX.Element =
         source === EGoldenSqlSource.VERIFIED_QUERY ? (

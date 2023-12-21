@@ -19,12 +19,12 @@ import { Loader, Send } from 'lucide-react'
 import { FC, useState } from 'react'
 
 interface SendMessageDialogProps {
-  queryId: string
+  promptId: string
   disabled: boolean
 }
 
 const SendMessageDialog: FC<SendMessageDialogProps> = ({
-  queryId,
+  promptId,
   disabled = false,
 }) => {
   const sendMessage = useQuerySendMessage()
@@ -32,7 +32,7 @@ const SendMessageDialog: FC<SendMessageDialogProps> = ({
   const handleSendMessage = async () => {
     try {
       setSendingMessage(true)
-      await sendMessage(queryId)
+      await sendMessage(promptId)
       toast({
         variant: 'success',
         title: 'Message sent',

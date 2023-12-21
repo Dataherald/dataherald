@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -7,7 +8,6 @@ from fastapi.testclient import TestClient
 
 from app import app
 from modules.user.models.entities import User
-from modules.user.models.responses import UserResponse
 
 client = TestClient(app)
 
@@ -16,7 +16,7 @@ client = TestClient(app)
 @patch.multiple(
     "utils.auth.Authorize",
     user=Mock(
-        return_value=UserResponse(
+        return_value=User(
             id="123",
             email="test@gmail.com",
             username="test_user",
@@ -27,12 +27,12 @@ client = TestClient(app)
     is_self=Mock(return_value=None),
 )
 class TestUserAPI(TestCase):
-    url = "/user"
+    url = "/users"
     test_header = {"Authorization": "Bearer some-token"}
     test_1 = {
         "_id": ObjectId(b"foo-bar-quux"),
         "email": "test@gmail.com",
-        "organization_id": ObjectId(b"lao-gan-maaa"),
+        "organization_id": str(ObjectId(b"lao-gan-maaa")),
         "email_verified": True,
         "name": "test",
         "nickname": "test",
@@ -40,6 +40,7 @@ class TestUserAPI(TestCase):
         "sub": "test",
         "updated_at": "test",
         "role": "ADMIN",
+        "created_at": datetime.now(),
     }
 
     test_response_1 = {
@@ -53,11 +54,12 @@ class TestUserAPI(TestCase):
         "sub": "test",
         "updated_at": "test",
         "role": "ADMIN",
+        "created_at": test_1["created_at"].strftime("%Y-%m-%dT%H:%M:%S.%f"),
     }
 
     @patch("database.mongo.MongoDB.find", Mock(return_value=[test_1]))
     def test_get_users(self):
-        response = client.get(self.url + "/list", headers=self.test_header)
+        response = client.get(self.url, headers=self.test_header)
         assert response.status_code == status.HTTP_200_OK
         assert response.json() == [self.test_response_1]
 
@@ -77,7 +79,7 @@ class TestUserAPI(TestCase):
     )
     @patch(
         "modules.user.repository.UserRepository.get_user",
-        Mock(return_value=User(**test_1)),
+        Mock(return_value=User(id=str(test_1["_id"]), **test_1)),
     )
     def test_add_user(self):
         response = client.post(

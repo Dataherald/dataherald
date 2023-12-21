@@ -6,7 +6,7 @@ export const usePutOrganization = () => {
   const putOrganization = usePut<Organization>()
   return (organizationId: string, newOrganization: Organization) =>
     putOrganization(
-      `${API_URL}/organization/${organizationId}`,
+      `${API_URL}/organizations/${organizationId}`,
       newOrganization,
     )
 }

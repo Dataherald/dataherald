@@ -1,12 +1,7 @@
+from datetime import datetime
 from enum import Enum
-from typing import Any
 
-from pydantic import BaseModel, Field
-
-
-class BaseGoldenSQL(BaseModel):
-    question: str
-    sql_query: str
+from pydantic import BaseModel, Extra
 
 
 class GoldenSQLSource(str, Enum):
@@ -14,16 +9,27 @@ class GoldenSQLSource(str, Enum):
     VERIFIED_QUERY = "VERIFIED_QUERY"
 
 
-class GoldenSQLRef(BaseModel):
-    id: Any = Field(alias="_id")
-    query_id: Any | None
-    golden_sql_id: Any
-    organization_id: Any
-    source: GoldenSQLSource
-    created_time: str
+class DHGoldenSQLMetadata(BaseModel):
+    prompt_id: str | None
+    organization_id: str | None
+    source: GoldenSQLSource | None
     display_id: str | None
 
 
+class GoldenSQLMetadata(BaseModel):
+    dh_internal: DHGoldenSQLMetadata | None
+
+    class Config:
+        extra = Extra.allow
+
+
+class BaseGoldenSQL(BaseModel):
+    db_connection_id: str
+    prompt_text: str
+    sql: str
+
+
 class GoldenSQL(BaseGoldenSQL):
-    id: Any = Field(alias="_id")
-    db_connection_id: Any
+    id: str
+    created_at: datetime | None
+    metadata: GoldenSQLMetadata | None

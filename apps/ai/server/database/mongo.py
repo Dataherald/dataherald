@@ -14,8 +14,8 @@ class MongoDB:
     _data_store = pymongo.MongoClient(db_uri)[db_name]
 
     @classmethod
-    def find_one(cls, collection: str, query: dict) -> dict:
-        return cls._data_store[collection].find_one(query)
+    def find_one(cls, collection: str, query: dict, sort: list = None) -> dict:
+        return cls._data_store[collection].find_one(query, sort=sort)
 
     @classmethod
     def insert_one(cls, collection: str, obj: dict) -> ObjectId:
@@ -25,6 +25,12 @@ class MongoDB:
     def update_one(cls, collection: str, query: dict, obj: dict) -> int:
         return (
             cls._data_store[collection].update_one(query, {"$set": obj}).matched_count
+        )
+
+    @classmethod
+    def update_many(cls, collection: str, filter: dict, obj: dict) -> int:
+        return (
+            cls._data_store[collection].update_many(filter, {"$set": obj}).matched_count
         )
 
     @classmethod

@@ -1,7 +1,7 @@
+from datetime import datetime
 from enum import Enum
-from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class Roles(str, Enum):
@@ -15,17 +15,17 @@ class BaseUser(BaseModel):
     nickname: str | None
     picture: str | None
     sub: str | None
-    updated_at: str | None
+    updated_at: str | None  # str because its filled by auth0
 
 
 class User(BaseUser):
-    id: Any = Field(alias="_id")
-    organization_id: Any
+    id: str | None
+    organization_id: str
     role: Roles | None
+    created_at: datetime | None
 
 
 class SlackInfo(BaseModel):
     user_id: str | None
     channel_id: str | None
     thread_ts: str | None
-    username: str | None

@@ -19,7 +19,7 @@ const usePostDatabaseConnection = () => {
         JSON.stringify(dbConnection),
       )
 
-      return apiFetcher<DatabaseConnection>(`${API_URL}/database-connection`, {
+      return apiFetcher<DatabaseConnection>(`${API_URL}/database-connections`, {
         method: 'POST',
         body: formData,
       })

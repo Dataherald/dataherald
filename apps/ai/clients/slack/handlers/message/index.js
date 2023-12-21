@@ -32,13 +32,15 @@ async function handleMessage(context, say) {
 
     try {
         const apiToken = await getApiAuthToken()
-        const endpointUrl = `${API_URL}/query/answer`
+        const endpointUrl = `${API_URL}/generations`
         const payload = {
-            question: message,
-            slack_user_id: userId,
-            slack_workspace_id: teamId,
-            slack_channel_id: channel_id,
-            slack_thread_ts: thread_ts,
+            prompt: message,
+            slack_info: {
+                user_id: userId,
+                workspace_id: teamId,
+                channel_id: channel_id,
+                thread_ts: thread_ts,
+            }
         }
         log('Fetching data from', endpointUrl)
         log('Request payload:', payload)

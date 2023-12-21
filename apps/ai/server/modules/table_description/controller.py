@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Security, status
 from fastapi.security import HTTPBearer
 
 from modules.table_description.models.requests import (
@@ -10,10 +10,15 @@ from modules.table_description.models.responses import (
     TableDescriptionResponse,
 )
 from modules.table_description.service import TableDescriptionService
-from utils.auth import Authorize, VerifyToken
+from utils.auth import Authorize, VerifyToken, get_api_key
 
 router = APIRouter(
-    prefix="/table-description",
+    prefix="/table-descriptions",
+    responses={404: {"description": "Not found"}},
+)
+
+api_router = APIRouter(
+    prefix="/api/table-descriptions",
     responses={404: {"description": "Not found"}},
 )
 
@@ -22,15 +27,24 @@ authorize = Authorize()
 table_description_service = TableDescriptionService()
 
 
-@router.get("/list")
+@router.get("")
 async def get_table_descriptions(
     table_name: str = "",
     token: str = Depends(token_auth_scheme),
 ) -> list[TableDescriptionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_by_user_response(user)
     return await table_description_service.get_table_descriptions(
-        table_name, organization.db_connection_id
+        table_name, user.organization_id
+    )
+
+
+@api_router.get("")
+async def api_get_table_descriptions(
+    table_name: str = "",
+    api_key: str = Security(get_api_key),
+) -> list[TableDescriptionResponse]:
+    return await table_description_service.get_table_descriptions(
+        table_name, api_key.organization_id
     )
 
 
@@ -38,19 +52,30 @@ async def get_table_descriptions(
 async def get_table_description(
     id: str, token: str = Depends(token_auth_scheme)
 ) -> TableDescriptionResponse:
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
-    authorize.table_description_in_organization(id, org_id)
-    return await table_description_service.get_table_description(id)
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    return await table_description_service.get_table_description(
+        id, user.organization_id
+    )
 
 
+@api_router.get("/{id}")
+async def api_get_table_description(
+    id: str,
+    api_key: str = Security(get_api_key),
+) -> TableDescriptionResponse:
+    return await table_description_service.get_table_description(
+        id, api_key.organization_id
+    )
+
+
+# used for admin console, does not need api version endpoint
 @router.get("/database/list")
 async def get_database_table_descriptions(
     token: str = Depends(token_auth_scheme),
 ) -> list[DatabaseDescriptionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_by_user_response(user)
     return await table_description_service.get_database_table_descriptions(
-        organization.db_connection_id
+        user.organization_id
     )
 
 
@@ -58,18 +83,39 @@ async def get_database_table_descriptions(
 async def sync_table_descriptions_schemas(
     scan_request: ScanRequest, token: str = Depends(token_auth_scheme)
 ):
-    authorize.user(VerifyToken(token.credentials).verify())
-    return await table_description_service.sync_table_descriptions_schemas(scan_request)
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    return await table_description_service.sync_table_descriptions_schemas(
+        scan_request, user.organization_id
+    )
 
 
-@router.patch("/{id}")
+@api_router.post("/sync-schemas", status_code=status.HTTP_201_CREATED)
+async def api_sync_table_descriptions_schemas(
+    scan_request: ScanRequest, api_key: str = Security(get_api_key)
+):
+    return await table_description_service.sync_table_descriptions_schemas(
+        scan_request, api_key.organization_id
+    )
+
+
+@router.put("/{id}")
 async def update_table_description(
     id: str,
     table_description_request: TableDescriptionRequest,
     token: str = Depends(token_auth_scheme),
 ) -> TableDescriptionResponse:
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
-    authorize.table_description_in_organization(id, org_id)
+    user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.update_table_description(
-        id, table_description_request
+        id, table_description_request, user.organization_id
+    )
+
+
+@api_router.put("/{id}")
+async def api_update_table_description(
+    id: str,
+    table_description_request: TableDescriptionRequest,
+    api_key: str = Security(get_api_key),
+) -> TableDescriptionResponse:
+    return await table_description_service.update_table_description(
+        id, table_description_request, api_key.organization_id
     )

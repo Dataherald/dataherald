@@ -5,15 +5,17 @@ from modules.user.models.entities import User
 
 class UserRepository:
     def get_users(self, query: dict) -> list[User]:
-        return [User(**user) for user in MongoDB.find(USER_COL, query)]
+        return [
+            User(id=str(user["_id"]), **user) for user in MongoDB.find(USER_COL, query)
+        ]
 
     def get_user(self, query: dict) -> User:
         user = MongoDB.find_one(USER_COL, query)
-        return User(**user) if user else None
+        return User(id=str(user["_id"]), **user) if user else None
 
     def get_user_by_email(self, email: str) -> User:
         user = MongoDB.find_one(USER_COL, {"email": email})
-        return User(**user) if user else None
+        return User(id=str(user["_id"]), **user) if user else None
 
     def delete_user(self, query: dict) -> int:
         return MongoDB.delete_one(USER_COL, query)

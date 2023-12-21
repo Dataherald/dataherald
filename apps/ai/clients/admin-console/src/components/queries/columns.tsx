@@ -15,53 +15,53 @@ export const columns: ColumnDef<QueryListItem>[] = [
     accessorKey: 'display_id',
   },
   {
-    id: 'username',
+    id: 'created_by',
     header: 'User',
-    accessorKey: 'username',
+    accessorKey: 'created_by',
     cell: ({ row }) => (
       <div className="truncate max-w-[10rem] 2xl:max-w-none">
-        {row.getValue('username')}
+        {row.getValue('created_by')}
       </div>
     ),
   },
   {
-    id: 'question',
+    id: 'prompt_text',
     header: 'Question',
-    accessorKey: 'question',
+    accessorKey: 'prompt_text',
     cell: ({ row }) => (
       <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
-        {row.getValue('question')}
+        {row.getValue('prompt_text')}
       </div>
     ),
   },
   {
-    id: 'answer',
+    id: 'nl_generation_text',
     header: 'Answer',
-    accessorKey: 'response',
+    accessorKey: 'nl_generation_text',
     cell: ({ row }) => (
       <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
-        {row.getValue('answer')}
+        {row.getValue('nl_generation_text')}
       </div>
     ),
   },
   {
     id: 'time',
     header: () => <div className="min-w-[140px]">Time</div>,
-    accessorKey: 'question_date',
+    accessorKey: 'created_at',
     cell: ({ row }) =>
       format(new Date(row.getValue('time')), 'yyyy-MM-dd hh:mm a'),
   },
   {
     id: 'status',
     header: () => <div className="min-w-[185px]">Status</div>,
-    accessorFn: ({ status, evaluation_score }) => {
-      const domainStatus = getDomainStatus(status, evaluation_score)
-      return formatQueryStatusWithScore(domainStatus, evaluation_score)
+    accessorFn: ({ status, confidence_score }) => {
+      const domainStatus = getDomainStatus(status, confidence_score)
+      return formatQueryStatusWithScore(domainStatus, confidence_score)
     },
     cell: ({ row }) => {
       const query = row.original
-      const { status, evaluation_score } = query
-      const textColor = getDomainStatusColors(status, evaluation_score).text
+      const { status, confidence_score } = query
+      const textColor = getDomainStatusColors(status, confidence_score).text
       return (
         <div
           className={cn(textColor, 'flex flex-row items-center font-semibold')}

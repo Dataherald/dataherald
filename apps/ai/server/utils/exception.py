@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 logger = logging.getLogger(__name__)
 
 
-class QueryEngineError(Exception):
+class GenerationEngineError(Exception):
     def __init__(
         self, status_code: int, query_id: str, display_id: str, error_message: str
     ):
@@ -17,7 +17,7 @@ class QueryEngineError(Exception):
 
 
 async def query_engine_exception_handler(
-    request: Request, exc: QueryEngineError  # noqa: ARG001
+    request: Request, exc: GenerationEngineError  # noqa: ARG001
 ):
     return JSONResponse(
         status_code=exc.status_code,

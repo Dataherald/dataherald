@@ -10,11 +10,11 @@ const useQueryGenerateMessage = () => {
   const { apiFetcher } = useApiFetcher()
 
   const generateMessage = useCallback(
-    async (queryId: string): Promise<GenerateMessageResponse> =>
+    async (promptId: string): Promise<GenerateMessageResponse> =>
       apiFetcher<GenerateMessageResponse>(
-        `${API_URL}/query/${queryId}/message`,
+        `${API_URL}/generations/${promptId}/nl-generations`,
         {
-          method: 'PATCH',
+          method: 'POST',
           body: JSON.stringify({}),
         },
       ),

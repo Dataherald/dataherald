@@ -1,16 +1,10 @@
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel
 
-from modules.table_description.models.entities import BaseTableDescription, SchemaStatus
+from modules.table_description.models.entities import SchemaStatus, TableDescription
 
 
-class TableDescriptionResponse(BaseTableDescription):
-    id: str | None
-    table_name: str
-    status: SchemaStatus | None
-    last_schema_sync: str | None
-
-    class Config:
-        extra = Extra.ignore
+class TableDescriptionResponse(TableDescription):
+    pass
 
 
 class BasicTableDescriptionResponse(BaseModel):

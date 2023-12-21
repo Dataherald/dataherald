@@ -65,3 +65,9 @@ docker exec <container_id> python3 -m database.scripts.data_report organization_
 ```
 
 5. It should create a csv file if there is data
+
+## Run Enterprise and Engine using one command
+Once you are located in server folder run the next command.
+```
+make start
+```

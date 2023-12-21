@@ -32,15 +32,15 @@ import { FC, useState } from 'react'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 
 interface MessageSectionProps {
-  queryId: string
+  promptId: string
   initialMessage: string
-  onPatchQuery: (data: { message: string }) => Promise<Query | undefined>
+  onPutQuery: (data: { message: string }) => Promise<Query | undefined>
 }
 
 const MessageSection: FC<MessageSectionProps> = ({
-  queryId,
+  promptId,
   initialMessage,
-  onPatchQuery,
+  onPutQuery,
 }) => {
   const generateMessage = useQueryGenerateMessage()
 
@@ -55,7 +55,7 @@ const MessageSection: FC<MessageSectionProps> = ({
   const handleGenerateMessage = async () => {
     setGeneratingMessage(true)
     try {
-      const { message } = await generateMessage(queryId)
+      const { message } = await generateMessage(promptId)
       toast({
         title: 'Message generated',
         description: 'The query message was generated using the AI platform.',
@@ -73,7 +73,7 @@ const MessageSection: FC<MessageSectionProps> = ({
     if (!newCustomMessage) return
     setEditingMessage(true)
     try {
-      await onPatchQuery({
+      await onPutQuery({
         message: newCustomMessage,
       })
       setCurrentMessage(newCustomMessage)
@@ -198,7 +198,7 @@ const MessageSection: FC<MessageSectionProps> = ({
               </AlertDialogContent>
             </AlertDialog>
             <SendMessageDialog
-              {...{ queryId, disabled: disabledActions || !currentMessage }}
+              {...{ promptId, disabled: disabledActions || !currentMessage }}
             />
           </div>
         </div>

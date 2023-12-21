@@ -24,7 +24,7 @@ import { Ban, Boxes, Loader } from 'lucide-react'
 import { FC, HTMLAttributes } from 'react'
 
 export interface QueryMetadataProps extends HTMLAttributes<HTMLDivElement> {
-  queryId: string
+  promptId: string
   status: QueryStatus
   confidenceLevel: number | null
   updatingQuery?: boolean
@@ -32,7 +32,7 @@ export interface QueryMetadataProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const QueryMetadata: FC<QueryMetadataProps> = ({
-  queryId,
+  promptId,
   status,
   confidenceLevel,
   updatingQuery,
@@ -112,7 +112,7 @@ const QueryMetadata: FC<QueryMetadataProps> = ({
             )}
           </AlertDialog>
         )}
-        <h1 className="text-xl font-bold">{queryId}</h1>
+        <h1 className="text-xl font-bold">{promptId}</h1>
       </div>
       <div
         className={cn(textColor, 'flex flex-row items-center font-semibold')}

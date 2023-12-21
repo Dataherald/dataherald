@@ -7,13 +7,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 from modules.auth import controller as auth_controller
 from modules.db_connection import controller as db_connection_controller
+from modules.finetuning import controller as finetuning_controller
+from modules.generation import (
+    aggr_controller as aggr_generation_controller,
+)
+from modules.generation import (
+    controller as generation_controller,
+)
 from modules.golden_sql import controller as golden_sql_controller
 from modules.instruction import controller as instruction_controller
+from modules.key import controller as key_controller
 from modules.organization import controller as organization_controller
-from modules.query import controller as query_controller
 from modules.table_description import controller as table_description_controller
 from modules.user import controller as user_controller
-from utils.exception import QueryEngineError, query_engine_exception_handler
+from utils.exception import GenerationEngineError, query_engine_exception_handler
 
 tags_metadata = [
     {"name": "Authentication", "description": "Login endpoints for authentication"},
@@ -21,9 +28,14 @@ tags_metadata = [
         "name": "Database Connection",
         "description": "Database connection related endpoints",
     },
+    {"name": "Finetuning", "description": "Finetuning LLM related endpoints"},
+    {"name": "Generation", "description": "SQL and NL Generation related endpoints"},
     {"name": "Golden SQL", "description": "Golden SQL related endpoints"},
     {"name": "Organization", "description": "Organization related endpoints"},
-    {"name": "Query", "description": "NL Query Response related endpoints"},
+    {
+        "name": "Aggregated Generation",
+        "description": "Aggregated Generation related endpoints",
+    },
     {
         "name": "Table Description",
         "description": "Table description for SQL queried databases",
@@ -41,14 +53,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_exception_handler(QueryEngineError, query_engine_exception_handler)
+app.add_exception_handler(GenerationEngineError, query_engine_exception_handler)
+
+
+app.include_router(db_connection_controller.api_router, tags=["Database Connection"])
+app.include_router(finetuning_controller.api_router, tags=["Finetuning"])
+app.include_router(golden_sql_controller.api_router, tags=["Golden SQL"])
+app.include_router(instruction_controller.api_router, tags=["Instruction"])
+app.include_router(
+    aggr_generation_controller.api_router, tags=["Aggregated Generation"]
+)
+app.include_router(generation_controller.api_router, tags=["Generation"])
+app.include_router(table_description_controller.api_router, tags=["Table Description"])
 
 app.include_router(auth_controller.router, tags=["Authentication"])
 app.include_router(db_connection_controller.router, tags=["Database Connection"])
+app.include_router(finetuning_controller.router, tags=["Finetuning"])
 app.include_router(golden_sql_controller.router, tags=["Golden SQL"])
 app.include_router(instruction_controller.router, tags=["Instruction"])
+app.include_router(key_controller.router, tags=["Keys"])
 app.include_router(organization_controller.router, tags=["Organization"])
-app.include_router(query_controller.router, tags=["Query"])
+app.include_router(aggr_generation_controller.router, tags=["Aggregated Generation"])
 app.include_router(table_description_controller.router, tags=["Table Description"])
 app.include_router(user_controller.router, tags=["User"])
 
@@ -64,8 +89,3 @@ async def engine_heartbeat():
         response = await client.get(settings.engine_url + "/heartbeat")
         response.raise_for_status()  # Raise an exception for non-2xx status codes
         return response.json()
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}

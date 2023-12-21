@@ -1,5 +1,7 @@
+from typing import Any
+
 from modules.golden_sql.models.entities import BaseGoldenSQL
 
 
 class GoldenSQLRequest(BaseGoldenSQL):
-    db_connection_id: str
+    metadata: dict[str, Any] | None = {}

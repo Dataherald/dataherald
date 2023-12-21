@@ -5,5 +5,5 @@ type PostUserRequest = { email: string }
 
 export const usePostUser = () => {
   const postUser = usePost<PostUserRequest>()
-  return (resource: PostUserRequest) => postUser(`${API_URL}/user`, resource)
+  return (resource: PostUserRequest) => postUser(`${API_URL}/users`, resource)
 }

@@ -10,7 +10,7 @@ const useSynchronizeSchemas = () => {
       db_connection_id: string
       table_names: string[]
     }): Promise<void> =>
-      apiFetcher<void>(`${API_URL}/table-description/sync-schemas`, {
+      apiFetcher<void>(`${API_URL}/table-descriptions/sync-schemas`, {
         method: 'POST',
         body: JSON.stringify(payload),
       }),

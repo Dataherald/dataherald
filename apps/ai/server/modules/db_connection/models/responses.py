@@ -1,13 +1,15 @@
 from modules.db_connection.models.entities import (
-    BaseDBConnection,
+    DBConnection,
     Driver,
 )
 
 
-class DBConnectionResponse(BaseDBConnection):
-    id: str
-    uri: str | None
-    llm_api_key: str | None
+class DBConnectionResponse(DBConnection):
+    def dict(self, **kwargs):
+        dic = super().dict(**kwargs)
+        if "metadata" in dic and "dh_internal" in dic["metadata"]:
+            del dic["metadata"]["dh_internal"]
+        return dic
 
 
 class DriverResponse(Driver):

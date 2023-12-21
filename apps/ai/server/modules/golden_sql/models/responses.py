@@ -1,12 +1,13 @@
-from modules.golden_sql.models.entities import BaseGoldenSQL, GoldenSQLSource
+from modules.golden_sql.models.entities import GoldenSQL
 
 
-class GoldenSQLResponse(BaseGoldenSQL):
-    id: str
-    db_connection_id: str | None
-    organization_id: str
-    display_id: str | None
-    verified_query_display_id: str | None
-    source: GoldenSQLSource | None
-    verified_query_id: str | None
-    created_time: str | None
+class GoldenSQLResponse(GoldenSQL):
+    def dict(self, **kwargs):
+        dic = super().dict(**kwargs)
+        if "metadata" in dic and "dh_internal" in dic["metadata"]:
+            del dic["metadata"]["dh_internal"]
+        return dic
+
+
+class AdminConsoleGoldenSqlResponse(GoldenSQL):
+    pass

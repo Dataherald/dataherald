@@ -1,6 +1,6 @@
-from typing import Any
+from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Extra
 
 
 class SSHSettings(BaseModel):
@@ -16,24 +16,31 @@ class SSHSettings(BaseModel):
     db_driver: str | None
 
 
+# TODO: find a better way to do this for all metadata
+class DHDBConnectionMetadata(BaseModel):
+    organization_id: str | None
+
+
+class DBConnectionMetadata(BaseModel):
+    dh_internal: DHDBConnectionMetadata | None
+
+    class Config:
+        extra = Extra.allow
+
+
 class BaseDBConnection(BaseModel):
+    id: str
+    llm_api_key: str | None
     alias: str | None
     use_ssh: bool = False
-
+    uri: str | None
     path_to_credentials_file: str | None
     ssh_settings: SSHSettings | None
 
 
 class DBConnection(BaseDBConnection):
-    id: Any = Field(alias="_id")
-    uri: str | None
-    llm_api_key: str | None
-
-
-class DBConnectionRef(BaseModel):
-    id: Any = Field(alias="_id")
-    db_connection_id: Any
-    organization_id: Any
+    metadata: DBConnectionMetadata | None
+    created_at: datetime | None
 
 
 class Driver(BaseModel):

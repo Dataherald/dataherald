@@ -33,4 +33,4 @@ class SlackInstallationRequest(BaseModel):
 
 
 class OrganizationRequest(BaseOrganization):
-    db_connection_id: str | None
+    pass

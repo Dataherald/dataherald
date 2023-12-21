@@ -2,8 +2,9 @@ import { ClassValue } from 'clsx'
 import { LucideIcon } from 'lucide-react'
 
 export enum EDomainQueryStatus {
+  INITIALIZED = 'INITIALIZED',
   REJECTED = 'REJECTED',
-  SQL_ERROR = 'SQL_ERROR',
+  ERROR = 'ERROR',
   NOT_VERIFIED = 'NOT_VERIFIED',
   LOW_CONFIDENCE = 'LOW_CONFIDENCE',
   MEDIUM_CONFIDENCE = 'MEDIUM_CONFIDENCE',
@@ -14,6 +15,7 @@ export enum EDomainQueryStatus {
 export type DomainQueryStatus = keyof typeof EDomainQueryStatus
 
 export enum EDomainQueryWorkspaceStatus {
+  INITIALIZED = 'INITIALIZED',
   VERIFIED = 'VERIFIED',
   NOT_VERIFIED = 'NOT_VERIFIED',
   REJECTED = 'REJECTED',

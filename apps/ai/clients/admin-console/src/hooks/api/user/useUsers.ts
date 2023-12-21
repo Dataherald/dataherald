@@ -11,7 +11,7 @@ interface UsersResponse {
 }
 
 const useUsers = (): UsersResponse => {
-  const endpointUrl = `${API_URL}/user/list`
+  const endpointUrl = `${API_URL}/users`
   const { token } = useAuth()
   const { data, isLoading, error, mutate } = useSWR<Users>(
     token ? endpointUrl : null,

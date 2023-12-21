@@ -1,6 +1,5 @@
-from modules.organization.models.entities import BaseOrganization
+from modules.organization.models.entities import Organization
 
 
-class OrganizationResponse(BaseOrganization):
-    id: str
-    db_connection_id: str | None
+class OrganizationResponse(Organization):
+    pass

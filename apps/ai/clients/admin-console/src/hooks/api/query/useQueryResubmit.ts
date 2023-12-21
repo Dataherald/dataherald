@@ -7,8 +7,8 @@ const useQueryResubmit = () => {
   const { apiFetcher } = useApiFetcher()
 
   const resubmitQuery = useCallback(
-    async (queryId: string): Promise<Query> =>
-      apiFetcher<Query>(`${API_URL}/query/${queryId}/answer`, {
+    async (promptId: string): Promise<Query> =>
+      apiFetcher<Query>(`${API_URL}/generations/${promptId}`, {
         method: 'POST',
       }),
     [apiFetcher],

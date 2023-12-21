@@ -9,7 +9,7 @@ export const useDeleteGoldenSql = (
   const { apiFetcher } = useApiFetcher()
   const deleteGoldenSqlQuery = async (id: string) => {
     try {
-      await apiFetcher(`${API_URL}/golden-sql/${id}`, {
+      await apiFetcher(`${API_URL}/golden-sqls/${id}`, {
         method: 'DELETE',
       })
       listMutator((list) => {

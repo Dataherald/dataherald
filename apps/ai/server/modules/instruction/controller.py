@@ -1,41 +1,69 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Depends, Security, status
+from fastapi.security import APIKeyHeader, HTTPBearer
 
 from modules.instruction.models.requests import InstructionRequest
 from modules.instruction.models.responses import InstructionResponse
 from modules.instruction.service import InstructionService
-from utils.auth import Authorize, VerifyToken
+from utils.auth import Authorize, VerifyToken, get_api_key
 
 router = APIRouter(
-    prefix="/instruction",
+    prefix="/instructions",
+    responses={404: {"description": "Not found"}},
+)
+
+api_router = APIRouter(
+    prefix="/api/instructions",
     responses={404: {"description": "Not found"}},
 )
 
 token_auth_scheme = HTTPBearer()
+
+api_key_header = APIKeyHeader(name="X-API-Key")
 authorize = Authorize()
-table_description_service = InstructionService()
+instruction_service = InstructionService()
 
 
-@router.get("/list")
+@router.get("")
 async def get_instructions(
     db_connection_id: str,
     token: str = Depends(token_auth_scheme),
 ) -> list[InstructionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_by_user_response(user)
-    authorize.db_connection_in_organization(db_connection_id, organization.id)
-    return await table_description_service.get_instructions(db_connection_id)
+    return instruction_service.get_instructions(db_connection_id, user.organization_id)
 
 
-@router.get("")
+@api_router.get("")
+async def api_get_instructions(
+    db_connection_id: str,
+    api_key: str = Security(get_api_key),
+) -> list[InstructionResponse]:
+    org_id = api_key.organization_id
+    return instruction_service.get_instructions(db_connection_id, org_id)
+
+
+@router.get("/{id}")
 async def get_instruction(
+    id: str,
     token: str = Depends(token_auth_scheme),
 ) -> InstructionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_by_user_response(user)
-    return await table_description_service.get_instruction(
-        organization.db_connection_id
-    )
+    return instruction_service.get_instruction(id, user.organization_id)
+
+
+@api_router.get("/{id}")
+async def api_get_instruction(
+    id: str, api_key: str = Security(get_api_key)
+) -> InstructionResponse:
+    org_id = api_key.organization_id
+    return instruction_service.get_instruction(id, org_id)
+
+
+@router.get("/first")
+async def get_first_instruction(
+    token: str = Depends(token_auth_scheme),
+) -> InstructionResponse:
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    return instruction_service.get_first_instruction(user.organization_id)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
@@ -44,9 +72,18 @@ async def add_instructions(
     token: str = Depends(token_auth_scheme),
 ) -> InstructionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_by_user_response(user)
-    return await table_description_service.add_instruction(
-        instruction_request, organization.db_connection_id
+    return await instruction_service.add_instruction(
+        instruction_request, user.organization_id
+    )
+
+
+@api_router.post("", status_code=status.HTTP_201_CREATED)
+async def api_add_instructions(
+    instruction_request: InstructionRequest,
+    api_key: str = Security(get_api_key),
+) -> InstructionResponse:
+    return await instruction_service.add_instruction(
+        instruction_request, api_key.organization_id
     )
 
 
@@ -57,10 +94,19 @@ async def update_instruction(
     token: str = Depends(token_auth_scheme),
 ) -> InstructionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_by_user_response(user)
-    authorize.instruction_in_organization(id, organization)
-    return await table_description_service.update_instruction(
-        id, instruction_request, organization.db_connection_id
+    return await instruction_service.update_instruction(
+        id, instruction_request, user.organization_id
+    )
+
+
+@api_router.put("/{id}")
+async def api_update_instruction(
+    id: str,
+    instruction_request: InstructionRequest,
+    api_key: str = Security(get_api_key),
+) -> InstructionResponse:
+    return await instruction_service.update_instruction(
+        id, instruction_request, api_key.organization_id
     )
 
 
@@ -70,6 +116,12 @@ async def delete_instruction(
     token: str = Depends(token_auth_scheme),
 ):
     user = authorize.user(VerifyToken(token.credentials).verify())
-    organization = authorize.get_organization_by_user_response(user)
-    authorize.instruction_in_organization(id, organization)
-    return await table_description_service.delete_instruction(id)
+    return await instruction_service.delete_instruction(id, user.organization_id)
+
+
+@api_router.delete("/{id}")
+async def api_delete_instruction(
+    id: str,
+    api_key: str = Security(get_api_key),
+):
+    return await instruction_service.delete_instruction(id, api_key.organization_id)

@@ -12,7 +12,7 @@ import useSWR, { mutate } from 'swr'
 export const useTableResource = (
   node: TreeNode | null,
 ): UseDatabaseResourceFromTree<TableResource> => {
-  const TABLE_DESCRIPTION_ENDPOINT_URL = `${API_URL}/table-description`
+  const TABLE_DESCRIPTION_ENDPOINT_URL = `${API_URL}/table-descriptions`
   const { apiFetcher } = useApiFetcher()
 
   const isNodeTableResource = node && isTableResource(node.type)
@@ -47,7 +47,7 @@ export const useTableResource = (
         await mutate(
           resourceUrl,
           apiFetcher(url, {
-            method: 'PATCH',
+            method: 'PUT',
             body: JSON.stringify({ description: newDescription }),
           }),
         )

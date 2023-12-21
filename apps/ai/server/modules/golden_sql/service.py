@@ -1,30 +1,29 @@
-from datetime import datetime, timezone
-from typing import Dict, List
+from typing import List
 
 import httpx
-from bson import ObjectId
 from fastapi import HTTPException, status
 
 from config import settings
-from modules.golden_sql.models.entities import GoldenSQL, GoldenSQLRef, GoldenSQLSource
+from modules.generation.models.entities import GenerationStatus
+from modules.golden_sql.models.entities import (
+    DHGoldenSQLMetadata,
+    GoldenSQL,
+    GoldenSQLMetadata,
+    GoldenSQLSource,
+)
 from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.models.responses import GoldenSQLResponse
 from modules.golden_sql.repository import GoldenSQLRepository
-from modules.query.models.entities import QueryStatus
 from utils.exception import raise_for_status
+from utils.misc import reserved_key_in_metadata
 
 
 class GoldenSQLService:
     def __init__(self):
         self.repo = GoldenSQLRepository()
 
-    def get_golden_sql(self, golden_id: str) -> GoldenSQLResponse:
-        golden_sql_ref = self.repo.get_golden_sql_ref(golden_id)
-        golden_sql = self.repo.get_golden_sql(str(golden_sql_ref.golden_sql_id))
-        if golden_sql:
-            return self._get_mapped_golden_sql_response(golden_sql, golden_sql_ref)
-
-        return None
+    def get_golden_sql(self, golden_id: str, org_id: str) -> GoldenSQLResponse:
+        return self.repo.get_golden_sql(golden_id, org_id)
 
     def get_golden_sqls(
         self,
@@ -34,70 +33,70 @@ class GoldenSQLService:
         ascend: bool,  # noqa: ARG002
         org_id: str,
     ) -> list[GoldenSQLResponse]:
-        golden_sql_refs = self.repo.get_golden_sql_refs(
-            skip=page * page_size, limit=page_size, order=order, org_id=org_id
+        return self.repo.get_golden_sqls(
+            skip=page * page_size,
+            limit=page_size,
+            order=order,
+            ascend=ascend,
+            org_id=org_id,
         )
 
-        golden_ids = [str(gsr.golden_sql_id) for gsr in golden_sql_refs]
+    def get_verified_golden_sql(self, prompt_id: str) -> GoldenSQL:
+        return self.repo.get_verified_golden_sql(prompt_id)
 
-        golden_sqls = self.repo.get_golden_sqls(golden_ids)
-        golden_sqls_dict: Dict[ObjectId, GoldenSQL] = {}
-        for gs in golden_sqls:
-            golden_sqls_dict[gs.id] = gs
-        return [
-            self._get_mapped_golden_sql_response(
-                golden_sqls_dict[gsr.golden_sql_id], gsr
-            )
-            for gsr in golden_sql_refs
-        ]
-
-    def get_verified_golden_sql_ref(self, query_id: str) -> GoldenSQLRef:
-        return self.repo.get_verified_golden_sql_ref(query_id)
-
-    async def add_verified_query_golden_sql(
+    async def add_verified_golden_sql(
         self,
         golden_sql_request: GoldenSQLRequest,
         org_id: str,
-        query_id: str,
+        prompt_id: str,
     ) -> GoldenSQLResponse:
-        golden_sql_ref = self.repo.get_verified_golden_sql_ref(query_id)
-        # if already exist, delete golden_sql_ref and call delete /golden-records
-        if golden_sql_ref:
-            await self.delete_golden_sql(golden_sql_ref.golden_sql_id)
+        golden_sql = self.repo.get_verified_golden_sql(prompt_id)
+        # if already exist, call delete /golden-sqls
+        if golden_sql:
+            await self.delete_golden_sql(golden_sql.id)
+
+        display_id = self.repo.get_next_display_id(org_id)
+
+        golden_sql_request.metadata = GoldenSQLMetadata(
+            **golden_sql_request.metadata,
+            dh_internal=DHGoldenSQLMetadata(
+                prompt_id=prompt_id,
+                display_id=display_id,
+                organization_id=org_id,
+                source=GoldenSQLSource.VERIFIED_QUERY,
+            ),
+        )
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                settings.engine_url + "/golden-records",
-                json=[golden_sql_request.dict()],
+                settings.engine_url + "/golden-sqls",
+                json=[golden_sql_request.dict(exclude_unset=True)],
                 timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
             response_json = response.json()[0]
-            golden_sql = GoldenSQL(_id=ObjectId(response_json["id"]), **response_json)
-
-            display_id = self.repo.get_next_display_id(org_id)
-
-            golden_sql_ref_data = GoldenSQLRef(
-                golden_sql_id=golden_sql.id,
-                organization_id=ObjectId(org_id),
-                source=GoldenSQLSource.VERIFIED_QUERY,
-                query_id=ObjectId(query_id),
-                created_time=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
-                display_id=display_id,
-            )
-
-            # add golden_sql_ref
-            self.repo.add_golden_sql_ref(golden_sql_ref_data.dict(exclude={"id"}))
-            golden_sql_ref = self.repo.get_golden_sql_ref(str(golden_sql.id))
-            return self._get_mapped_golden_sql_response(golden_sql, golden_sql_ref)
+            return GoldenSQLResponse(**response_json)
 
     async def add_user_upload_golden_sql(
         self, golden_sql_requests: List[GoldenSQLRequest], org_id: str
     ) -> List[GoldenSQLResponse]:
+        for golden_sql_request in golden_sql_requests:
+            reserved_key_in_metadata(golden_sql_request.metadata)
+            display_id = self.repo.get_next_display_id(org_id)
+            golden_sql_request.metadata = GoldenSQLMetadata(
+                **golden_sql_request.metadata,
+                dh_internal=DHGoldenSQLMetadata(
+                    display_id=display_id,
+                    organization_id=org_id,
+                    source=GoldenSQLSource.USER_UPLOAD,
+                ),
+            )
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                settings.engine_url + "/golden-records",
+                settings.engine_url + "/golden-sqls",
                 json=[
-                    golden_sql_request.dict()
+                    golden_sql_request.dict(exclude_unset=True)
                     for golden_sql_request in golden_sql_requests
                 ],
                 timeout=settings.default_engine_timeout,
@@ -105,81 +104,33 @@ class GoldenSQLService:
             raise_for_status(response.status_code, response.text)
 
             response_jsons = response.json()
-            golden_sqls = [
-                GoldenSQL(_id=ObjectId(response_json["id"]), **response_json)
-                for response_json in response_jsons
+            return [
+                GoldenSQLResponse(**response_json) for response_json in response_jsons
             ]
 
-            golden_sql_responses = []
-
-            for golden_sql in golden_sqls:
-                display_id = self.repo.get_next_display_id(org_id)
-
-                golden_sql_ref_data = GoldenSQLRef(
-                    golden_sql_id=golden_sql.id,
-                    organization_id=ObjectId(org_id),
-                    source=GoldenSQLSource.USER_UPLOAD,
-                    created_time=datetime.now(timezone.utc).strftime(
-                        "%Y-%m-%d %H:%M:%S"
-                    ),
-                    display_id=display_id,
-                )
-
-                # add golden_sql_ref
-                self.repo.add_golden_sql_ref(golden_sql_ref_data.dict(exclude={"id"}))
-                golden_sql_ref = self.repo.get_golden_sql_ref(str(golden_sql.id))
-                golden_sql_responses.append(
-                    self._get_mapped_golden_sql_response(golden_sql, golden_sql_ref)
-                )
-
-            return golden_sql_responses
-
+    # we can avoid cyclic import if we avoid deleting verified golden sql
     async def delete_golden_sql(
-        self, golden_id: str, query_status: QueryStatus = None
+        self, golden_id: str, org_id: str, query_status: GenerationStatus = None
     ) -> dict:
-        golden_sql_ref = self.repo.get_golden_sql_ref(golden_id)
+        golden_sql = self.repo.get_golden_sql(golden_id, org_id)
 
-        if golden_sql_ref:
-            async with httpx.AsyncClient() as client:
-                response = await client.delete(
-                    settings.engine_url + f"/golden-records/{golden_id}",
-                    timeout=settings.default_engine_timeout,
-                )
-                raise_for_status(response.status_code, response.text)
-                if response.json()["status"]:
-                    if golden_sql_ref.query_id:
-                        matched_count = self.repo.delete_verified_golden_sql_ref(
-                            golden_sql_ref.query_id
-                        )
-                        if query_status:
-                            self.repo.update_query_status(
-                                golden_sql_ref.query_id, query_status
-                            )
-                    else:
-                        matched_count = self.repo.delete_golden_sql_ref(golden_id)
-                    if matched_count == 1:
-                        return {"id": golden_id}
+        if not golden_sql:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Golden sql not found",
+            )
+
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(
+                settings.engine_url + f"/golden-sqls/{golden_id}",
+                timeout=settings.default_engine_timeout,
+            )
+            raise_for_status(response.status_code, response.text)
+            if response.json()["status"]:
+                if query_status:
+                    self.repo.update_generation_status(
+                        golden_sql.metadata.dh_internal.prompt_id, query_status
+                    )
+                return {"id": golden_id}
 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
-
-    def _get_mapped_golden_sql_response(
-        self,
-        golden_sql: GoldenSQL,
-        golden_sql_ref: GoldenSQLRef,
-    ) -> GoldenSQLResponse:
-        return GoldenSQLResponse(
-            id=str(golden_sql.id),
-            question=golden_sql.question,
-            sql_query=golden_sql.sql_query,
-            db_connection_id=str(golden_sql.db_connection_id),
-            created_time=golden_sql_ref.created_time,
-            organization_id=str(golden_sql_ref.organization_id),
-            source=golden_sql_ref.source,
-            verified_query_id=str(golden_sql_ref.query_id),
-            display_id=golden_sql_ref.display_id,
-            verified_query_display_id=self.repo.get_verified_query_display_id(
-                str(golden_sql_ref.query_id)
-            )
-            if golden_sql_ref.query_id
-            else None,
-        )

@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { useToast } from '@/components/ui/use-toast'
-import { QueryPatchRequest } from '@/hooks/api/query/useQueryPatch'
+import { QueryPutRequest } from '@/hooks/api/query/useQueryPut'
 import {
   QUERY_STATUS_COLORS,
   QUERY_STATUS_EXPLANATION,
@@ -31,6 +31,7 @@ import {
   EDomainQueryWorkspaceStatus,
   QueryWorkspaceStatus,
 } from '@/models/domain'
+import { nl } from 'date-fns/locale'
 import { Ban, Box, Code2, Loader, Play, Verified, XOctagon } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { FC, useEffect, useState } from 'react'
@@ -46,38 +47,40 @@ const getWorkspaceQueryStatus = (status: QueryStatus) =>
 export interface QueryWorkspaceProps {
   query: Query
   onResubmitQuery: () => Promise<Query | undefined>
-  onExecuteQuery: (sql_query: string) => Promise<Query | undefined>
-  onPatchQuery: (patches: QueryPatchRequest) => Promise<Query | undefined>
+  onExecuteQuery: (sql: string) => Promise<Query | undefined>
+  onPutQuery: (puts: QueryPutRequest) => Promise<Query | undefined>
 }
 
 const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   query,
   onResubmitQuery,
   onExecuteQuery,
-  onPatchQuery,
+  onPutQuery,
 }) => {
   const router = useRouter()
   const {
-    id: queryId,
+    id: promptId,
+    prompt_text,
+    created_at,
+    nl_generation_text, // TODO delete this
+    sql,
+    sql_query_result = { columns: [], rows: [] },
+    sql_generation_error,
+    confidence_score,
+    updated_at,
     display_id,
-    question,
-    question_date,
-    response, // TODO delete this
     message,
-    username,
-    sql_query,
-    sql_query_result,
-    sql_error_message,
-    evaluation_score,
-    status,
-    last_updated,
     updated_by,
+    status,
   } = query
 
-  const questionDate: Date = new Date(question_date)
-  const lastUpdatedDate: Date = new Date(last_updated)
+  const created_by =
+    query.created_by || query.slack_info?.username || 'Anonymous'
 
-  const [currentSqlQuery, setCurrentSqlQuery] = useState(sql_query)
+  const questionDate: Date = new Date(created_at)
+  const lastUpdatedDate: Date = new Date(updated_at)
+
+  const [currentSqlQuery, setCurrentSqlQuery] = useState(sql)
   const [currentQueryStatus, setCurrentQueryStatus] =
     useState<EDomainQueryWorkspaceStatus>(getWorkspaceQueryStatus(status))
   const [unsavedChanges, setUnsavedChanges] = useState(false)
@@ -88,7 +91,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
 
   const { toast } = useToast()
 
-  useEffect(() => setCurrentSqlQuery(query.sql_query), [query.sql_query])
+  useEffect(() => setCurrentSqlQuery(query.sql), [query.sql])
   useEffect(
     () => setCurrentQueryStatus(getWorkspaceQueryStatus(query.status)),
     [query.status],
@@ -96,9 +99,9 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   useEffect(
     () =>
       setUnsavedChanges(
-        JSON.stringify(currentSqlQuery) !== JSON.stringify(sql_query),
+        JSON.stringify(currentSqlQuery) !== JSON.stringify(sql),
       ),
-    [currentSqlQuery, sql_query],
+    [currentSqlQuery, sql],
   )
 
   // prompt the user if they try and leave with unsaved changes
@@ -182,8 +185,8 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     if (updatingQueryStatus) return
     setUpdatingQueryStatus(true)
     try {
-      await onPatchQuery({
-        query_status: newStatus,
+      await onPutQuery({
+        generation_status: newStatus,
       })
       if (isVerified(newStatus)) {
         toast({
@@ -240,21 +243,21 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     <>
       <div
         className="grow flex flex-col gap-3 mt-4 overflow-auto"
-        data-ph-capture-attribute-query_id={queryId}
-        data-ph-capture-attribute-asker={username}
+        data-ph-capture-attribute-query_id={promptId}
+        data-ph-capture-attribute-asker={created_by}
       >
         <div id="header" className="flex items-end justify-between gap-3 px-6">
           <QueryQuestion
             className="max-w-2xl"
-            {...{ username, question, questionDate }}
+            {...{ created_by, prompt_text, questionDate }}
           />
           <QueryMetadata
             {...{
-              queryId: display_id,
+              promptId: display_id,
               status,
               updatingQuery:
                 runningQuery || updatingQueryStatus || resubmittingQuery,
-              confidenceLevel: evaluation_score,
+              confidenceLevel: confidence_score,
               onResubmit: handleResubmit,
             }}
           />
@@ -304,7 +307,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                 />
               </div>
               <QueryLastUpdated
-                responsible={updated_by?.name as string}
+                responsible={updated_by as string}
                 date={lastUpdatedDate}
               />
               {runningQuery || updatingQueryStatus ? (
@@ -334,14 +337,14 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                     <Ban size={18} strokeWidth={2} /> Rejected query
                   </div>
                 </div>
-              ) : sql_error_message ? (
+              ) : sql_generation_error ? (
                 <div className="shrink-0 h-32 flex flex-col items-center border bg-white border-red-600 text-red-600">
                   <div className="flex items-center gap-3 py-5 font-bold">
                     <XOctagon size={28} />
                     <span>SQL Error</span>
                   </div>
                   <div className="w-full overflow-auto px-8 pb-3">
-                    {sql_error_message}
+                    {sql_generation_error}
                   </div>
                 </div>
               ) : (
@@ -370,9 +373,9 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
             </div>
             <MessageSection
               {...{
-                queryId,
-                initialMessage: message || response,
-                onPatchQuery,
+                promptId,
+                initialMessage: message || nl_generation_text,
+                onPutQuery,
               }}
             />
             <SectionHeader>

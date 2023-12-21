@@ -11,8 +11,9 @@ import {
 
 export const QUERY_STATUS_BUTTONS_CLASSES: ResourceButtonClasses<QueryStatus> =
   {
+    [EQueryStatus.INITIALIZED]: 'bg-primary', // TODO: @valak please replace this and more
     [EQueryStatus.REJECTED]: 'bg-primary hover:bg-blue-600',
-    [EQueryStatus.SQL_ERROR]:
+    [EQueryStatus.ERROR]:
       'border border-primary bg-white text-primary hover:bg-blue-50',
     [EQueryStatus.NOT_VERIFIED]:
       'border border-primary bg-white text-primary hover:bg-blue-50',
@@ -20,6 +21,11 @@ export const QUERY_STATUS_BUTTONS_CLASSES: ResourceButtonClasses<QueryStatus> =
   }
 
 export const QUERY_STATUS_COLORS: ResourceColors<QueryWorkspaceStatus> = {
+  [EQueryStatus.INITIALIZED]: {
+    text: 'text-yellow-700',
+    border: 'border-yellow-700',
+    background: 'bg-yellow-100',
+  },
   [EQueryStatus.REJECTED]: {
     text: 'text-red-500',
     border: 'border-red-500',
@@ -38,6 +44,7 @@ export const QUERY_STATUS_COLORS: ResourceColors<QueryWorkspaceStatus> = {
 }
 
 export const QUERY_STATUS_EXPLANATION: Record<QueryWorkspaceStatus, string> = {
+  [EQueryStatus.INITIALIZED]: `The question is waiting to be answered`,
   [EQueryStatus.REJECTED]: `The question is invalid, such as in the case of insufficient data or an unanswerable question`,
   [EQueryStatus.NOT_VERIFIED]:
     'The query is not used to improve the platform accuracy',
@@ -46,10 +53,13 @@ export const QUERY_STATUS_EXPLANATION: Record<QueryWorkspaceStatus, string> = {
 }
 
 export const DOMAIN_QUERY_STATUS_COLORS: ResourceColors<DomainQueryStatus> = {
+  [EDomainQueryStatus.INITIALIZED]: {
+    text: 'text-yellow-500',
+  },
   [EDomainQueryStatus.REJECTED]: {
     text: 'text-red-500',
   },
-  [EDomainQueryStatus.SQL_ERROR]: {
+  [EDomainQueryStatus.ERROR]: {
     text: 'text-red-500',
   },
   [EDomainQueryStatus.NOT_VERIFIED]: {
@@ -71,19 +81,21 @@ export const DOMAIN_QUERY_STATUS_COLORS: ResourceColors<DomainQueryStatus> = {
 
 export const getDomainStatus = (
   status: QueryStatus,
-  evaluation_score: number | null,
+  confidence_score: number | null,
 ): DomainQueryStatus | undefined => {
   switch (status) {
+    case EQueryStatus.INITIALIZED:
+      return EDomainQueryStatus.INITIALIZED
     case EQueryStatus.REJECTED:
       return EDomainQueryStatus.REJECTED
-    case EQueryStatus.SQL_ERROR:
-      return EDomainQueryStatus.SQL_ERROR
+    case EQueryStatus.ERROR:
+      return EDomainQueryStatus.ERROR
     case EQueryStatus.NOT_VERIFIED: {
-      if (evaluation_score === null) {
+      if (confidence_score === null) {
         return status as DomainQueryStatus
-      } else if (evaluation_score < 70) {
+      } else if (confidence_score < 70) {
         return EDomainQueryStatus.LOW_CONFIDENCE
-      } else if (evaluation_score < 90) {
+      } else if (confidence_score < 90) {
         return EDomainQueryStatus.MEDIUM_CONFIDENCE
       } else {
         return EDomainQueryStatus.HIGH_CONFIDENCE
@@ -96,11 +108,11 @@ export const getDomainStatus = (
 
 export const getDomainStatusColors = (
   status: QueryStatus,
-  evaluation_score: number | null,
+  confidence_score: number | null,
 ): ColorClasses => {
   const domainStatus = getDomainStatus(
     status,
-    evaluation_score,
+    confidence_score,
   ) as DomainQueryStatus
   return DOMAIN_QUERY_STATUS_COLORS[domainStatus]
 }
@@ -110,7 +122,7 @@ export const formatQueryStatus = (
 ): string => {
   if (status) {
     const formattedStatus = capitalize(status?.replace('_', ' ').toLowerCase())
-    if (status === EQueryStatus.SQL_ERROR) {
+    if (status === EQueryStatus.ERROR) {
       return formattedStatus.replace('Sql', 'SQL')
     }
     return formattedStatus
@@ -120,19 +132,19 @@ export const formatQueryStatus = (
 
 export const formatQueryStatusWithScore = (
   status: DomainQueryStatus | QueryStatus | undefined,
-  evaluation_score: number | null,
+  confidence_score: number | null,
 ): string => {
   const formattedStatus = formatQueryStatus(status)
   if (
-    status === EQueryStatus.SQL_ERROR ||
-    (status === EQueryStatus.NOT_VERIFIED && evaluation_score === null)
+    status === EQueryStatus.ERROR ||
+    (status === EQueryStatus.NOT_VERIFIED && confidence_score === null)
   ) {
     return formattedStatus
   } else if (status === EQueryStatus.REJECTED) {
     return formattedStatus + ' by Admin'
   } else {
     const formattedScore =
-      status === EQueryStatus.VERIFIED ? '(100%)' : `(${evaluation_score}%)`
+      status === EQueryStatus.VERIFIED ? '(100%)' : `(${confidence_score}%)`
     return `${formattedStatus} ${formattedScore}`
   }
 }
@@ -147,4 +159,4 @@ export const isRejected = (status?: QueryStatus): boolean =>
   EQueryStatus.REJECTED === status
 
 export const isSqlError = (status?: QueryStatus): boolean =>
-  EQueryStatus.SQL_ERROR === status
+  EQueryStatus.ERROR === status

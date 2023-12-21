@@ -52,8 +52,9 @@ export interface User extends UserProfile {
 export type Users = User[]
 
 export enum EQueryStatus {
+  INITIALIZED = 'INITIALIZED',
   REJECTED = 'REJECTED',
-  SQL_ERROR = 'SQL_ERROR',
+  ERROR = 'ERROR',
   NOT_VERIFIED = 'NOT_VERIFIED',
   VERIFIED = 'VERIFIED',
 }
@@ -69,36 +70,48 @@ export type QuerySqlResultData = { [columnKey: string]: string | number }
 
 export interface QueryListItem {
   id: string
-  display_id: string
-  username: string
-  question: string
-  question_date: string
-  response: string
+  created_by: string
+  prompt_text: string
+  nl_generation_text: string
   status: QueryStatus
-  evaluation_score: number
+  confidence_score: number
+  display_id: string
+  created_at: string
 }
 
 export type QueryList = QueryListItem[]
 
-export interface Query {
-  id: string
-  display_id: string
-  question_id: string
-  question: string
-  question_date: string
-  answer_id: string
-  sql_query: string
-  sql_query_result: QuerySqlResult | null
-  sql_error_message?: string
-  evaluation_score: number
-  ai_process: string[]
-  message: string
-  response: string // TODO remove this field once the backend migrated to `message`
-  status: QueryStatus
+export type SlackInfo = {
+  user_id: string
+  channel_id: string
+  thread_ts: string
   username: string
-  last_updated: string
-  updated_by: User
-  verified_date: string
+}
+
+export interface Query {
+  // prompt
+  id: string
+  db_connection_id: string
+  prompt_text: string
+  created_by: string
+  updated_by: string
+  organization_id: string
+  display_id: string
+  slack_info: SlackInfo
+  message: string | null
+  // sql_generation
+  sql: string
+  sql_query_result: QuerySqlResult | null // TODO remove this field once csv export is done
+  sql_generation_error?: string
+  confidence_score: number
+  intermediate_steps: string[] | [] // TODO remove this field @valak
+
+  // nl_generation
+  nl_generation_text: string // TODO remove this field once the backend migrated to `message`
+
+  status: QueryStatus
+  updated_at: string
+  created_at: string
 }
 
 export type Queries = Query[]
@@ -110,15 +123,24 @@ export enum EGoldenSqlSource {
 
 export type GoldenSqlSource = 'USER_UPLOAD' | 'VERIFIED_QUERY'
 
+export type DHGoldenSqlMetadata = {
+  prompt_id: string
+  organization_id: string
+  source: GoldenSqlSource
+  display_id: string
+}
+
+export type GoldenSqlMetadata = {
+  dh_internal: DHGoldenSqlMetadata
+}
+
 export interface GoldenSqlListItem {
   id: string
-  display_id: string
-  question: string
-  sql_query: string
-  created_time: string
-  source: GoldenSqlSource
-  verified_query_id?: string | null
-  verified_query_display_id?: string | null
+  db_connection_id: string
+  prompt_text: string
+  sql: string
+  created_at: string
+  metadata: GoldenSqlMetadata
 }
 
 export type GoldenSqlList = GoldenSqlListItem[]

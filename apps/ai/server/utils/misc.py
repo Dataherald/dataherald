@@ -1,30 +1,22 @@
-from bson.objectid import ObjectId
+from fastapi import HTTPException, status
 
 from database.mongo import DESCENDING, MongoDB
 
 MAX_DISPLAY_ID = 99999
+RESERVED_KEY = "dh_internal"
 
 
-# temporary fix for cases where { '$oid': '1234567890' } is either a dict or ObjectId,
-# I believe it is both bson and mongo's issue
-def get_object_id(id):
-    if not isinstance(id, ObjectId):
-        return ObjectId(id["$oid"])
-    return id
-
-
-def get_next_display_id(collection, org_id: ObjectId, prefix: str) -> str:
-    last_query_ref_result = list(
-        MongoDB.find(
-            collection,
-            {"organization_id": org_id, "display_id": {"$exists": True}},
-        )
-        .sort("display_id", DESCENDING)
-        .limit(1)
+def get_next_display_id(collection, org_id: str, prefix: str) -> str:
+    latest_item = MongoDB.find_one(
+        collection,
+        {
+            "metadata.dh_internal.organization_id": org_id,
+            "metadata.dh_internal.display_id": {"$exists": True},
+        },
+        sort=[("metadata.dh_internal.display_id", DESCENDING)],
     )
-
-    if len(last_query_ref_result) > 0:
-        last_display_id: str = last_query_ref_result[0]["display_id"]
+    if latest_item:
+        last_display_id: str = latest_item["metadata"]["dh_internal"]["display_id"]
         last_display_id_num = int(last_display_id.split("-")[-1])
 
         if last_display_id_num > MAX_DISPLAY_ID:
@@ -35,3 +27,11 @@ def get_next_display_id(collection, org_id: ObjectId, prefix: str) -> str:
         return f"{prefix}-{next_disaply_id_num:05d}"
 
     return f"{prefix}-00000"
+
+
+def reserved_key_in_metadata(metadata: dict):
+    if RESERVED_KEY in metadata:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Metadata cannot contain reserved key: {RESERVED_KEY}",
+        )

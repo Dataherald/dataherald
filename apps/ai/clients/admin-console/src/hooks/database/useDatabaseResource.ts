@@ -12,7 +12,7 @@ import useSWR, { mutate } from 'swr'
 export const useDatabaseResource = (
   node: TreeNode | null,
 ): UseDatabaseResourceFromTree<DatabaseResource> => {
-  const INSTRUCTION_URL = `${API_URL}/instruction`
+  const INSTRUCTION_URL = `${API_URL}/instructions`
   const { apiFetcher } = useApiFetcher()
 
   const isNodeDatabaseResource = node && isDatabaseResource(node.type)

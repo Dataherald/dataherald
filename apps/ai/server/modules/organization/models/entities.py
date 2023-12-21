@@ -1,6 +1,6 @@
-from typing import Any
+from datetime import datetime
 
-from pydantic import BaseModel, Field, confloat
+from pydantic import BaseModel, confloat
 
 
 class SlackTeam(BaseModel):
@@ -34,11 +34,12 @@ class SlackInstallation(BaseModel):
 
 class BaseOrganization(BaseModel):
     name: str | None
+    db_connection_id: str | None
     confidence_threshold: confloat(ge=0, le=1) | None
     slack_installation: SlackInstallation | None
     llm_api_key: str | None
 
 
 class Organization(BaseOrganization):
-    id: Any = Field(alias="_id")
-    db_connection_id: Any
+    id: str | None
+    created_at: datetime | None

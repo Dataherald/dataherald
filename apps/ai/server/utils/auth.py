@@ -1,27 +1,22 @@
 import jwt
 from bson import ObjectId
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Security, status
+from fastapi.security import APIKeyHeader
 
 from config import (
-    DATABASE_CONNECTION_REF_COL,
-    GOLDEN_SQL_REF_COL,
-    INSTRUCTION_COL,
-    QUERY_RESPONSE_REF_COL,
-    TABLE_DESCRIPTION_COL,
     USER_COL,
     auth_settings,
 )
 from database.mongo import MongoDB
-from modules.organization.models.responses import OrganizationResponse
+from modules.key.service import KeyService
 from modules.organization.service import OrganizationService
-from modules.query.service import QueryService
 from modules.user.models.entities import Roles
 from modules.user.models.responses import UserResponse
 from modules.user.service import UserService
 
 user_service = UserService()
 org_service = OrganizationService()
-query_service = QueryService()
+key_service = KeyService()
 
 
 class VerifyToken:
@@ -88,65 +83,8 @@ class Authorize:
             )
         return user
 
-    def instruction_in_organization(
-        self, instruction_id: str, organization: OrganizationResponse
-    ):
-        instruction = MongoDB.find_one(
-            INSTRUCTION_COL,
-            {
-                "_id": ObjectId(instruction_id),
-                "db_connection_id": ObjectId(organization.db_connection_id),
-            },
-        )
-
-        if not instruction:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Instruction not found"
-            )
-
-    def db_connection_in_organization(self, db_connection_id: str, org_id: str):
-        self._item_in_organization(
-            DATABASE_CONNECTION_REF_COL,
-            db_connection_id,
-            org_id,
-            key="db_connection_id",
-        )
-
-    def query_in_organization(self, query_id: str, org_id: str):
-        self._item_in_organization(QUERY_RESPONSE_REF_COL, query_id, org_id)
-
-    def golden_sql_in_organization(self, golden_sql_id: str, org_id: str):
-        self._item_in_organization(
-            GOLDEN_SQL_REF_COL, golden_sql_id, org_id, key="golden_sql_id"
-        )
-
     def user_in_organization(self, user_id: str, org_id: str):
         self._item_in_organization(USER_COL, user_id, org_id)
-
-    def table_description_in_organization(self, table_description_id: str, org_id: str):
-        organization = org_service.get_organization(org_id)
-        table_description = MongoDB.find_one(
-            TABLE_DESCRIPTION_COL,
-            {
-                "_id": ObjectId(table_description_id),
-                "db_connection_id": ObjectId(organization.db_connection_id),
-            },
-        )
-        if not table_description:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
-            )
-
-    def get_organization_by_user_response(
-        self, user: UserResponse
-    ) -> OrganizationResponse:
-        organization = org_service.get_organization(user.organization_id)
-        if not organization:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User does not belong to an Organization",
-            )
-        return organization
 
     def is_admin_user(self, user: UserResponse):
         if user.role != Roles.admin:
@@ -169,18 +107,33 @@ class Authorize:
             )
 
     def _item_in_organization(
-        self, collection: str, id: str, org_id: str, key: str = None
+        self,
+        collection: str,
+        id: str,
+        org_id: str,
+        key: str = "_id",
+        is_metadata: bool = False,
     ):
-        if key:
-            item = MongoDB.find_one(
-                collection, {key: ObjectId(id), "organization_id": ObjectId(org_id)}
-            )
-        else:
-            item = MongoDB.find_one(
-                collection, {"_id": ObjectId(id), "organization_id": ObjectId(org_id)}
-            )
+        metadata_prefix = "metadata" if is_metadata else ""
+        item = MongoDB.find_one(
+            collection,
+            {key: ObjectId(id), f"{metadata_prefix}organization_id": org_id},
+        )
 
         if not item:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
             )
+
+
+api_key_header = APIKeyHeader(name="X-API-Key")
+
+
+def get_api_key(api_key: str = Security(api_key_header)) -> str:
+    validated_key = key_service.validate_key(api_key)
+    if validated_key:
+        return validated_key
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, detail="API Key does not exist"
+    )

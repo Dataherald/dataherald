@@ -4,9 +4,7 @@ import LoadingQuery from '@/components/query/loading'
 import QueryWorkspace from '@/components/query/workspace'
 import { useQuery } from '@/hooks/api/query/useQuery'
 import useQueryExecution from '@/hooks/api/query/useQueryExecution'
-import useQueryPatch, {
-  QueryPatchRequest,
-} from '@/hooks/api/query/useQueryPatch'
+import useQueryPut, { QueryPutRequest } from '@/hooks/api/query/useQueryPut'
 import useQueryResubmit from '@/hooks/api/query/useQueryResubmit'
 import { Query } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
@@ -15,16 +13,16 @@ import { FC, useEffect, useState } from 'react'
 
 const QueryPage: FC = () => {
   const router = useRouter()
-  const { queryId } = router.query
+  const { queryId: promptId } = router.query
   const {
     query: serverQuery,
     isLoading: isLoadingServerQuery,
     error,
     mutate,
-  } = useQuery(queryId as string)
+  } = useQuery(promptId as string)
   const [query, setQuery] = useState<Query | undefined>(serverQuery)
   const resubmitQuery = useQueryResubmit()
-  const patchQuery = useQueryPatch()
+  const putQuery = useQueryPut()
   const executeQuery = useQueryExecution()
 
   useEffect(() => {
@@ -32,19 +30,18 @@ const QueryPage: FC = () => {
   }, [serverQuery])
 
   const handleResubmitQuery = async () => {
-    return mutate(resubmitQuery(queryId as string))
+    return mutate(resubmitQuery(promptId as string))
   }
 
   const handleExecuteQuery = async (sql_query: string) => {
-    return mutate(executeQuery(queryId as string, sql_query))
+    return mutate(executeQuery(promptId as string, sql_query))
   }
 
-  const handlePatchQuery = async (patches: QueryPatchRequest) => {
-    return mutate(patchQuery(queryId as string, patches))
+  const handleputQuery = async (puts: QueryPutRequest) => {
+    return mutate(putQuery(promptId as string, puts))
   }
 
   let pageContent: JSX.Element = <></>
-
   if (isLoadingServerQuery && !query) {
     pageContent = <LoadingQuery />
   } else if (error) {
@@ -59,7 +56,7 @@ const QueryPage: FC = () => {
         query={query}
         onResubmitQuery={handleResubmitQuery}
         onExecuteQuery={handleExecuteQuery}
-        onPatchQuery={handlePatchQuery}
+        onPutQuery={handleputQuery}
       />
     )
 

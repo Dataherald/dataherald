@@ -1,15 +1,17 @@
 import httpx
-from bson import ObjectId
-from fastapi import UploadFile
+from fastapi import HTTPException, UploadFile, status
 
 from config import settings
-from modules.db_connection.models.entities import DBConnectionRef, Driver
+from modules.db_connection.models.entities import (
+    DBConnectionMetadata,
+    DHDBConnectionMetadata,
+)
 from modules.db_connection.models.requests import DBConnectionRequest
 from modules.db_connection.models.responses import DBConnectionResponse
 from modules.db_connection.repository import DBConnectionRepository
-from modules.organization.models.responses import OrganizationResponse
 from modules.organization.service import OrganizationService
 from utils.exception import raise_for_status
+from utils.misc import reserved_key_in_metadata
 from utils.s3 import S3
 
 
@@ -19,37 +21,25 @@ class DBConnectionService:
         self.org_service = OrganizationService()
 
     def get_db_connections(self, org_id: str) -> list[DBConnectionResponse]:
-        db_connection_refs = self.repo.get_db_connection_refs(org_id)
-        db_connection_ids = [
-            str(db_connection_ref.db_connection_id)
-            for db_connection_ref in db_connection_refs
-        ]
-        db_connections = self.repo.get_db_connections(db_connection_ids)
-        return [
-            DBConnectionResponse(
-                id=str(db_connection.id), **db_connection.dict(exclude={"id"})
-            )
-            for db_connection in db_connections
-        ]
+        return self.repo.get_db_connections(org_id)
 
-    def get_db_connection(self, db_connection_id: str) -> DBConnectionResponse:
-        db_connection = self.repo.get_db_connection(db_connection_id)
-        return (
-            DBConnectionResponse(
-                id=str(db_connection.id), **db_connection.dict(exclude={"id"})
-            )
-            if db_connection
-            else None
-        )
+    def get_db_connection(
+        self, db_connection_id: str, org_id: str
+    ) -> DBConnectionResponse:
+        return self.repo.get_db_connection(db_connection_id, org_id)
 
     async def add_db_connection(
         self,
         db_connection_request_json: dict,
-        organization: OrganizationResponse,
+        org_id: str,
         file: UploadFile = None,
     ) -> DBConnectionResponse:
         db_connection_request = DBConnectionRequest(**db_connection_request_json)
-
+        reserved_key_in_metadata(db_connection_request.metadata)
+        db_connection_request.metadata = DBConnectionMetadata(
+            **db_connection_request.metadata,
+            dh_internal=DHDBConnectionMetadata(organization_id=org_id),
+        )
         if file:
             s3 = S3()
             db_connection_request.path_to_credentials_file = s3.upload(file)
@@ -57,60 +47,50 @@ class DBConnectionService:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.engine_url + "/database-connections",
-                json={
-                    "llm_api_key": organization.llm_api_key,
-                    **db_connection_request.dict(),
-                },
+                json={**db_connection_request.dict(exclude_unset=True)},
                 timeout=settings.default_engine_timeout,
             )
 
             raise_for_status(response.status_code, response.text)
 
             response_json = response.json()
-            self.repo.add_db_connection_ref(
-                DBConnectionRef(
-                    alias=db_connection_request.alias,
-                    db_connection_id=ObjectId(response_json["id"]),
-                    organization_id=ObjectId(organization.id),
-                ).dict(exclude={"id"})
-            )
 
-            self.org_service.update_db_connection_id(
-                organization.id, response_json["id"]
-            )
+            self.org_service.update_db_connection_id(org_id, response_json["id"])
 
             return DBConnectionResponse(**response.json())
 
     async def update_db_connection(
         self,
-        id,
+        db_connection_id,
         db_connection_request_json: dict,
-        organization: OrganizationResponse,
+        org_id: str,
         file: UploadFile = None,
     ) -> DBConnectionResponse:
         db_connection_request = DBConnectionRequest(**db_connection_request_json)
+        reserved_key_in_metadata(db_connection_request.metadata)
+        db_connection = self.repo.get_db_connection(db_connection_id, org_id)
 
+        if not db_connection:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Database connection not found",
+            )
+
+        db_connection_request.metadata = DBConnectionMetadata(
+            **db_connection_request.metadata,
+            dh_internal=DHDBConnectionMetadata(organization_id=org_id),
+        )
         if file:
             s3 = S3()
             db_connection_request.path_to_credentials_file = s3.upload(file)
 
         async with httpx.AsyncClient() as client:
             response = await client.put(
-                settings.engine_url + f"/database-connections/{id}",
+                settings.engine_url + f"/database-connections/{db_connection_id}",
                 json={
-                    "llm_api_key": organization.llm_api_key,
                     **db_connection_request.dict(),
                 },
                 timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
             return DBConnectionResponse(**response.json())
-
-    def get_drivers(self) -> list[Driver]:
-        return [
-            {"name": "PostgreSQL", "driver": "postgresql+psycopg2"},
-            {"name": "Databricks", "driver": "databricks"},
-            {"name": "Snowflake", "driver": "snowflake"},
-            {"name": "BigQuery", "driver": "bigquery"},
-            {"name": "AWS Athena", "driver": "awsathena+rest"},
-        ]

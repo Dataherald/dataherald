@@ -12,7 +12,7 @@ import useSWR, { mutate } from 'swr'
 export const useColumnResource = (
   node: TreeNode | null,
 ): UseDatabaseResourceFromTree<ColumnResource> => {
-  const TABLE_DESCRIPTION_ENDPOINT_URL = `${API_URL}/table-description`
+  const TABLE_DESCRIPTION_ENDPOINT_URL = `${API_URL}/table-descriptions`
   const { apiFetcher } = useApiFetcher()
 
   const isNodeColumnResource = node && isColumnResource(node.type)
@@ -51,7 +51,7 @@ export const useColumnResource = (
         await mutate(
           resourceUrl,
           apiFetcher(url, {
-            method: 'PATCH',
+            method: 'PUT',
             body: JSON.stringify({
               columns: [{ ...columnDescription, description: newDescription }],
             }),

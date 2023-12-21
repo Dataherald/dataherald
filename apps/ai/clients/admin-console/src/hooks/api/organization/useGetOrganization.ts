@@ -5,5 +5,5 @@ import { Organization } from '@/models/api'
 export const useGetOrganization = () => {
   const getOrganization = useGet<Organization>()
   return (organizationId: string) =>
-    getOrganization(`${API_URL}/organization/${organizationId}`)
+    getOrganization(`${API_URL}/organizations/${organizationId}`)
 }

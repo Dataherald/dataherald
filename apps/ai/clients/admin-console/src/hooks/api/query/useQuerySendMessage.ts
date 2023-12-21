@@ -6,8 +6,8 @@ const useQuerySendMessage = () => {
   const { apiFetcher } = useApiFetcher()
 
   const sendMessage = useCallback(
-    async (queryId: string): Promise<void> =>
-      apiFetcher<void>(`${API_URL}/query/${queryId}/message`, {
+    async (promptId: string): Promise<void> =>
+      apiFetcher<void>(`${API_URL}/generations/${promptId}/messages`, {
         method: 'POST',
       }),
     [apiFetcher],

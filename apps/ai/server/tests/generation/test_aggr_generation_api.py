@@ -8,10 +8,10 @@ from httpx import Response
 
 from app import app
 from modules.db_connection.models.responses import DBConnectionResponse
+from modules.generation.models.entities import Query, Question
 from modules.organization.models.entities import SlackBot, SlackInstallation
 from modules.organization.models.responses import OrganizationResponse
-from modules.query.models.entities import Query, Question
-from modules.user.models.responses import UserResponse
+from modules.user.models.entities import User
 
 client = TestClient(app)
 
@@ -20,7 +20,7 @@ client = TestClient(app)
 @patch.multiple(
     "utils.auth.Authorize",
     user=Mock(
-        return_value=UserResponse(
+        return_value=User(
             id="0123456789ab0123456789ab",
             email="test@gmail.com",
             username="test_user",
@@ -161,7 +161,7 @@ class TestQueryAPI(TestCase):
         "utils.slack.SlackWebClient.get_user_real_name", Mock(return_value="test_user")
     )
     @patch.multiple(
-        "modules.query.repository.QueryRepository",
+        "modules.query.repository.GenerationRepository",
         get_query=Mock(return_value=None),
         get_next_display_id=Mock(return_value="QR-00000"),
         add_query=Mock(return_value=str(test_ref_1["_id"])),
@@ -191,11 +191,7 @@ class TestQueryAPI(TestCase):
         Mock(return_value=None),
     )
     @patch(
-        "modules.golden_sql.service.GoldenSQLService.get_verified_golden_sql_ref",
-        Mock(return_value=None),
-    )
-    @patch(
-        "modules.query.repository.QueryRepository.get_queries",
+        "modules.query.repository.GenerationRepository.get_queries",
         Mock(return_value=[Query(**test_ref_1)]),
     )
     def test_get_queries(self):
@@ -228,7 +224,7 @@ class TestQueryAPI(TestCase):
         AsyncMock(return_value=Response(201, json=test_response_0)),
     )
     @patch.multiple(
-        "modules.query.repository.QueryRepository",
+        "modules.query.repository.GenerationRepository",
         get_query=Mock(return_value=Query(**test_ref_1)),
         get_question=Mock(return_value=Question(**test_question)),
         update_query=Mock(return_value=None),
@@ -247,7 +243,7 @@ class TestQueryAPI(TestCase):
         AsyncMock(return_value=Response(200, json=test_response_0)),
     )
     @patch.multiple(
-        "modules.query.repository.QueryRepository",
+        "modules.query.repository.GenerationRepository",
         get_query=Mock(return_value=Query(**test_ref_1)),
         update_query=Mock(return_value=None),
     )

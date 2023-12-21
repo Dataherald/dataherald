@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -6,7 +7,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from app import app
-from modules.user.models.responses import UserResponse
+from modules.user.models.entities import User
 
 client = TestClient(app)
 
@@ -15,7 +16,7 @@ client = TestClient(app)
 @patch.multiple(
     "utils.auth.Authorize",
     user=Mock(
-        return_value=UserResponse(
+        return_value=User(
             id="0123456789ab0123456789ab", organization_id="0123456789ab0123456789ab"
         )
     ),
@@ -23,7 +24,7 @@ client = TestClient(app)
     user_in_organization=Mock(return_value=None),
 )
 class TestOrganizationAPI(TestCase):
-    url = "/organization"
+    url = "/organizations"
     test_header = {"Authorization": "Bearer some-token"}
 
     test_1 = {
@@ -32,6 +33,7 @@ class TestOrganizationAPI(TestCase):
         "confidence_threshold": 0.5,
         "db_connection_id": "test_connection_id_1",
         "llm_api_key": None,
+        "created_at": datetime.now(),
     }
 
     test_2 = {
@@ -62,6 +64,7 @@ class TestOrganizationAPI(TestCase):
             "app_id": "0123456789ab0123456789ab",
         },
         "llm_api_key": None,
+        "created_at": datetime.now(),
     }
 
     test_response_1 = {
@@ -71,6 +74,7 @@ class TestOrganizationAPI(TestCase):
         "confidence_threshold": test_1["confidence_threshold"],
         "slack_installation": None,
         "llm_api_key": None,
+        "created_at": test_1["created_at"].strftime("%Y-%m-%dT%H:%M:%S.%f"),
     }
 
     test_response_2 = {
@@ -80,11 +84,15 @@ class TestOrganizationAPI(TestCase):
         "confidence_threshold": test_2["confidence_threshold"],
         "slack_installation": test_2["slack_installation"],
         "llm_api_key": None,
+        "created_at": test_2["created_at"].strftime("%Y-%m-%dT%H:%M:%S.%f"),
     }
 
-    @patch("database.mongo.MongoDB.find", Mock(return_value=[test_1, test_2]))
+    @patch(
+        "database.mongo.MongoDB.find",
+        Mock(return_value=[test_1, test_2]),
+    )
     def test_get_organizations(self):
-        response = client.get(self.url + "/list", headers=self.test_header)
+        response = client.get(self.url, headers=self.test_header)
         assert response.status_code == status.HTTP_200_OK
         assert response.json() == [self.test_response_1, self.test_response_2]
 
@@ -172,11 +180,12 @@ class TestOrganizationAPI(TestCase):
         assert response.status_code == status.HTTP_201_CREATED
         assert response.json() == self.test_response_1
 
-    @patch("database.mongo.MongoDB.find_one", Mock(return_value=test_response_2))
+    @patch("database.mongo.MongoDB.find_one", Mock(return_value=test_2))
     def test_get_slack_installation_by_slack_workspace_id(self):
         response = client.get(
-            self.url + "/slack/installation?workspace_id=0123456789ab0123456789ab",
+            self.url + "/slack/installation",
             headers=self.test_header,
+            params={"workspace_id": "0123456789ab0123456789ab"},
         )
         assert response.status_code == status.HTTP_200_OK
         assert response.json() == self.test_response_2["slack_installation"]

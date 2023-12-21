@@ -1,6 +1,6 @@
 import { useGetOrganization } from '@/hooks/api/organization/useGetOrganization'
 import { useGetUser } from '@/hooks/api/user/useGetUser'
-import { usePatchUser } from '@/hooks/api/user/usePatchUser'
+import { usePutUser } from '@/hooks/api/user/usePutUser'
 import { Organization, User } from '@/models/api'
 import { useUser } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/router'
@@ -60,7 +60,7 @@ export const AppContextProvider: FC<AppContextTypeProps> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState)
 
   const getOrganization = useGetOrganization()
-  const patchUserApi = usePatchUser()
+  const putUserApi = usePutUser()
   const getUserApi = useGetUser()
 
   const fetchOrganization = useCallback(
@@ -87,26 +87,27 @@ export const AppContextProvider: FC<AppContextTypeProps> = ({ children }) => {
     [getUserApi],
   )
 
-  const patchUser = useCallback(
-    async (userUpdates: Partial<User>): Promise<User> => {
+  const putUser = useCallback(
+    async (userUpdates: User): Promise<User> => {
       const currentUser = state.user
       if (!currentUser) throw new Error('No user found in app state')
       try {
-        const updatedUser = await patchUserApi(currentUser.id, userUpdates)
+        const updatedUser = await putUserApi(currentUser.id, userUpdates)
         return updatedUser
       } catch (error) {
         console.error(`Error patching user: ${error}`)
         throw error
       }
     },
-    [patchUserApi, state.user],
+    [putUserApi, state.user],
   )
 
   const setAdminOrganization = useCallback(
     async (organizationId: string): Promise<void> => {
       const updateAdmin = async (organizationId: string) => {
         try {
-          const updatedUser = await patchUser({
+          const updatedUser = await putUser({
+            ...(state.user as User),
             organization_id: organizationId,
           })
           try {
@@ -131,7 +132,7 @@ export const AppContextProvider: FC<AppContextTypeProps> = ({ children }) => {
         return updateAdmin(organizationId)
       }
     },
-    [fetchOrganization, patchUser],
+    [fetchOrganization, putUser, state.user],
   )
 
   const updateOrganization = useCallback(async () => {

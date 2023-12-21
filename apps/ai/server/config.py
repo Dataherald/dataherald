@@ -4,19 +4,19 @@ from typing import Any
 from dotenv import load_dotenv
 from pydantic import BaseSettings
 
+PROMPT_COL = "prompts"
+SQL_GENERATION_COL = "sql_generations"
+NL_GENERATION_COL = "nl_generations"
+
 DATABASE_CONNECTION_COL = "database_connections"
-QUESTION_COL = "questions"
-QUERY_RESPONSE_COL = "responses"
-GOLDEN_SQL_COL = "golden_records"
+GOLDEN_SQL_COL = "golden_sqls"
 TABLE_DESCRIPTION_COL = "table_descriptions"
 INSTRUCTION_COL = "instructions"
+FINETUNING_COL = "finetunings"
 
 USER_COL = "users"
 ORGANIZATION_COL = "organizations"
-
-QUERY_RESPONSE_REF_COL = "queries"
-DATABASE_CONNECTION_REF_COL = "database_connection_refs"
-GOLDEN_SQL_REF_COL = "golden_sql_refs"
+KEY_COL = "keys"
 
 
 class Settings(BaseSettings):
@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     engine_url: str = os.environ.get("K2_CORE_URL")
     default_engine_timeout: int = os.environ.get("DEFAULT_K2_TIMEOUT")
     encrypt_key: str = os.environ.get("ENCRYPT_KEY")
+    api_key_salt: str = os.environ.get("API_KEY_SALT")
 
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)

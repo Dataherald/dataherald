@@ -11,10 +11,10 @@ import { FC } from 'react'
 
 const DownloadCsvPage: FC = () => {
   const {
-    query: { queryId },
+    query: { promptId },
   } = useRouter()
   const { downloadFile, status: downloadStatus, error } = useDownloadFile()
-  const { query, isLoading } = useQuery(queryId as string)
+  const { query, isLoading } = useQuery(promptId as string)
 
   let pageContent: JSX.Element = <></>
 
@@ -24,18 +24,18 @@ const DownloadCsvPage: FC = () => {
 
   if (query) {
     const {
-      display_id,
+      created_at,
+      confidence_score,
+      prompt_text,
+      created_by,
       status,
-      question,
-      question_date,
-      username,
-      evaluation_score,
+      display_id,
     } = query as Query
 
-    const questionDate: Date = new Date(question_date)
+    const questionDate: Date = new Date(created_at)
 
     const handleDownload = () => {
-      downloadFile(`query/${queryId}/csv`, `query-${display_id}.csv`)
+      downloadFile(`query/${promptId}/csv`, `query-${display_id}.csv`)
     }
 
     if (query) {
@@ -47,13 +47,13 @@ const DownloadCsvPage: FC = () => {
           >
             <QueryQuestion
               className="max-w-2xl"
-              {...{ username, question, questionDate }}
+              {...{ created_by, prompt_text, questionDate }}
             />
             <QueryMetadata
               {...{
-                queryId: display_id,
+                promptId: display_id,
                 status,
-                confidenceLevel: evaluation_score,
+                confidenceLevel: confidence_score,
               }}
             />
           </div>
