@@ -77,6 +77,7 @@ if __name__ == "__main__":
             ],  # this should be updated for multiple tables
             ids=[str(golden_sql["_id"])],
         )
+        print("Updated...")
     print("Golden sqls uploaded...")
 
     # Migrate questions in prompts collection
@@ -100,49 +101,50 @@ if __name__ == "__main__":
             )
         except DuplicateKeyError:
             continue
+
+        # Migrate responses in sql_questions and nl_questions collections
+        for response in responses:
+            # create sql_generation
+            try:
+                storage.insert_one(
+                    "sql_generations",
+                    {
+                        "_id": response["_id"],
+                        "prompt_id": str(response["question_id"]),
+                        "evaluate": False
+                        if response["confidence_score"] is None
+                        else True,
+                        "sql": response["sql_query"],
+                        "status": "VALID"
+                        if response["sql_generation_status"] == "VALID"
+                        else "INVALID",
+                        "completed_at": response["created_at"]
+                        + timedelta(seconds=response["exec_time"])
+                        if response["exec_time"]
+                        else None,
+                        "tokens_used": response["total_tokens"],
+                        "confidence_score": response["confidence_score"],
+                        "error": response["error_message"],
+                        "created_at": response["created_at"],
+                        "metadata": None,
+                    },
+                )
+            except DuplicateKeyError:
+                continue
+
+            # create nl_genertion
+            if response["response"]:
+                storage.insert_one(
+                    "nl_generations",
+                    {
+                        "sql_generation_id": str(response["_id"]),
+                        "text": response["response"],
+                        "created_at": response["created_at"]
+                        + timedelta(seconds=response["exec_time"])
+                        if response["exec_time"]
+                        else response["created_at"],
+                        "metadata": None,
+                    },
+                )
+        print("SQL_generations and NL_generations created...")
     print("Prompts created...")
-
-    # Migrate responses in sql_questions and nl_questions collections
-    responses = storage.find_all("responses")
-    for response in responses:
-        # create sql_generation
-        try:
-            storage.insert_one(
-                "sql_generations",
-                {
-                    "_id": response["_id"],
-                    "prompt_id": str(response["question_id"]),
-                    "evaluate": False if response["confidence_score"] is None else True,
-                    "sql": response["sql_query"],
-                    "status": "VALID"
-                    if response["sql_generation_status"] == "VALID"
-                    else "INVALID",
-                    "completed_at": response["created_at"]
-                    + timedelta(seconds=response["exec_time"])
-                    if response["exec_time"]
-                    else None,
-                    "tokens_used": response["total_tokens"],
-                    "confidence_score": response["confidence_score"],
-                    "error": response["error_message"],
-                    "created_at": response["created_at"],
-                    "metadata": None,
-                },
-            )
-        except DuplicateKeyError:
-            continue
-
-        # create nl_genertion
-        if response["response"]:
-            storage.insert_one(
-                "nl_generations",
-                {
-                    "sql_generation_id": str(response["_id"]),
-                    "text": response["response"],
-                    "created_at": response["created_at"]
-                    + timedelta(seconds=response["exec_time"])
-                    if response["exec_time"]
-                    else response["created_at"],
-                    "metadata": None,
-                },
-            )
-    print("SQL_generations and NL_generations created...")
