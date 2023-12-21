@@ -6,6 +6,7 @@ import { useQuery } from '@/hooks/api/query/useQuery'
 import useQueryExecution from '@/hooks/api/query/useQueryExecution'
 import useQueryPut, { QueryPutRequest } from '@/hooks/api/query/useQueryPut'
 import useQueryResubmit from '@/hooks/api/query/useQueryResubmit'
+import { mapQuery } from '@/lib/domain/query'
 import { Query } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/router'
@@ -26,7 +27,7 @@ const QueryPage: FC = () => {
   const executeQuery = useQueryExecution()
 
   useEffect(() => {
-    setQuery(serverQuery)
+    setQuery(serverQuery && mapQuery(serverQuery))
   }, [serverQuery])
 
   const handleResubmitQuery = async () => {

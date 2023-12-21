@@ -20,10 +20,17 @@ export interface PageResponse<T> {
   mutate: KeyedMutator<List<T>[]>
 }
 
-const usePagination = <T>(
-  resourceUrl: string,
+export type PaginationParams<T> = {
+  resourceUrl: string
+  pageSize?: number
+  itemMapper?: (item: T) => T
+}
+
+const usePagination = <T>({
+  resourceUrl,
   pageSize = DEFAULT_PAGE_SIZE,
-): PageResponse<T> => {
+  itemMapper = (item) => item,
+}: PaginationParams<T>): PageResponse<T> => {
   const { token } = useAuth()
   const {
     data: pages,
@@ -49,7 +56,7 @@ const usePagination = <T>(
     isEmpty || (!!pages && pages[pages.length - 1]?.length < pageSize)
 
   return {
-    items,
+    items: items && items.map(itemMapper),
     isLoadingFirst,
     isLoadingMore,
     isReachingEnd,

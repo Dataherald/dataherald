@@ -1,5 +1,5 @@
 import { capitalize } from '@/lib/utils'
-import { EQueryStatus, QueryStatus } from '@/models/api'
+import { EQueryStatus, Query, QueryListItem, QueryStatus } from '@/models/api'
 import {
   ColorClasses,
   DomainQueryStatus,
@@ -8,6 +8,15 @@ import {
   ResourceButtonClasses,
   ResourceColors,
 } from '@/models/domain'
+
+export const mapQuery = <T extends Query | QueryListItem>({
+  confidence_score,
+  ...props
+}: T): T =>
+  ({
+    ...props,
+    confidence_score: confidence_score * 100,
+  } as T)
 
 export const QUERY_STATUS_BUTTONS_CLASSES: ResourceButtonClasses<QueryStatus> =
   {
