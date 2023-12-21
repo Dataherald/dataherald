@@ -4,7 +4,7 @@ from typing import List
 import fastapi
 from fastapi import BackgroundTasks, status
 from fastapi import FastAPI as _FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
 
 import dataherald
@@ -218,7 +218,14 @@ class FastAPI(dataherald.server.Server):
         self.router.add_api_route(
             "/api/v1/sql-generations/{sql_generation_id}/execute",
             self.execute_sql_query,
-            methods=["POST"],
+            methods=["GET"],
+            tags=["SQL Generation"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/sql-generations/{sql_generation_id}/csv_file",
+            self.export_csv_file,
+            methods=["GET"],
             tags=["SQL Generation"],
         )
 
@@ -464,10 +471,20 @@ class FastAPI(dataherald.server.Server):
         return self._api.get_query_history(db_connection_id)
 
     def execute_sql_query(
-        self, sql_generation_id: str, query: Query
+        self, sql_generation_id: str, max_rows: int = 100
     ) -> tuple[str, dict]:
         """Executes a query on the given db_connection_id"""
-        return self._api.execute_sql_query(sql_generation_id, query)
+        return self._api.execute_sql_query(sql_generation_id, max_rows)
+
+    def export_csv_file(self, sql_generation_id: str) -> StreamingResponse:
+        """Exports a CSV file for the given sql_generation_id"""
+        stream = self._api.export_csv_file(sql_generation_id)
+
+        response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
+        response.headers[
+            "Content-Disposition"
+        ] = f"attachment; filename=sql_generation_{sql_generation_id}.csv"
+        return response
 
     def delete_golden_sql(self, golden_sql_id: str) -> dict:
         """Deletes a golden record"""

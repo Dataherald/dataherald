@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from dataherald.api.types.query import Query
+import pandas as pd
+
 from dataherald.api.types.requests import SQLGenerationRequest
 from dataherald.config import System
 from dataherald.eval import Evaluator
@@ -22,6 +23,10 @@ from dataherald.types import SQLGeneration
 
 
 class SQLGenerationError(Exception):
+    pass
+
+
+class EmptySQLGenerationError(Exception):
     pass
 
 
@@ -92,7 +97,7 @@ class SQLGenerationService:
     def get(self, query) -> list[SQLGeneration]:
         return self.sql_generation_repository.find_by(query)
 
-    def execute(self, sql_generation_id: str, query: Query) -> tuple[str, dict]:
+    def execute(self, sql_generation_id: str, max_rows: int = 100) -> tuple[str, dict]:
         sql_generation = self.sql_generation_repository.find_by_id(sql_generation_id)
         if not sql_generation:
             raise SQLGenerationNotFoundError(
@@ -103,7 +108,7 @@ class SQLGenerationService:
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         db_connection = db_connection_repository.find_by_id(prompt.db_connection_id)
         database = SQLDatabase.get_sql_engine(db_connection)
-        return database.run_sql(sql_generation.sql, query.max_rows)
+        return database.run_sql(sql_generation.sql, max_rows)
 
     def update_metadata(self, sql_generation_id, metadata_request) -> SQLGeneration:
         sql_generation = self.sql_generation_repository.find_by_id(sql_generation_id)
@@ -113,3 +118,22 @@ class SQLGenerationService:
             )
         sql_generation.metadata = metadata_request.metadata
         return self.sql_generation_repository.update(sql_generation)
+
+    def create_dataframe(self, sql_generation_id):
+        sql_generation = self.sql_generation_repository.find_by_id(sql_generation_id)
+        if not sql_generation:
+            raise SQLGenerationNotFoundError(
+                f"Sql generation {sql_generation_id} not found"
+            )
+        prompt_repository = PromptRepository(self.storage)
+        prompt = prompt_repository.find_by_id(sql_generation.prompt_id)
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        db_connection = db_connection_repository.find_by_id(prompt.db_connection_id)
+        database = SQLDatabase.get_sql_engine(db_connection)
+        results = database.run_sql(sql_generation.sql)
+        if results is None:
+            raise EmptySQLGenerationError(
+                f"Sql generation {sql_generation_id} is empty"
+            )
+        data = results[1]["result"]
+        return pd.DataFrame(data)

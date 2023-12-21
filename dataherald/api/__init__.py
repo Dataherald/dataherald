@@ -1,3 +1,4 @@
+import io
 from abc import ABC, abstractmethod
 from typing import List
 
@@ -112,8 +113,12 @@ class API(Component, ABC):
 
     @abstractmethod
     def execute_sql_query(
-        self, sql_generation_id: str, query: Query
+        self, sql_generation_id: str, max_rows: int = 100
     ) -> tuple[str, dict]:
+        pass
+
+    @abstractmethod
+    def export_csv_file(self, sql_generation_id: str) -> io.StringIO:
         pass
 
     @abstractmethod
