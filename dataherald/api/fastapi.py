@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 import time
@@ -9,7 +10,6 @@ from overrides import override
 from sqlalchemy.exc import SQLAlchemyError
 
 from dataherald.api import API
-from dataherald.api.types.query import Query
 from dataherald.api.types.requests import (
     NLGenerationRequest,
     NLGenerationsSQLGenerationRequest,
@@ -55,7 +55,11 @@ from dataherald.repositories.prompts import PromptNotFoundError
 from dataherald.repositories.sql_generations import SQLGenerationNotFoundError
 from dataherald.services.nl_generations import NLGenerationError, NLGenerationService
 from dataherald.services.prompts import PromptService
-from dataherald.services.sql_generations import SQLGenerationError, SQLGenerationService
+from dataherald.services.sql_generations import (
+    EmptySQLGenerationError,
+    SQLGenerationError,
+    SQLGenerationService,
+)
 from dataherald.sql_database.base import (
     InvalidDBConnectionError,
     SQLDatabase,
@@ -372,12 +376,12 @@ class FastAPI(API):
 
     @override
     def execute_sql_query(
-        self, sql_generation_id: str, query: Query
+        self, sql_generation_id: str, max_rows: int = 100
     ) -> tuple[str, dict]:
         """Executes a SQL query against the database and returns the results"""
         sql_generation_service = SQLGenerationService(self.system, self.storage)
         try:
-            results = sql_generation_service.execute(sql_generation_id, query)
+            results = sql_generation_service.execute(sql_generation_id, max_rows)
         except SQLGenerationNotFoundError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLInjectionError as e:
@@ -385,6 +389,24 @@ class FastAPI(API):
         except SQLAlchemyError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         return results
+
+    @override
+    def export_csv_file(self, sql_generation_id: str) -> io.StringIO:
+        """Exports a SQL query to a CSV file"""
+        sql_generation_service = SQLGenerationService(self.system, self.storage)
+        try:
+            csv_dataframe = sql_generation_service.create_dataframe(sql_generation_id)
+            csv_stream = io.StringIO()
+            csv_dataframe.to_csv(csv_stream, index=False)
+        except SQLGenerationNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
+        except SQLInjectionError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except SQLAlchemyError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except EmptySQLGenerationError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        return csv_stream
 
     @override
     def delete_golden_sql(self, golden_sql_id: str) -> dict:
