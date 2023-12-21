@@ -31,7 +31,6 @@ import {
   EDomainQueryWorkspaceStatus,
   QueryWorkspaceStatus,
 } from '@/models/domain'
-import { nl } from 'date-fns/locale'
 import { Ban, Box, Code2, Loader, Play, Verified, XOctagon } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { FC, useEffect, useState } from 'react'

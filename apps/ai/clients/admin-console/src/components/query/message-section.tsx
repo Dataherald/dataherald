@@ -55,12 +55,12 @@ const MessageSection: FC<MessageSectionProps> = ({
   const handleGenerateMessage = async () => {
     setGeneratingMessage(true)
     try {
-      const { message } = await generateMessage(promptId)
+      const { text } = await generateMessage(promptId)
       toast({
         title: 'Message generated',
         description: 'The query message was generated using the AI platform.',
       })
-      setCurrentMessage(message)
+      setCurrentMessage(text)
     } catch (error) {
       console.error(error)
     } finally {
