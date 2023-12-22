@@ -74,6 +74,9 @@ module.exports = {
         lato: ['var(--font-lato)'],
         'source-code': ['var(--font-source-code)'],
       },
+      backgroundImage: () => ({
+        'progress-gradient': 'linear-gradient(to right, #3931D8, #C6C7F8)',
+      }),
     },
   },
   plugins: [require('tailwindcss-animate')],

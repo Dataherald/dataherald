@@ -9,7 +9,7 @@ const Editor = dynamic(() => import('@monaco-editor/react'), {
 export interface SqlEditorProps {
   query: string
   disabled?: boolean
-  onValueChange: (value: string) => void
+  onValueChange?: (value: string) => void
 }
 
 const SqlEditor: FC<SqlEditorProps> = ({
@@ -17,10 +17,6 @@ const SqlEditor: FC<SqlEditorProps> = ({
   onValueChange,
   disabled = false,
 }) => {
-  const handleEditorChange = (value: string | undefined): void => {
-    onValueChange(value || '')
-  }
-
   const monaco = useMonaco()
 
   useEffect(() => {
@@ -76,7 +72,10 @@ const SqlEditor: FC<SqlEditorProps> = ({
         fontSize: 14,
         minimap: { enabled: false },
       }}
-      onChange={handleEditorChange}
+      // onChange={handleEditorChange}
+      {...(onValueChange && {
+        onChange: (value) => onValueChange(value || ''),
+      })}
     />
   )
 }

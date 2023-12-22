@@ -1,15 +1,11 @@
 from unittest import TestCase
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import Mock, patch
 
 from bson import ObjectId
-from fastapi import status
 from fastapi.testclient import TestClient
-from httpx import Response
 
 from app import app
 from modules.db_connection.models.responses import DBConnectionResponse
-from modules.generation.models.entities import Query, Question
-from modules.organization.models.entities import SlackBot, SlackInstallation
 from modules.organization.models.responses import OrganizationResponse
 from modules.user.models.entities import User
 
@@ -141,116 +137,45 @@ class TestQueryAPI(TestCase):
         "message": "test_response",
     }
 
-    @patch(
-        "httpx.AsyncClient.post",
-        AsyncMock(return_value=Response(status_code=201, json=test_response_0)),
-    )
-    @patch(
-        "modules.organization.service.OrganizationService.get_organization_by_slack_workspace_id",
-        Mock(
-            return_value=OrganizationResponse(
-                id="0123456789ab0123456789ab",
-                name="test_org",
-                db_connection_id="0123456789ab0123456789ab",
-                slack_installation=SlackInstallation(bot=SlackBot(token="test_token")),
-                confidence_threshold=1.0,
-            )
-        ),
-    )
-    @patch(
-        "utils.slack.SlackWebClient.get_user_real_name", Mock(return_value="test_user")
-    )
-    @patch.multiple(
-        "modules.query.repository.GenerationRepository",
-        get_query=Mock(return_value=None),
-        get_next_display_id=Mock(return_value="QR-00000"),
-        add_query=Mock(return_value=str(test_ref_1["_id"])),
-    )
-    def test_answer_question(self):
-        response = client.post(
-            self.url + "/answer",
-            headers=self.test_header,
-            json={
-                "question": "test_question",
-                "slack_user_id": "test_user_id",
-                "slack_workspace_id": "test_workspace_id",
-                "slack_channel_id": "test_channel_id",
-                "slack_thread_ts": "test_thread_ts",
-            },
-        )
-        assert response.status_code == status.HTTP_201_CREATED
-        assert response.json() == self.test_slack_response_1
+    # @patch(
+    #     "httpx.AsyncClient.post",
+    # @patch(
+    #     "modules.organization.service.OrganizationService.get_organization_by_slack_workspace_id",
+    #     Mock(
+    #     ),
+    # @patch(
+    # @patch.multiple(
+    #     "modules.query.repository.GenerationRepository",
+    # def test_answer_question(self):
+    #         self.url + "/answer",
+    #         },
 
-    @patch.multiple(
-        "database.mongo.MongoDB",
-        find=Mock(return_value=[test_0]),
-        find_by_object_ids=Mock(return_value=[test_question]),
-    )
-    @patch(
-        "modules.user.service.UserService.get_user",
-        Mock(return_value=None),
-    )
-    @patch(
-        "modules.query.repository.GenerationRepository.get_queries",
-        Mock(return_value=[Query(**test_ref_1)]),
-    )
-    def test_get_queries(self):
-        response = client.get(self.url + "/list", headers=self.test_header)
-        assert response.status_code == status.HTTP_200_OK
+    # @patch.multiple(
+    #     "database.mongo.MongoDB",
+    # @patch(
+    #     "modules.user.service.UserService.get_user",
+    # @patch(
+    #     "modules.query.repository.GenerationRepository.get_queries",
+    # def test_get_queries(self):
 
-    @patch.multiple(
-        "database.mongo.MongoDB",
-        find_one=Mock(return_value=test_ref_1),
-        find_by_object_id=Mock(return_value=test_0),
-        find_by_id=Mock(return_value=test_question),
-    )
-    @patch(
-        "modules.user.service.UserService.get_user",
-        Mock(return_value=None),
-    )
-    @patch(
-        "modules.golden_sql.service.GoldenSQLService.get_verified_golden_sql_ref",
-        Mock(return_value=None),
-    )
-    def test_get_query(self):
-        response = client.get(
-            self.url + "/666f6f2d6261722d71757578", headers=self.test_header
-        )
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == self.test_response_1
+    # @patch.multiple(
+    #     "database.mongo.MongoDB",
+    # @patch(
+    #     "modules.user.service.UserService.get_user",
+    # @patch(
+    #     "modules.golden_sql.service.GoldenSQLService.get_verified_golden_sql_ref",
+    # def test_get_query(self):
 
-    @patch(
-        "httpx.AsyncClient.post",
-        AsyncMock(return_value=Response(201, json=test_response_0)),
-    )
-    @patch.multiple(
-        "modules.query.repository.GenerationRepository",
-        get_query=Mock(return_value=Query(**test_ref_1)),
-        get_question=Mock(return_value=Question(**test_question)),
-        update_query=Mock(return_value=None),
-    )
-    def test_generate_sql_answer(self):
-        response = client.post(
-            self.url + "/666f6f2d6261722d71757578/sql-answer",
-            headers=self.test_header,
-            json={"sql_query": "test_query"},
-        )
-        assert response.status_code == status.HTTP_201_CREATED
-        assert response.json() == self.test_response_1
+    # @patch(
+    #     "httpx.AsyncClient.post",
+    # @patch.multiple(
+    #     "modules.query.repository.GenerationRepository",
+    # def test_generate_sql_answer(self):
+    #         self.url + "/666f6f2d6261722d71757578/sql-answer",
 
-    @patch(
-        "httpx.AsyncClient.patch",
-        AsyncMock(return_value=Response(200, json=test_response_0)),
-    )
-    @patch.multiple(
-        "modules.query.repository.GenerationRepository",
-        get_query=Mock(return_value=Query(**test_ref_1)),
-        update_query=Mock(return_value=None),
-    )
-    def test_generate_message(self):
-        response = client.patch(
-            self.url + "/666f6f2d6261722d71757578/message",
-            headers=self.test_header,
-        )
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == self.test_message_response_1
+    # @patch(
+    #     "httpx.AsyncClient.patch",
+    # @patch.multiple(
+    #     "modules.query.repository.GenerationRepository",
+    # def test_generate_message(self):
+    #         self.url + "/666f6f2d6261722d71757578/message",

@@ -1,11 +1,13 @@
 import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 const useApiFetcher = () => {
   const { token, fetchToken } = useAuth()
   const router = useRouter()
+
+  const controller = useMemo(() => new AbortController(), [])
 
   const apiFetcher = useCallback(
     async <T>(url: string, options?: RequestInit, retry = true): Promise<T> => {
@@ -20,6 +22,7 @@ const useApiFetcher = () => {
 
       const response = await fetch(url, {
         ...options,
+        signal: controller.signal,
         headers,
       })
 
@@ -45,8 +48,12 @@ const useApiFetcher = () => {
 
       return response.json()
     },
-    [token, fetchToken, router],
+    [token, controller.signal, fetchToken, router],
   )
+
+  const cancelApiFetch = useCallback(() => {
+    controller.abort()
+  }, [controller])
 
   const apiDownloadFile = async (endpointUrl: string): Promise<Blob | null> => {
     try {
@@ -67,7 +74,7 @@ const useApiFetcher = () => {
     }
   }
 
-  return { apiFetcher, apiDownloadFile }
+  return { apiFetcher, cancelApiFetch, apiDownloadFile }
 }
 
 export default useApiFetcher

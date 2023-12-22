@@ -1,6 +1,12 @@
 import { ClassValue } from 'clsx'
 import { LucideIcon } from 'lucide-react'
 
+export enum EDomainQueryConfidence {
+  LOW_CONFIDENCE = 'LOW_CONFIDENCE',
+  MEDIUM_CONFIDENCE = 'MEDIUM_CONFIDENCE',
+  HIGH_CONFIDENCE = 'HIGH_CONFIDENCE',
+}
+
 export enum EDomainQueryStatus {
   INITIALIZED = 'INITIALIZED',
   REJECTED = 'REJECTED',

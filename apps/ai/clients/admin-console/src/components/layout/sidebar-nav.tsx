@@ -8,7 +8,13 @@ import UserSettingsPopover from '@/components/user/user-settings-popover'
 
 import { useAppContext } from '@/contexts/app-context'
 import { cn } from '@/lib/utils'
-import { Database, ListChecks, LucideIcon, Microscope } from 'lucide-react'
+import {
+  Database,
+  ListChecks,
+  LucideIcon,
+  Microscope,
+  TerminalSquare,
+} from 'lucide-react'
 
 export interface MenuItem {
   text: string
@@ -33,6 +39,11 @@ const NAV_ITEMS: MenuItems = [
     text: 'Golden SQL',
     href: '/golden-sql',
     icon: ListChecks,
+  },
+  {
+    text: 'Playground',
+    href: '/playground',
+    icon: TerminalSquare,
   },
 ]
 

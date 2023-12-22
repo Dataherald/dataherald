@@ -6,7 +6,6 @@ import { useQuery } from '@/hooks/api/query/useQuery'
 import useQueryExecution from '@/hooks/api/query/useQueryExecution'
 import useQueryPut, { QueryPutRequest } from '@/hooks/api/query/useQueryPut'
 import useQueryResubmit from '@/hooks/api/query/useQueryResubmit'
-import { mapQuery } from '@/lib/domain/query'
 import { Query } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/router'
@@ -21,25 +20,38 @@ const QueryPage: FC = () => {
     error,
     mutate,
   } = useQuery(promptId as string)
-  const [query, setQuery] = useState<Query | undefined>(serverQuery)
+  const [query, setQuery] = useState<Query | undefined>(undefined)
   const resubmitQuery = useQueryResubmit()
   const putQuery = useQueryPut()
   const executeQuery = useQueryExecution()
 
   useEffect(() => {
-    setQuery(serverQuery && mapQuery(serverQuery))
+    // first update of the query from the server.
+    // this server query should only be used to initialize the query state.
+    // remaining updates are handled by each of the operations and not from the GET query endpoint.
+    // this is because the GET query endpoint doesn't have `sql_results`.
+    if (serverQuery)
+      setQuery((prevState) =>
+        prevState === undefined ? serverQuery : prevState,
+      )
   }, [serverQuery])
 
   const handleResubmitQuery = async () => {
-    return mutate(resubmitQuery(promptId as string))
+    const newQuery = await resubmitQuery(promptId as string)
+    setQuery(newQuery)
+    return mutate()
   }
 
   const handleExecuteQuery = async (sql_query: string) => {
-    return mutate(executeQuery(promptId as string, sql_query))
+    const newQuery = await executeQuery(promptId as string, sql_query)
+    setQuery(newQuery)
+    return mutate()
   }
 
-  const handleputQuery = async (puts: QueryPutRequest) => {
-    return mutate(putQuery(promptId as string, puts))
+  const handlePutQuery = async (puts: QueryPutRequest) => {
+    const newQuery = await putQuery(promptId as string, puts)
+    setQuery(newQuery)
+    return mutate()
   }
 
   let pageContent: JSX.Element = <></>
@@ -57,7 +69,7 @@ const QueryPage: FC = () => {
         query={query}
         onResubmitQuery={handleResubmitQuery}
         onExecuteQuery={handleExecuteQuery}
-        onPutQuery={handleputQuery}
+        onPutQuery={handlePutQuery}
       />
     )
 

@@ -1,4 +1,4 @@
-import { POSTHOG_HOST, POSTHOG_KEY } from '@/config'
+import { POSTHOG_DISABLED, POSTHOG_HOST, POSTHOG_KEY } from '@/config'
 import { useAppContext } from '@/contexts/app-context'
 import { posthog } from 'posthog-js'
 import { PostHogProvider } from 'posthog-js/react'
@@ -12,7 +12,7 @@ const WithAnalytics: FC<WithAnalyticsProps> = ({ children }) => {
   const { user, organization } = useAppContext()
 
   // Check that PostHog is client-side (used to handle Next.js SSR)
-  if (typeof window !== 'undefined') {
+  if (!POSTHOG_DISABLED && typeof window !== 'undefined') {
     posthog.init(POSTHOG_KEY || '', {
       api_host: POSTHOG_HOST || 'https://app.posthog.com',
       // Enable debug mode in development
@@ -23,7 +23,7 @@ const WithAnalytics: FC<WithAnalyticsProps> = ({ children }) => {
   }
 
   useEffect(() => {
-    if (!user || !organization) return
+    if (POSTHOG_DISABLED || !user || !organization) return
     if (user.email) {
       posthog.identify(user.email, {
         email: user.email,
@@ -33,7 +33,11 @@ const WithAnalytics: FC<WithAnalyticsProps> = ({ children }) => {
     }
   }, [organization, user])
 
-  return <PostHogProvider>{children}</PostHogProvider>
+  return !POSTHOG_DISABLED ? (
+    <PostHogProvider>{children}</PostHogProvider>
+  ) : (
+    children
+  )
 }
 
 export default WithAnalytics

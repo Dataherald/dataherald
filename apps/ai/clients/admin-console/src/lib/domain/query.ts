@@ -3,6 +3,7 @@ import { EQueryStatus, Query, QueryListItem, QueryStatus } from '@/models/api'
 import {
   ColorClasses,
   DomainQueryStatus,
+  EDomainQueryConfidence,
   EDomainQueryStatus,
   QueryWorkspaceStatus,
   ResourceButtonClasses,
@@ -82,6 +83,18 @@ export const DOMAIN_QUERY_STATUS_COLORS: ResourceColors<DomainQueryStatus> = {
   },
 }
 
+export const getConfidence = (
+  confidence_score: number,
+): EDomainQueryConfidence => {
+  if (confidence_score < 70) {
+    return EDomainQueryConfidence.LOW_CONFIDENCE
+  } else if (confidence_score < 90) {
+    return EDomainQueryConfidence.MEDIUM_CONFIDENCE
+  } else {
+    return EDomainQueryConfidence.HIGH_CONFIDENCE
+  }
+}
+
 export const getDomainStatus = (
   status: QueryStatus,
   confidence_score: number | null,
@@ -96,13 +109,8 @@ export const getDomainStatus = (
     case EQueryStatus.NOT_VERIFIED: {
       if (confidence_score === null) {
         return status as DomainQueryStatus
-      } else if (confidence_score < 70) {
-        return EDomainQueryStatus.LOW_CONFIDENCE
-      } else if (confidence_score < 90) {
-        return EDomainQueryStatus.MEDIUM_CONFIDENCE
-      } else {
-        return EDomainQueryStatus.HIGH_CONFIDENCE
       }
+      return getConfidence(confidence_score)
     }
     case EQueryStatus.VERIFIED:
       return EDomainQueryStatus.VERIFIED
@@ -151,6 +159,9 @@ export const formatQueryStatusWithScore = (
     return `${formattedStatus} ${formattedScore}`
   }
 }
+
+export const formatQueryConfidence = (confidence_score: number): string =>
+  `${formatQueryStatus(getConfidence(confidence_score))} (${confidence_score}%)`
 
 export const isVerified = (status?: QueryStatus): boolean =>
   EQueryStatus.VERIFIED === status

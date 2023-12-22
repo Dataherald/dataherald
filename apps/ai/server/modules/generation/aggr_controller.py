@@ -5,6 +5,7 @@ from modules.generation.aggr_service import AggrgationGenerationService
 from modules.generation.models.requests import (
     GenerationUpdateRequest,
     SlackGenerationRequest,
+    SQLGenerationExecuteRequest,
     SQLRequest,
 )
 from modules.generation.models.responses import (
@@ -103,6 +104,17 @@ async def update_generation(
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await generation_service.update_generation(
         id, generation_request, user.organization_id, user
+    )
+
+
+@router.post("/sql-generations/execute", status_code=status.HTTP_201_CREATED)
+async def sql_generations_execute(
+    request: SQLGenerationExecuteRequest,
+    token: str = Depends(token_auth_scheme),
+) -> GenerationResponse:
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    return await generation_service.generate_prompt_sql_and_execute(
+        request, user.organization_id
     )
 
 

@@ -82,3 +82,16 @@ body,
 #__next {
   height: 100%;
 }
+
+@keyframes slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-slide {
+  animation: slide 4s infinite ease-in-out;
+}

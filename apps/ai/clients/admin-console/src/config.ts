@@ -6,5 +6,7 @@ export const AUTH = {
   audience: process.env.AUTH0_API_AUDIENCE,
   scope: process.env.AUTH0_SCOPE,
 }
+export const POSTHOG_DISABLED =
+  process.env.NEXT_PUBLIC_POSTHOG_DISABLED === 'true' || false
 export const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
 export const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST

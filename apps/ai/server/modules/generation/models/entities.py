@@ -122,3 +122,4 @@ class Generation(BaseModel):
     updated_at: datetime | None
     created_at: datetime | None
     status: GenerationStatus | None  # inferred from SQLGeneration and NLGeneration
+    sql_results: dict | None

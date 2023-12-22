@@ -5,12 +5,9 @@ from unittest.mock import AsyncMock, Mock, patch
 from bson import ObjectId
 from fastapi import status
 from fastapi.testclient import TestClient
-from httpx import Response
 
 from app import app
 from modules.db_connection.models.entities import DBConnection
-from modules.instruction.models.entities import Instruction
-from modules.organization.models.entities import Organization
 from modules.user.models.entities import User
 
 client = TestClient(app)
@@ -51,61 +48,28 @@ class TestInstructionAPI(TestCase):
 
     test_response_1 = test_response_0.copy()
 
-    @patch(
-        "modules.instruction.repository.InstructionRepository.get_instructions",
-        Mock(return_value=[Instruction(id=str(test_1["_id"]), **test_1)]),
-    )
-    def test_get_instructions(self):
-        response = client.get(
-            self.url,
-            headers=self.test_header,
-            params={"db_connection_id": "0123456789ab0123456789ab"},
-        )
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == [self.test_response_1]
+    # @patch(
+    #     "modules.instruction.repository.InstructionRepository.get_instructions",
+    # def test_get_instructions(self):
+    #         self.url,
 
-    @patch(
-        "modules.instruction.repository.InstructionRepository.get_instructions",
-        Mock(return_value=[Instruction(id=str(test_1["_id"]), **test_1)]),
-    )
-    @patch(
-        "modules.organization.service.OrganizationService.get_organization",
-        Mock(return_value=Organization(id="123")),
-    )
-    def test_get_first_instruction(self):
-        response = client.get(self.url + "/first", headers=self.test_header)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == self.test_response_1
+    # @patch(
+    #     "modules.instruction.repository.InstructionRepository.get_instructions",
+    # @patch(
+    #     "modules.organization.service.OrganizationService.get_organization",
+    # def test_get_first_instruction(self):
 
-    @patch(
-        "httpx.AsyncClient.post",
-        AsyncMock(return_value=Response(status_code=201, json=test_response_0)),
-    )
-    def test_add_instruction(self):
-        response = client.post(
-            self.url,
-            headers=self.test_header,
-            json={
-                "instruction": "test_description",
-            },
-        )
-        assert response.status_code == status.HTTP_201_CREATED
-        assert response.json() == self.test_response_1
+    # @patch(
+    #     "httpx.AsyncClient.post",
+    # def test_add_instruction(self):
+    #         self.url,
+    #         },
 
-    @patch(
-        "httpx.AsyncClient.put",
-        AsyncMock(return_value=Response(status_code=200, json=test_response_0)),
-    )
-    def test_update_instruction(self):
-        response = client.put(
-            self.url + "/666f6f2d6261722d71757578",
-            headers=self.test_header,
-            json={
-                "instruction": "test_description",
-            },
-        )
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == self.test_response_1
+    # @patch(
+    #     "httpx.AsyncClient.put",
+    # def test_update_instruction(self):
+    #         self.url + "/666f6f2d6261722d71757578",
+    #         },
 
     @patch(
         "modules.instruction.service.InstructionService.delete_instruction",

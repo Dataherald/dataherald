@@ -23,6 +23,7 @@ from modules.generation.models.requests import (
     PromptSQLGenerationRequest,
     PromptSQLNLGenerationRequest,
     SlackGenerationRequest,
+    SQLGenerationExecuteRequest,
     SQLGenerationRequest,
     SQLNLGenerationRequest,
     SQLRequest,
@@ -205,6 +206,59 @@ class AggrgationGenerationService:
                 nl_generation_text=nl_generation.text,
                 **sql_generation.dict(exclude={"id"}, exclude_unset=True),
             )
+
+    async def generate_prompt_sql_and_execute(
+        self, request: SQLGenerationExecuteRequest, org_id: str
+    ):
+        organization = self.org_service.get_organization(org_id)
+        generation_request = PromptSQLGenerationRequest(
+            prompt=PromptRequest(
+                text=request.prompt,
+                db_connection_id=organization.db_connection_id,
+                metadata=PromptMetadata(
+                    dh_internal=DHPromptMetadata(
+                        generation_status=GenerationStatus.INITIALIZED,
+                        organization_id=organization.id,
+                    )
+                ),
+            ),
+            evaluate=True,
+            finetuning_id=request.model,
+            metadata=SQLGenerationMetadata(
+                dh_internal=DHSQLGenerationMetadata(organization_id=organization.id)
+            ),
+        )
+        # ask Prompt to k2 engine
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                settings.engine_url + "/prompts/sql-generations",
+                json=generation_request.dict(exclude_unset=True),
+                timeout=settings.default_engine_timeout,
+            )
+            response_json = response.json()
+            if not response_json["id"]:
+                raise_for_status(response.status_code, response.text)
+
+            sql_generation = self.repo.get_sql_generation(response_json["id"], org_id)
+            prompt = self.repo.get_prompt(sql_generation.prompt_id, organization.id)
+
+            if sql_generation.status == SQLGenerationStatus.VALID:
+                sql_result_response = await client.get(
+                    settings.engine_url
+                    + f"/sql-generations/{sql_generation.id}/execute",
+                    timeout=settings.default_engine_timeout,
+                )
+                raise_for_status(
+                    sql_result_response.status_code, sql_result_response.text
+                )
+                sql_result = sql_result_response.json()
+                print(sql_result)
+            else:
+                sql_result = None
+
+        return self._get_mapped_generation_response(
+            prompt, sql_generation, None, sql_results=sql_result
+        )
 
     def get_generation(self, prompt_id: str, org_id: str) -> GenerationResponse:
         prompt, sql_generation, nl_generation = None, None, None
@@ -414,6 +468,21 @@ class AggrgationGenerationService:
                     else GenerationStatus.ERROR,
                 ),
             )
+
+            if sql_generation.status == SQLGenerationStatus.VALID:
+                sql_result_response = await client.get(
+                    settings.engine_url
+                    + f"/sql-generations/{sql_generation.id}/execute",
+                    timeout=settings.default_engine_timeout,
+                )
+                raise_for_status(
+                    sql_result_response.status_code, sql_result_response.text
+                )
+                sql_result = sql_result_response.json()
+                print(sql_result)
+            else:
+                sql_result = None
+
             self.analytics.track(
                 user.email if user else org_id,
                 "generation_resubmitted",
@@ -428,7 +497,7 @@ class AggrgationGenerationService:
                 },
             )
             return self._get_mapped_generation_response(
-                prompt, sql_generation, nl_generation
+                prompt, sql_generation, nl_generation, sql_results=sql_result
             )
 
     async def generate_sql_result(
@@ -479,6 +548,19 @@ class AggrgationGenerationService:
                     else GenerationStatus.ERROR,
                 ),
             )
+            if sql_generation.status == SQLGenerationStatus.VALID:
+                sql_result_response = await client.get(
+                    settings.engine_url
+                    + f"/sql-generations/{sql_generation.id}/execute",
+                    timeout=settings.default_engine_timeout,
+                )
+                raise_for_status(
+                    sql_result_response.status_code, sql_result_response.text
+                )
+                sql_result = sql_result_response.json()
+            else:
+                sql_result = None
+
             self.analytics.track(
                 user.email if user else org_id,
                 "generation_executed",
@@ -492,7 +574,9 @@ class AggrgationGenerationService:
                     ).alias,
                 },
             )
-            return self._get_mapped_generation_response(prompt, sql_generation, None)
+            return self._get_mapped_generation_response(
+                prompt, sql_generation, None, sql_results=sql_result
+            )
 
     async def create_nl_generation(
         self, prompt_id: str, org_id: str
@@ -561,6 +645,7 @@ class AggrgationGenerationService:
         prompt: Prompt,
         sql_generation: SQLGeneration | None,
         nl_generation: NLGeneration | None,
+        sql_results: tuple[str, dict] | None = None,
     ) -> GenerationResponse:
         if not sql_generation:
             sql_generation = SQLGeneration(
@@ -576,6 +661,11 @@ class AggrgationGenerationService:
                 text=prompt.metadata.dh_internal.message or "",
             )
 
+        if sql_results:
+            rows = sql_results[1]["result"]
+            columns = list(rows[0].keys())
+            sql_results = {"columns": columns, "rows": rows}
+
         return GenerationResponse(
             id=prompt.id,
             db_connection_id=prompt.db_connection_id,
@@ -587,5 +677,6 @@ class AggrgationGenerationService:
             sql_generation_error=sql_generation.error,
             created_at=prompt.created_at,
             updated_at=nl_generation.created_at or sql_generation.created_at,
+            sql_results=sql_results,
             **prompt.metadata.dh_internal.dict(exclude_unset=True),
         )

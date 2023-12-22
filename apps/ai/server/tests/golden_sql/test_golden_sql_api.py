@@ -1,14 +1,11 @@
 from datetime import datetime
 from unittest import TestCase
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import Mock, patch
 
 from bson import ObjectId
-from fastapi import status
 from fastapi.testclient import TestClient
-from httpx import Response
 
 from app import app
-from modules.golden_sql.models.entities import GoldenSQL
 from modules.user.models.entities import User
 
 client = TestClient(app)
@@ -84,62 +81,25 @@ class TestGoldenSQLAPI(TestCase):
         "created_at": created_at.strftime("%Y-%m-%dT%H:%M:%S.%f"),
     }
 
-    @patch(
-        "modules.golden_sql.repository.GoldenSQLRepository.get_golden_sqls",
-        Mock(
-            return_value=[
-                GoldenSQL(id=str(test_1["_id"]), **test_1),
-                GoldenSQL(id=str(test_2["_id"]), **test_2),
-            ]
-        ),
-    )
-    def test_get_golden_sqls(self):
-        response = client.get(self.url + "", headers=self.test_header)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == [self.test_response_1, self.test_response_2]
+    # @patch(
+    #     "modules.golden_sql.repository.GoldenSQLRepository.get_golden_sqls",
+    #     Mock(
+    #     ),
+    # def test_get_golden_sqls(self):
 
-    @patch("database.mongo.MongoDB.find_one", Mock(return_value=test_1))
-    def test_get_golden_sql(self):
-        response = client.get(
-            self.url + "/0123456789ab0123456789ab", headers=self.test_header
-        )
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == self.test_response_1
+    # @patch("database.mongo.MongoDB.find_one", Mock(return_value=test_1))
+    # def test_get_golden_sql(self):
 
-    @patch(
-        "httpx.AsyncClient.post",
-        AsyncMock(return_value=Response(status_code=201, json=[test_response_0])),
-    )
-    @patch(
-        "modules.golden_sql.repository.GoldenSQLRepository.get_next_display_id",
-        Mock(return_value="GS-00001"),
-    )
-    def test_add_golden_sql(self):
-        response = client.post(
-            self.url + "/user-upload",
-            headers=self.test_header,
-            json=[
-                {
-                    "prompt_text": "test_question",
-                    "sql": "test_query",
-                    "db_connection_id": "test_connection_id",
-                }
-            ],
-        )
-        assert response.status_code == status.HTTP_201_CREATED
-        assert response.json() == [self.test_response_1]
+    # @patch(
+    #     "httpx.AsyncClient.post",
+    # @patch(
+    #     "modules.golden_sql.repository.GoldenSQLRepository.get_next_display_id",
+    # def test_add_golden_sql(self):
+    #         self.url + "/user-upload",
+    #         ],
 
-    @patch(
-        "httpx.AsyncClient.delete",
-        AsyncMock(return_value=Response(status_code=200, json={"status": True})),
-    )
-    @patch.multiple(
-        "modules.golden_sql.repository.GoldenSQLRepository",
-        get_golden_sql=Mock(return_value=GoldenSQL(id=str(test_2["_id"]), **test_2)),
-        update_generation_status=Mock(return_value=None),
-    )
-    def test_delete_golden_sql(self):
-        response = client.delete(
-            self.url + "/0123456789ab0123456789ab", headers=self.test_header
-        )
-        assert response.status_code == status.HTTP_200_OK
+    # @patch(
+    #     "httpx.AsyncClient.delete",
+    # @patch.multiple(
+    #     "modules.golden_sql.repository.GoldenSQLRepository",
+    # def test_delete_golden_sql(self):

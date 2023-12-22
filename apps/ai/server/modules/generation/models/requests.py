@@ -20,7 +20,7 @@ class GenerationUpdateRequest(BaseModel):
 
 
 class SQLRequest(BaseModel):
-    sql: str
+    sql: str | None
 
 
 class PromptRequest(BaseModel):
@@ -51,3 +51,8 @@ class SQLNLGenerationRequest(NLGenerationRequest):
 
 class PromptSQLNLGenerationRequest(NLGenerationRequest):
     sql_generation: PromptSQLGenerationRequest
+
+
+class SQLGenerationExecuteRequest(BaseModel):
+    prompt: str
+    model: str | None = None
