@@ -164,7 +164,7 @@ class SqlAlchemyScanner(Scanner):
             ),
             last_schema_sync=datetime.now(),
             error_message="",
-            status=TableDescriptionStatus.SYNCHRONIZED.value,
+            status=TableDescriptionStatus.SCANNED.value,
         )
 
         repository.save_table_info(object)

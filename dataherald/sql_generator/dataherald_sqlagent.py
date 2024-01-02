@@ -619,7 +619,7 @@ class DataheraldSQLAgent(SQLGenerator):
         db_scan = repository.get_all_tables_by_db(
             {
                 "db_connection_id": str(database_connection.id),
-                "status": TableDescriptionStatus.SYNCHRONIZED.value,
+                "status": TableDescriptionStatus.SCANNED.value,
             }
         )
         if not db_scan:

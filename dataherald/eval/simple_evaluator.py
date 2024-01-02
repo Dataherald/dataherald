@@ -101,7 +101,7 @@ class SimpleEvaluator(Evaluator):
         db_scan = repository.get_all_tables_by_db(
             {
                 "db_connection_id": str(database_connection.id),
-                "status": TableDescriptionStatus.SYNCHRONIZED.value,
+                "status": TableDescriptionStatus.SCANNED.value,
             }
         )
         self.llm = self.model.get_model(
