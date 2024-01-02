@@ -201,23 +201,23 @@ class SqlAlchemyScanner(Scanner):
             raise ValueError("No table found")
 
         for table in tables:
-            try:
-                self.scan_single_table(
-                    meta=meta,
-                    table=table,
-                    db_engine=db_engine,
-                    db_connection_id=db_connection_id,
-                    repository=repository,
-                )
-            except Exception as e:
-                repository.save_table_info(
-                    TableDescription(
-                        db_connection_id=db_connection_id,
-                        table_name=table,
-                        status=TableDescriptionStatus.FAILED.value,
-                        error_message=f"{e}",
-                    )
-                )
+            # try:
+            self.scan_single_table(
+                meta=meta,
+                table=table,
+                db_engine=db_engine,
+                db_connection_id=db_connection_id,
+                repository=repository,
+            )
+            # except Exception as e:
+            #     repository.save_table_info(
+            #         TableDescription(
+            #             db_connection_id=db_connection_id,
+            #             table_name=table,
+            #             status=TableDescriptionStatus.FAILED.value,
+            #             error_message=f"{e}",
+            #         )
+            #     )
             try:
                 logger.info(f"Get logs table: {table}")
                 query_history = self.scanner_service.get_logs(
