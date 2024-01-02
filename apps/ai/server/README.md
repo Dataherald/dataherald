@@ -66,8 +66,29 @@ docker exec <container_id> python3 -m database.scripts.data_report organization_
 
 5. It should create a csv file if there is data
 
-## Run Enterprise and Engine using one command
-Once you are located in server folder run the next command.
+## Run Enterprise (server) and Engine (dataherald) containers
+Follow these steps to set up and run the Enterprise (server) and Engine (dataherald) containers:
+
+1. Create the docker network if it doesn't exist
+```
+docker network create backendnetwork
+```
+
+2. Set the envvars in the .env file for `server` and `dataherald` projects
+```
+cp .env.example .env
+```
+
+3. Make sure you use the same `ENCRYPT_KEY` for `server` and `dataherald`.
+
+
+4. For `K2_CORE_URL` check that you use as host the service name that is specified in docker-composer file, for example:
+```
+K2_CORE_URL=http://app/api/v1
+```
+
+5. Run the containers and execute the initialization script to generate data. It should create a real db_connection, 
+an organization and a valid api-key.
 ```
 make start
 ```
