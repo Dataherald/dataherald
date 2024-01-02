@@ -369,15 +369,6 @@ class AggrgationGenerationService:
             else None
         )
 
-        self.repo.update_prompt_dh_metadata(
-            prompt_id,
-            DHPromptMetadata(
-                **generation_request.dict(exclude_unset=True),
-                updated_by=self.user_service.get_user(user.id, org_id).name
-                if user
-                else None,
-            ),
-        )
         if generation_request.generation_status:
             # verified
             if (
@@ -429,6 +420,19 @@ class AggrgationGenerationService:
                     await self.golden_sql_service.delete_golden_sql(
                         golden_sql.id, org_id, generation_request.generation_status
                     )
+
+        self.repo.update_prompt_dh_metadata(
+            prompt_id,
+            DHPromptMetadata(
+                **generation_request.dict(exclude_unset=True),
+                updated_by=self.user_service.get_user(user.id, org_id).name
+                if user
+                else None,
+            ),
+        )
+
+        new_prompt = self.repo.get_prompt(prompt_id, org_id)
+
         self.analytics.track(
             user.email if user else org_id,
             "generation_saved",
@@ -447,7 +451,7 @@ class AggrgationGenerationService:
         )
 
         return self._get_mapped_generation_response(
-            prompt, sql_generation, nl_generation
+            new_prompt, sql_generation, nl_generation
         )
 
     async def create_sql_nl_generation(
