@@ -31,7 +31,7 @@ HTTP 200 code response
         "table_name": "string",
         "description": "string",
         "table_schema": "string",
-        "status": "NOT_SYNCHRONIZED | SYNCHRONIZING | DEPRECATED | SYNCHRONIZED | FAILED"
+        "status": "NOT_SCANNED | SYNCHRONIZING | DEPRECATED | SCANNED | FAILED"
         "error_message": "string",
         "columns": [
           {
@@ -58,10 +58,10 @@ HTTP 200 code response
    :widths: 20, 20, 60
 
    "status", "string", "It can be one of the next options:
-    - `NOT_SYNCHRONIZED` if the table has not been scanned
+    - `NOT_SCANNED` if the table has not been scanned
     - `SYNCHRONIZING` while the sync schema process is running
     - `DEPRECATED` if there is a row in our `table-descriptions` collection that is no longer in the database, probably because the table/view was deleted or renamed
-    - `SYNCHRONIZED` when we have scanned the table
+    - `SCANNED` when we have scanned the table
     - `FAILED` if anything failed during the sync schema process, and the `error_message` field stores the error."
    "error_message", "string", "This field is set only if the async schema process fails"
 
