@@ -56,25 +56,24 @@ app.add_middleware(
 app.add_exception_handler(GenerationEngineError, query_engine_exception_handler)
 
 
-app.include_router(db_connection_controller.api_router, tags=["Database Connection"])
-app.include_router(finetuning_controller.api_router, tags=["Finetuning"])
-app.include_router(golden_sql_controller.api_router, tags=["Golden SQL"])
-app.include_router(instruction_controller.api_router, tags=["Instruction"])
-app.include_router(
-    aggr_generation_controller.api_router, tags=["Aggregated Generation"]
-)
-app.include_router(generation_controller.api_router, tags=["Generation"])
-app.include_router(table_description_controller.api_router, tags=["Table Description"])
-
-app.include_router(auth_controller.router, tags=["Authentication"])
 app.include_router(db_connection_controller.router, tags=["Database Connection"])
 app.include_router(finetuning_controller.router, tags=["Finetuning"])
 app.include_router(golden_sql_controller.router, tags=["Golden SQL"])
 app.include_router(instruction_controller.router, tags=["Instruction"])
-app.include_router(key_controller.router, tags=["Keys"])
-app.include_router(organization_controller.router, tags=["Organization"])
 app.include_router(aggr_generation_controller.router, tags=["Aggregated Generation"])
+app.include_router(generation_controller.router, tags=["Generation"])
 app.include_router(table_description_controller.router, tags=["Table Description"])
+
+app.include_router(db_connection_controller.ac_router, tags=["Database Connection"])
+app.include_router(finetuning_controller.ac_router, tags=["Finetuning"])
+app.include_router(golden_sql_controller.ac_router, tags=["Golden SQL"])
+app.include_router(instruction_controller.ac_router, tags=["Instruction"])
+app.include_router(aggr_generation_controller.ac_router, tags=["Aggregated Generation"])
+app.include_router(table_description_controller.ac_router, tags=["Table Description"])
+
+app.include_router(auth_controller.router, tags=["Authentication"])
+app.include_router(organization_controller.router, tags=["Organization"])
+app.include_router(key_controller.router, tags=["Keys"])
 app.include_router(user_controller.router, tags=["User"])
 
 

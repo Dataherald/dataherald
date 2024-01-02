@@ -18,12 +18,12 @@ from modules.organization.service import OrganizationService
 from utils.auth import Authorize, VerifyToken, get_api_key
 
 router = APIRouter(
-    prefix="/generations",
+    prefix="/api/generations",
     responses={404: {"description": "Not found"}},
 )
 
-api_router = APIRouter(
-    prefix="/api/generations",
+ac_router = APIRouter(
+    prefix="/generations",
     responses={404: {"description": "Not found"}},
 )
 
@@ -35,24 +35,6 @@ org_service = OrganizationService()
 
 @router.get("")
 async def get_generations(
-    page: int = 0,
-    page_size: int = 20,
-    order: str = "created_at",
-    ascend: bool = False,
-    token: str = Depends(token_auth_scheme),
-) -> list[GenerationListResponse]:
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
-    return generation_service.get_generation_list(
-        page=page,
-        page_size=page_size,
-        order=order,
-        ascend=ascend,
-        org_id=org_id,
-    )
-
-
-@api_router.get("")
-async def api_get_generations(
     page: int = 0,
     page_size: int = 20,
     order: str = "created_at",
@@ -70,21 +52,39 @@ async def api_get_generations(
 
 @router.get("/{id}")
 async def get_generation(
+    id: str, api_key: str = Security(get_api_key)
+) -> GenerationResponse:
+    return generation_service.get_generation(id, api_key.organization_id)
+
+
+@ac_router.get("")
+async def ac_get_generations(
+    page: int = 0,
+    page_size: int = 20,
+    order: str = "created_at",
+    ascend: bool = False,
+    token: str = Depends(token_auth_scheme),
+) -> list[GenerationListResponse]:
+    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
+    return generation_service.get_generation_list(
+        page=page,
+        page_size=page_size,
+        order=order,
+        ascend=ascend,
+        org_id=org_id,
+    )
+
+
+@ac_router.get("/{id}")
+async def ac_get_generation(
     id: str, token: str = Depends(token_auth_scheme)
 ) -> GenerationResponse:
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return await generation_service.get_generation(id, org_id)
 
 
-@api_router.get("/{id}")
-async def api_get_generation(
-    id: str, api_key: str = Security(get_api_key)
-) -> GenerationResponse:
-    return generation_service.get_generation(id, api_key.organization_id)
-
-
-@router.post("", status_code=status.HTTP_201_CREATED)
-async def create_generation(
+@ac_router.post("", status_code=status.HTTP_201_CREATED)
+async def ac_create_generation(
     generation_request: SlackGenerationRequest,
     token: str = Depends(token_auth_scheme),
 ) -> GenerationSlackResponse:
@@ -95,8 +95,8 @@ async def create_generation(
     return await generation_service.create_generation(generation_request, organization)
 
 
-@router.put("/{id}")
-async def update_generation(
+@ac_router.put("/{id}")
+async def ac_update_generation(
     id: str,
     generation_request: GenerationUpdateRequest,
     token: str = Depends(token_auth_scheme),
@@ -108,8 +108,8 @@ async def update_generation(
 
 
 # playground endpoint
-@router.post("/prompts/sql-generations", status_code=status.HTTP_201_CREATED)
-async def create_prompt_sql_generation_result(
+@ac_router.post("/prompts/sql-generations", status_code=status.HTTP_201_CREATED)
+async def ac_create_prompt_sql_generation_result(
     request: SQLGenerationExecuteRequest,
     token: str = Depends(token_auth_scheme),
 ) -> GenerationResponse:
@@ -119,8 +119,8 @@ async def create_prompt_sql_generation_result(
     )
 
 
-@router.post("/{id}/sql-generations", status_code=status.HTTP_201_CREATED)
-async def create_sql_generation_result(
+@ac_router.post("/{id}/sql-generations", status_code=status.HTTP_201_CREATED)
+async def ac_create_sql_generation_result(
     id: str,
     sql_result_request: SQLRequest,
     token: str = Depends(token_auth_scheme),
@@ -131,22 +131,22 @@ async def create_sql_generation_result(
     )
 
 
-@router.post("/{id}/nl-generations")
-async def create_message(
+@ac_router.post("/{id}/nl-generations")
+async def ac_create_message(
     id: str, token: str = Depends(token_auth_scheme)
 ) -> NLGenerationResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await generation_service.create_nl_generation(id, user.organization_id)
 
 
-@router.post("/{id}/messages")
-async def send_message(id: str, token: str = Depends(token_auth_scheme)):
+@ac_router.post("/{id}/messages")
+async def ac_send_message(id: str, token: str = Depends(token_auth_scheme)):
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await generation_service.send_message(id, user.organization_id)
 
 
-@router.post("/{id}", status_code=status.HTTP_201_CREATED)
-async def create_sql_nl_generation(
+@ac_router.post("/{id}", status_code=status.HTTP_201_CREATED)
+async def ac_create_sql_nl_generation(
     id: str,
     token: str = Depends(token_auth_scheme),
 ) -> GenerationResponse:

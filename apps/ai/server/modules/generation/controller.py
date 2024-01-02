@@ -15,7 +15,7 @@ from modules.generation.models.responses import (
 from modules.generation.service import GenerationService
 from utils.auth import get_api_key
 
-api_router = APIRouter(
+router = APIRouter(
     prefix="/api",
     responses={404: {"description": "Not found"}},
 )
@@ -23,7 +23,7 @@ api_router = APIRouter(
 generation_service = GenerationService()
 
 
-@api_router.post("/prompts", status_code=status.HTTP_201_CREATED)
+@router.post("/prompts", status_code=status.HTTP_201_CREATED)
 async def create_prompt(
     prompt_request: PromptRequest,
     api_key: str = Security(get_api_key),
@@ -33,7 +33,7 @@ async def create_prompt(
     )
 
 
-@api_router.post("/prompts/sql-generations")
+@router.post("/prompts/sql-generations")
 async def create_prompt_sql_generation(
     question_request: PromptRequest,
     api_key: str = Security(get_api_key),
@@ -43,7 +43,7 @@ async def create_prompt_sql_generation(
     )
 
 
-@api_router.post("/prompts/sql-generations/nl-generations")
+@router.post("/prompts/sql-generations/nl-generations")
 async def create_prompt_sql_nl_generation(
     prompt_sql_nl_generation_request: PromptSQLNLGenerationRequest,
     api_key: str = Security(get_api_key),
@@ -53,7 +53,7 @@ async def create_prompt_sql_nl_generation(
     )
 
 
-@api_router.post("/prompts/{id}/sql-generations")
+@router.post("/prompts/{id}/sql-generations")
 async def create_sql_generation(
     id: str,
     sql_generation_request: SQLGenerationRequest,
@@ -64,7 +64,7 @@ async def create_sql_generation(
     )
 
 
-@api_router.post("/prompts/{id}/sql-generations/nl-generations")
+@router.post("/prompts/{id}/sql-generations/nl-generations")
 async def create_sql_nl_generation(
     id: str,
     sql_nl_generation_request: SQLNLGenerationRequest,
@@ -75,7 +75,7 @@ async def create_sql_nl_generation(
     )
 
 
-@api_router.post("/sql-generations/{id}/nl-generations")
+@router.post("/sql-generations/{id}/nl-generations")
 async def create_nl_generation(
     id: str,
     nl_generation_request: NLGenerationRequest,
@@ -86,7 +86,7 @@ async def create_nl_generation(
     )
 
 
-@api_router.get("/prompts")
+@router.get("/prompts")
 async def get_prompts(
     page: int = 0,
     page_size: int = 20,
@@ -99,7 +99,7 @@ async def get_prompts(
     )
 
 
-@api_router.get("/prompts/{id}")
+@router.get("/prompts/{id}")
 async def get_prompt(
     id: str,
     api_key: str = Security(get_api_key),
@@ -107,7 +107,7 @@ async def get_prompt(
     return generation_service.get_prompt(id, api_key.organization_id)
 
 
-@api_router.get("/prompts/{id}/sql-generations")
+@router.get("/prompts/{id}/sql-generations")
 async def get_sql_generations_by_prompt_id(
     id: str,
     page: int = 0,
@@ -121,7 +121,7 @@ async def get_sql_generations_by_prompt_id(
     )
 
 
-@api_router.get("/sql-generations")
+@router.get("/sql-generations")
 async def get_sql_generations(
     page: int = 0,
     page_size: int = 20,
@@ -134,7 +134,7 @@ async def get_sql_generations(
     )
 
 
-@api_router.get("/sql-generations/{id}")
+@router.get("/sql-generations/{id}")
 async def get_sql_generation(
     id: str,
     api_key: str = Security(get_api_key),
@@ -142,7 +142,7 @@ async def get_sql_generation(
     return generation_service.get_sql_generation(id, api_key.organization_id)
 
 
-@api_router.get("/sql-generations/{id}/nl-generations")
+@router.get("/sql-generations/{id}/nl-generations")
 async def get_nl_generations_by_sql_generation_id(
     id: str,
     page: int = 0,
@@ -156,7 +156,7 @@ async def get_nl_generations_by_sql_generation_id(
     )
 
 
-@api_router.get("/nl-generations")
+@router.get("/nl-generations")
 async def get_nl_generations(
     page: int = 0,
     page_size: int = 20,
@@ -169,7 +169,7 @@ async def get_nl_generations(
     )
 
 
-@api_router.get("/nl-generations/{id}")
+@router.get("/nl-generations/{id}")
 async def get_nl_generation(
     id: str,
     api_key: str = Security(get_api_key),
@@ -177,7 +177,7 @@ async def get_nl_generation(
     return generation_service.get_nl_generation(id, api_key.organization_id)
 
 
-@api_router.get("/sql-generations/{id}/execute")
+@router.get("/sql-generations/{id}/execute")
 async def execute_sql_generation(
     id: str,
     max_rows: int = 100,
