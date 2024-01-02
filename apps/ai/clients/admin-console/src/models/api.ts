@@ -101,7 +101,7 @@ export interface Query {
   message: string | null
   // sql_generation
   sql: string
-  sql_results: QuerySqlResult | null // TODO remove this field once csv export is done
+  sql_result: QuerySqlResult | null // TODO remove this field once csv export is done
   sql_generation_error?: string
   confidence_score: number
   intermediate_steps: string[] | [] // TODO remove this field @valak

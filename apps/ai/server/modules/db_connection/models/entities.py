@@ -29,11 +29,11 @@ class DBConnectionMetadata(BaseModel):
 
 
 class BaseDBConnection(BaseModel):
-    id: str
+    id: str | None
     llm_api_key: str | None
     alias: str | None
     use_ssh: bool = False
-    uri: str | None
+    connection_uri: str | None
     path_to_credentials_file: str | None
     ssh_settings: SSHSettings | None
 

@@ -91,7 +91,7 @@ const PlaygroundPage: FC = () => {
       </div>
     )
   } else if (query) {
-    const { status, confidence_score, sql, sql_results, sql_generation_error } =
+    const { status, confidence_score, sql, sql_result, sql_generation_error } =
       query
     pageContent = (
       <div className="grow flex flex-col overflow-auto">
@@ -137,18 +137,18 @@ const PlaygroundPage: FC = () => {
                 id="query_results"
                 className="grow min-h-[10rem] max-h-80 flex flex-col border bg-white"
               >
-                {sql_results === null ? (
+                {sql_result === null ? (
                   <div className="w-full h-44 flex items-center justify-center bg-gray-100">
                     <div className="text-gray-600">No Results</div>
                   </div>
                 ) : (
                   <SqlResultsTable
-                    columns={sql_results.columns.map((columnKey: string) => ({
+                    columns={sql_result.columns.map((columnKey: string) => ({
                       id: columnKey,
                       header: columnKey,
                       accessorKey: columnKey,
                     }))}
-                    data={sql_results.rows}
+                    data={sql_result.rows}
                   />
                 )}
               </div>

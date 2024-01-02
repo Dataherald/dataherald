@@ -63,7 +63,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     created_at,
     nl_generation_text, // TODO delete this
     sql,
-    sql_results = null,
+    sql_result = null,
     sql_generation_error,
     confidence_score,
     updated_at,
@@ -351,7 +351,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                   id="query_results"
                   className="min-h-[10rem] max-h-80 flex flex-col border bg-white"
                 >
-                  {sql_results === null ? (
+                  {sql_result === null ? (
                     <SqlResultsTable
                       columns={[''].map(() => ({
                         id: '1',
@@ -362,12 +362,12 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                     />
                   ) : (
                     <SqlResultsTable
-                      columns={sql_results.columns.map((columnKey: string) => ({
+                      columns={sql_result.columns.map((columnKey: string) => ({
                         id: columnKey,
                         header: columnKey,
                         accessorKey: columnKey,
                       }))}
-                      data={sql_results.rows}
+                      data={sql_result.rows}
                     />
                   )}
                 </div>

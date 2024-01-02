@@ -73,7 +73,7 @@ async def get_generation(
     id: str, token: str = Depends(token_auth_scheme)
 ) -> GenerationResponse:
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
-    return generation_service.get_generation(id, org_id)
+    return await generation_service.get_generation(id, org_id)
 
 
 @api_router.get("/{id}")
@@ -107,31 +107,32 @@ async def update_generation(
     )
 
 
-@router.post("/sql-generations/execute", status_code=status.HTTP_201_CREATED)
-async def sql_generations_execute(
+# playground endpoint
+@router.post("/prompts/sql-generations", status_code=status.HTTP_201_CREATED)
+async def create_prompt_sql_generation_result(
     request: SQLGenerationExecuteRequest,
     token: str = Depends(token_auth_scheme),
 ) -> GenerationResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    return await generation_service.generate_prompt_sql_and_execute(
-        request, user.organization_id
+    return await generation_service.create_prompt_sql_generation_result(
+        request, user.organization_id, playground=True
     )
 
 
 @router.post("/{id}/sql-generations", status_code=status.HTTP_201_CREATED)
-async def generate_sql_result(
+async def create_sql_generation_result(
     id: str,
     sql_result_request: SQLRequest,
     token: str = Depends(token_auth_scheme),
 ) -> GenerationResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    return await generation_service.generate_sql_result(
+    return await generation_service.create_sql_generation_result(
         id, sql_result_request, user.organization_id, user
     )
 
 
 @router.post("/{id}/nl-generations")
-async def generate_message(
+async def create_message(
     id: str, token: str = Depends(token_auth_scheme)
 ) -> NLGenerationResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())

@@ -23,6 +23,7 @@ class DHPromptMetadata(BaseModel):
     display_id: str | None
     slack_info: SlackInfo | None
     message: str | None
+    playground: bool | None
 
 
 class PromptMetadata(BaseModel):
@@ -122,4 +123,4 @@ class Generation(BaseModel):
     updated_at: datetime | None
     created_at: datetime | None
     status: GenerationStatus | None  # inferred from SQLGeneration and NLGeneration
-    sql_results: dict | None
+    sql_result: dict | None

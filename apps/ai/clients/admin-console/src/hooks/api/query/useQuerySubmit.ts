@@ -8,7 +8,7 @@ const useQuerySubmit = () => {
 
   const submitQuery = useCallback(
     async (prompt: string): Promise<Query> =>
-      apiFetcher<Query>(`${API_URL}/generations/sql-generations/execute`, {
+      apiFetcher<Query>(`${API_URL}/generations/prompts/sql-generations`, {
         method: 'POST',
         body: JSON.stringify({ prompt }),
       }),

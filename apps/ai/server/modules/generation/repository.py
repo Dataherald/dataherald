@@ -29,13 +29,20 @@ class GenerationRepository:
     def get_prompts(
         self, skip: int, limit: int, order: str, ascend: bool, org_id: str
     ) -> list[Prompt]:
+        mddh_prefix = "metadata.dh_internal"
         prompts = self._get_items(
             skip,
             limit,
             order,
             ascend,
             PROMPT_COL,
-            {"metadata.dh_internal.organization_id": org_id},
+            {
+                f"{mddh_prefix}.organization_id": org_id,
+                "$or": [
+                    {f"{mddh_prefix}.playground": False},
+                    {f"{mddh_prefix}.playground": {"$exists": False}},
+                ],
+            },
         )
         return [Prompt(id=str(prompt["_id"]), **prompt) for prompt in prompts]
 

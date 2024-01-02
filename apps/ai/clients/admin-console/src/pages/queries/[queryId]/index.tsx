@@ -29,7 +29,7 @@ const QueryPage: FC = () => {
     // first update of the query from the server.
     // this server query should only be used to initialize the query state.
     // remaining updates are handled by each of the operations and not from the GET query endpoint.
-    // this is because the GET query endpoint doesn't have `sql_results`.
+    // this is because the GET query endpoint doesn't have `sql_result`.
     if (serverQuery)
       setQuery((prevState) =>
         prevState === undefined ? serverQuery : prevState,

@@ -166,7 +166,7 @@ class GenerationService:
             )
             raise_for_status(response.status_code, response.text)
             sql_generation = SQLGenerationResponse(**response.json())
-            self.repo.update_prompt_metadata(
+            self.repo.update_prompt_dh_metadata(
                 sql_generation.prompt_id,
                 {
                     "generation_status": GenerationStatus.NOT_VERIFIED
@@ -210,7 +210,7 @@ class GenerationService:
             sql_generation = self.repo.get_sql_generation(
                 nl_generation.sql_generation_id, org_id
             )
-            self.repo.update_prompt_metadata(
+            self.repo.update_prompt_dh_metadata(
                 sql_generation.prompt_id,
                 {
                     "generation_status": GenerationStatus.NOT_VERIFIED
@@ -243,7 +243,7 @@ class GenerationService:
             **create_request.metadata,
             dh_internal=DHSQLGenerationMetadata(organization_id=org_id),
         )
-        self.repo.update_prompt_metadata(
+        self.repo.update_prompt_dh_metadata(
             prompt_id, {"generation_status": GenerationStatus.INITIALIZED}
         )
         async with httpx.AsyncClient() as client:
@@ -254,7 +254,7 @@ class GenerationService:
             )
             raise_for_status(response.status_code, response.text)
             sql_generation = SQLGenerationResponse(**response.json())
-            self.repo.update_prompt_metadata(
+            self.repo.update_prompt_dh_metadata(
                 prompt_id,
                 {
                     "generation_status": GenerationStatus.NOT_VERIFIED
@@ -317,7 +317,7 @@ class GenerationService:
             dh_internal=DHNLGenerationMetadata(organization_id=org_id),
         )
 
-        self.repo.update_prompt_metadata(
+        self.repo.update_prompt_dh_metadata(
             prompt_id, {"generation_status": GenerationStatus.INITIALIZED}
         )
 
@@ -333,7 +333,7 @@ class GenerationService:
             sql_generation = self.repo.get_sql_generation(
                 nl_generation.sql_generation_id, org_id
             )
-            self.repo.update_prompt_metadata(
+            self.repo.update_prompt_dh_metadata(
                 prompt_id,
                 {
                     "generation_status": GenerationStatus.NOT_VERIFIED
