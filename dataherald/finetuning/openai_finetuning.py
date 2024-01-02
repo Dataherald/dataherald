@@ -118,7 +118,7 @@ class OpenAIFineTuning(FinetuningModel):
         db_scan = repository.get_all_tables_by_db(
             {
                 "db_connection_id": str(db_connection_id),
-                "status": TableDescriptionStatus.SYNCHRONIZED.value,
+                "status": TableDescriptionStatus.SCANNED.value,
             }
         )
         golden_sqls_repository = GoldenSQLRepository(self.storage)

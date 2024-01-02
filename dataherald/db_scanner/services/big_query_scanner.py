@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 import sqlalchemy
 from overrides import override
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
 from sqlalchemy.sql.schema import Column
 
@@ -17,26 +18,19 @@ MAX_LOGS = 5_000
 class BigQueryScanner(AbstractScanner):
     @override
     def cardinality_values(self, column: Column, db_engine: SQLDatabase) -> list | None:
-        if "ARRAY" in str(column.type).upper():
-            count_query = f"SELECT COUNT(DISTINCT element) FROM {column.table.name}, UNNEST({column.name}) as element"  # noqa: S608
-        else:
+        try:
             count_query = f"SELECT APPROX_COUNT_DISTINCT({column.name}) FROM {column.table.name}"  # noqa: S608
-
-        rs = db_engine.engine.execute(count_query).fetchall()
+            rs = db_engine.engine.execute(count_query).fetchall()
+        except SQLAlchemyError:
+            return None
 
         if (
             len(rs) > 0
             and len(rs[0]) > 0
             and MIN_CATEGORY_VALUE < rs[0][0] <= MAX_CATEGORY_VALUE
         ):
-            if "ARRAY" in str(column.type).upper():
-                unnest_query = f"SELECT DISTINCT element FROM {column.table.name}, UNNEST({column.name}) as element LIMIT 101"  # noqa: S608
-                cardinality = db_engine.engine.execute(unnest_query).fetchall()
-            else:
-                cardinality_query = sqlalchemy.select([func.distinct(column)]).limit(
-                    101
-                )
-                cardinality = db_engine.engine.execute(cardinality_query).fetchall()
+            cardinality_query = sqlalchemy.select([func.distinct(column)]).limit(101)
+            cardinality = db_engine.engine.execute(cardinality_query).fetchall()
             return [str(category[0]) for category in cardinality]
 
         return None

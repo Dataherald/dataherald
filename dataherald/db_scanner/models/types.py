@@ -21,10 +21,10 @@ class ColumnDetail(BaseModel):
 
 
 class TableDescriptionStatus(Enum):
-    NOT_SYNCHRONIZED = "NOT_SYNCHRONIZED"
+    NOT_SCANNED = "NOT_SCANNED"
     SYNCHRONIZING = "SYNCHRONIZING"
     DEPRECATED = "DEPRECATED"
-    SYNCHRONIZED = "SYNCHRONIZED"
+    SCANNED = "SCANNED"
     FAILED = "FAILED"
 
 
@@ -37,7 +37,7 @@ class TableDescription(BaseModel):
     columns: list[ColumnDetail] = []
     examples: list = []
     last_schema_sync: datetime | None
-    status: str = TableDescriptionStatus.SYNCHRONIZED.value
+    status: str = TableDescriptionStatus.SCANNED.value
     error_message: str | None
     metadata: dict | None
     created_at: datetime = Field(default_factory=datetime.now)

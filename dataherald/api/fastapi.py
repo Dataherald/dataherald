@@ -279,7 +279,7 @@ class FastAPI(API):
                 table_descriptions.append(
                     TableDescription(
                         table_name=table,
-                        status=TableDescriptionStatus.NOT_SYNCHRONIZED.value,
+                        status=TableDescriptionStatus.NOT_SCANNED.value,
                         db_connection_id=db_connection_id,
                         columns=[],
                     )
