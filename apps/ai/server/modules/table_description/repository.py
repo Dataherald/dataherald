@@ -5,7 +5,7 @@ from modules.table_description.models.entities import TableDescription
 
 class TableDescriptionRepository:
     def get_table_descriptions(
-        self, db_connection_id: str, table_name: str = None
+        self, db_connection_id: str, table_name: str = ""
     ) -> list[TableDescription]:
         query = {"db_connection_id": db_connection_id}
         if table_name:

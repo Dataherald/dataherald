@@ -25,11 +25,16 @@ class TableDescriptionService:
         self.db_connection_service = DBConnectionService()
 
     async def get_table_descriptions(
-        self, table_name: str, org_id: str
+        self, db_connection_id: str, table_name: str, org_id: str
     ) -> list[TableDescriptionResponse]:
-        organization = self.org_service.get_organization(org_id)
+        if not self.db_connection_service.get_db_connection(db_connection_id, org_id):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Database connection not found",
+            )
+
         table_descriptions = self.repo.get_table_descriptions(
-            organization.db_connection_id, table_name
+            db_connection_id, table_name
         )
 
         for table_description in table_descriptions:

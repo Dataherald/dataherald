@@ -29,22 +29,24 @@ table_description_service = TableDescriptionService()
 
 @router.get("")
 async def get_table_descriptions(
+    db_connection_id: str,
     table_name: str = "",
     token: str = Depends(token_auth_scheme),
 ) -> list[TableDescriptionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.get_table_descriptions(
-        table_name, user.organization_id
+        db_connection_id, table_name, user.organization_id
     )
 
 
 @api_router.get("")
 async def api_get_table_descriptions(
+    db_connection_id: str,
     table_name: str = "",
     api_key: str = Security(get_api_key),
 ) -> list[TableDescriptionResponse]:
     return await table_description_service.get_table_descriptions(
-        table_name, api_key.organization_id
+        db_connection_id, table_name, api_key.organization_id
     )
 
 
