@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from pydantic import BaseModel, validator
 
 from dataherald.db_scanner.models.types import TableDescription
@@ -11,8 +13,12 @@ class BaseResponse(BaseModel):
 
     @validator("created_at", pre=True, always=True)
     def created_at_as_string(cls, v):
-        if v:
-            return str(v)
+        if not v:
+            return None
+        if isinstance(v, datetime):
+            return str(v.replace(tzinfo=timezone.utc))
+        if isinstance(v, str):
+            return v
         return None
 
 
@@ -33,12 +39,18 @@ class SQLGenerationResponse(BaseResponse):
 
     @validator("completed_at", pre=True, always=True)
     def completed_at_as_string(cls, v):
-        return str(v)
+        if not v:
+            return None
+        if isinstance(v, datetime):
+            return str(v.replace(tzinfo=timezone.utc))
+        if isinstance(v, str):
+            return v
+        return None
 
 
 class NLGenerationResponse(BaseResponse):
     sql_generation_id: str
-    text: str
+    text: str | None
 
 
 class InstructionResponse(BaseResponse):
