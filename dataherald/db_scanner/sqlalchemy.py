@@ -163,6 +163,7 @@ class SqlAlchemyScanner(Scanner):
                 meta=meta, db_engine=db_engine, table=table, rows_number=3
             ),
             last_schema_sync=datetime.now(),
+            error_message="",
             status=TableDescriptionStatus.SYNCHRONIZED.value,
         )
 
