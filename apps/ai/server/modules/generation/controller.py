@@ -3,6 +3,7 @@ from fastapi import APIRouter, Security, status
 from modules.generation.models.requests import (
     NLGenerationRequest,
     PromptRequest,
+    PromptSQLGenerationRequest,
     PromptSQLNLGenerationRequest,
     SQLGenerationRequest,
     SQLNLGenerationRequest,
@@ -35,7 +36,7 @@ async def create_prompt(
 
 @router.post("/prompts/sql-generations")
 async def create_prompt_sql_generation(
-    question_request: PromptRequest,
+    question_request: PromptSQLGenerationRequest,
     api_key: str = Security(get_api_key),
 ) -> SQLGenerationResponse:
     return await generation_service.create_prompt_sql_generation(
