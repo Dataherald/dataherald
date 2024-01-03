@@ -242,6 +242,17 @@ Example::
 
 "connection_uri": awsathena+rest://foobar:foobar@athena.us-east-2.amazonaws.com:443/db_test?s3_staging_dir=s3://my-bucket/output/&work_group=primary
 
+MotherDuck
+^^^^^^^^^^^^
+
+Uri structure::
+
+"connection_uri": duckdb:///md:<db_name>?motherduck_token=<token>
+
+Example::
+
+"connection_uri": duckdb:///md:foobar?motherduck_token=abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234
+
 BigQuery
 ^^^^^^^^^^^^
 
