@@ -444,8 +444,8 @@ class DataheraldFinetuningAgent(SQLGenerator):
             for step in result["intermediate_steps"]:
                 action = step[0]
                 if type(action) == AgentAction and action.tool == "sql_db_query":
-                    sql_query = self.remove_markdown(sql_query)
                     sql_query = self.format_sql_query(action.tool_input)
+                    sql_query = self.remove_markdown(sql_query)
         logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
         response.sql = sql_query
         response.tokens_used = cb.total_tokens
