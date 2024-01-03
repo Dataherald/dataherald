@@ -81,7 +81,7 @@ class UserService:
         if (
             len(
                 self.repo.get_users(
-                    {"organization_id": ObjectId(org_id), "role": {"$ne": "ADMIN"}}
+                    {"organization_id": org_id, "role": {"$ne": "ADMIN"}}
                 )
             )
             > 1
