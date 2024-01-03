@@ -464,10 +464,14 @@ class AggrgationGenerationService:
             )
 
         generation_request = SQLNLGenerationRequest(
-            metadata={"organization_id": org_id},
+            metadata=NLGenerationMetadata(
+                dh_internal=DHNLGenerationMetadata(organization_id=org_id)
+            ),
             sql_generation=SQLGenerationRequest(
                 evaluate=True,
-                metadata={"organization_id": org_id},
+                metadata=SQLGenerationMetadata(
+                    dh_internal=DHSQLGenerationMetadata(organization_id=org_id)
+                ),
             ),
         )
 
@@ -511,7 +515,6 @@ class AggrgationGenerationService:
                     sql_result_response.status_code, sql_result_response.text
                 )
                 sql_result = sql_result_response.json()
-                print(sql_result)
             else:
                 sql_result = None
 
@@ -557,7 +560,9 @@ class AggrgationGenerationService:
         generation_request = SQLGenerationRequest(
             sql=sql_request.sql,
             evaluate=False,
-            metadata={"organization_id": org_id},
+            metadata=SQLGenerationMetadata(
+                dh_internal=DHSQLGenerationMetadata(organization_id=org_id)
+            ),
         )
 
         async with httpx.AsyncClient() as client:
