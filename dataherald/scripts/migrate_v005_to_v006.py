@@ -8,6 +8,7 @@ from sql_metadata import Parser
 import dataherald.config
 from dataherald.config import System
 from dataherald.db import DB
+from dataherald.db_scanner.models.types import TableDescriptionStatus
 from dataherald.vector_store import VectorStore
 
 
@@ -79,6 +80,17 @@ if __name__ == "__main__":
         )
         print("Updated...")
     print("Golden sqls uploaded...")
+
+    # Update the table_descriptions status
+
+    for table_description in storage.find_all("table_descriptions"):
+        if table_description["status"] == "SYNCHRONIZED":
+            table_description["status"] = TableDescriptionStatus.SCANNED.value
+        elif table_description["status"] == "NOT_SYNCHRONIZED":
+            table_description["status"] = TableDescriptionStatus.NOT_SCANNED.value
+        storage.update_or_create(
+            "table_descriptions", {"_id": table_description["_id"]}, table_description
+        )
 
     # Migrate questions in prompts collection
     questions = storage.find_all("questions")
