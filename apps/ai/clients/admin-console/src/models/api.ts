@@ -146,9 +146,9 @@ export interface GoldenSqlListItem {
 export type GoldenSqlList = GoldenSqlListItem[]
 
 export enum ETableSyncStatus {
-  NOT_SYNCHRONIZED = 'NOT_SYNCHRONIZED',
+  NOT_SCANNED = 'NOT_SCANNED',
   SYNCHRONIZING = 'SYNCHRONIZING',
-  SYNCHRONIZED = 'SYNCHRONIZED',
+  SCANNED = 'SCANNED',
   DEPRECATED = 'DEPRECATED',
   FAILED = 'FAILED',
 }

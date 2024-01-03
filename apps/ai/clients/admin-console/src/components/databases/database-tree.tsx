@@ -32,7 +32,7 @@ const mapDatabaseToTreeData = (database: Database): TreeNode => ({
         type: 'table',
         name: table.name,
         icon: Table2,
-        clickable: table.sync_status === ETableSyncStatus.SYNCHRONIZED,
+        clickable: table.sync_status === ETableSyncStatus.SCANNED,
         selectable: isSyncEnabled(table.sync_status),
         slot: (
           <div
@@ -68,8 +68,7 @@ const mapDatabaseToTreeData = (database: Database): TreeNode => ({
                   type: 'column',
                   name: column,
                   icon: Columns,
-                  clickable:
-                    table.sync_status === ETableSyncStatus.SYNCHRONIZED,
+                  clickable: table.sync_status === ETableSyncStatus.SCANNED,
                 })),
               },
             ]

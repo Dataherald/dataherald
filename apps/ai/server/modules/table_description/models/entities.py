@@ -6,9 +6,9 @@ from pydantic import BaseModel, Extra
 
 
 class SchemaStatus(Enum):
-    NOT_SYNCHRONIZED = "NOT_SYNCHRONIZED"
+    NOT_SCANNED = "NOT_SCANNED"
     SYNCHRONIZING = "SYNCHRONIZING"
-    SYNCHRONIZED = "SYNCHRONIZED"
+    SCANNED = "SCANNED"
     DEPRECATED = "DEPRECATED"
     FAILED = "FAILED"
 

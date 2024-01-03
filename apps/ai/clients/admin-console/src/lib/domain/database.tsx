@@ -12,13 +12,13 @@ import {
 
 export const DOMAIN_TABLE_SYNC_STATUS_COLORS: ResourceColors<TableSyncStatus> =
   {
-    [ETableSyncStatus.NOT_SYNCHRONIZED]: {
+    [ETableSyncStatus.NOT_SCANNED]: {
       text: 'text-gray-500',
     },
     [ETableSyncStatus.SYNCHRONIZING]: {
       text: 'text-yellow-600',
     },
-    [ETableSyncStatus.SYNCHRONIZED]: {
+    [ETableSyncStatus.SCANNED]: {
       text: 'text-green-700',
     },
     [ETableSyncStatus.DEPRECATED]: {
@@ -39,20 +39,20 @@ export const getDomainTableSyncStatusColors = (
 
 export const isSyncEnabled = (sync_status: TableSyncStatus): boolean =>
   [
-    ETableSyncStatus.NOT_SYNCHRONIZED,
+    ETableSyncStatus.NOT_SCANNED,
     ETableSyncStatus.FAILED,
-    ETableSyncStatus.SYNCHRONIZED,
+    ETableSyncStatus.SCANNED,
   ].includes(ETableSyncStatus[sync_status])
 
 export const getDomainTableSyncStatusIcon = (
   sync_status: TableSyncStatus,
 ): LucideIcon | null => {
   switch (sync_status) {
-    case ETableSyncStatus.SYNCHRONIZED:
+    case ETableSyncStatus.SCANNED:
       return Check
     case ETableSyncStatus.SYNCHRONIZING:
       return RefreshCcw
-    case ETableSyncStatus.NOT_SYNCHRONIZED:
+    case ETableSyncStatus.NOT_SCANNED:
       return CircleSlash
     case ETableSyncStatus.DEPRECATED:
       return ShieldAlert
