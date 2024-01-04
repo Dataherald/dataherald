@@ -338,6 +338,7 @@ class AggrgationGenerationService:
                     id=prompt.id,
                     prompt_text=prompt.text,
                     nl_generation_text=nl_generation.text if nl_generation else None,
+                    sql=sql_generation.sql if sql_generation else None,
                     confidence_score=sql_generation.confidence_score
                     if sql_generation
                     else None,
