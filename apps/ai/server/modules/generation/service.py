@@ -1,5 +1,6 @@
 import httpx
 from fastapi import HTTPException, status
+from fastapi.responses import StreamingResponse
 
 from config import settings
 from modules.db_connection.service import DBConnectionService
@@ -364,3 +365,30 @@ class GenerationService:
             )
             raise_for_status(response.status_code, response.text)
             return response.json()
+
+    async def export_csv_file(
+        self, sql_generation_id: str, org_id: str
+    ) -> StreamingResponse:
+        sql_generation = self.repo.get_sql_generation(sql_generation_id, org_id)
+        if not sql_generation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="SQL Generation not found",
+            )
+        if sql_generation.status != SQLGenerationStatus.VALID:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="SQL Generation is not valid",
+            )
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                settings.engine_url + f"/sql-generations/{sql_generation_id}/csv-file",
+                timeout=settings.default_engine_timeout,
+            )
+            raise_for_status(response.status_code, response.text)
+            return StreamingResponse(
+                content=response.iter_bytes(),
+                headers=response.headers,
+                status_code=response.status_code,
+                media_type=response.headers.get("content-type", "text/csv"),
+            )

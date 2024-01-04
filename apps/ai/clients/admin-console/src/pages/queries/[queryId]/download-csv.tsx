@@ -35,7 +35,10 @@ const DownloadCsvPage: FC = () => {
     const questionDate: Date = new Date(created_at)
 
     const handleDownload = () => {
-      downloadFile(`query/${promptId}/csv`, `query-${display_id}.csv`)
+      downloadFile(
+        `generations/${promptId}/csv-file`,
+        `query-${display_id}.csv`,
+      )
     }
 
     if (query) {

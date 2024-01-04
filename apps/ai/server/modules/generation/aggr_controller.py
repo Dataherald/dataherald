@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Security, status
+from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPBearer
 
 from modules.generation.aggr_service import AggrgationGenerationService
@@ -154,3 +155,11 @@ async def ac_create_sql_nl_generation(
     return await generation_service.create_sql_nl_generation(
         id, user.organization_id, user
     )
+
+
+@ac_router.get("/{id}/csv-file")
+async def export_csv_file(
+    id: str, token: str = Depends(token_auth_scheme)
+) -> StreamingResponse:
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    return await generation_service.export_csv_file(id, user.organization_id)

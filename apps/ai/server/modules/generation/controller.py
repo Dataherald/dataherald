@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Security, status
+from fastapi.responses import StreamingResponse
 
 from modules.generation.models.requests import (
     NLGenerationRequest,
@@ -193,3 +194,10 @@ async def execute_sql_generation(
     return await generation_service.execute_sql_generation(
         id, max_rows, api_key.organization_id
     )
+
+
+@router.get("/sql-generations/{id}/csv-file")
+async def export_csv_file(
+    id: str, api_key: str = Security(get_api_key)
+) -> StreamingResponse:
+    return await generation_service.export_csv_file(id, api_key.organization_id)
