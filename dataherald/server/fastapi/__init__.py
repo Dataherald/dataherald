@@ -223,7 +223,7 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
-            "/api/v1/sql-generations/{sql_generation_id}/csv_file",
+            "/api/v1/sql-generations/{sql_generation_id}/csv-file",
             self.export_csv_file,
             methods=["GET"],
             tags=["SQL Generation"],
