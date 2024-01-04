@@ -54,7 +54,7 @@ class OpenAIFineTuning(FinetuningModel):
             "validating_files": FineTuningStatus.VALIDATING_FILES.value,
         }
         if status not in mapped_statuses:
-            return FineTuningStatus.QUEUED
+            return FineTuningStatus.QUEUED.value
         return mapped_statuses[status]
 
     @classmethod
