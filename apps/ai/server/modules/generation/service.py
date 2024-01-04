@@ -168,11 +168,11 @@ class GenerationService:
             sql_generation = SQLGenerationResponse(**response.json())
             self.repo.update_prompt_dh_metadata(
                 sql_generation.prompt_id,
-                {
-                    "generation_status": GenerationStatus.NOT_VERIFIED
+                DHPromptMetadata(
+                    generation_status=GenerationStatus.NOT_VERIFIED
                     if sql_generation.status == SQLGenerationStatus.VALID
                     else GenerationStatus.ERROR
-                },
+                ),
             )
             return sql_generation
 
@@ -212,11 +212,11 @@ class GenerationService:
             )
             self.repo.update_prompt_dh_metadata(
                 sql_generation.prompt_id,
-                {
-                    "generation_status": GenerationStatus.NOT_VERIFIED
+                DHPromptMetadata(
+                    generation_status=GenerationStatus.NOT_VERIFIED
                     if sql_generation.status == SQLGenerationStatus.VALID
                     else GenerationStatus.ERROR
-                },
+                ),
             )
             return nl_generation
 
@@ -244,7 +244,8 @@ class GenerationService:
             dh_internal=DHSQLGenerationMetadata(organization_id=org_id),
         )
         self.repo.update_prompt_dh_metadata(
-            prompt_id, {"generation_status": GenerationStatus.INITIALIZED}
+            prompt_id,
+            DHPromptMetadata(generation_status=GenerationStatus.INITIALIZED),
         )
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -256,11 +257,11 @@ class GenerationService:
             sql_generation = SQLGenerationResponse(**response.json())
             self.repo.update_prompt_dh_metadata(
                 prompt_id,
-                {
-                    "generation_status": GenerationStatus.NOT_VERIFIED
+                DHPromptMetadata(
+                    generation_status=GenerationStatus.NOT_VERIFIED
                     if sql_generation.status == SQLGenerationStatus.VALID
                     else GenerationStatus.ERROR
-                },
+                ),
             )
             return sql_generation
 
@@ -318,7 +319,8 @@ class GenerationService:
         )
 
         self.repo.update_prompt_dh_metadata(
-            prompt_id, {"generation_status": GenerationStatus.INITIALIZED}
+            prompt_id,
+            DHPromptMetadata(generation_status=GenerationStatus.INITIALIZED),
         )
 
         async with httpx.AsyncClient() as client:
@@ -335,11 +337,11 @@ class GenerationService:
             )
             self.repo.update_prompt_dh_metadata(
                 prompt_id,
-                {
-                    "generation_status": GenerationStatus.NOT_VERIFIED
+                DHPromptMetadata(
+                    generation_status=GenerationStatus.NOT_VERIFIED
                     if sql_generation.status == SQLGenerationStatus.VALID
                     else GenerationStatus.ERROR
-                },
+                ),
             )
             return nl_generation
 

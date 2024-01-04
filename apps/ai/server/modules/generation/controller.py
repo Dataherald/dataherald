@@ -34,7 +34,7 @@ async def create_prompt(
     )
 
 
-@router.post("/prompts/sql-generations")
+@router.post("/prompts/sql-generations", status_code=status.HTTP_201_CREATED)
 async def create_prompt_sql_generation(
     question_request: PromptSQLGenerationRequest,
     api_key: str = Security(get_api_key),
@@ -44,7 +44,9 @@ async def create_prompt_sql_generation(
     )
 
 
-@router.post("/prompts/sql-generations/nl-generations")
+@router.post(
+    "/prompts/sql-generations/nl-generations", status_code=status.HTTP_201_CREATED
+)
 async def create_prompt_sql_nl_generation(
     prompt_sql_nl_generation_request: PromptSQLNLGenerationRequest,
     api_key: str = Security(get_api_key),
@@ -54,7 +56,7 @@ async def create_prompt_sql_nl_generation(
     )
 
 
-@router.post("/prompts/{id}/sql-generations")
+@router.post("/prompts/{id}/sql-generations", status_code=status.HTTP_201_CREATED)
 async def create_sql_generation(
     id: str,
     sql_generation_request: SQLGenerationRequest,
@@ -65,7 +67,9 @@ async def create_sql_generation(
     )
 
 
-@router.post("/prompts/{id}/sql-generations/nl-generations")
+@router.post(
+    "/prompts/{id}/sql-generations/nl-generations", status_code=status.HTTP_201_CREATED
+)
 async def create_sql_nl_generation(
     id: str,
     sql_nl_generation_request: SQLNLGenerationRequest,
@@ -76,7 +80,9 @@ async def create_sql_nl_generation(
     )
 
 
-@router.post("/sql-generations/{id}/nl-generations")
+@router.post(
+    "/sql-generations/{id}/nl-generations", status_code=status.HTTP_201_CREATED
+)
 async def create_nl_generation(
     id: str,
     nl_generation_request: NLGenerationRequest,
