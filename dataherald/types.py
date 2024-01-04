@@ -110,12 +110,12 @@ class TableDescriptionRequest(BaseModel):
 
 
 class FineTuningStatus(Enum):
-    QUEUED = "queued"
-    RUNNING = "running"
-    SUCCEEDED = "succeeded"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    VALIDATING_FILES = "validating_files"
+    QUEUED = "QUEUED"
+    RUNNING = "RUNNING"
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    VALIDATING_FILES = "VALIDATING_FILES"
 
 
 class BaseLLM(BaseModel):
@@ -128,7 +128,7 @@ class Finetuning(BaseModel):
     id: str | None = None
     alias: str | None = None
     db_connection_id: str | None = None
-    status: str = "queued"
+    status: str = "QUEUED"
     error: str | None = None
     base_llm: BaseLLM | None = None
     finetuning_file_id: str | None = None

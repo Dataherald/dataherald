@@ -43,8 +43,22 @@ class OpenAIFineTuning(FinetuningModel):
         )
         self.client = OpenAI(api_key=db_connection.decrypt_api_key())
 
+    @staticmethod
+    def map_finetuning_status(status: str) -> str:
+        mapped_statuses = {
+            "queued": FineTuningStatus.QUEUED.value,
+            "running": FineTuningStatus.RUNNING.value,
+            "succeeded": FineTuningStatus.SUCCEEDED.value,
+            "failed": FineTuningStatus.FAILED.value,
+            "cancelled": FineTuningStatus.CANCELLED.value,
+            "validating_files": FineTuningStatus.VALIDATING_FILES.value,
+        }
+        if status not in mapped_statuses:
+            return FineTuningStatus.QUEUED.value
+        return mapped_statuses[status]
+
     @classmethod
-    def format_columns(cls, table: TableDescription, top_k: int = 100) -> str:
+    def format_columns(cls, table: TableDescription, top_k: int = 10) -> str:
         """
         format_columns formats the columns.
 
@@ -193,7 +207,7 @@ class OpenAIFineTuning(FinetuningModel):
             model.finetuning_job_id = finetuning_request.id
             if finetuning_request.status == "failed":
                 model.error = "Fine tuning failed before starting"
-            model.status = finetuning_request.status
+            model.status = self.map_finetuning_status(finetuning_request.status)
             model_repository.update(model)
         else:
             model.status = FineTuningStatus.FAILED.value
@@ -210,7 +224,7 @@ class OpenAIFineTuning(FinetuningModel):
             )
             if finetuning_request.status == "failed":
                 model.error = finetuning_request.error.message
-            model.status = finetuning_request.status
+            model.status = self.map_finetuning_status(finetuning_request.status)
             if finetuning_request.fine_tuned_model:
                 model.model_id = finetuning_request.fine_tuned_model
         model_repository.update(model)
@@ -223,7 +237,7 @@ class OpenAIFineTuning(FinetuningModel):
         finetuning_request = self.client.fine_tuning.jobs.cancel(
             fine_tuning_job_id=model.finetuning_job_id
         )
-        model.status = finetuning_request.status
+        model.status = self.map_finetuning_status(finetuning_request.status)
         model.error = "Fine tuning cancelled by the user"
         model_repository.update(model)
         return model
