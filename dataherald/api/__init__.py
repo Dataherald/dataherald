@@ -178,6 +178,10 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
+    def get_finetunings(self, db_connection_id: str | None = None) -> list[Finetuning]:
+        pass
+
+    @abstractmethod
     def get_finetuning_job(self, finetuning_job_id: str) -> Finetuning:
         pass
 

@@ -576,6 +576,18 @@ class FastAPI(API):
         return openai_fine_tuning.cancel_finetuning_job()
 
     @override
+    def get_finetunings(self, db_connection_id: str | None = None) -> list[Finetuning]:
+        model_repository = FinetuningsRepository(self.storage)
+        query = {}
+        if db_connection_id:
+            query["db_connection_id"] = db_connection_id
+        models = model_repository.find_by(query)
+        result = []
+        for model in models:
+            result.append(Finetuning(**model.dict()))
+        return result
+
+    @override
     def get_finetuning_job(self, finetuning_job_id: str) -> Finetuning:
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.find_by_id(finetuning_job_id)
