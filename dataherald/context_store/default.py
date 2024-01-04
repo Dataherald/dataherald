@@ -66,10 +66,10 @@ class DefaultContextStore(ContextStore):
     def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
         """Creates embeddings of the questions and adds them to the VectorDB. Also adds the golden sqls to the DB"""
         golden_sqls_repository = GoldenSQLRepository(self.db)
-        retruned_golden_sqls = []
+        stored_golden_sqls = []
         for record in golden_sqls:
             try:
-                tables = Parser(record.sql).tables
+                Parser(record.sql).tables  # noqa: B018
             except Exception as e:
                 raise MalformedGoldenSQLError(
                     f"SQL {record.sql} is malformed. Please check the syntax."
@@ -81,21 +81,10 @@ class DefaultContextStore(ContextStore):
                 db_connection_id=record.db_connection_id,
                 metadata=record.metadata,
             )
-            retruned_golden_sqls.append(golden_sql)
-            golden_sql = golden_sqls_repository.insert(golden_sql)
-            self.vector_store.add_record(
-                documents=prompt_text,
-                db_connection_id=record.db_connection_id,
-                collection=self.golden_sql_collection,
-                metadata=[
-                    {
-                        "tables_used": tables[0],
-                        "db_connection_id": record.db_connection_id,
-                    }
-                ],  # this should be updated for multiple tables
-                ids=[str(golden_sql.id)],
-            )
-        return retruned_golden_sqls
+            stored_golden_sqls.append(golden_sqls_repository.insert(golden_sql))
+
+        self.vector_store.add_records(stored_golden_sqls, self.golden_sql_collection)
+        return stored_golden_sqls
 
     @override
     def remove_golden_sqls(self, ids: List) -> bool:
