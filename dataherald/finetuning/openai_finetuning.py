@@ -44,20 +44,18 @@ class OpenAIFineTuning(FinetuningModel):
         self.client = OpenAI(api_key=db_connection.decrypt_api_key())
 
     @staticmethod
-    def map_finetuning_status(status: str) -> FineTuningStatus:  # noqa: PLR0911
-        if status == "queued":
-            return FineTuningStatus.QUEUED.value
-        if status == "running":
-            return FineTuningStatus.RUNNING.value
-        if status == "succeeded":
-            return FineTuningStatus.SUCCEEDED.value
-        if status == "failed":
-            return FineTuningStatus.FAILED.value
-        if status == "cancelled":
-            return FineTuningStatus.CANCELLED.value
-        if status == "validating_files":
-            return FineTuningStatus.VALIDATING_FILES.value
-        return FineTuningStatus.QUEUED
+    def map_finetuning_status(status: str) -> str:
+        mapped_statuses = {
+            "queued": FineTuningStatus.QUEUED.value,
+            "running": FineTuningStatus.RUNNING.value,
+            "succeeded": FineTuningStatus.SUCCEEDED.value,
+            "failed": FineTuningStatus.FAILED.value,
+            "cancelled": FineTuningStatus.CANCELLED.value,
+            "validating_files": FineTuningStatus.VALIDATING_FILES.value,
+        }
+        if status not in mapped_statuses:
+            return FineTuningStatus.QUEUED
+        return mapped_statuses[status]
 
     @classmethod
     def format_columns(cls, table: TableDescription, top_k: int = 10) -> str:
