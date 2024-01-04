@@ -17,7 +17,12 @@ class FinetuningService:
     def __init__(self):
         self.repo = FinetuningRepository()
 
-    async def get_finetuning_job(self, id: str, org_id: str) -> FinetuningResponse:
+    def get_finetuning_jobs(
+        self, db_connection_id: str, org_id: str
+    ) -> list[FinetuningResponse]:
+        return self.repo.get_finetuning_jobs(db_connection_id, org_id)
+
+    def get_finetuning_job(self, id: str, org_id: str) -> FinetuningResponse:
         return self.repo.get_finetuning_job(id, org_id)
 
     async def create_finetuning_job(

@@ -21,12 +21,22 @@ authorize = Authorize()
 finetuning_service = FinetuningService()
 
 
+@router.get("")
+async def get_finetuning_jobs(
+    db_connection_id: str,
+    api_key: str = Security(get_api_key),
+) -> list[FinetuningResponse]:
+    return finetuning_service.get_finetuning_jobs(
+        db_connection_id, api_key.organization_id
+    )
+
+
 @router.get("/{id}")
 async def get_finetuning_job(
     id: str,
     api_key: str = Security(get_api_key),
 ) -> FinetuningResponse:
-    return await finetuning_service.get_finetuning_job(id, api_key.organization_id)
+    return finetuning_service.get_finetuning_job(id, api_key.organization_id)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
@@ -47,12 +57,23 @@ async def cancel_finetuning_job(
     return await finetuning_service.cancel_finetuning_job(id, api_key.organization_id)
 
 
+@ac_router.get("")
+async def ac_get_finetuning_jobs(
+    db_connection_id: str = None,
+    token: str = Depends(token_auth_scheme),
+) -> list[FinetuningResponse]:
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    return finetuning_service.get_finetuning_jobs(
+        db_connection_id, user.organization_id
+    )
+
+
 @ac_router.get("/{id}")
 async def ac_get_finetuning_job(
     id: str, token: str = Depends(token_auth_scheme)
 ) -> FinetuningResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    return await finetuning_service.get_finetuning_job(id, user.organization_id)
+    return finetuning_service.get_finetuning_job(id, user.organization_id)
 
 
 @ac_router.post("", status_code=status.HTTP_201_CREATED)
