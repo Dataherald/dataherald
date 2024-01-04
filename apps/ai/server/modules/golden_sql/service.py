@@ -80,9 +80,10 @@ class GoldenSQLService:
     async def add_user_upload_golden_sql(
         self, golden_sql_requests: List[GoldenSQLRequest], org_id: str
     ) -> List[GoldenSQLResponse]:
+        display_id = self.repo.get_next_display_id(org_id)
         for golden_sql_request in golden_sql_requests:
             reserved_key_in_metadata(golden_sql_request.metadata)
-            display_id = self.repo.get_next_display_id(org_id)
+
             golden_sql_request.metadata = GoldenSQLMetadata(
                 **golden_sql_request.metadata,
                 dh_internal=DHGoldenSQLMetadata(
@@ -91,6 +92,8 @@ class GoldenSQLService:
                     source=GoldenSQLSource.USER_UPLOAD,
                 ),
             )
+
+            display_id = f"{display_id[:-5]}{(int(display_id[-5:])+1):05d}"
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
