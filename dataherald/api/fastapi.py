@@ -73,6 +73,7 @@ from dataherald.types import (
     DatabaseConnectionRequest,
     Finetuning,
     FineTuningRequest,
+    FineTuningStatus,
     GoldenSQL,
     GoldenSQLRequest,
     Instruction,
@@ -569,15 +570,15 @@ class FastAPI(API):
         if not model:
             raise HTTPException(status_code=404, detail="Model not found")
 
-        if model.status == "succeeded":
+        if model.status == FineTuningStatus.SUCCEEDED.value:
             raise HTTPException(
                 status_code=400, detail="Model has already succeeded. Cannot cancel."
             )
-        if model.status == "failed":
+        if model.status == FineTuningStatus.FAILED.value:
             raise HTTPException(
                 status_code=400, detail="Model has already failed. Cannot cancel."
             )
-        if model.status == "cancelled":
+        if model.status == FineTuningStatus.CANCELLED.value:
             raise HTTPException(
                 status_code=400, detail="Model has already been cancelled."
             )
