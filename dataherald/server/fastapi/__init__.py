@@ -340,6 +340,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/finetunings/{finetuning_id}",
+            self.delete_finetuning_job,
+            methods=["DELETE"],
+            tags=["Finetunings"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/heartbeat", self.heartbeat, methods=["GET"], tags=["System"]
         )
 
@@ -569,6 +576,10 @@ class FastAPI(dataherald.server.Server):
     def get_fintunings(self, db_connection_id: str = None) -> list[Finetuning]:
         """Gets fine tuning jobs"""
         return self._api.get_finetunings(db_connection_id)
+
+    def delete_finetuning_job(self, finetuning_job_id: str) -> dict:
+        """Deletes a fine tuning job"""
+        return self._api.delete_finetuning_job(finetuning_job_id)
 
     def update_finetuning_job(
         self, finetuning_job_id: str, update_metadata_request: UpdateMetadataRequest
