@@ -141,8 +141,8 @@ class Finetuning(BaseModel):
 
 class FineTuningRequest(BaseModel):
     db_connection_id: str
-    alias: str
-    base_llm: BaseLLM
+    alias: str | None = None
+    base_llm: BaseLLM | None = None
     golden_sqls: list[str] | None = None
     metadata: dict | None
 

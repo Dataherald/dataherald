@@ -176,6 +176,8 @@ class OpenAIFineTuning(FinetuningModel):
     def create_fine_tuning_job(self):
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.find_by_id(self.fine_tuning_model.id)
+        if model.status == "failed":
+            return
         if self.check_file_status(model.finetuning_file_id):
             finetuning_request = self.client.fine_tuning.jobs.create(
                 training_file=model.finetuning_file_id,

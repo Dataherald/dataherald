@@ -1,3 +1,4 @@
+import datetime
 import io
 import logging
 import os
@@ -67,6 +68,7 @@ from dataherald.sql_database.base import (
 )
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import (
+    BaseLLM,
     CancelFineTuningRequest,
     DatabaseConnectionRequest,
     Finetuning,
@@ -527,19 +529,28 @@ class FastAPI(API):
             )
             if not golden_sqls:
                 raise HTTPException(status_code=404, detail="No golden sqls found")
-
-        if fine_tuning_request.base_llm.model_name not in OPENAI_CONTEXT_WIDNOW_SIZES:
+        default_base_llm = BaseLLM(
+            model_provider="openai",
+            model_name="gpt-3.5-turbo-1106",
+        )
+        base_llm = (
+            fine_tuning_request.base_llm
+            if fine_tuning_request.base_llm
+            else default_base_llm
+        )
+        if base_llm.model_name not in OPENAI_CONTEXT_WIDNOW_SIZES:
             raise HTTPException(
                 status_code=400,
                 detail=f"Model {fine_tuning_request.base_llm.model_name} not supported",
             )
-
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.insert(
             Finetuning(
                 db_connection_id=fine_tuning_request.db_connection_id,
-                alias=fine_tuning_request.alias,
-                base_llm=fine_tuning_request.base_llm,
+                alias=fine_tuning_request.alias
+                if fine_tuning_request.alias
+                else f"{db_connection.alias}_{datetime.datetime.now().strftime('%Y%m%d%H')}",
+                base_llm=base_llm,
                 golden_sqls=[str(golden_sql.id) for golden_sql in golden_sqls],
                 metadata=fine_tuning_request.metadata,
             )
@@ -586,6 +597,14 @@ class FastAPI(API):
         for model in models:
             result.append(Finetuning(**model.dict()))
         return result
+
+    @override
+    def delete_finetuning_job(self, finetuning_job_id: str) -> dict:
+        model_repository = FinetuningsRepository(self.storage)
+        deleted = model_repository.delete_by_id(finetuning_job_id)
+        if deleted == 0:
+            raise HTTPException(status_code=404, detail="Model not found")
+        return {"status": "success"}
 
     @override
     def get_finetuning_job(self, finetuning_job_id: str) -> Finetuning:

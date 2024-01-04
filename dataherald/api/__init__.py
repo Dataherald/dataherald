@@ -182,6 +182,10 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
+    def delete_finetuning_job(self, finetuning_job_id: str) -> dict:
+        pass
+
+    @abstractmethod
     def get_finetuning_job(self, finetuning_job_id: str) -> Finetuning:
         pass
 
