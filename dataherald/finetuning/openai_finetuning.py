@@ -16,7 +16,7 @@ from dataherald.finetuning import FinetuningModel
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.finetunings import FinetuningsRepository
 from dataherald.repositories.golden_sqls import GoldenSQLRepository
-from dataherald.types import Finetuning
+from dataherald.types import Finetuning, FineTuningStatus
 from dataherald.utils.agent_prompts import FINETUNING_SYSTEM_INFORMATION
 from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
 
@@ -148,7 +148,7 @@ class OpenAIFineTuning(FinetuningModel):
                         self.fine_tuning_model.base_llm.model_name
                     ]
                 ):
-                    model.status = "failed"
+                    model.status = FineTuningStatus.FAILED.value
                     model.error = "The number of tokens in the prompt is too large"
                     model_repository.update(model)
                     os.remove(finetuning_dataset_path)
@@ -176,7 +176,7 @@ class OpenAIFineTuning(FinetuningModel):
     def create_fine_tuning_job(self):
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.find_by_id(self.fine_tuning_model.id)
-        if model.status == "failed":
+        if model.status == FineTuningStatus.FAILED.value:
             return
         if self.check_file_status(model.finetuning_file_id):
             finetuning_request = self.client.fine_tuning.jobs.create(
@@ -196,7 +196,7 @@ class OpenAIFineTuning(FinetuningModel):
             model.status = finetuning_request.status
             model_repository.update(model)
         else:
-            model.status = "failed"
+            model.status = FineTuningStatus.FAILED.value
             model.error = "File processing failed"
             model_repository.update(model)
 
