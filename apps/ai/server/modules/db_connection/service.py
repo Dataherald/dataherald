@@ -1,8 +1,11 @@
+import json
+
 import httpx
-from fastapi import HTTPException, UploadFile, status
+from fastapi import HTTPException, status
 
 from config import settings
 from modules.db_connection.models.entities import (
+    DBConnection,
     DBConnectionMetadata,
     DHDBConnectionMetadata,
 )
@@ -30,24 +33,30 @@ class DBConnectionService:
 
     async def add_db_connection(
         self,
-        db_connection_request_json: dict,
+        db_connection_request: DBConnectionRequest,
         org_id: str,
-        file: UploadFile = None,
     ) -> DBConnectionResponse:
-        db_connection_request = DBConnectionRequest(**db_connection_request_json)
         reserved_key_in_metadata(db_connection_request.metadata)
-        db_connection_request.metadata = DBConnectionMetadata(
+        db_connection_internal_request = DBConnection(
+            **db_connection_request.dict(exclude_unset=True)
+        )
+        db_connection_internal_request.metadata = DBConnectionMetadata(
             **db_connection_request.metadata,
             dh_internal=DHDBConnectionMetadata(organization_id=org_id),
         )
-        if file:
+
+        if db_connection_request.credential_file_content:
             s3 = S3()
-            db_connection_request.path_to_credentials_file = s3.upload(file)
+            db_connection_internal_request.path_to_credentials_file = (
+                s3.create_and_upload(
+                    json.dumps(db_connection_request.credential_file_content)
+                )
+            )
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.engine_url + "/database-connections",
-                json={**db_connection_request.dict(exclude_unset=True)},
+                json={**db_connection_internal_request.dict()},
                 timeout=settings.default_engine_timeout,
             )
 
@@ -60,14 +69,12 @@ class DBConnectionService:
             return DBConnectionResponse(**response.json())
 
     async def update_db_connection(
-        self,
-        db_connection_id,
-        db_connection_request_json: dict,
-        org_id: str,
-        file: UploadFile = None,
+        self, db_connection_id, db_connection_request: DBConnectionRequest, org_id: str
     ) -> DBConnectionResponse:
-        db_connection_request = DBConnectionRequest(**db_connection_request_json)
         reserved_key_in_metadata(db_connection_request.metadata)
+        db_connection_internal_request = DBConnection(
+            **db_connection_request.dict(exclude_unset=True)
+        )
         db_connection = self.repo.get_db_connection(db_connection_id, org_id)
 
         if not db_connection:
@@ -76,19 +83,23 @@ class DBConnectionService:
                 detail="Database connection not found",
             )
 
-        db_connection_request.metadata = DBConnectionMetadata(
+        db_connection_internal_request.metadata = DBConnectionMetadata(
             **db_connection_request.metadata,
             dh_internal=DHDBConnectionMetadata(organization_id=org_id),
         )
-        if file:
+        if db_connection_request.credential_file_content:
             s3 = S3()
-            db_connection_request.path_to_credentials_file = s3.upload(file)
+            db_connection_internal_request.path_to_credentials_file = (
+                s3.create_and_upload(
+                    json.dumps(db_connection_request.credential_file_content)
+                )
+            )
 
         async with httpx.AsyncClient() as client:
             response = await client.put(
                 settings.engine_url + f"/database-connections/{db_connection_id}",
                 json={
-                    **db_connection_request.dict(),
+                    **db_connection_internal_request.dict(),
                 },
                 timeout=settings.default_engine_timeout,
             )

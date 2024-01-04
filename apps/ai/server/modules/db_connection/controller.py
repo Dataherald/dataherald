@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, Form, Security, UploadFile, status
+from fastapi import APIRouter, Depends, Security, status
 from fastapi.security import HTTPBearer
-from pydantic import Json
 
+from modules.db_connection.models.requests import DBConnectionRequest
 from modules.db_connection.models.responses import DBConnectionResponse
 from modules.db_connection.service import DBConnectionService
 from utils.auth import Authorize, VerifyToken, get_api_key
@@ -38,24 +38,22 @@ async def get_db_connection(
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def add_db_connection(
-    db_connection_request_json: Json = Form(...),
-    file: UploadFile = None,
+    db_connection_request: DBConnectionRequest,
     api_key: str = Security(get_api_key),
 ) -> DBConnectionResponse:
     return await db_connection_service.add_db_connection(
-        db_connection_request_json, api_key.organization_id, file
+        db_connection_request, api_key.organization_id
     )
 
 
 @router.put("/{id}", status_code=status.HTTP_200_OK)
 async def update_db_connection(
     id: str,
-    db_connection_request_json: Json = Form(...),
-    file: UploadFile = None,
+    db_connection_request: DBConnectionRequest,
     api_key: str = Security(get_api_key),
 ) -> DBConnectionResponse:
     return await db_connection_service.update_db_connection(
-        id, db_connection_request_json, api_key.organization_id, file
+        id, db_connection_request, api_key.organization_id
     )
 
 
@@ -77,24 +75,22 @@ async def ac_get_db_connection(
 
 @ac_router.post("", status_code=status.HTTP_201_CREATED)
 async def ac_add_db_connection(
-    db_connection_request_json: Json = Form(...),
-    file: UploadFile = None,
+    db_connection_request: DBConnectionRequest,
     token: str = Depends(token_auth_scheme),
 ) -> DBConnectionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await db_connection_service.add_db_connection(
-        db_connection_request_json, user.organization_id, file
+        db_connection_request, user.organization_id
     )
 
 
 @ac_router.put("/{id}", status_code=status.HTTP_200_OK)
 async def ac_update_db_connection(
     id: str,
-    db_connection_request_json: Json = Form(...),
-    file: UploadFile = None,
+    db_connection_request: DBConnectionRequest,
     token: str = Depends(token_auth_scheme),
 ) -> DBConnectionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await db_connection_service.update_db_connection(
-        id, db_connection_request_json, user.organization_id, file
+        id, db_connection_request, user.organization_id
     )

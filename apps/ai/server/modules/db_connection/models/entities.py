@@ -29,18 +29,18 @@ class DBConnectionMetadata(BaseModel):
 
 
 class BaseDBConnection(BaseModel):
-    id: str | None
     llm_api_key: str | None
     alias: str | None
     use_ssh: bool = False
     connection_uri: str | None
-    path_to_credentials_file: str | None
     ssh_settings: SSHSettings | None
+    metadata: DBConnectionMetadata | None
 
 
 class DBConnection(BaseDBConnection):
-    metadata: DBConnectionMetadata | None
+    id: str | None
     created_at: datetime | None
+    path_to_credentials_file: str | None
 
 
 class Driver(BaseModel):
