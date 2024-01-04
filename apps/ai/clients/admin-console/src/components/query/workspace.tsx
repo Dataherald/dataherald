@@ -373,13 +373,15 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                 </div>
               )}
             </div>
-            <MessageSection
-              {...{
-                promptId,
-                initialMessage: message || nl_generation_text,
-                onPutQuery,
-              }}
-            />
+            {(message || nl_generation_text) && (
+              <MessageSection
+                {...{
+                  promptId,
+                  initialMessage: message || nl_generation_text,
+                  onPutQuery,
+                }}
+              />
+            )}
             <SectionHeader>
               <SectionHeaderTitle>
                 <Box strokeWidth={2}></Box>Query Status

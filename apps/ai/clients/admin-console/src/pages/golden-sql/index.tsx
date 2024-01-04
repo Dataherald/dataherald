@@ -76,6 +76,7 @@ const GoldenSQLPage: FC = () => {
         isLoadingMore={isLoadingMore}
         isReachingEnd={isReachingEnd}
         onLoadMore={handleLoadMore}
+        noMoreDataMessage="No more queries"
       />
     )
 

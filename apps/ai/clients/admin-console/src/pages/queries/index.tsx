@@ -58,6 +58,7 @@ const QueriesPage: FC = () => {
         isReachingEnd={isReachingEnd}
         onRowClick={handleQueryClick}
         onLoadMore={handleLoadMore}
+        noMoreDataMessage="No more queries"
       />
     )
 

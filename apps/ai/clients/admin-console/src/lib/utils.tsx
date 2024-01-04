@@ -31,3 +31,6 @@ export const capitalize = (value: string) =>
     .split(' ')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
+
+export const formatStatus = (status?: string): string =>
+  status ? capitalize(status?.replace('_', ' ').toLowerCase()) : ''

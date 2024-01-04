@@ -35,12 +35,12 @@ export const columns: ColumnDef<QueryListItem>[] = [
     ),
   },
   {
-    id: 'nl_generation_text',
-    header: 'Answer',
-    accessorKey: 'nl_generation_text',
+    id: 'sql',
+    header: 'Generated SQL',
+    accessorKey: 'sql',
     cell: ({ row }) => (
       <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
-        {row.getValue('nl_generation_text')}
+        {row.getValue('sql')}
       </div>
     ),
   },

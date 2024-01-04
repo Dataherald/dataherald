@@ -19,10 +19,11 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-  isLoadingMore: boolean
-  isReachingEnd: boolean
+  isLoadingMore?: boolean
+  isReachingEnd?: boolean
+  noMoreDataMessage?: string
   onRowClick?: (row: TData) => void
-  onLoadMore: () => void
+  onLoadMore?: () => void
 }
 
 export function DataTable<TData, TValue>({
@@ -30,6 +31,7 @@ export function DataTable<TData, TValue>({
   data,
   isLoadingMore = false,
   isReachingEnd = true,
+  noMoreDataMessage = '',
   onRowClick,
   onLoadMore,
 }: DataTableProps<TData, TValue>) {
@@ -104,7 +106,9 @@ export function DataTable<TData, TValue>({
                   Load More
                 </Button>
               ) : (
-                <div className="p-4">No previous queries</div>
+                noMoreDataMessage && (
+                  <div className="p-4">{noMoreDataMessage}</div>
+                )
               )}
             </TableCell>
           </TableRow>

@@ -6,7 +6,7 @@ export type PageErrorMessageProps = HTMLAttributes<HTMLDivElement> & {
 }
 
 const PageErrorMessage: FC<PageErrorMessageProps> = ({ message, ...props }) => (
-  <div className="flex gap-3" {...props}>
+  <div className="flex gap-3 text-slate-500" {...props}>
     <AlertOctagon />
     <span>{message}</span>
   </div>

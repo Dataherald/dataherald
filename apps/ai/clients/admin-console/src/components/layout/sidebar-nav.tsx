@@ -13,8 +13,10 @@ import {
   ListChecks,
   LucideIcon,
   Microscope,
+  SlidersIcon,
   TerminalSquare,
 } from 'lucide-react'
+import { Separator } from '../ui/separator'
 
 export interface MenuItem {
   text: string
@@ -40,10 +42,17 @@ const NAV_ITEMS: MenuItems = [
     href: '/golden-sql',
     icon: ListChecks,
   },
+]
+const CONFIG_NAV_ITEMS: MenuItems = [
   {
     text: 'Playground',
     href: '/playground',
     icon: TerminalSquare,
+  },
+  {
+    text: 'Fine-tuning',
+    href: '/fine-tuning',
+    icon: SlidersIcon,
   },
 ]
 
@@ -67,6 +76,29 @@ const SidebarNav = ({
         ></Image>
         <nav className={cn('flex flex-col', className)} {...props}>
           {NAV_ITEMS.filter((i) => !i.hidden).map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                buttonVariants({ variant: 'secondary-outline' }),
+                'bg-gray-50',
+                'hover:bg-gray-200',
+                'border-none',
+                'font-normal',
+                pathname?.includes(item.href)
+                  ? 'bg-black/10 hover:bg-black/10 font-bold'
+                  : '',
+                'justify-start',
+                'gap-2',
+                'px-5',
+              )}
+            >
+              <item.icon />
+              {item.text}
+            </Link>
+          ))}
+          <Separator className="my-3" />
+          {CONFIG_NAV_ITEMS.filter((i) => !i.hidden).map((item) => (
             <Link
               key={item.href}
               href={item.href}

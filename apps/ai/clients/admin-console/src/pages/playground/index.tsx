@@ -10,8 +10,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
+import { useAppContext } from '@/contexts/app-context'
 import useQuerySubmit from '@/hooks/api/query/useQuerySubmit'
-import useDatabases from '@/hooks/api/useDatabases'
+import useDatabaseConnection from '@/hooks/api/useDatabaseConnection'
 import {
   formatQueryConfidence,
   getDomainStatusColors,
@@ -37,8 +38,17 @@ const PlaygroundPage: FC = () => {
   const [previousQueryPrompt, setPreviousQueryPrompt] = useState<string>('')
   const [currentQueryPrompt, setCurrentQueryPrompt] = useState<string>('')
   const [query, setQuery] = useState<Query | undefined>()
-  const { databases } = useDatabases()
-  const activeDatabase = databases?.length ? databases[0].alias : 'Loading...'
+  const { organization } = useAppContext()
+  const {
+    databaseConnection,
+    isLoading: databaseIsLoading,
+    error: databaseError,
+  } = useDatabaseConnection(organization?.db_connection_id)
+  const activeDatabase = databaseIsLoading
+    ? 'Loading...'
+    : databaseError
+    ? 'Not found'
+    : databaseConnection?.alias
 
   const { submitQuery, cancelSubmitQuery } = useQuerySubmit()
 
@@ -168,7 +178,7 @@ const PlaygroundPage: FC = () => {
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <strong>Active database:</strong>
-                {activeDatabase}
+                <span className="text-slate-500">{activeDatabase}</span>
               </div>
               <Button
                 className="px-3 py-1 w-fit h-fit font-normal"

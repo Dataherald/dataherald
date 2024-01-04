@@ -211,3 +211,46 @@ export interface DatabaseConnection {
   connection_uri?: string
   ssh_settings?: SshSettings
 }
+
+export enum EFineTuningStatus {
+  QUEUED = 'queued',
+  RUNNING = 'running',
+  SUCCEEDED = 'succeeded',
+  FAILED = 'failed',
+  CANCELLED = 'cancelled',
+  VALIDATING_FILES = 'validating_files',
+}
+
+export type FineTuningStatus = keyof typeof EFineTuningStatus
+
+export interface BaseLLM {
+  model_provider: string | null
+  model_name: string | null
+  model_parameters: Record<string, string> | null
+}
+
+export interface DHFinetuningMetadata {
+  organization_id: string | null
+}
+
+export interface FinetuningMetadata {
+  dh_internal: DHFinetuningMetadata | null
+  [key: string]: unknown
+}
+
+export interface FineTuningModel {
+  id: string
+  status: FineTuningStatus
+  alias?: string
+  db_connection_id?: string
+  error?: string
+  base_llm?: BaseLLM
+  finetuning_file_id?: string
+  finetuning_job_id?: string
+  model_id?: string
+  created_at?: string
+  golden_records?: string[]
+  metadata?: FinetuningMetadata
+}
+
+export type FineTuningModels = FineTuningModel[]
