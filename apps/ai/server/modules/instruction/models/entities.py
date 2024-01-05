@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Any
 
 from pydantic import BaseModel, Extra
 
@@ -9,8 +8,12 @@ class BaseInstruction(BaseModel):
     db_connection_id: str | None
 
 
+class DHInstructionMetadata(BaseModel):
+    organization_id: str | None
+
+
 class InstructionMetadata(BaseModel):
-    dh_internal: dict[str, Any] | None
+    dh_internal: DHInstructionMetadata | None
 
     class Config:
         extra = Extra.allow

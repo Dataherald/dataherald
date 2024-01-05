@@ -4,6 +4,10 @@ from fastapi import HTTPException, status
 from config import settings
 from modules.db_connection.service import DBConnectionService
 from modules.organization.service import OrganizationService
+from modules.table_description.models.entities import (
+    DHTableDescriptionMetadata,
+    TableDescriptionMetadata,
+)
 from modules.table_description.models.requests import (
     ScanRequest,
     TableDescriptionRequest,
@@ -27,14 +31,8 @@ class TableDescriptionService:
     async def get_table_descriptions(
         self, db_connection_id: str, table_name: str, org_id: str
     ) -> list[TableDescriptionResponse]:
-        if not self.db_connection_service.get_db_connection(db_connection_id, org_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Database connection not found",
-            )
-
         table_descriptions = self.repo.get_table_descriptions(
-            db_connection_id, table_name
+            db_connection_id, org_id, table_name
         )
 
         for table_description in table_descriptions:
@@ -47,13 +45,9 @@ class TableDescriptionService:
     async def get_table_description(
         self, table_description_id: str, org_id: str
     ) -> TableDescriptionResponse:
-        if not self.table_description_in_organization(table_description_id, org_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Table Description not found",
-            )
-
-        table_description = self.repo.get_table_description(table_description_id)
+        table_description = self.get_table_description_in_org(
+            table_description_id, org_id
+        )
 
         for column in table_description.columns:
             column.categories = sorted(column.categories) if column.categories else None
@@ -62,10 +56,10 @@ class TableDescriptionService:
 
     async def get_database_table_descriptions(self, org_id: str):
         organization = self.org_service.get_organization(org_id)
-        db_connection = self.db_connection_service.get_db_connection(
+        db_connection = self.db_connection_service.get_db_connection_in_org(
             organization.db_connection_id, org_id
         )
-        table_descriptions = self.repo.get_table_descriptions(db_connection.id)
+        table_descriptions = self.repo.get_table_descriptions(db_connection.id, org_id)
 
         tables = [
             BasicTableDescriptionResponse(
@@ -88,20 +82,20 @@ class TableDescriptionService:
     async def sync_table_descriptions_schemas(
         self, scan_request: ScanRequest, org_id: str
     ) -> bool:
-        db_connection = self.db_connection_service.get_db_connection(
+        reserved_key_in_metadata(scan_request.metadata)
+        self.db_connection_service.get_db_connection_in_org(
             scan_request.db_connection_id, org_id
         )
 
-        if not db_connection:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Database connection not found",
-            )
+        scan_request.metadata = TableDescriptionMetadata(
+            **scan_request.metadata,
+            dh_internal=DHTableDescriptionMetadata(organization_id=org_id),
+        )
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.engine_url + "/table-descriptions/sync-schemas",
-                json=scan_request.dict(),
+                json=scan_request.dict(exclude_unset=True),
                 timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
@@ -114,11 +108,12 @@ class TableDescriptionService:
         org_id: str,
     ) -> TableDescriptionResponse:
         reserved_key_in_metadata(table_description_request.metadata)
-        if not self.table_description_in_organization(table_description_id, org_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Table Description not found",
-            )
+        self.get_table_description_in_org(table_description_id, org_id)
+
+        table_description_request.metadata = TableDescriptionMetadata(
+            **table_description_request.metadata,
+            dh_internal=DHTableDescriptionMetadata(organization_id=org_id),
+        )
 
         async with httpx.AsyncClient() as client:
             response = await client.put(
@@ -129,11 +124,7 @@ class TableDescriptionService:
             return TableDescriptionResponse(**response.json())
 
     async def delete_table_description(self, table_description_id: str, org_id: str):
-        if not self.table_description_in_organization(table_description_id, org_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Table Description not found",
-            )
+        self.get_table_description_in_org(table_description_id, org_id)
 
         async with httpx.AsyncClient() as client:
             response = await client.delete(
@@ -142,13 +133,13 @@ class TableDescriptionService:
             raise_for_status(response.status_code, response.text)
             return True
 
-    def table_description_in_organization(
-        self, table_description_id: str, org_id: str
-    ) -> bool:
-        table_description = self.repo.get_table_description(table_description_id)
-
-        db_connection = self.db_connection_service.get_db_connection(
-            table_description.db_connection_id, org_id
+    def get_table_description_in_org(self, table_description_id: str, org_id: str):
+        table_description = self.repo.get_table_description(
+            table_description_id, org_id
         )
-
-        return True if db_connection else False
+        if not table_description:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Table Description not found",
+            )
+        return table_description

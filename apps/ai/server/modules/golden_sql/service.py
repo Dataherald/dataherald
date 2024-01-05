@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 
 from config import settings
 from modules.generation.models.entities import GenerationStatus
+from modules.generation.service import DBConnectionService
 from modules.golden_sql.models.entities import (
     DHGoldenSQLMetadata,
     GoldenSQL,
@@ -21,9 +22,10 @@ from utils.misc import reserved_key_in_metadata
 class GoldenSQLService:
     def __init__(self):
         self.repo = GoldenSQLRepository()
+        self.db_connection_service = DBConnectionService()
 
     def get_golden_sql(self, golden_id: str, org_id: str) -> GoldenSQLResponse:
-        return self.repo.get_golden_sql(golden_id, org_id)
+        return self.get_golden_sql_in_org(golden_id, org_id)
 
     def get_golden_sqls(
         self,
@@ -83,7 +85,9 @@ class GoldenSQLService:
         display_id = self.repo.get_next_display_id(org_id)
         for golden_sql_request in golden_sql_requests:
             reserved_key_in_metadata(golden_sql_request.metadata)
-
+            self.db_connection_service.get_db_connection_in_org(
+                golden_sql_request.db_connection_id, org_id
+            )
             golden_sql_request.metadata = GoldenSQLMetadata(
                 **golden_sql_request.metadata,
                 dh_internal=DHGoldenSQLMetadata(
@@ -115,13 +119,7 @@ class GoldenSQLService:
     async def delete_golden_sql(
         self, golden_id: str, org_id: str, query_status: GenerationStatus = None
     ) -> dict:
-        golden_sql = self.repo.get_golden_sql(golden_id, org_id)
-
-        if not golden_sql:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Golden sql not found",
-            )
+        golden_sql = self.get_golden_sql_in_org(golden_id, org_id)
 
         async with httpx.AsyncClient() as client:
             response = await client.delete(
@@ -137,3 +135,12 @@ class GoldenSQLService:
                 return {"id": golden_id}
 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
+    def get_golden_sql_in_org(self, golden_id: str, org_id: str) -> GoldenSQL:
+        golden_sql = self.repo.get_golden_sql(golden_id, org_id)
+        if not golden_sql:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Golden sql not found",
+            )
+        return golden_sql

@@ -15,3 +15,4 @@ class TableDescriptionRequest(BaseModel):
 class ScanRequest(BaseModel):
     db_connection_id: str
     table_names: list[str] | None
+    metadata: dict[str, Any] | None = {}

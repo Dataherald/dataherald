@@ -1,6 +1,5 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any
 
 from pydantic import BaseModel, Extra
 
@@ -23,8 +22,12 @@ class ColumnDescription(BaseModel):
     forengin_key: dict | None
 
 
+class DHTableDescriptionMetadata(BaseModel):
+    organization_id: str | None
+
+
 class TableDescriptionMetadata(BaseModel):
-    dh_internal: dict[str, Any] | None
+    dh_internal: DHTableDescriptionMetadata | None
 
     class Config:
         extra = Extra.allow

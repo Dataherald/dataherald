@@ -9,8 +9,11 @@ from modules.generation.models.entities import (
     DHPromptMetadata,
     DHSQLGenerationMetadata,
     GenerationStatus,
+    NLGeneration,
     NLGenerationMetadata,
+    Prompt,
     PromptMetadata,
+    SQLGeneration,
     SQLGenerationMetadata,
     SQLGenerationStatus,
 )
@@ -28,10 +31,6 @@ from modules.generation.models.responses import (
     SQLGenerationResponse,
 )
 from modules.generation.repository import GenerationRepository
-from modules.golden_sql.service import GoldenSQLService
-from modules.organization.service import OrganizationService
-from modules.user.service import UserService
-from utils.analytics import Analytics
 from utils.exception import raise_for_status
 from utils.misc import reserved_key_in_metadata
 
@@ -39,20 +38,10 @@ from utils.misc import reserved_key_in_metadata
 class GenerationService:
     def __init__(self):
         self.repo = GenerationRepository()
-        self.golden_sql_service = GoldenSQLService()
-        self.org_service = OrganizationService()
-        self.user_service = UserService()
         self.db_connection_service = DBConnectionService()
-        self.analytics = Analytics()
 
     def get_prompt(self, prompt_id: str, org_id: str) -> PromptResponse:
-        prompt = self.repo.get_prompt(prompt_id, org_id)
-        if prompt:
-            return prompt
-
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found"
-        )
+        return self.get_prompt_in_org(prompt_id, org_id)
 
     def get_prompts(
         self, page: int, page_size: int, order: str, ascend: bool, org_id: str
@@ -68,13 +57,7 @@ class GenerationService:
     def get_sql_generation(
         self, sql_generation_id: str, org_id: str
     ) -> SQLGenerationResponse:
-        sql_generation = self.repo.get_sql_generation(sql_generation_id, org_id)
-        if sql_generation:
-            return sql_generation
-
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="SQL Generation not found"
-        )
+        return self.get_sql_generation_in_org(sql_generation_id, org_id)
 
     def get_sql_generations(
         self,
@@ -97,12 +80,7 @@ class GenerationService:
     def get_nl_generation(
         self, nl_generation_id: str, org_id: str
     ) -> NLGenerationResponse:
-        nl_generation = self.repo.get_nl_generation(nl_generation_id, org_id)
-        if nl_generation:
-            return nl_generation
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="NL Generation not found"
-        )
+        return self.get_nl_generation_in_org(nl_generation_id, org_id)
 
     def get_nl_generations(
         self,
@@ -126,6 +104,10 @@ class GenerationService:
         self, create_request: PromptRequest, org_id: str
     ) -> PromptResponse:
         reserved_key_in_metadata(create_request.metadata)
+        self.db_connection_service.get_db_connection_in_org(
+            create_request.db_connection_id, org_id
+        )
+
         create_request.metadata = PromptMetadata(
             **create_request.metadata,
             dh_internal=DHPromptMetadata(
@@ -148,6 +130,10 @@ class GenerationService:
     ) -> SQLGenerationResponse:
         reserved_key_in_metadata(create_request.prompt.metadata)
         reserved_key_in_metadata(create_request.metadata)
+        self.db_connection_service.get_db_connection_in_org(
+            create_request.prompt.db_connection_id, org_id
+        )
+
         create_request.metadata = SQLGenerationMetadata(
             **create_request.metadata,
             dh_internal=DHSQLGenerationMetadata(organization_id=org_id),
@@ -183,6 +169,10 @@ class GenerationService:
         reserved_key_in_metadata(create_request.sql_generation.prompt.metadata)
         reserved_key_in_metadata(create_request.sql_generation.metadata)
         reserved_key_in_metadata(create_request.metadata)
+        self.db_connection_service.get_db_connection_in_org(
+            create_request.sql_generation.prompt.db_connection_id, org_id
+        )
+
         create_request.sql_generation.prompt.metadata = PromptMetadata(
             **create_request.sql_generation.prompt.metadata,
             dh_internal=DHPromptMetadata(
@@ -225,12 +215,7 @@ class GenerationService:
         self, prompt_id: str, create_request: SQLGenerationRequest, org_id: str
     ) -> SQLGenerationResponse:
         reserved_key_in_metadata(create_request.metadata)
-        prompt = self.repo.get_prompt(prompt_id, org_id)
-        if not prompt:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Prompt not found",
-            )
+        prompt = self.get_prompt_in_org(prompt_id, org_id)
         if prompt.metadata.dh_internal.generation_status in {
             GenerationStatus.REJECTED,
             GenerationStatus.VERIFIED,
@@ -270,11 +255,7 @@ class GenerationService:
         self, sql_generation_id: str, create_request: NLGenerationRequest, org_id: str
     ) -> NLGenerationResponse:
         reserved_key_in_metadata(create_request.metadata)
-        if not self.repo.get_sql_generation(sql_generation_id, org_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="SQL Generation not found",
-            )
+        self.get_sql_generation_in_org(sql_generation_id, org_id)
 
         create_request.metadata = NLGenerationMetadata(
             **create_request.metadata,
@@ -296,12 +277,7 @@ class GenerationService:
     ) -> NLGenerationResponse:
         reserved_key_in_metadata(create_request.sql_generation.metadata)
         reserved_key_in_metadata(create_request.metadata)
-        prompt = self.repo.get_prompt(prompt_id, org_id)
-        if not prompt:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Prompt not found",
-            )
+        prompt = self.get_prompt_in_org(prompt_id, org_id)
         if prompt.metadata.dh_internal.generation_status in {
             GenerationStatus.REJECTED,
             GenerationStatus.VERIFIED,
@@ -352,11 +328,7 @@ class GenerationService:
         max_rows: int,
         org_id: str,
     ) -> tuple[str, dict]:
-        if not self.repo.get_sql_generation(sql_generation_id, org_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="SQL Generation not found",
-            )
+        self.get_sql_generation_in_org(sql_generation_id, org_id)
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 settings.engine_url + f"/sql-generations/{sql_generation_id}/execute",
@@ -369,12 +341,7 @@ class GenerationService:
     async def export_csv_file(
         self, sql_generation_id: str, org_id: str
     ) -> StreamingResponse:
-        sql_generation = self.repo.get_sql_generation(sql_generation_id, org_id)
-        if not sql_generation:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="SQL Generation not found",
-            )
+        sql_generation = self.get_sql_generation_in_org(sql_generation_id, org_id)
         if sql_generation.status != SQLGenerationStatus.VALID:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -392,3 +359,34 @@ class GenerationService:
                 status_code=response.status_code,
                 media_type=response.headers.get("content-type", "text/csv"),
             )
+
+    def get_prompt_in_org(self, prompt_id: str, org_id: str) -> Prompt:
+        prompt = self.repo.get_prompt(prompt_id, org_id)
+        if not prompt:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Prompt not found",
+            )
+        return prompt
+
+    def get_sql_generation_in_org(
+        self, sql_generation_id: str, org_id: str
+    ) -> SQLGeneration:
+        sql_generation = self.repo.get_sql_generation(sql_generation_id, org_id)
+        if not sql_generation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="SQL Generation not found",
+            )
+        return sql_generation
+
+    def get_nl_generation_in_org(
+        self, nl_generation_id: str, org_id: str
+    ) -> NLGeneration:
+        nl_generation = self.repo.get_nl_generation(nl_generation_id, org_id)
+        if not nl_generation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="NL Generation not found",
+            )
+        return nl_generation

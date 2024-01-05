@@ -29,7 +29,7 @@ class DBConnectionService:
     def get_db_connection(
         self, db_connection_id: str, org_id: str
     ) -> DBConnectionResponse:
-        return self.repo.get_db_connection(db_connection_id, org_id)
+        return self.get_db_connection_in_org(db_connection_id, org_id)
 
     async def add_db_connection(
         self,
@@ -56,7 +56,7 @@ class DBConnectionService:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.engine_url + "/database-connections",
-                json={**db_connection_internal_request.dict()},
+                json=db_connection_internal_request.dict(),
                 timeout=settings.default_engine_timeout,
             )
 
@@ -75,13 +75,7 @@ class DBConnectionService:
         db_connection_internal_request = DBConnection(
             **db_connection_request.dict(exclude_unset=True)
         )
-        db_connection = self.repo.get_db_connection(db_connection_id, org_id)
-
-        if not db_connection:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Database connection not found",
-            )
+        self.get_db_connection_in_org(db_connection_id, org_id)
 
         db_connection_internal_request.metadata = DBConnectionMetadata(
             **db_connection_request.metadata,
@@ -98,10 +92,19 @@ class DBConnectionService:
         async with httpx.AsyncClient() as client:
             response = await client.put(
                 settings.engine_url + f"/database-connections/{db_connection_id}",
-                json={
-                    **db_connection_internal_request.dict(),
-                },
+                json=db_connection_internal_request.dict(),
                 timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
             return DBConnectionResponse(**response.json())
+
+    def get_db_connection_in_org(
+        self, db_connection_id: str, org_id: str
+    ) -> DBConnection:
+        db_connection = self.repo.get_db_connection(db_connection_id, org_id)
+        if not db_connection:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Database connection not found",
+            )
+        return db_connection

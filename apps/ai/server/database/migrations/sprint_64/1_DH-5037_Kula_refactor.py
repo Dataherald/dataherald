@@ -45,6 +45,7 @@ if __name__ == "__main__":
                     }
                 },
             )
+    print("updated golden_sqls")
 
     # update db_connection collection and add metadata field
     db_connection_ref_cursor = data_store["database_connection_refs"].find({})
@@ -61,6 +62,7 @@ if __name__ == "__main__":
                 }
             },
         )
+    print("updated database_connections")
 
     # update question collection and add metadata field
     question_ref_cursor = data_store["queries"].find({})
@@ -105,6 +107,7 @@ if __name__ == "__main__":
                 }
             },
         )
+    print("updated prompts")
 
     # update sql_generation and nl_generation collection metadata field
     sql_generation_cursor = data_store["sql_generations"].find({})
@@ -126,6 +129,7 @@ if __name__ == "__main__":
                 }
             },
         )
+    print("updated sql_generations")
 
     nl_generation_cursor = data_store["nl_generations"].find({})
     for nl_generation in nl_generation_cursor:
@@ -146,19 +150,75 @@ if __name__ == "__main__":
                 }
             },
         )
+    print("updated nl_generations")
 
-    # update ids to type string
+    # update db-connection id in organization to type string
     organization_cursor = data_store["organizations"].find({})
     for organization in organization_cursor:
         data_store["organizations"].update_one(
             {"_id": organization["_id"]},
             {"$set": {"db_connection_id": str(organization["db_connection_id"])}},
         )
+    print("updated db_connection_id in organizations")
 
+    # update organization id in user to type string
     user_cursor = data_store["users"].find({})
     for user in user_cursor:
         data_store["users"].update_one(
             {"_id": user["_id"]},
             {"$set": {"organization_id": str(user["organization_id"])}},
         )
+    print("updated organization_id in users")
+
+    # add organization id to table-descriptions
+    table_description_cursor = data_store["table_descriptions"].find({})
+    for table_description in table_description_cursor:
+        db_connection = data_store["database_connections"].find_one(
+            {"_id": ObjectId(table_description["db_connection_id"])}
+        )
+        if not db_connection:
+            print(
+                f"db_connection not found for table_description {str(table_description['_id'])}"
+            )
+            continue
+        data_store["table_descriptions"].update_one(
+            {"_id": table_description["_id"]},
+            {
+                "$set": {
+                    "metadata": {
+                        "dh_internal": {
+                            "organization_id": db_connection["metadata"]["dh_internal"][
+                                "organization_id"
+                            ]
+                        }
+                    }
+                }
+            },
+        )
+    print("added organization_id to table_descriptions")
+
+    # add organization id to instructions
+    instruction_cursor = data_store["instructions"].find({})
+    for instruction in instruction_cursor:
+        db_connection = data_store["database_connections"].find_one(
+            {"_id": ObjectId(instruction["db_connection_id"])}
+        )
+        if not db_connection:
+            print(f"db_connection not found for instruction {str(instruction['_id'])}")
+            continue
+        data_store["instructions"].update_one(
+            {"_id": instruction["_id"]},
+            {
+                "$set": {
+                    "metadata": {
+                        "dh_internal": {
+                            "organization_id": db_connection["metadata"]["dh_internal"][
+                                "organization_id"
+                            ]
+                        }
+                    }
+                }
+            },
+        )
+
     print("finished")

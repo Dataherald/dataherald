@@ -3,6 +3,11 @@ from fastapi import HTTPException, status
 
 from config import settings
 from modules.db_connection.service import DBConnectionService
+from modules.instruction.models.entities import (
+    DHInstructionMetadata,
+    Instruction,
+    InstructionMetadata,
+)
 from modules.instruction.models.requests import InstructionRequest
 from modules.instruction.models.responses import InstructionResponse
 from modules.instruction.repository import InstructionRepository
@@ -27,26 +32,14 @@ class InstructionService:
         if not db_connection:
             return []
 
-        return self.repo.get_instructions(db_connection_id)
+        return self.repo.get_instructions(db_connection_id, org_id)
 
     def get_instruction(self, instruction_id: str, org_id: str) -> InstructionResponse:
-        instruction = self.repo.get_instruction(instruction_id)
-
-        db_connection = self.db_connection_service.get_db_connection(
-            instruction.db_connection_id, org_id
-        )
-
-        if not db_connection:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Database connection not found",
-            )
-
-        return instruction
+        return self.get_instruction_in_org(instruction_id, org_id)
 
     def get_first_instruction(self, org_id: str) -> InstructionResponse:
         organization = self.org_service.get_organization(org_id)
-        instructions = self.repo.get_instructions(organization.db_connection_id)
+        instructions = self.repo.get_instructions(organization.db_connection_id, org_id)
         if len(instructions) == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -58,14 +51,13 @@ class InstructionService:
         self, instruction_request: InstructionRequest, org_id: str
     ) -> InstructionResponse:
         reserved_key_in_metadata(instruction_request.metadata)
-        db_connection_id = self.db_connection_service.get_db_connection(
+        self.db_connection_service.get_db_connection_in_org(
             instruction_request.db_connection_id, org_id
         )
-        if not db_connection_id:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Database connection not found",
-            )
+
+        instruction_request.metadata = InstructionMetadata(
+            dh_internal=DHInstructionMetadata(organization_id=org_id)
+        )
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -82,15 +74,15 @@ class InstructionService:
         org_id: str,
     ) -> InstructionResponse:
         reserved_key_in_metadata(instruction_request.metadata)
-        db_connection = self.db_connection_service.get_db_connection(
+        self.get_instruction_in_org(instruction_id, org_id)
+        self.db_connection_service.get_db_connection_in_org(
             instruction_request.db_connection_id, org_id
         )
 
-        if not db_connection:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Database connection not found",
-            )
+        instruction_request.metadata = InstructionMetadata(
+            **instruction_request.metadata,
+            dh_internal=DHInstructionMetadata(organization_id=org_id),
+        )
 
         async with httpx.AsyncClient() as client:
             response = await client.put(
@@ -101,17 +93,10 @@ class InstructionService:
             return InstructionResponse(**response.json())
 
     async def delete_instruction(self, instruction_id: str, org_id: str):
-        instruction = self.repo.get_instruction(instruction_id)
-
-        db_connection = self.db_connection_service.get_db_connection(
+        instruction = self.get_instruction_in_org(instruction_id, org_id)
+        self.db_connection_service.get_db_connection_in_org(
             instruction.db_connection_id, org_id
         )
-
-        if not db_connection:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Database connection not found",
-            )
 
         async with httpx.AsyncClient() as client:
             response = await client.delete(
@@ -119,3 +104,12 @@ class InstructionService:
             )
             raise_for_status(response.status_code, response.text)
             return {"id": instruction_id}
+
+    def get_instruction_in_org(self, instruction_id: str, org_id: str) -> Instruction:
+        instruction = self.repo.get_instruction(instruction_id, org_id)
+        if not instruction:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Instruction not found",
+            )
+        return instruction

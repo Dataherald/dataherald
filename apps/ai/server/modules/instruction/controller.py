@@ -78,6 +78,14 @@ async def ac_get_instructions(
     return instruction_service.get_instructions(db_connection_id, user.organization_id)
 
 
+@ac_router.get("/first")
+async def ac_get_first_instruction(
+    token: str = Depends(token_auth_scheme),
+) -> InstructionResponse:
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    return instruction_service.get_first_instruction(user.organization_id)
+
+
 @ac_router.get("/{id}")
 async def ac_get_instruction(
     id: str,
@@ -85,14 +93,6 @@ async def ac_get_instruction(
 ) -> InstructionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return instruction_service.get_instruction(id, user.organization_id)
-
-
-@ac_router.get("/first")
-async def ac_get_first_instruction(
-    token: str = Depends(token_auth_scheme),
-) -> InstructionResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
-    return instruction_service.get_first_instruction(user.organization_id)
 
 
 @ac_router.post("", status_code=status.HTTP_201_CREATED)
