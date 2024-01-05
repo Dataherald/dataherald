@@ -218,7 +218,7 @@ class OpenAIFineTuning(FinetuningModel):
     def retrieve_finetuning_job(self) -> Finetuning:
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.find_by_id(self.fine_tuning_model.id)
-        if model.finetuning_file_id is not None:
+        if model.finetuning_job_id is not None:
             finetuning_request = self.client.fine_tuning.jobs.retrieve(
                 fine_tuning_job_id=model.finetuning_job_id
             )
