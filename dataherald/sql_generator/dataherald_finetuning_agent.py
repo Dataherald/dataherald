@@ -176,9 +176,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     ) -> str:
         """Execute the query, return the results or an error message."""
         if "```sql" in query:
-            logger.info("**** Removing markdown formatting from the query\n")
             query = query.replace("```sql", "").replace("```", "")
-            logger.info(f"**** Query after removing markdown formatting: {query}\n")
         return self.db.run_sql(query, top_k=TOP_K)[0]
 
     async def _arun(
@@ -455,7 +453,8 @@ class DataheraldFinetuningAgent(SQLGenerator):
                 action = step[0]
                 if type(action) == AgentAction and action.tool == "sql_db_query":
                     sql_query = self.format_sql_query(action.tool_input)
-                    sql_query = self.remove_markdown(sql_query)
+                    if "```sql" in sql_query:
+                        sql_query = self.remove_markdown(sql_query)
         logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
         response.sql = sql_query
         response.tokens_used = cb.total_tokens
