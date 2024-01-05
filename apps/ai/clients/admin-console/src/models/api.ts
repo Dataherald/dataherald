@@ -254,3 +254,13 @@ export interface FineTuningModel {
 }
 
 export type FineTuningModels = FineTuningModel[]
+
+export interface ApiKey {
+  id: string
+  name: string
+  organization_id: string
+  created_at: string
+  key_preview: string
+}
+
+export type ApiKeys = ApiKey[]

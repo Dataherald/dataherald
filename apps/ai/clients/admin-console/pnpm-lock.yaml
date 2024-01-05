@@ -81,8 +81,8 @@ dependencies:
     specifier: 13.4.10
     version: 13.4.10(eslint@8.45.0)(typescript@5.1.6)
   lucide-react:
-    specifier: ^0.261.0
-    version: 0.261.0(react@18.2.0)
+    specifier: ^0.305.0
+    version: 0.305.0(react@18.2.0)
   monaco-editor:
     specifier: ^0.40.0
     version: 0.40.0
@@ -4314,8 +4314,8 @@ packages:
     dependencies:
       yallist: 4.0.0
 
-  /lucide-react@0.261.0(react@18.2.0):
-    resolution: {integrity: sha512-gzxEvIxf8+hGbm2ZQU/VP5TxTcnTu3ODDmYoS3a53wC4gkW9ukxmexKjTcZUzz3q8ema+DMwmPypx9Z0Bvvxog==}
+  /lucide-react@0.305.0(react@18.2.0):
+    resolution: {integrity: sha512-frSsvuReQ7JvOhmRFd+qkMpnL20nVPO+A3NuR+vLh8MXPZ8hHVSYKtgl2A2yV9PhzCtCGgwCmegFdZs9qVCXzQ==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0
     dependencies:

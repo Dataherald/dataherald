@@ -10,6 +10,7 @@ import { useAppContext } from '@/contexts/app-context'
 import { cn } from '@/lib/utils'
 import {
   Database,
+  KeyRound,
   ListChecks,
   LucideIcon,
   Microscope,
@@ -53,6 +54,11 @@ const CONFIG_NAV_ITEMS: MenuItems = [
     text: 'Fine-tuning',
     href: '/fine-tuning',
     icon: SlidersIcon,
+  },
+  {
+    text: 'API Keys',
+    href: '/api-keys',
+    icon: KeyRound,
   },
 ]
 

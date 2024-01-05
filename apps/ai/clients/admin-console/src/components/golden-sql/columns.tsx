@@ -37,7 +37,7 @@ export const getColumns: (actions: {
   },
   {
     id: 'sql',
-    header: 'SQL Query',
+    header: 'SQL',
     accessorKey: 'sql',
     cell: ({ row }) => (
       <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
