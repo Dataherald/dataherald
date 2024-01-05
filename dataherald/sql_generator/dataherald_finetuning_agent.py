@@ -34,7 +34,7 @@ from dataherald.sql_database.models.types import (
     DatabaseConnection,
 )
 from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
-from dataherald.types import Prompt, SQLGeneration
+from dataherald.types import FineTuningStatus, Prompt, SQLGeneration
 from dataherald.utils.agent_prompts import (
     FINETUNING_AGENT_PREFIX,
     FINETUNING_AGENT_SUFFIX,
@@ -45,6 +45,12 @@ from dataherald.utils.agent_prompts import (
 logger = logging.getLogger(__name__)
 
 TOP_K = int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50"))
+
+
+class FinetuningNotAvailableError(Exception):
+    """Exception raised when finetuning is not available."""
+
+    pass
 
 
 def catch_exceptions():  # noqa: C901
@@ -403,7 +409,11 @@ class DataheraldFinetuningAgent(SQLGenerator):
         )
         finetunings_repository = FinetuningsRepository(storage)
         finetuning = finetunings_repository.find_by_id(self.finetuning_id)
-
+        if finetuning.status != FineTuningStatus.SUCCEEDED.value:
+            raise FinetuningNotAvailableError(
+                f"Finetuning({self.finetuning_id}) has the status {finetuning.status}."
+                f"Finetuning should have the status {FineTuningStatus.SUCCEEDED.value} to generate SQL queries."
+            )
         self.database = SQLDatabase.get_sql_engine(database_connection)
         toolkit = SQLDatabaseToolkit(
             db=self.database,
