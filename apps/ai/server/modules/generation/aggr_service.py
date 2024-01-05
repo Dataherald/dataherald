@@ -202,10 +202,13 @@ class AggrgationGenerationService:
 
             return GenerationSlackResponse(
                 id=prompt.id,
+                sql=sql_generation.sql,
                 display_id=display_id,
                 is_above_confidence_threshold=is_above_confidence_threshold,
                 nl_generation_text=nl_generation.text,
-                **sql_generation.dict(exclude={"id"}, exclude_unset=True),
+                exec_time=(
+                    sql_generation.completed_at - sql_generation.created_at
+                ).total_seconds(),
             )
 
     async def create_prompt_sql_generation_result(

@@ -54,13 +54,13 @@ async function handleMessage(context, say) {
         })
         if (!response.ok) {
             try {
-                const { query_id, display_id, error_message } =
+                const { id, display_id, error_message } =
                     await response.json()
                 error(
-                    `API Response not ok: status code ${response.status}, ${response.statusText}, error message: ${error_message}, query id: ${query_id}`
+                    `API Response not ok: status code ${response.status}, ${response.statusText}, error message: ${error_message}, query id: ${id}`
                 )
                 const responseMessage =
-                    query_id == undefined || display_id == undefined
+                    id == undefined || display_id == undefined
                         ? `:exclamation: Sorry, something went wrong when I was processing your request. Please try again later.`
                         : `:warning: Sorry, something went wrong while generating response for query ${display_id}. We'll get back to you once it's been reviewed by the data-team admins.`
                 await say({
@@ -100,8 +100,8 @@ async function handleMessage(context, say) {
         } else {
             const data = await response.json()
             const {
-                response: response_message,
-                sql_query,
+                nl_generation_text: response_message,
+                sql,
                 exec_time,
                 display_id,
                 is_above_confidence_threshold,
@@ -118,13 +118,13 @@ async function handleMessage(context, say) {
                                 text: `:mag: *Response*: ${response_message}`,
                             },
                         },
-                        ...(sql_query
+                        ...(sql
                             ? [
                                   {
                                       type: 'section',
                                       text: {
                                           type: 'mrkdwn',
-                                          text: `:memo: *Generated SQL Query*: \n \`\`\`${sql_query}\`\`\``,
+                                          text: `:memo: *Generated SQL Query*: \n \`\`\`${sql}\`\`\``,
                                       },
                                   },
                                   {
