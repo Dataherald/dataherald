@@ -252,7 +252,7 @@ class FastAPI(API):
             table_description = scanner_repository.update_fields(
                 table, table_description_request
             )
-            return TableDescriptionResponse(**table_description)
+            return TableDescriptionResponse(**table_description.dict())
         except InvalidColumnNameError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
