@@ -1,4 +1,5 @@
 import { DataTable } from '@/components/data-table/data-table'
+import { LoadingTable } from '@/components/data-table/loading-table'
 import { finetunningsColumns } from '@/components/fine-tunnings/columns'
 import FineTunningsError from '@/components/fine-tunnings/error'
 import PageLayout from '@/components/layout/page-layout'
@@ -15,7 +16,9 @@ const FineTuningPage: FC = () => {
   let pageContent = <></>
 
   if (isLoading) {
-    pageContent = <div>Loading...</div>
+    pageContent = (
+      <LoadingTable columnLength={3} rowLength={5} className="rounded-none" />
+    )
   } else if (error) {
     pageContent = <FineTunningsError />
   } else if (models?.length === 0) {

@@ -96,7 +96,7 @@ const GoldenSQLPage: FC = () => {
             editor.
           </p>
         </div>
-        <ContentBox className="overflow-auto">
+        <ContentBox>
           <div className="flex flex-col gap-3 bg-gray-50 py-0">
             <h1 className="font-bold">Training Queries</h1>
           </div>

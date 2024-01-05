@@ -64,7 +64,7 @@ const QueriesPage: FC = () => {
 
   return (
     <PageLayout>
-      <ContentBox className="overflow-auto m-6">
+      <ContentBox className="m-6">
         <div className="flex items-center justify-between bg-gray-50 py-0">
           <h1 className="font-bold">Latest Queries</h1>
           <Button

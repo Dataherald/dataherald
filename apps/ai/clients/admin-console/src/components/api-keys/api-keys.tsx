@@ -1,11 +1,12 @@
+import { apiKeysColumns } from '@/components/api-keys/columns'
+import ApiKeysError from '@/components/api-keys/error'
+import GenerateApiKeyDialog from '@/components/api-keys/generate-api-key-dialog'
+import { DataTable } from '@/components/data-table/data-table'
+import { LoadingTable } from '@/components/data-table/loading-table'
 import { Button } from '@/components/ui/button'
 import useApiKeys from '@/hooks/api/api-keys/useApiKeys'
 import { KeyRound, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { DataTable } from '../data-table/data-table'
-import { apiKeysColumns } from './columns'
-import ApiKeysError from './error'
-import GenerateApiKeyDialog from './generate-api-key-dialog'
 
 const ApiKeys = () => {
   const [openGenerateKeyDialog, setOpenGenerateKeyDialog] = useState(false)
@@ -19,7 +20,9 @@ const ApiKeys = () => {
   let pageContent = <></>
 
   if (isLoading) {
-    pageContent = <div>Loading...</div>
+    pageContent = (
+      <LoadingTable columnLength={4} rowLength={4} className="rounded-none" />
+    )
   } else if (error) {
     pageContent = <ApiKeysError />
   } else if (apiKeys?.length === 0) {

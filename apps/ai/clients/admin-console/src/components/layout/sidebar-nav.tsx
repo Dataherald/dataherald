@@ -6,6 +6,7 @@ import { buttonVariants } from '@/components/ui/button'
 import UserPicture from '@/components/user/user-picture'
 import UserSettingsPopover from '@/components/user/user-settings-popover'
 
+import { Separator } from '@/components/ui/separator'
 import { useAppContext } from '@/contexts/app-context'
 import { cn } from '@/lib/utils'
 import {
@@ -17,7 +18,6 @@ import {
   SlidersIcon,
   TerminalSquare,
 } from 'lucide-react'
-import { Separator } from '../ui/separator'
 
 export interface MenuItem {
   text: string

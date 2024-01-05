@@ -9,6 +9,7 @@ import {
   MAIN_ACTION_BTN_CLASSES,
   SECONDARY_ACTION_BTN_CLASSES,
 } from '@/components/query/workspace'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +30,6 @@ import { Query } from '@/models/api'
 import { Bot, Edit, Info, Loader } from 'lucide-react'
 import Image from 'next/image'
 import { FC, useState } from 'react'
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 
 interface MessageSectionProps {
   promptId: string
