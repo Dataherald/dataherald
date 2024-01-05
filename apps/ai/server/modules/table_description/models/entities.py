@@ -34,7 +34,7 @@ class TableDescriptionMetadata(BaseModel):
 
 
 class BaseTableDescription(BaseModel):
-    id: str
+    id: str | None
     db_connection_id: str | None
     description: str | None
     columns: list[ColumnDescription] | None
