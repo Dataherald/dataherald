@@ -596,7 +596,8 @@ class FastAPI(API):
         models = model_repository.find_by(query)
         result = []
         for model in models:
-            result.append(Finetuning(**model.dict()))
+            openai_fine_tuning = OpenAIFineTuning(self.storage, model)
+            result.append(Finetuning(**openai_fine_tuning.retrieve_finetuning_job().dict()))
         return result
 
     @override
