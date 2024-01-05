@@ -409,6 +409,8 @@ class DataheraldFinetuningAgent(SQLGenerator):
         )
         finetunings_repository = FinetuningsRepository(storage)
         finetuning = finetunings_repository.find_by_id(self.finetuning_id)
+        openai_fine_tuning = OpenAIFineTuning(storage, finetuning)
+        finetuning = openai_fine_tuning.retrieve_finetuning_job()
         if finetuning.status != FineTuningStatus.SUCCEEDED.value:
             raise FinetuningNotAvailableError(
                 f"Finetuning({self.finetuning_id}) has the status {finetuning.status}."
