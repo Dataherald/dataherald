@@ -38,9 +38,11 @@ class SQLGenerator(Component, ABC):
         return response
 
     def remove_markdown(self, query: str) -> str:
-        if "```sql" in query:
-            query = query.replace("```sql", "").replace("```", "")
-        return query
+        pattern = r"```sql(.*?)```"
+        matches = re.findall(pattern, query, re.DOTALL)
+        if matches:
+            return matches[0].strip()
+        return ""
 
     def create_sql_query_status(
         self, db: SQLDatabase, query: str, sql_generation: SQLGeneration
