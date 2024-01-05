@@ -46,8 +46,10 @@ logger = logging.getLogger(__name__)
 
 TOP_K = int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50"))
 
+
 class FinetuningNotAvailableError(Exception):
     """Exception raised when finetuning is not available."""
+
     pass
 
 
@@ -409,7 +411,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         finetuning = finetunings_repository.find_by_id(self.finetuning_id)
         if finetuning.status != FineTuningStatus.SUCCEEDED.value:
             raise FinetuningNotAvailableError(
-                f"Finetuning({self.finetuning_id}) has the status {finetuning.status}."\
+                f"Finetuning({self.finetuning_id}) has the status {finetuning.status}."
                 f"Finetuning should have the status {FineTuningStatus.SUCCEEDED.value} to generate SQL queries."
             )
         self.database = SQLDatabase.get_sql_engine(database_connection)
