@@ -7,7 +7,7 @@ export const cn = (...inputs: ClassValue[]): string => {
 }
 
 export const formatUrl = (segment: string): string =>
-  segment.replace('sql', 'SQL')
+  segment.replace('sql', 'SQL').replace('api', 'API')
 
 export const formatKey = (key: string): string =>
   key.replace('_', ' ').toLowerCase()

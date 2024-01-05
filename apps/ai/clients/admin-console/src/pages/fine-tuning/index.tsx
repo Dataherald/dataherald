@@ -27,7 +27,7 @@ const FineTuningPage: FC = () => {
   return (
     <PageLayout>
       <div className="gap-4 m-6">
-        <ContentBox className="w-fit min-w-[35vw] max-w-[50vw] min-h-[50vh] max-h-[50vh]">
+        <ContentBox className="w-100 max-w-2xl min-h-[50vh] max-h-[50vh]">
           <div className="flex items-center gap-2">
             <SlidersIcon size={20} strokeWidth={2.5} />
             <h1 className="font-semibold">Fine-tuning models</h1>

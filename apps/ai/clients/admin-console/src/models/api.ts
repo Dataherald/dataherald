@@ -261,6 +261,7 @@ export interface ApiKey {
   organization_id: string
   created_at: string
   key_preview: string
+  api_key?: string
 }
 
 export type ApiKeys = ApiKey[]

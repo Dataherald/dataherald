@@ -1,13 +1,13 @@
 import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { useCallback } from 'react'
 
-const usePost = <T>() => {
+const usePost = <Request, Response = Request>() => {
   const { apiFetcher } = useApiFetcher()
 
   const post = useCallback(
-    async (url: string, resource: T) => {
+    async (url: string, resource: Request) => {
       try {
-        return await apiFetcher<T>(url, {
+        return await apiFetcher<Response>(url, {
           method: 'POST',
           body: JSON.stringify(resource),
         })

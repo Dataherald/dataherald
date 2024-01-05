@@ -82,19 +82,27 @@ const GoldenSQLPage: FC = () => {
 
   return (
     <PageLayout>
-      <ContentBox className="overflow-auto m-6">
-        <div className="flex flex-col gap-3 bg-gray-50 py-0">
-          <h1 className="font-bold">Training Queries</h1>
-          <p className="text-sm">
-            When a query is saved as verified by an admin, or manually uploaded
-            through our API, it is stored as a <strong>Golden SQL Query</strong>{' '}
-            and used to further train the model. To remove a query, delete from
-            this list or, for verified queries, mark as “Unverified” from the
-            editor.{' '}
+      <div className="grow flex flex-col gap-4 m-6">
+        <div className="flex flex-col gap-3">
+          <p className="max-w-5xl">
+            When a query is marked as verified in the query editor, or manually
+            uploaded through our API, it is stored as a{' '}
+            <strong>Golden SQL Query</strong> and used to further train the
+            model.
+          </p>
+          <p>
+            To remove a query from the training set, delete it from the table
+            below or mark it as <strong>“Not Verified”</strong> from the query
+            editor.
           </p>
         </div>
-        {pageContent}
-      </ContentBox>
+        <ContentBox className="overflow-auto">
+          <div className="flex flex-col gap-3 bg-gray-50 py-0">
+            <h1 className="font-bold">Training Queries</h1>
+          </div>
+          {pageContent}
+        </ContentBox>
+      </div>
       <Toaster />
     </PageLayout>
   )
