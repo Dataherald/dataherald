@@ -17,7 +17,7 @@ export const useDatabaseResource = (
 
   const isNodeDatabaseResource = node && isDatabaseResource(node.type)
 
-  const resourceUrl = isNodeDatabaseResource ? INSTRUCTION_URL : null
+  const resourceUrl = isNodeDatabaseResource ? `${INSTRUCTION_URL}/first` : null
 
   const {
     data: databaseInstruction,

@@ -51,6 +51,12 @@ class InstructionService:
         self, instruction_request: InstructionRequest, org_id: str
     ) -> InstructionResponse:
         reserved_key_in_metadata(instruction_request.metadata)
+
+        if not instruction_request.db_connection_id:
+            instruction_request.db_connection_id = self.org_service.get_organization(
+                org_id
+            ).db_connection_id
+
         self.db_connection_service.get_db_connection_in_org(
             instruction_request.db_connection_id, org_id
         )
@@ -74,7 +80,11 @@ class InstructionService:
         org_id: str,
     ) -> InstructionResponse:
         reserved_key_in_metadata(instruction_request.metadata)
-        self.get_instruction_in_org(instruction_id, org_id)
+        instruction = self.get_instruction_in_org(instruction_id, org_id)
+
+        if not instruction_request.db_connection_id:
+            instruction_request.db_connection_id = instruction.db_connection_id
+
         self.db_connection_service.get_db_connection_in_org(
             instruction_request.db_connection_id, org_id
         )
