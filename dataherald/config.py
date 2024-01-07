@@ -11,7 +11,6 @@ from pydantic import BaseSettings
 _abstract_type_keys: Dict[str, str] = {
     "dataherald.api.API": "api_impl",
     "dataherald.db_scanner.Scanner": "db_scanner_impl",
-    "dataherald.sql_generator.SQLGenerator": "sql_generator_impl",
     "dataherald.eval.Evaluator": "eval_impl",
     "dataherald.db.DB": "db_impl",
     "dataherald.context_store.ContextStore": "context_store_impl",
@@ -28,10 +27,6 @@ class Settings(BaseSettings):
         "DB_SCANNER", "dataherald.db_scanner.sqlalchemy.SqlAlchemyScanner"
     )
 
-    sql_generator_impl: str = os.environ.get(
-        "SQL_GENERATOR",
-        "dataherald.sql_generator.langchain_sqlchain.LangChainSQLChainSQLGenerator",
-    )
     eval_impl: str = os.environ.get(
         "EVALUATOR", "dataherald.eval.simple_evaluator.SimpleEvaluator"
     )

@@ -2,8 +2,10 @@ from typing import Any, List
 
 import chromadb
 from overrides import override
+from sql_metadata import Parser
 
 from dataherald.config import System
+from dataherald.types import GoldenSQL
 from dataherald.vector_store import VectorStore
 
 
@@ -35,6 +37,22 @@ class Chroma(VectorStore):
             where={"db_connection_id": db_connection_id},
         )
         return self.convert_to_pinecone_object_model(query_results)
+
+    @override
+    def add_records(self, golden_sqls: List[GoldenSQL], collection: str):
+        for golden_sql in golden_sqls:
+            self.add_record(
+                golden_sql.prompt_text,
+                golden_sql.db_connection_id,
+                collection,
+                [
+                    {
+                        "tables_used": Parser(golden_sql.sql).tables[0],
+                        "db_connection_id": str(golden_sql.db_connection_id),
+                    }
+                ],
+                ids=[str(golden_sql.id)],
+            )
 
     @override
     def add_record(

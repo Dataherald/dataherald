@@ -6,7 +6,6 @@ import uuid
 from typing import Any, List
 
 import tiktoken
-from bson.objectid import ObjectId
 from openai import OpenAI
 from overrides import override
 from tiktoken import Encoding
@@ -16,8 +15,8 @@ from dataherald.db_scanner.repository.base import TableDescriptionRepository
 from dataherald.finetuning import FinetuningModel
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.finetunings import FinetuningsRepository
-from dataherald.repositories.golden_records import GoldenRecordRepository
-from dataherald.types import Finetuning
+from dataherald.repositories.golden_sqls import GoldenSQLRepository
+from dataherald.types import Finetuning, FineTuningStatus
 from dataherald.utils.agent_prompts import FINETUNING_SYSTEM_INFORMATION
 from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
 
@@ -44,8 +43,22 @@ class OpenAIFineTuning(FinetuningModel):
         )
         self.client = OpenAI(api_key=db_connection.decrypt_api_key())
 
+    @staticmethod
+    def map_finetuning_status(status: str) -> str:
+        mapped_statuses = {
+            "queued": FineTuningStatus.QUEUED.value,
+            "running": FineTuningStatus.RUNNING.value,
+            "succeeded": FineTuningStatus.SUCCEEDED.value,
+            "failed": FineTuningStatus.FAILED.value,
+            "cancelled": FineTuningStatus.CANCELLED.value,
+            "validating_files": FineTuningStatus.VALIDATING_FILES.value,
+        }
+        if status not in mapped_statuses:
+            return FineTuningStatus.QUEUED.value
+        return mapped_statuses[status]
+
     @classmethod
-    def format_columns(cls, table: TableDescription, top_k: int = 100) -> str:
+    def format_columns(cls, table: TableDescription, top_k: int = 10) -> str:
         """
         format_columns formats the columns.
 
@@ -118,19 +131,19 @@ class OpenAIFineTuning(FinetuningModel):
         repository = TableDescriptionRepository(self.storage)
         db_scan = repository.get_all_tables_by_db(
             {
-                "db_connection_id": ObjectId(db_connection_id),
-                "status": TableDescriptionStatus.SYNCHRONIZED.value,
+                "db_connection_id": str(db_connection_id),
+                "status": TableDescriptionStatus.SCANNED.value,
             }
         )
-        golden_records_repository = GoldenRecordRepository(self.storage)
+        golden_sqls_repository = GoldenSQLRepository(self.storage)
         database_schema = self.format_dataset(db_scan)
         finetuning_dataset_path = f"tmp/{str(uuid.uuid4())}.jsonl"
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.find_by_id(self.fine_tuning_model.id)
-        for golden_record_id in self.fine_tuning_model.golden_records:
-            golden_record = golden_records_repository.find_by_id(golden_record_id)
-            question = golden_record.question
-            query = golden_record.sql_query
+        for golden_sql_id in self.fine_tuning_model.golden_sqls:
+            golden_sql = golden_sqls_repository.find_by_id(golden_sql_id)
+            question = golden_sql.prompt_text
+            query = golden_sql.sql
             system_prompt = FINETUNING_SYSTEM_INFORMATION + database_schema
             user_prompt = "User Question: " + question + "\n SQL: "
             assistant_prompt = query + "\n"
@@ -149,7 +162,7 @@ class OpenAIFineTuning(FinetuningModel):
                         self.fine_tuning_model.base_llm.model_name
                     ]
                 ):
-                    model.status = "failed"
+                    model.status = FineTuningStatus.FAILED.value
                     model.error = "The number of tokens in the prompt is too large"
                     model_repository.update(model)
                     os.remove(finetuning_dataset_path)
@@ -177,6 +190,8 @@ class OpenAIFineTuning(FinetuningModel):
     def create_fine_tuning_job(self):
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.find_by_id(self.fine_tuning_model.id)
+        if model.status == FineTuningStatus.FAILED.value:
+            return
         if self.check_file_status(model.finetuning_file_id):
             finetuning_request = self.client.fine_tuning.jobs.create(
                 training_file=model.finetuning_file_id,
@@ -192,10 +207,10 @@ class OpenAIFineTuning(FinetuningModel):
             model.finetuning_job_id = finetuning_request.id
             if finetuning_request.status == "failed":
                 model.error = "Fine tuning failed before starting"
-            model.status = finetuning_request.status
+            model.status = self.map_finetuning_status(finetuning_request.status)
             model_repository.update(model)
         else:
-            model.status = "failed"
+            model.status = FineTuningStatus.FAILED.value
             model.error = "File processing failed"
             model_repository.update(model)
 
@@ -203,14 +218,15 @@ class OpenAIFineTuning(FinetuningModel):
     def retrieve_finetuning_job(self) -> Finetuning:
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.find_by_id(self.fine_tuning_model.id)
-        finetuning_request = self.client.fine_tuning.jobs.retrieve(
-            fine_tuning_job_id=model.finetuning_job_id
-        )
-        if finetuning_request.status == "failed":
-            model.error = finetuning_request.error.message
-        model.status = finetuning_request.status
-        if finetuning_request.fine_tuned_model:
-            model.model_id = finetuning_request.fine_tuned_model
+        if model.finetuning_job_id is not None:
+            finetuning_request = self.client.fine_tuning.jobs.retrieve(
+                fine_tuning_job_id=model.finetuning_job_id
+            )
+            if finetuning_request.status == "failed":
+                model.error = finetuning_request.error.message
+            model.status = self.map_finetuning_status(finetuning_request.status)
+            if finetuning_request.fine_tuned_model:
+                model.model_id = finetuning_request.fine_tuned_model
         model_repository.update(model)
         return model
 
@@ -221,7 +237,7 @@ class OpenAIFineTuning(FinetuningModel):
         finetuning_request = self.client.fine_tuning.jobs.cancel(
             fine_tuning_job_id=model.finetuning_job_id
         )
-        model.status = finetuning_request.status
+        model.status = self.map_finetuning_status(finetuning_request.status)
         model.error = "Fine tuning cancelled by the user"
         model_repository.update(model)
         return model

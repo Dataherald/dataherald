@@ -33,11 +33,3 @@ def test_scan_one_table():
         )
     except ValueError as e:
         assert str(e) == "No table found"
-
-
-def test_answer_question():
-    response = client.post(
-        "/api/v1/questions",
-        json={"question": "Who am I?", "db_connection_id": "64dfa0e103f5134086f7090c"},
-    )
-    assert response.status_code == HTTP_201_CODE

@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional
+from typing import Any, List
 
 from dataherald.config import Component, System
+from dataherald.types import GoldenSQL
 
 
 class VectorStore(Component, ABC):
@@ -23,6 +24,10 @@ class VectorStore(Component, ABC):
 
     @abstractmethod
     def create_collection(self, collection: str):
+        pass
+
+    @abstractmethod
+    def add_records(self, golden_sqls: List[GoldenSQL], collection: str):
         pass
 
     @abstractmethod

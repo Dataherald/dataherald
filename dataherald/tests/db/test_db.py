@@ -24,7 +24,7 @@ class TestDB(DB):
             {
                 "_id": ObjectId("64dfa0e103f5134086f7090c"),
                 "instruction": "foo",
-                "db_connection_id": ObjectId("64dfa0e103f5134086f7090c"),
+                "db_connection_id": "64dfa0e103f5134086f7090c",
             }
         ]
 

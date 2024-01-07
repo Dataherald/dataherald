@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 import sqlalchemy
 from overrides import override
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
 from sqlalchemy.sql.schema import Column
 
@@ -17,9 +18,11 @@ MAX_LOGS = 5_000
 class BigQueryScanner(AbstractScanner):
     @override
     def cardinality_values(self, column: Column, db_engine: SQLDatabase) -> list | None:
-        rs = db_engine.engine.execute(
-            f"SELECT APPROX_COUNT_DISTINCT({column.name}) FROM {column.table.name}"  # noqa: S608 E501
-        ).fetchall()
+        try:
+            count_query = f"SELECT APPROX_COUNT_DISTINCT({column.name}) FROM {column.table.name}"  # noqa: S608
+            rs = db_engine.engine.execute(count_query).fetchall()
+        except SQLAlchemyError:
+            return None
 
         if (
             len(rs) > 0

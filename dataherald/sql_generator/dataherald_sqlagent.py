@@ -9,7 +9,6 @@ import numpy as np
 import openai
 import pandas as pd
 import sqlalchemy
-from bson.objectid import ObjectId
 from google.api_core.exceptions import GoogleAPIError
 from langchain.agents.agent import AgentExecutor
 from langchain.agents.agent_toolkits.base import BaseToolkit
@@ -39,7 +38,7 @@ from dataherald.sql_database.models.types import (
     DatabaseConnection,
 )
 from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
-from dataherald.types import Question, Response
+from dataherald.types import Prompt, SQLGeneration
 from dataherald.utils.agent_prompts import (
     AGENT_PREFIX,
     FORMAT_INSTRUCTIONS,
@@ -150,9 +149,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     ) -> str:
         """Execute the query, return the results or an error message."""
         if "```sql" in query:
-            logger.info("**** Removing markdown formatting from the query\n")
             query = query.replace("```sql", "").replace("```", "")
-            logger.info(f"**** Query after removing markdown formatting: {query}\n")
         return self.db.run_sql(query, top_k=top_k)[0]
 
     async def _arun(
@@ -239,6 +236,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         df["similarities"] = df.table_embedding.apply(
             lambda x: self.cosine_similarity(x, question_embedding)
         )
+        df = df.sort_values(by="similarities", ascending=True)
         table_relevance = ""
         for _, row in df.iterrows():
             table_relevance += (
@@ -444,7 +442,9 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
         returned_output = ""
         for example in self.few_shot_examples[:number_of_samples]:
             if "used" not in example:
-                returned_output += f"Question: {example['nl_question']} -> SQL: {example['sql_query']}\n"
+                returned_output += (
+                    f"Question: {example['prompt_text']} -> SQL: {example['sql']}\n"
+                )
                 example["used"] = True
         if returned_output == "":
             returned_output = "No previously asked Question/SQL pairs are available"
@@ -528,8 +528,8 @@ class DataheraldSQLAgent(SQLGenerator):
         returned_result = []
         seen_list = []
         for example in fewshot_exmaples:
-            if example["nl_question"] not in seen_list:
-                seen_list.append(example["nl_question"])
+            if example["prompt_text"] not in seen_list:
+                seen_list.append(example["prompt_text"])
                 returned_result.append(example)
         return returned_result
 
@@ -600,13 +600,16 @@ class DataheraldSQLAgent(SQLGenerator):
     @override
     def generate_response(
         self,
-        user_question: Question,
+        user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-        generate_csv: bool = False,
-    ) -> Response:
+    ) -> SQLGeneration:
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
+        response = SQLGeneration(
+            prompt_id=user_prompt.id,
+            created_at=datetime.datetime.now(),
+        )
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
@@ -615,14 +618,14 @@ class DataheraldSQLAgent(SQLGenerator):
         repository = TableDescriptionRepository(storage)
         db_scan = repository.get_all_tables_by_db(
             {
-                "db_connection_id": ObjectId(database_connection.id),
-                "status": TableDescriptionStatus.SYNCHRONIZED.value,
+                "db_connection_id": str(database_connection.id),
+                "status": TableDescriptionStatus.SCANNED.value,
             }
         )
         if not db_scan:
             raise ValueError("No scanned tables found for database")
         few_shot_examples, instructions = context_store.retrieve_context_for_question(
-            user_question, number_of_samples=self.max_number_of_examples
+            user_prompt, number_of_samples=self.max_number_of_examples
         )
         if few_shot_examples is not None:
             new_fewshot_examples = self.remove_duplicate_examples(few_shot_examples)
@@ -630,7 +633,7 @@ class DataheraldSQLAgent(SQLGenerator):
         else:
             new_fewshot_examples = None
             number_of_samples = 0
-        logger.info(f"Generating SQL response to question: {str(user_question.dict())}")
+        logger.info(f"Generating SQL response to question: {str(user_prompt.dict())}")
         self.database = SQLDatabase.get_sql_engine(database_connection)
         toolkit = SQLDatabaseToolkit(
             db=self.database,
@@ -654,51 +657,37 @@ class DataheraldSQLAgent(SQLGenerator):
         agent_executor.handle_parsing_errors = True
         with get_openai_callback() as cb:
             try:
-                result = agent_executor({"input": user_question.question})
+                result = agent_executor({"input": user_prompt.text})
                 result = self.check_for_time_out_or_tool_limit(result)
             except SQLInjectionError as e:
                 raise SQLInjectionError(e) from e
             except EngineTimeOutORItemLimitError as e:
                 raise EngineTimeOutORItemLimitError(e) from e
             except Exception as e:
-                return Response(
-                    question_id=user_question.id,
-                    total_tokens=cb.total_tokens,
-                    total_cost=cb.total_cost,
-                    sql_query="",
-                    sql_generation_status="INVALID",
-                    sql_query_result=None,
-                    error_message=str(e),
+                return SQLGeneration(
+                    prompt_id=user_prompt.id,
+                    tokens_used=cb.total_tokens,
+                    completed_at=datetime.datetime.now(),
+                    sql="",
+                    status="INVALID",
+                    error=str(e),
                 )
-        sql_query_list = []
-        for step in result["intermediate_steps"]:
-            action = step[0]
-            if type(action) == AgentAction and action.tool == "sql_db_query":
-                query = self.format_sql_query(action.tool_input)
-                if "```sql" in query:
-                    logger.info("**** Removing markdown formatting from the query\n")
-                    query = query.replace("```sql", "").replace("```", "")
-                    logger.info(
-                        f"**** Query after removing markdown formatting: {query}\n"
-                    )
-                sql_query_list.append(query)
-        intermediate_steps = self.format_intermediate_representations(
-            result["intermediate_steps"]
-        )
+        sql_query = ""
+        if "```sql" in result["output"]:
+            sql_query = self.remove_markdown(result["output"])
+        else:
+            for step in result["intermediate_steps"]:
+                action = step[0]
+                if type(action) == AgentAction and action.tool == "sql_db_query":
+                    sql_query = self.format_sql_query(action.tool_input)
+                    if "```sql" in sql_query:
+                        sql_query = self.remove_markdown(sql_query)
         logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
-        response = Response(
-            question_id=user_question.id,
-            response=result["output"],
-            intermediate_steps=intermediate_steps,
-            total_tokens=cb.total_tokens,
-            total_cost=cb.total_cost,
-            sql_query=sql_query_list[-1] if len(sql_query_list) > 0 else "",
-        )
+        response.sql = sql_query
+        response.tokens_used = cb.total_tokens
+        response.completed_at = datetime.datetime.now()
         return self.create_sql_query_status(
             self.database,
-            response.sql_query,
+            response.sql,
             response,
-            top_k=TOP_K,
-            generate_csv=generate_csv,
-            database_connection=database_connection,
         )
