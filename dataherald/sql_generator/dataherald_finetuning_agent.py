@@ -109,6 +109,8 @@ class SystemTime(BaseSQLDatabaseTool, BaseTool):
 
     name = "system_time"
     description = """
+    Input: None.
+    Output: Current date and time.
     Use this tool to replace current_time and current_date in SQL queries with the actual current time and date.
     """
 
@@ -135,6 +137,8 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
 
     name = "get_db_table_names"
     description = """
+    Input: None.
+    Output: List of tables in the database.
     Use this tool to get the list of tables in the database.
     """
     db_scan: List[TableDescription]
@@ -162,8 +166,10 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
 class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for querying a SQL database."""
 
-    name = "sql_db_query"
+    name = "execute_query"
     description = """
+    Input: SQL query.
+    Output: Result from the database or an error message if the query is incorrect.
     Use this tool to execute the SQL query on the database, and return the results.
     """
     args_schema: Type[BaseModel] = SQLInput
@@ -192,8 +198,10 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
 
     name = "generate_sql"
     description = """
+    Input: Question.
+    Output: SQL query.
     Use this tool to generate SQL queries.
-    Pass the user question as the input to the tool.
+    Pass the a question as the input to the tool.
     """
     finetuning_model_id: str = Field(exclude=True)
     args_schema: Type[BaseModel] = QuestionInput
@@ -322,7 +330,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         format_instructions: str = FORMAT_INSTRUCTIONS,
         input_variables: List[str] | None = None,
         max_iterations: int
-        | None = int(os.getenv("AGENT_MAX_ITERATIONS", "20")),  # noqa: B008
+        | None = int(os.getenv("AGENT_MAX_ITERATIONS", "12")),  # noqa: B008
         max_execution_time: float | None = None,
         early_stopping_method: str = "force",
         verbose: bool = False,
