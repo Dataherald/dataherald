@@ -461,7 +461,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         else:
             for step in result["intermediate_steps"]:
                 action = step[0]
-                if type(action) == AgentAction and action.tool == "sql_db_query":
+                if type(action) == AgentAction and action.tool == "execute_query":
                     sql_query = self.format_sql_query(action.tool_input)
                     if "```sql" in sql_query:
                         sql_query = self.remove_markdown(sql_query)
