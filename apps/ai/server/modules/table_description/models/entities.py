@@ -35,11 +35,11 @@ class TableDescriptionMetadata(BaseModel):
 
 class BaseTableDescription(BaseModel):
     id: str | None
+    table_name: str | None
     db_connection_id: str | None
     description: str | None
     columns: list[ColumnDescription] | None
     examples: list | None
-    table_name: str | None
     status: SchemaStatus | None
     last_schema_sync: datetime | None
     created_at: datetime | None

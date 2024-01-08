@@ -39,7 +39,7 @@ class GenerationResponse(Generation):
 class PromptResponse(BasePrompt):
     def dict(self, **kwargs):
         dic = super().dict(**kwargs)
-        if "metadata" in dic and "dh_internal" in dic["metadata"]:
+        if "metadata" in dic and dic["metadata"] and "dh_internal" in dic["metadata"]:
             del dic["metadata"]["dh_internal"]
         return dic
 
@@ -47,7 +47,7 @@ class PromptResponse(BasePrompt):
 class SQLGenerationResponse(BaseSQLGeneration):
     def dict(self, **kwargs):
         dic = super().dict(**kwargs)
-        if "metadata" in dic and "dh_internal" in dic["metadata"]:
+        if "metadata" in dic and dic["metadata"] and "dh_internal" in dic["metadata"]:
             del dic["metadata"]["dh_internal"]
         return dic
 
@@ -55,6 +55,6 @@ class SQLGenerationResponse(BaseSQLGeneration):
 class NLGenerationResponse(BaseNLGeneration):
     def dict(self, **kwargs):
         dic = super().dict(**kwargs)
-        if "metadata" in dic and "dh_internal" in dic["metadata"]:
+        if "metadata" in dic and dic["metadata"] and "dh_internal" in dic["metadata"]:
             del dic["metadata"]["dh_internal"]
         return dic
