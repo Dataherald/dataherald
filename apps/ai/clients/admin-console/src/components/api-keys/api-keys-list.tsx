@@ -73,7 +73,7 @@ const ApiKeysList = () => {
           />
         </Button>
       </div>
-      <div className="grow overflow-auto">{pageContent}</div>
+      <div className="grow">{pageContent}</div>
       <div className="self-end">
         <GenerateApiKeyDialog onGeneratedKey={handleRefresh} />
       </div>

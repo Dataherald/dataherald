@@ -18,7 +18,7 @@ const ApiKeysPage: FC = () => {
           other client-side code.`}
           </p>
         </div>
-        <ContentBox className="w-100 min-h-[50vh] max-h-[50vh]">
+        <ContentBox className="w-100 min-h-[50vh]">
           <ApiKeysList />
         </ContentBox>
       </div>
