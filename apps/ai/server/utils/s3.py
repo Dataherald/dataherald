@@ -2,6 +2,7 @@ import os
 import uuid
 
 import boto3
+from fastapi import UploadFile
 
 from config import aws_s3_settings
 from utils.encrypt import FernetEncrypt
@@ -10,13 +11,26 @@ from utils.encrypt import FernetEncrypt
 class S3:
     def create_and_upload(self, content: str):
         fernet_encrypt = FernetEncrypt()
-        bucket_name = "k2-core"
         # The file extension is hardcoded
         file_name = f"{str(uuid.uuid4())}.json"
         file_location = f"tmp/{file_name}"
         with open(file_location, "w") as file_object:
             file_object.write(fernet_encrypt.encrypt(content))
 
+        return self._upload_file(file_location, file_name)
+
+    def upload(self, file: UploadFile) -> str:
+        fernet_encrypt = FernetEncrypt()
+        file_name = f"{str(uuid.uuid4())}.{file.filename.split('.')[-1]}"
+        file_location = f"tmp/{file_name}"
+
+        with open(file_location, "w") as file_object:
+            file_object.write(fernet_encrypt.encrypt(file.file.read().decode("utf-8")))
+
+        return self._upload_file(file_location, file_name)
+
+    def _upload_file(self, file_location: str, file_name: str) -> str:
+        bucket_name = "k2-core"
         # Upload the file
         s3_client = boto3.client(
             "s3",

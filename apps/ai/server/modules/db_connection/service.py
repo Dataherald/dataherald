@@ -1,7 +1,7 @@
 import json
 
 import httpx
-from fastapi import HTTPException, status
+from fastapi import HTTPException, UploadFile, status
 
 from config import settings
 from modules.db_connection.models.entities import (
@@ -31,10 +31,23 @@ class DBConnectionService:
     ) -> DBConnectionResponse:
         return self.get_db_connection_in_org(db_connection_id, org_id)
 
+    def upload_file(
+        self, db_connection_request: DBConnectionRequest, file: UploadFile | None
+    ) -> str | None:
+        s3 = S3()
+        if db_connection_request.credential_file_content:
+            return s3.create_and_upload(
+                json.dumps(db_connection_request.credential_file_content)
+            )
+        if file:
+            return s3.upload(file)
+        return None
+
     async def add_db_connection(
         self,
         db_connection_request: DBConnectionRequest,
         org_id: str,
+        file: UploadFile | None = None,
     ) -> DBConnectionResponse:
         reserved_key_in_metadata(db_connection_request.metadata)
         db_connection_internal_request = DBConnection(
@@ -45,13 +58,9 @@ class DBConnectionService:
             dh_internal=DHDBConnectionMetadata(organization_id=org_id),
         )
 
-        if db_connection_request.credential_file_content:
-            s3 = S3()
-            db_connection_internal_request.path_to_credentials_file = (
-                s3.create_and_upload(
-                    json.dumps(db_connection_request.credential_file_content)
-                )
-            )
+        db_connection_internal_request.path_to_credentials_file = self.upload_file(
+            db_connection_request, file
+        )
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -69,7 +78,11 @@ class DBConnectionService:
             return DBConnectionResponse(**response.json())
 
     async def update_db_connection(
-        self, db_connection_id, db_connection_request: DBConnectionRequest, org_id: str
+        self,
+        db_connection_id,
+        db_connection_request: DBConnectionRequest,
+        org_id: str,
+        file: UploadFile | None = None,
     ) -> DBConnectionResponse:
         reserved_key_in_metadata(db_connection_request.metadata)
         db_connection_internal_request = DBConnection(
@@ -81,13 +94,9 @@ class DBConnectionService:
             **db_connection_request.metadata,
             dh_internal=DHDBConnectionMetadata(organization_id=org_id),
         )
-        if db_connection_request.credential_file_content:
-            s3 = S3()
-            db_connection_internal_request.path_to_credentials_file = (
-                s3.create_and_upload(
-                    json.dumps(db_connection_request.credential_file_content)
-                )
-            )
+        db_connection_internal_request.path_to_credentials_file = self.upload_file(
+            db_connection_request, file
+        )
 
         async with httpx.AsyncClient() as client:
             response = await client.put(
