@@ -569,22 +569,20 @@ class FastAPI(dataherald.server.Server):
         """Cancels a fine tuning job"""
         return self._api.cancel_finetuning_job(cancel_fine_tuning_request)
 
-    def get_finetuning_job(self, finetuning_job_id: str) -> Finetuning:
+    def get_finetuning_job(self, finetuning_id: str) -> Finetuning:
         """Gets fine tuning jobs"""
-        return self._api.get_finetuning_job(finetuning_job_id)
+        return self._api.get_finetuning_job(finetuning_id)
 
     def get_fintunings(self, db_connection_id: str = None) -> list[Finetuning]:
         """Gets fine tuning jobs"""
         return self._api.get_finetunings(db_connection_id)
 
-    def delete_finetuning_job(self, finetuning_job_id: str) -> dict:
+    def delete_finetuning_job(self, finetuning_id: str) -> dict:
         """Deletes a fine tuning job"""
-        return self._api.delete_finetuning_job(finetuning_job_id)
+        return self._api.delete_finetuning_job(finetuning_id)
 
     def update_finetuning_job(
-        self, finetuning_job_id: str, update_metadata_request: UpdateMetadataRequest
+        self, finetuning_id: str, update_metadata_request: UpdateMetadataRequest
     ) -> Finetuning:
         """Gets fine tuning jobs"""
-        return self._api.update_finetuning_job(
-            finetuning_job_id, update_metadata_request
-        )
+        return self._api.update_finetuning_job(finetuning_id, update_metadata_request)
