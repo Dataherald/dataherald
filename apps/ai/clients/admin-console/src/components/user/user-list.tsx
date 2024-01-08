@@ -36,6 +36,7 @@ const UserList = () => {
     try {
       await deleteUser(user.id)
       toast({
+        variant: 'success',
         title: 'User Removed',
         description: `The user ${
           user.name || user.email

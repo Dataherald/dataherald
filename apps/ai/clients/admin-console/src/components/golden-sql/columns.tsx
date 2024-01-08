@@ -65,7 +65,9 @@ export const getColumns: (actions: {
             href={`/queries/${prompt_id as string}`}
           >
             <span className="mr-1">{formatKey(row.getValue('source'))}</span>
-            <ExternalLink size={14} strokeWidth={2.5} />
+            <div>
+              <ExternalLink size={14} strokeWidth={2.5} />
+            </div>
           </Link>
         ) : (
           <Badge variant="sky">{formatKey(row.getValue('source'))}</Badge>
@@ -96,7 +98,7 @@ export const getColumns: (actions: {
       return (
         <AlertDialog>
           <AlertDialogTrigger className="rounded-xl p-2 hover:bg-gray-200 hover:text-black/90">
-            <Trash2 strokeWidth={1.5} />
+            <Trash2 strokeWidth={1.5} size={20} />
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>

@@ -6,10 +6,9 @@ import QueriesError from '@/components/queries/error'
 import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
 import useQueries from '@/hooks/api/query/useQueries'
-import { cn } from '@/lib/utils'
 import { QueryListItem } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCcw } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { FC, useMemo, useState } from 'react'
 
@@ -68,16 +67,18 @@ const QueriesPage: FC = () => {
         <div className="flex items-center justify-between bg-gray-50 py-0">
           <h1 className="font-bold">Latest Queries</h1>
           <Button
-            variant="outline"
-            className="bg-gray-50"
-            disabled={isLoadingFirst}
+            variant="ghost"
+            disabled={isRefreshing || isLoadingFirst || isLoadingMore}
             onClick={handleRefresh}
           >
-            <RefreshCw
+            <RefreshCcw
               size={18}
-              className={cn('mr-2', isRefreshing ? 'animate-spin' : '')}
-            />{' '}
-            {!isRefreshing ? 'Refresh' : 'Refreshing'}
+              className={
+                isRefreshing || isLoadingFirst || isLoadingMore
+                  ? 'animate-spin'
+                  : ''
+              }
+            />
           </Button>
         </div>
         {pageContent}

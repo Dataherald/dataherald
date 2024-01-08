@@ -3,6 +3,7 @@ import { LoadingTable } from '@/components/data-table/loading-table'
 import { getColumns } from '@/components/golden-sql/columns'
 import PageLayout from '@/components/layout/page-layout'
 import QueriesError from '@/components/queries/error'
+import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
@@ -10,7 +11,8 @@ import { toast } from '@/components/ui/use-toast'
 import { useDeleteGoldenSql } from '@/hooks/api/useDeleteGoldenSql'
 import useGoldenSqlList from '@/hooks/api/useGoldenSqlList'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
-import { FC, useCallback, useMemo } from 'react'
+import { RefreshCcw } from 'lucide-react'
+import { FC, useCallback, useMemo, useState } from 'react'
 
 const GoldenSQLPage: FC = () => {
   const {
@@ -23,12 +25,14 @@ const GoldenSQLPage: FC = () => {
     setPage,
     mutate,
   } = useGoldenSqlList()
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const deleteGoldenSql = useDeleteGoldenSql(mutate)
   const handleDelete = useCallback(
     async (id: string) => {
       try {
         await deleteGoldenSql(id)
         toast({
+          variant: 'success',
           title: 'Golden SQL Removed',
           description:
             'This query was removed from the Golden SQL list and will not be used in further training.',
@@ -55,6 +59,12 @@ const GoldenSQLPage: FC = () => {
     () => getColumns({ deleteAction: handleDelete }),
     [handleDelete],
   )
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await mutate()
+    setIsRefreshing(false)
+  }
 
   const handleLoadMore = () => {
     if (!isLoadingMore) {
@@ -97,8 +107,22 @@ const GoldenSQLPage: FC = () => {
           </p>
         </div>
         <ContentBox>
-          <div className="flex flex-col gap-3 bg-gray-50 py-0">
+          <div className="flex items-center justify-between">
             <h1 className="font-bold">Training Queries</h1>
+            <Button
+              variant="ghost"
+              disabled={isRefreshing || isLoadingFirst || isLoadingMore}
+              onClick={handleRefresh}
+            >
+              <RefreshCcw
+                size={18}
+                className={
+                  isRefreshing || isLoadingFirst || isLoadingMore
+                    ? 'animate-spin'
+                    : ''
+                }
+              />
+            </Button>
           </div>
           {pageContent}
         </ContentBox>

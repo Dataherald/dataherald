@@ -3,14 +3,15 @@ import { LoadingTable } from '@/components/data-table/loading-table'
 import { finetunningsColumns } from '@/components/fine-tunnings/columns'
 import FineTunningsError from '@/components/fine-tunnings/error'
 import PageLayout from '@/components/layout/page-layout'
+import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
 import useFinetunings from '@/hooks/api/fine-tuning/useFinetunings'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
-import { SlidersIcon } from 'lucide-react'
+import { RefreshCcw, SlidersIcon } from 'lucide-react'
 import { FC, useMemo } from 'react'
 
 const FineTuningPage: FC = () => {
-  const { isLoading, error, models } = useFinetunings()
+  const { isLoading, isValidating, error, models, mutate } = useFinetunings()
   const columns = useMemo(() => finetunningsColumns, [])
 
   let pageContent = <></>
@@ -31,9 +32,21 @@ const FineTuningPage: FC = () => {
     <PageLayout>
       <div className="gap-4 m-6">
         <ContentBox className="w-100 max-w-2xl min-h-[50vh] max-h-[50vh]">
-          <div className="flex items-center gap-2">
-            <SlidersIcon size={20} strokeWidth={2.5} />
-            <h1 className="font-semibold">Fine-tuning models</h1>
+          <div className="w-full flex justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <SlidersIcon size={20} strokeWidth={2.5} />
+              <h1 className="font-semibold">Fine-tuning models</h1>
+            </div>
+            <Button
+              variant="ghost"
+              disabled={isLoading || isValidating}
+              onClick={() => mutate()}
+            >
+              <RefreshCcw
+                size={18}
+                className={isLoading || isValidating ? 'animate-spin' : ''}
+              />
+            </Button>
           </div>
           <div className="grow overflow-auto">{pageContent}</div>
         </ContentBox>

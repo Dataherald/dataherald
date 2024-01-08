@@ -58,7 +58,8 @@ const LlmApiKeyConfig: FC<LlmApiKeyConfigProps> = ({
         ...form.getValues(),
       })
       toast({
-        title: 'API key updated',
+        variant: 'success',
+        title: 'OpenAI API key updated',
         description: `The OpenAI API key has been updated.`,
       })
       onOrganizationUpdate()

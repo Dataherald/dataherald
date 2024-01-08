@@ -85,6 +85,7 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({ onGeneratedKey }) => {
       setShowNewKey(true)
       form.reset()
       toast({
+        variant: 'success',
         title: 'Secret API key generated',
         description: `Your secret key was generated successfully.`,
       })

@@ -66,6 +66,7 @@ const AddUserDialog: FC<AddUserDialogProps> = ({
       onAddUser()
       form.reset()
       toast({
+        variant: 'success',
         title: 'User added',
         description: `The user has been added to the Organization.`,
       })

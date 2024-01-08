@@ -3,13 +3,14 @@ import ApiKeysError from '@/components/api-keys/error'
 import GenerateApiKeyDialog from '@/components/api-keys/generate-api-key-dialog'
 import { DataTable } from '@/components/data-table/data-table'
 import { LoadingTable } from '@/components/data-table/loading-table'
+import { Button } from '@/components/ui/button'
 import useApiKeys from '@/hooks/api/api-keys/useApiKeys'
 import { useDeleteApiKey } from '@/hooks/api/api-keys/useDeleteApiKey'
-import { KeyRound } from 'lucide-react'
+import { KeyRound, RefreshCcw } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 
-const ApiKeys = () => {
-  const { isLoading, error, apiKeys, mutate } = useApiKeys()
+const ApiKeysList = () => {
+  const { isLoading, isValidating, error, apiKeys, mutate } = useApiKeys()
   const deleteApiKey = useDeleteApiKey<void>()
 
   const handleDelete = useCallback(
@@ -24,6 +25,10 @@ const ApiKeys = () => {
     },
     [deleteApiKey, mutate],
   )
+
+  const handleRefresh = useCallback(async () => {
+    mutate()
+  }, [mutate])
 
   const columns = useMemo(
     () => getApiKeysColumns({ remove: handleDelete }),
@@ -52,16 +57,28 @@ const ApiKeys = () => {
 
   return (
     <>
-      <div className="flex items-center gap-2">
-        <KeyRound size={20} strokeWidth={2.5} />
-        <h1 className="font-semibold">API Keys</h1>
+      <div className="w-full flex justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <KeyRound size={20} strokeWidth={2.5} />
+          <h1 className="font-semibold">API Keys</h1>
+        </div>
+        <Button
+          variant="ghost"
+          disabled={isLoading || isValidating}
+          onClick={handleRefresh}
+        >
+          <RefreshCcw
+            size={18}
+            className={isLoading || isValidating ? 'animate-spin' : ''}
+          />
+        </Button>
       </div>
       <div className="grow overflow-auto">{pageContent}</div>
       <div className="self-end">
-        <GenerateApiKeyDialog onGeneratedKey={() => mutate()} />
+        <GenerateApiKeyDialog onGeneratedKey={handleRefresh} />
       </div>
     </>
   )
 }
 
-export default ApiKeys
+export default ApiKeysList

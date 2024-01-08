@@ -25,6 +25,7 @@ const DeleteApiKeyDialog: FC<DeleteApiKeyDialogProps> = ({ deleteFnc }) => {
     try {
       await deleteFnc()
       toast({
+        variant: 'success',
         title: 'API Key removed',
       })
       setOpen(false)

@@ -57,6 +57,7 @@ const MessageSection: FC<MessageSectionProps> = ({
     try {
       const { text } = await generateMessage(promptId)
       toast({
+        variant: 'success',
         title: 'Message generated',
         description: 'The query message was generated using the AI platform.',
       })
@@ -78,6 +79,7 @@ const MessageSection: FC<MessageSectionProps> = ({
       })
       setCurrentMessage(newCustomMessage)
       toast({
+        variant: 'success',
         title: 'Message updated',
         description: 'The query message was updated successfully.',
       })

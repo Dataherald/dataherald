@@ -132,6 +132,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     try {
       await onResubmitQuery()
       toast({
+        variant: 'success',
         title: 'Query updated',
         description:
           'The query was resubmitted to the platform for a new response',
@@ -159,6 +160,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     try {
       await onExecuteQuery(currentSqlQuery)
       toast({
+        variant: 'success',
         title: 'Query updated',
         description:
           'The query was executed successfully and the results were updated',
@@ -202,7 +204,6 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
         })
       } else if (isRejected(newStatus)) {
         toast({
-          variant: 'destructive-outline',
           title: 'Query Rejected',
           description:
             'The query is marked as rejected and will not be used to improve the platform accuracy',
@@ -320,7 +321,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                 >
                   <div className="h-full flex flex-col items-center justify-center gap-2">
                     <div className="flex items-center gap-2 text-green-700">
-                      <Verified size={18} strokeWidth={2} /> Verified query
+                      <Verified size={18} strokeWidth={2} /> Verified Query
                     </div>
                     <div className="px-20 text-center">
                       {`The SQL query was verified and added to the Golden SQL training set. To modify the SQL query, please set the status to "Not Verified" first.`}

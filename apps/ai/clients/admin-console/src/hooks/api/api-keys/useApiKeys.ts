@@ -6,6 +6,7 @@ import useSWR, { KeyedMutator } from 'swr'
 interface ApiKeysResponse {
   apiKeys: ApiKeys | undefined
   isLoading: boolean
+  isValidating: boolean
   error: unknown
   mutate: KeyedMutator<ApiKeys>
 }
@@ -13,12 +14,14 @@ interface ApiKeysResponse {
 const useApiKeys = (): ApiKeysResponse => {
   const endpointUrl = `${API_URL}/keys`
   const { token } = useAuth()
-  const { data, isLoading, error, mutate } = useSWR<ApiKeys>(
+  const { data, isLoading, isValidating, error, mutate } = useSWR<ApiKeys>(
     token ? endpointUrl : null,
   )
+  console.log('is loading?', isLoading)
   return {
     apiKeys: data,
     isLoading: isLoading || (!data && !error),
+    isValidating,
     error,
     mutate,
   }

@@ -127,15 +127,14 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
             } tables schemas`}
           </Button>
           <Button
-            variant="outline"
-            className="bg-gray-50"
+            variant="ghost"
             disabled={isRefreshing || isSynchronizing}
             onClick={() => onRefresh()}
           >
             <RefreshCw
               size={18}
               className={cn('mr-2', isRefreshing ? 'animate-spin' : '')}
-            />{' '}
+            />
             {isRefreshing ? 'Refreshing' : 'Refresh'}
           </Button>
         </div>

@@ -1,4 +1,4 @@
-import ApiKeys from '@/components/api-keys/api-keys'
+import ApiKeysList from '@/components/api-keys/api-keys-list'
 import PageLayout from '@/components/layout/page-layout'
 import { ContentBox } from '@/components/ui/content-box'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
@@ -19,7 +19,7 @@ const ApiKeysPage: FC = () => {
           </p>
         </div>
         <ContentBox className="w-100 min-h-[50vh] max-h-[50vh]">
-          <ApiKeys />
+          <ApiKeysList />
         </ContentBox>
       </div>
     </PageLayout>
