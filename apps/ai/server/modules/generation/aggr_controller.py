@@ -55,7 +55,7 @@ async def get_generations(
 async def get_generation(
     id: str, api_key: str = Security(get_api_key)
 ) -> GenerationResponse:
-    return generation_service.get_generation(id, api_key.organization_id)
+    return await generation_service.get_generation(id, api_key.organization_id)
 
 
 @ac_router.get("")
