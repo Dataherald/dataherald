@@ -67,7 +67,6 @@ class BaseSQLGeneration(BaseModel):
     finetuning_id: str | None
     sql: str | None
     status: SQLGenerationStatus = SQLGenerationStatus.INVALID
-    tokens_used: int | None
     confidence_score: confloat(ge=0, le=1) | None
     error: str | None
     completed_at: datetime | None
