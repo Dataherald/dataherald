@@ -31,7 +31,7 @@ export function LoadingTable({
             <TableRow className="hover:bg-transparent">
               {columns.map((_, colIdx) => (
                 <TableHead key={colIdx}>
-                  <Skeleton className="w-full h-4 bg-gray-200" />
+                  <Skeleton className="w-full h-4 bg-slate-400" />
                 </TableHead>
               ))}
             </TableRow>
@@ -42,7 +42,7 @@ export function LoadingTable({
             <TableRow key={rowIndex} className="hover:bg-transparent">
               {columns.map((_, colIdx) => (
                 <TableCell key={colIdx}>
-                  <Skeleton className="w-full h-4 bg-gray-400" />
+                  <Skeleton className="w-full h-4 bg-slate-300" />
                 </TableCell>
               ))}
             </TableRow>

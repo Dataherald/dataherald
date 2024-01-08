@@ -77,7 +77,10 @@ export function DataTable<TData, TValue>({
               onClick={() => onRowClick && onRowClick(row.original)}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell
+                  key={cell.id}
+                  style={{ width: `${cell.column.getSize()}px` || 'auto' }}
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}

@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-} from '@/components/ui/dialog'
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
@@ -19,7 +19,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
 import { usePostApiKey } from '@/hooks/api/api-keys/usePostApiKey'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Copy, Loader } from 'lucide-react'
+import { Copy, Loader, Plus } from 'lucide-react'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as Yup from 'yup'
@@ -34,16 +34,11 @@ const apiKeyFormSchema = Yup.object({
 type ApiKeyFormValues = Yup.InferType<typeof apiKeyFormSchema>
 
 interface AddApiKeyDialogProps {
-  open: boolean
   onGeneratedKey: () => void
-  onClose: () => Promise<void> | void
 }
 
-const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({
-  open,
-  onGeneratedKey,
-  onClose,
-}) => {
+const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({ onGeneratedKey }) => {
+  const [open, setOpen] = useState(false)
   const [generatingApiKey, setGeneratingApiKey] = useState(false)
   const [showNewKey, setShowNewKey] = useState(false)
   const [apiKey, setApiKey] = useState<string | undefined>()
@@ -58,7 +53,7 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({
 
   const handleClose = async () => {
     if (generatingApiKey) return
-    await onClose()
+    setOpen(false)
     setShowNewKey(false)
     setApiKey(undefined)
     form.reset()
@@ -90,7 +85,7 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({
       setShowNewKey(true)
       form.reset()
       toast({
-        title: 'Secret API key generated!',
+        title: 'Secret API key generated',
         description: `Your secret key was generated successfully.`,
       })
     } catch (error) {
@@ -114,11 +109,15 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
+    <AlertDialog open={open} onOpenChange={handleClose}>
+      <Button onClick={() => setOpen(true)}>
+        <Plus className="mr-2" size={18} />
+        Generate new secret key
+      </Button>
+      <AlertDialogContent>
+        <AlertDialogHeader>
           <h1 className="font-semibold">Generate new secret key</h1>
-        </DialogHeader>
+        </AlertDialogHeader>
         {showNewKey ? (
           <>
             <div className="flex flex-col">
@@ -137,9 +136,9 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({
                 </Button>
               </div>
             </div>
-            <DialogFooter className="pt-4">
+            <AlertDialogFooter className="pt-4">
               <Button onClick={handleClose}>Done</Button>
-            </DialogFooter>
+            </AlertDialogFooter>
           </>
         ) : (
           <Form {...form}>
@@ -164,7 +163,7 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({
                   </FormItem>
                 )}
               />
-              <DialogFooter className="pt-4">
+              <AlertDialogFooter className="pt-4">
                 <Button
                   type="button"
                   variant="secondary-outline"
@@ -187,13 +186,13 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({
                     'Generate secrete key'
                   )}
                 </Button>
-              </DialogFooter>
+              </AlertDialogFooter>
             </form>
           </Form>
         )}
-      </DialogContent>
+      </AlertDialogContent>
       <Toaster />
-    </Dialog>
+    </AlertDialog>
   )
 }
 

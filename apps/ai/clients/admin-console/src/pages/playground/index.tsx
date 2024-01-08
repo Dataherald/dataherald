@@ -25,7 +25,7 @@ import {
   CaseSensitive,
   Code2,
   Eraser,
-  Loader2,
+  Loader,
   PlayCircle,
   StopCircle,
   XOctagon,
@@ -217,7 +217,7 @@ const PlaygroundPage: FC = () => {
                   disabled={submittingQuery || !prompt}
                 >
                   {submittingQuery ? (
-                    <Loader2 size={18} className="mr-2 animate-spin" />
+                    <Loader size={18} className="mr-2 animate-spin" />
                   ) : (
                     <PlayCircle
                       size={18}

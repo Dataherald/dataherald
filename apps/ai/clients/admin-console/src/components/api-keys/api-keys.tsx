@@ -1,21 +1,34 @@
-import { apiKeysColumns } from '@/components/api-keys/columns'
+import { getApiKeysColumns } from '@/components/api-keys/columns'
 import ApiKeysError from '@/components/api-keys/error'
 import GenerateApiKeyDialog from '@/components/api-keys/generate-api-key-dialog'
 import { DataTable } from '@/components/data-table/data-table'
 import { LoadingTable } from '@/components/data-table/loading-table'
-import { Button } from '@/components/ui/button'
 import useApiKeys from '@/hooks/api/api-keys/useApiKeys'
-import { KeyRound, Plus } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useDeleteApiKey } from '@/hooks/api/api-keys/useDeleteApiKey'
+import { KeyRound } from 'lucide-react'
+import { useCallback, useMemo } from 'react'
 
 const ApiKeys = () => {
-  const [openGenerateKeyDialog, setOpenGenerateKeyDialog] = useState(false)
   const { isLoading, error, apiKeys, mutate } = useApiKeys()
-  const columns = useMemo(() => apiKeysColumns, [])
+  const deleteApiKey = useDeleteApiKey<void>()
 
-  const handleClose = async () => {
-    setOpenGenerateKeyDialog(false)
-  }
+  const handleDelete = useCallback(
+    async (id: string) => {
+      try {
+        await deleteApiKey(id)
+        mutate() // update the list of api keys
+        return Promise.resolve()
+      } catch (e) {
+        return Promise.reject(e)
+      }
+    },
+    [deleteApiKey, mutate],
+  )
+
+  const columns = useMemo(
+    () => getApiKeysColumns({ remove: handleDelete }),
+    [handleDelete],
+  )
 
   let pageContent = <></>
 
@@ -45,15 +58,7 @@ const ApiKeys = () => {
       </div>
       <div className="grow overflow-auto">{pageContent}</div>
       <div className="self-end">
-        <Button onClick={() => setOpenGenerateKeyDialog(true)}>
-          <Plus className="mr-2" />
-          Generate new secret key
-        </Button>
-        <GenerateApiKeyDialog
-          open={openGenerateKeyDialog}
-          onGeneratedKey={() => mutate()}
-          onClose={handleClose}
-        />
+        <GenerateApiKeyDialog onGeneratedKey={() => mutate()} />
       </div>
     </>
   )

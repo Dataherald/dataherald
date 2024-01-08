@@ -1,8 +1,11 @@
+import DeleteApiKeyDialog from '@/components/api-keys/delete-api-key-dialog'
 import { ApiKey } from '@/models/api'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 
-export const apiKeysColumns: ColumnDef<ApiKey>[] = [
+export const getApiKeysColumns: (actions: {
+  remove: (id: string) => void | Promise<void>
+}) => ColumnDef<ApiKey>[] = ({ remove }) => [
   {
     id: 'name',
     header: 'Name',
@@ -10,7 +13,7 @@ export const apiKeysColumns: ColumnDef<ApiKey>[] = [
   },
   {
     id: 'key_preview',
-    header: 'Key',
+    header: 'Secret key',
     accessorKey: 'key_preview',
   },
   {
@@ -20,6 +23,15 @@ export const apiKeysColumns: ColumnDef<ApiKey>[] = [
     cell: ({ row }) => {
       const date: string = row.getValue('created_at')
       return date ? format(new Date(date), 'PP') : '-'
+    },
+  },
+  {
+    id: 'delete',
+    width: 'auto',
+    size: 20,
+    cell: ({ row }) => {
+      const { id } = row.original
+      return <DeleteApiKeyDialog deleteFnc={() => remove(id)} />
     },
   },
 ]
