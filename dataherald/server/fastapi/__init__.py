@@ -585,6 +585,4 @@ class FastAPI(dataherald.server.Server):
         self, finetuning_id: str, update_metadata_request: UpdateMetadataRequest
     ) -> Finetuning:
         """Gets fine tuning jobs"""
-        return self._api.update_finetuning_job(
-            finetuning_id, update_metadata_request
-        )
+        return self._api.update_finetuning_job(finetuning_id, update_metadata_request)
