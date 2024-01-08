@@ -77,6 +77,7 @@ export const getColumns: (actions: {
   },
   {
     id: 'delete',
+    size: 20,
     cell: ({ row }) => {
       const { id } = row.original
       const { source } = row.original.metadata.dh_internal
