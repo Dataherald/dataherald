@@ -272,6 +272,8 @@ class FastAPI(API):
 
             scanner = self.system.instance(Scanner)
             all_tables = scanner.get_all_tables_and_views(database)
+            if table_name:
+                all_tables = [table for table in all_tables if table == table_name]
 
             for table_description in table_descriptions:
                 if table_description.table_name not in all_tables:
