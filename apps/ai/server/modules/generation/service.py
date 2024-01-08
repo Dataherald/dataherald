@@ -140,9 +140,11 @@ class GenerationService:
         )
         create_request.prompt.metadata = PromptMetadata(
             **create_request.prompt.metadata,
-            generation_status=GenerationStatus.INITIALIZED,
-            organization_id=org_id,
-            display_id=self.repo.get_next_display_id(org_id),
+            dh_internal=DHPromptMetadata(
+                generation_status=GenerationStatus.INITIALIZED,
+                organization_id=org_id,
+                display_id=self.repo.get_next_display_id(org_id),
+            ),
         )
 
         async with httpx.AsyncClient() as client:
