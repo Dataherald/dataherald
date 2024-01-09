@@ -2,6 +2,7 @@ import PageLayout from '@/components/layout/page-layout'
 import QueryError from '@/components/query/error'
 import LoadingQuery from '@/components/query/loading'
 import QueryWorkspace from '@/components/query/workspace'
+import useQueries from '@/hooks/api/query/useQueries'
 import { useQuery } from '@/hooks/api/query/useQuery'
 import useQueryExecution from '@/hooks/api/query/useQueryExecution'
 import useQueryPut, { QueryPutRequest } from '@/hooks/api/query/useQueryPut'
@@ -21,6 +22,7 @@ const QueryPage: FC = () => {
     error,
     mutate,
   } = useQuery(promptId as string)
+  const { mutate: mutateListing } = useQueries()
   const [query, setQuery] = useState<Query | undefined>(undefined)
   const resubmitQuery = useQueryResubmit()
   const putQuery = useQueryPut()
@@ -37,22 +39,27 @@ const QueryPage: FC = () => {
       )
   }, [serverQuery])
 
+  const handleQueryMutation = async () => {
+    mutateListing()
+    return mutate()
+  }
+
   const handleResubmitQuery = async () => {
     const newQuery = await resubmitQuery(promptId as string)
     setQuery(newQuery)
-    return mutate()
+    return handleQueryMutation()
   }
 
   const handleExecuteQuery = async (sql_query: string) => {
     const newQuery = await executeQuery(promptId as string, sql_query)
     setQuery(newQuery)
-    return mutate()
+    return handleQueryMutation()
   }
 
   const handlePutQuery = async (puts: QueryPutRequest) => {
     const newQuery = await putQuery(promptId as string, puts)
     setQuery(newQuery)
-    return mutate()
+    return handleQueryMutation()
   }
 
   let pageContent: JSX.Element = <></>

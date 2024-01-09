@@ -16,7 +16,7 @@ export const mapQuery = <T extends Query | QueryListItem>({
 }: T): T =>
   ({
     ...props,
-    confidence_score: confidence_score * 100,
+    confidence_score: confidence_score !== null ? confidence_score * 100 : null,
   } as T)
 
 export const QUERY_STATUS_BUTTONS_CLASSES: ResourceButtonClasses<
@@ -148,6 +148,7 @@ export const formatQueryStatusWithScore = (
   const formattedStatus = formatQueryStatus(status)
   if (
     status === EQueryStatus.ERROR ||
+    confidence_score === null ||
     (status === EQueryStatus.NOT_VERIFIED && confidence_score === null)
   ) {
     return formattedStatus
