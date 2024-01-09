@@ -7,10 +7,10 @@ const useQuerySubmit = () => {
   const { apiFetcher, cancelApiFetch } = useApiFetcher()
 
   const submitQuery = useCallback(
-    async (prompt: string): Promise<Query> =>
+    async (prompt: string, model?: string): Promise<Query> =>
       apiFetcher<Query>(`${API_URL}/generations/prompts/sql-generations`, {
         method: 'POST',
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, ...(model ? { model } : {}) }),
       }),
     [apiFetcher],
   )
