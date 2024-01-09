@@ -92,6 +92,7 @@ class SQLGenerationService:
         initial_sql_generation.tokens_used = sql_generation.tokens_used
         initial_sql_generation.completed_at = datetime.now()
         initial_sql_generation.status = sql_generation.status
+        initial_sql_generation.error = sql_generation.error
         return self.sql_generation_repository.update(initial_sql_generation)
 
     def get(self, query) -> list[SQLGeneration]:
