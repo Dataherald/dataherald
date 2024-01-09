@@ -23,10 +23,10 @@ if __name__ == "__main__":
         pass
     golden_sqls = storage.find_all("golden_sqls")
     for golden_sql in golden_sqls:
-        tables = Parser(golden_sql["sql_query"]).tables
+        tables = Parser(golden_sql["sql"]).tables
         if len(tables) == 0:
             tables = [""]
-        question = golden_sql["question"]
+        question = golden_sql["prompt_text"]
         vector_store.add_record(
             documents=question,
             db_connection_id=str(golden_sql["db_connection_id"]),
