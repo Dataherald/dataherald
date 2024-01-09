@@ -38,9 +38,11 @@ const OrganizationSettingsPage: FC = () => {
           <ContentBox className="flex-1 min-h-[50vh] max-h-[50vh]">
             <UserList />
           </ContentBox>
-          <ContentBox className="flex-1">
-            <LlmCredentialsConfig onOrganizationUpdate={updateOrganization} />
-          </ContentBox>
+          {false && (
+            <ContentBox className="flex-1">
+              <LlmCredentialsConfig onOrganizationUpdate={updateOrganization} />
+            </ContentBox>
+          )}
         </div>
       </div>
     </PageLayout>
