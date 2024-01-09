@@ -64,16 +64,23 @@ const PlaygroundPage: FC = () => {
       setQuery(mapQuery(query))
     } catch (error) {
       console.error(error)
-      toast({
-        variant: 'destructive',
-        title: 'Oops! Something went wrong.',
-        description: 'There was a problem with running the query',
-        action: (
-          <ToastAction altText="Try again" onClick={handleSubmitQuery}>
-            Try again
-          </ToastAction>
-        ),
-      })
+      if ((error as Error).name === 'AbortError') {
+        toast({
+          variant: 'destructive-outline',
+          title: 'Generation cancelled',
+        })
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Oops! Something went wrong.',
+          description: 'There was a problem with running the query',
+          action: (
+            <ToastAction altText="Try again" onClick={handleSubmitQuery}>
+              Try again
+            </ToastAction>
+          ),
+        })
+      }
     } finally {
       setSubmittingQuery(false)
     }
@@ -82,7 +89,6 @@ const PlaygroundPage: FC = () => {
   const handleStopGenerating = () => {
     cancelSubmitQuery()
     setCurrentQueryPrompt(previousQueryPrompt)
-    setSubmittingQuery(false)
   }
 
   const handleClear = () => {
@@ -205,7 +211,7 @@ const PlaygroundPage: FC = () => {
               <div className="flex items-center gap-3">
                 {submittingQuery && (
                   <Button
-                    className="px-3 py-1 h-fit"
+                    className="px-3 py-1 h-fit text-slate-500"
                     variant="ghost"
                     onClick={handleStopGenerating}
                   >
