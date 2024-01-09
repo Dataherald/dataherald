@@ -19,7 +19,7 @@ class ColumnDescription(BaseModel):
     data_type: str | None
     low_cardinality: bool | None
     categories: list[str] | None
-    forengin_key: dict | None
+    foreign_key: dict | None
 
 
 class DHTableDescriptionMetadata(BaseModel):
