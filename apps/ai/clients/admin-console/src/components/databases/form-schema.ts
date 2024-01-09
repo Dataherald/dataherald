@@ -25,7 +25,7 @@ export const dbConnectionFormSchema = Yup.object({
       return data_warehouse === 'bigquery'
         ? schema.required('Service account key file is required for BigQuery')
         : useSsh
-        ? schema.required('Private key file is required')
+        ? schema.required('SSH key file is required')
         : schema.notRequired()
     }),
   ssh_settings: Yup.object<SshSettings>()
@@ -48,17 +48,21 @@ export const dbConnectionFormSchema = Yup.object({
               db_name: Yup.string().required(
                 "The database name can't be empty",
               ),
-              host: Yup.string().required("The host can't be empty"),
-              username: Yup.string().required("The username can't be empty"),
-              password: Yup.string().required("The password can't be empty"),
+              host: Yup.string().required("The SSH host can't be empty"),
+              username: Yup.string().required(
+                "The SSH username can't be empty",
+              ),
+              password: Yup.string().required(
+                "The SSH password can't be empty",
+              ),
               remote_host: Yup.string().required(
-                "The remote host can't be empty",
+                "The database host can't be empty",
               ),
               remote_db_name: Yup.string().required(
-                "The remote database name can't be empty",
+                "The database username can't be empty",
               ),
               remote_db_password: Yup.string().required(
-                "The remote database password can't be empty",
+                "The database password can't be empty",
               ),
               private_key_password: Yup.string().notRequired(),
             })

@@ -125,20 +125,20 @@ const DatabaseConnectionFormDialog: FC<{
       <Dialog onOpenChange={handleDialogOpenChange}>
         <DialogTrigger asChild>
           <Button size="lg">
-            <UploadCloud className="mr-2" />
+            <UploadCloud className="mr-2" size={20} />
             Connect your Database
           </Button>
         </DialogTrigger>
         <DialogContent
           className={cn(
             isSshFormDisplayed ? 'h-[90vh]' : 'h-[70vh]',
-            'max-w-[70vw] lg:max-w-[700px] overflow-auto flex flex-col',
+            'max-w-[70vw] lg:max-w-[700px] flex flex-col',
           )}
           onInteractOutside={(e) => e.preventDefault()}
         >
           {databaseConnected ? (
             <>
-              <DialogHeader className="flex-none">
+              <DialogHeader className="flex-none px-1">
                 <DialogTitle>
                   <div className="flex flex-row items-center gap-2">
                     <CheckCircle />
@@ -146,7 +146,7 @@ const DatabaseConnectionFormDialog: FC<{
                   </div>
                 </DialogTitle>
               </DialogHeader>
-              <div className="grow flex flex-col gap-5">
+              <div className="grow flex flex-col gap-5 px-1">
                 <p>
                   Connection successful! To begin using this database for
                   queries, select the tables you wish to synchronize with the
@@ -164,48 +164,43 @@ const DatabaseConnectionFormDialog: FC<{
               </div>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button>Finish</Button>
+                  <Button>Done</Button>
                 </DialogClose>
               </DialogFooter>
             </>
           ) : (
             <>
-              <DialogHeader className="flex-none">
-                <DialogTitle>Connect Database</DialogTitle>
+              <DialogHeader className="flex-none px-1">
+                <DialogTitle>Connect your Database</DialogTitle>
                 <DialogDescription>
                   Connect your database to start using the platform.
                 </DialogDescription>
               </DialogHeader>
-              <div className="grow overflow-auto px-2">
-                <DatabaseConnectionForm form={form} />
+              <div className="grow flex flex-col overflow-auto p-1">
+                <div className="grow">
+                  <DatabaseConnectionForm form={form} />
+                </div>
+                <DialogFooter className="mt-5">
+                  <Button
+                    onClick={form.handleSubmit(onSubmit)}
+                    type="button"
+                    disabled={form.formState.isSubmitting}
+                  >
+                    {form.formState.isSubmitting ? (
+                      <>
+                        <Loader
+                          className="mr-2 animate-spin"
+                          size={16}
+                          strokeWidth={2.5}
+                        />{' '}
+                        Connecting
+                      </>
+                    ) : (
+                      'Connect Database'
+                    )}
+                  </Button>
+                </DialogFooter>
               </div>
-              <DialogFooter>
-                <Button
-                  onClick={form.handleSubmit(onSubmit)}
-                  type="button"
-                  disabled={form.formState.isSubmitting}
-                >
-                  {form.formState.isSubmitting ? (
-                    <>
-                      <Loader
-                        className="mr-2 animate-spin"
-                        size={16}
-                        strokeWidth={2.5}
-                      />{' '}
-                      Connecting
-                    </>
-                  ) : (
-                    <>
-                      <UploadCloud
-                        size={16}
-                        strokeWidth={2.5}
-                        className="mr-2"
-                      />
-                      Connect
-                    </>
-                  )}
-                </Button>
-              </DialogFooter>
             </>
           )}
         </DialogContent>

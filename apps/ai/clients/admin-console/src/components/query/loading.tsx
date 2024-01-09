@@ -1,4 +1,3 @@
-import { SectionHeader } from '@/components/query/section-header'
 import { Skeleton } from '@/components/ui/skeleton'
 import { FC } from 'react'
 

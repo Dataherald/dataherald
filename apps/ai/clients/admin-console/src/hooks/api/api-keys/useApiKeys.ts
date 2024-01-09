@@ -17,7 +17,6 @@ const useApiKeys = (): ApiKeysResponse => {
   const { data, isLoading, isValidating, error, mutate } = useSWR<ApiKeys>(
     token ? endpointUrl : null,
   )
-  console.log('is loading?', isLoading)
   return {
     apiKeys: data,
     isLoading: isLoading || (!data && !error),

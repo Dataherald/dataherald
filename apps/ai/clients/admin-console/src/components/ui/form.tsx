@@ -1,6 +1,6 @@
-import * as React from 'react'
 import * as LabelPrimitive from '@radix-ui/react-label'
 import { Slot } from '@radix-ui/react-slot'
+import * as React from 'react'
 import {
   Controller,
   ControllerProps,
@@ -10,8 +10,8 @@ import {
   useFormContext,
 } from 'react-hook-form'
 
-import { cn } from '@/lib/utils'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 
 const Form = FormProvider
 
@@ -91,7 +91,12 @@ const FormLabel = React.forwardRef<
   const { formItemId } = useFormField()
 
   return (
-    <Label ref={ref} className={className} htmlFor={formItemId} {...props} />
+    <Label
+      ref={ref}
+      className={cn('font-semibold text-slate-900 tracking-wide', className)}
+      htmlFor={formItemId}
+      {...props}
+    />
   )
 })
 FormLabel.displayName = 'FormLabel'
@@ -160,12 +165,12 @@ const FormMessage = React.forwardRef<
 FormMessage.displayName = 'FormMessage'
 
 export {
-  useFormField,
   Form,
-  FormItem,
-  FormLabel,
   FormControl,
   FormDescription,
-  FormMessage,
   FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  useFormField,
 }

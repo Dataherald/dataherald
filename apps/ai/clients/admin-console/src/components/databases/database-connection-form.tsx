@@ -31,39 +31,25 @@ const SSHForm: FC<{
   <div className="grid grid-cols-2 gap-4">
     <FormField
       control={form.control}
-      name="ssh_settings.db_name"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Database Name</FormLabel>
-          <FormControl>
-            <Input placeholder="Database Name" {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <FormField
-      control={form.control}
       name="ssh_settings.host"
       render={({ field }) => (
-        <FormItem>
-          <FormLabel>Host</FormLabel>
+        <FormItem className="col-span-2">
+          <FormLabel>SSH host</FormLabel>
           <FormControl>
-            <Input placeholder="Host" {...field} />
+            <Input placeholder="SSH host" {...field} />
           </FormControl>
           <FormMessage />
         </FormItem>
       )}
     />
-
     <FormField
       control={form.control}
       name="ssh_settings.username"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Username</FormLabel>
+          <FormLabel>SSH username</FormLabel>
           <FormControl>
-            <Input placeholder="Username" {...field} />
+            <Input placeholder="SSH username" {...field} />
           </FormControl>
           <FormMessage />
         </FormItem>
@@ -74,52 +60,10 @@ const SSHForm: FC<{
       name="ssh_settings.password"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Password</FormLabel>
+          <FormLabel>SSH password</FormLabel>
           <div className="flex items-center gap-3">
             <FormControl>
-              <Input placeholder="Password" {...field} />
-            </FormControl>
-          </div>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <FormField
-      control={form.control}
-      name="ssh_settings.remote_host"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Remote Host</FormLabel>
-          <FormControl>
-            <Input placeholder="Remote Host" {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <div></div>
-    <FormField
-      control={form.control}
-      name="ssh_settings.remote_db_name"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Remote Database Name</FormLabel>
-          <FormControl>
-            <Input placeholder="Remote Database Name" {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <FormField
-      control={form.control}
-      name="ssh_settings.remote_db_password"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Remote Database Password</FormLabel>
-          <div className="flex items-center gap-3">
-            <FormControl>
-              <Input placeholder="Remote Database Password" {...field} />
+              <Input placeholder="SSH password" {...field} />
             </FormControl>
           </div>
           <FormMessage />
@@ -131,7 +75,7 @@ const SSHForm: FC<{
       name="file"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Private Key File</FormLabel>
+          <FormLabel>SSH key file</FormLabel>
           <FormControl>
             <Input
               className="cursor-pointer"
@@ -157,14 +101,68 @@ const SSHForm: FC<{
       name="ssh_settings.private_key_password"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Private Key Password</FormLabel>
+          <FormLabel>SSH key password</FormLabel>
           <div className="flex items-center gap-3">
             <FormControl>
               <Input
                 type="password"
-                placeholder="Private Key Password"
+                placeholder="SSH key password"
                 {...field}
               />
+            </FormControl>
+          </div>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name="ssh_settings.remote_host"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>DB host</FormLabel>
+          <FormControl>
+            <Input placeholder="Database host" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name="ssh_settings.db_name"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>DB name</FormLabel>
+          <FormControl>
+            <Input placeholder="Database name" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name="ssh_settings.remote_db_name"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>DB username</FormLabel>
+          <FormControl>
+            <Input placeholder="Database username" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name="ssh_settings.remote_db_password"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>DB password</FormLabel>
+          <div className="flex items-center gap-3">
+            <FormControl>
+              <Input placeholder="Database password" {...field} />
             </FormControl>
           </div>
           <FormMessage />
@@ -212,7 +210,7 @@ const DatabaseConnectionForm: FC<{
               name="data_warehouse"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Data Warehouse</FormLabel>
+                  <FormLabel>Data warehouse</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -306,7 +304,7 @@ const DatabaseConnectionForm: FC<{
             name="alias"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Database Alias</FormLabel>
+                <FormLabel>Alias</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Type an alias for the database"
