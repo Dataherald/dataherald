@@ -15,7 +15,7 @@ const useDatabaseConnection = (
   const endpointUrl = `${API_URL}/database-connections/${databaseConnectionId}`
   const { token } = useAuth()
   const { data, isLoading, error } = useSWR<DatabaseConnection>(
-    token && databaseConnectionId ? endpointUrl : null,
+    token ? endpointUrl : null,
   )
 
   return {

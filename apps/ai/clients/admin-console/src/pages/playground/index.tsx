@@ -25,12 +25,14 @@ import clsx from 'clsx'
 import {
   CaseSensitive,
   Code2,
+  DatabaseZap,
   Eraser,
   Loader,
   PlayCircle,
   StopCircle,
   XOctagon,
 } from 'lucide-react'
+import Link from 'next/link'
 import { FC, useState } from 'react'
 
 const PlaygroundPage: FC = () => {
@@ -100,7 +102,17 @@ const PlaygroundPage: FC = () => {
 
   let pageContent = <></>
 
-  if (submittingQuery) {
+  if (databaseError) {
+    pageContent = (
+      <div className="grow text-slate-500 flex flex-col items-center justify-center gap-3">
+        <DatabaseZap size={50} strokeWidth={1} />
+        <span>Set up your database connection before using the Playground</span>
+        <Link href="/databases" className="link">
+          <Button variant="link">Go to Databases</Button>
+        </Link>
+      </div>
+    )
+  } else if (submittingQuery) {
     pageContent = (
       <div className="grow flex flex-col items-center justify-center gap-3">
         Generating SQL from Natural Language prompt...
@@ -192,7 +204,7 @@ const PlaygroundPage: FC = () => {
               <Button
                 className="px-3 py-1 w-fit h-fit font-normal"
                 variant="ghost"
-                disabled={!query || submittingQuery}
+                disabled={!!databaseError || !query || submittingQuery}
                 size="sm"
                 onClick={handleClear}
               >
@@ -203,7 +215,7 @@ const PlaygroundPage: FC = () => {
               <Textarea
                 className="border-none text-md resize-none shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent"
                 placeholder="Enter your Natural Language inquiry..."
-                disabled={submittingQuery}
+                disabled={!!databaseError || submittingQuery}
                 rows={2}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -223,7 +235,7 @@ const PlaygroundPage: FC = () => {
                   className="px-3 py-1 h-fit"
                   variant="primary"
                   onClick={handleSubmitQuery}
-                  disabled={submittingQuery || !prompt}
+                  disabled={!!databaseError || submittingQuery || !prompt}
                 >
                   {submittingQuery ? (
                     <Loader size={18} className="mr-2 animate-spin" />
