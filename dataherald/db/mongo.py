@@ -13,7 +13,7 @@ class MongoDB(DB):
         super().__init__(system)
         db_uri = system.settings.require("db_uri")
         db_name = system.settings.require("db_name")
-        self._data_store = MongoClient(db_uri)[db_name]
+        self._data_store = MongoClient(db_uri, tz_aware=True)[db_name]
 
     @override
     def find_one(self, collection: str, query: dict) -> dict:
