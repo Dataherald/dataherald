@@ -72,7 +72,7 @@ async def ac_get_golden_sqls(
     page: int = 0,
     page_size: int = 20,
     order: str = "created_at",
-    ascend: bool = True,
+    ascend: bool = False,
     token: str = Depends(token_auth_scheme),
 ) -> list[AdminConsoleGoldenSqlResponse]:
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
