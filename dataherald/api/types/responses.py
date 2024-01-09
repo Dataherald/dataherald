@@ -1,4 +1,6 @@
-from pydantic import BaseModel, validator
+from datetime import datetime
+
+from pydantic import BaseModel
 
 from dataherald.db_scanner.models.types import TableDescription
 from dataherald.sql_database.models.types import DatabaseConnection
@@ -7,13 +9,7 @@ from dataherald.sql_database.models.types import DatabaseConnection
 class BaseResponse(BaseModel):
     id: str
     metadata: dict | None
-    created_at: str | None
-
-    @validator("created_at", pre=True, always=True)
-    def created_at_as_string(cls, v):
-        if not v:
-            return None
-        return str(v)
+    created_at: datetime | None
 
 
 class PromptResponse(BaseResponse):
@@ -25,17 +21,11 @@ class SQLGenerationResponse(BaseResponse):
     prompt_id: str
     finetuning_id: str | None
     status: str
-    completed_at: str | None
+    completed_at: datetime | None
     sql: str | None
     tokens_used: int | None
     confidence_score: float | None
     error: str | None
-
-    @validator("completed_at", pre=True, always=True)
-    def completed_at_as_string(cls, v):
-        if not v:
-            return None
-        return str(v)
 
 
 class NLGenerationResponse(BaseResponse):
