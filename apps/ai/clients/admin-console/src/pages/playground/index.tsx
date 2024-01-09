@@ -6,6 +6,7 @@ import {
 import SqlEditor from '@/components/query/sql-editor'
 import SqlResultsTable from '@/components/query/sql-results-table'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
@@ -44,11 +45,13 @@ const PlaygroundPage: FC = () => {
     isLoading: databaseIsLoading,
     error: databaseError,
   } = useDatabaseConnection(organization?.db_connection_id)
-  const activeDatabase = databaseIsLoading
-    ? 'Loading...'
-    : databaseError
-    ? 'Not found'
-    : databaseConnection?.alias
+  const activeDatabase = databaseIsLoading ? (
+    <Skeleton className="w-52 h-5" />
+  ) : databaseError ? (
+    'Not found'
+  ) : (
+    databaseConnection?.alias
+  )
 
   const { submitQuery, cancelSubmitQuery } = useQuerySubmit()
 

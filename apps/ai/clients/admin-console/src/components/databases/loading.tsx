@@ -12,7 +12,10 @@ const TreeItemSkeleton: FC = () => (
 const TreeNestedItemSkeleton: FC<{ children?: ReactNode }> = ({ children }) => (
   <div className="space-y-4">
     <TreeItemSkeleton />
-    <div className="pl-4 space-y-3">
+    <div className="pl-14 space-y-3">
+      <TreeItemSkeleton />
+      <TreeItemSkeleton />
+      <TreeItemSkeleton />
       <TreeItemSkeleton />
       <TreeItemSkeleton />
       {children}
@@ -22,21 +25,16 @@ const TreeNestedItemSkeleton: FC<{ children?: ReactNode }> = ({ children }) => (
 
 const LoadingDatabases: FC = () => (
   <>
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3 pt-2 pb-6">
       <Hourglass size={14} className="animate-spin" />
       <h1>
         Retrieving your Database... This can take up to 1 minute for large
         Databases...
       </h1>
     </div>
-    <Skeleton className="w-44 h-6" />
-    <div className="space-y-5">
-      <TreeNestedItemSkeleton>
-        <TreeNestedItemSkeleton />
-      </TreeNestedItemSkeleton>
-      <TreeNestedItemSkeleton>
-        <TreeNestedItemSkeleton />
-      </TreeNestedItemSkeleton>
+    <div className="space-y-5 px-3">
+      <TreeNestedItemSkeleton />
+      <TreeNestedItemSkeleton />
     </div>
   </>
 )
