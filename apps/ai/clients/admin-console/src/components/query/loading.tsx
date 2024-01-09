@@ -9,7 +9,7 @@ const LoadingQuery: FC<LoadingQueryProps> = ({ enableHeader = true }) => {
   return (
     <div className="w-full h-full flex flex-col">
       {enableHeader && (
-        <div className="flex justify-between gap-32 px-6 pt-5">
+        <div className="flex justify-between gap-32 px-6 pt-5 pb-3">
           <div className="w-2/3 flex flex-col gap-2">
             <Skeleton className="h-10" />
             <Skeleton className="h-8" />

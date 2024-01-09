@@ -71,6 +71,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     message,
     updated_by,
     status,
+    slack_info,
   } = query
 
   const created_by =
@@ -374,7 +375,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                 </div>
               )}
             </div>
-            {(message || nl_generation_text) && (
+            {slack_info && (
               <MessageSection
                 {...{
                   promptId,
