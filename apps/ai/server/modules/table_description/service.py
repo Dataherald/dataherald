@@ -74,9 +74,14 @@ class TableDescriptionService:
         self, org_id: str
     ) -> list[DatabaseDescriptionResponse]:
         organization = self.org_service.get_organization(org_id)
-        db_connection = self.db_connection_service.get_db_connection_in_org(
-            organization.db_connection_id, org_id
-        )
+        # TODO: remove this try catch block after front-end is updated
+        try:
+            db_connection = self.db_connection_service.get_db_connection_in_org(
+                organization.db_connection_id, org_id
+            )
+        except Exception:
+            return []
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 settings.engine_url + "/table-descriptions",
