@@ -46,6 +46,15 @@ logger = logging.getLogger(__name__)
 
 TOP_K = int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50"))
 
+DEFAULT_INSTRUCTIONS = [
+    {
+        "instruction": "If query contains `current_date()` or `current_datetime()`, replace that with the actual current date and time using the system_time tool."  # noqa: E501
+    },
+    {
+        "instruction": "If SQL results has None or NULL values, handle them by adding a WHERE clause to filter them out."
+    },
+]
+
 
 class FinetuningNotAvailableError(Exception):
     """Exception raised when finetuning is not available."""
@@ -102,6 +111,36 @@ class BaseSQLDatabaseTool(BaseModel):
 
         arbitrary_types_allowed = True
         extra = "allow"
+
+
+class GetUserInstructions(BaseSQLDatabaseTool, BaseTool):
+    """Tool for retrieving the instructions from the user"""
+
+    name = "get_admin_instructions"
+    description = """
+    Input: is an empty string.
+    Output: Database admin instructions.
+    The generated SQL query MUST follow the admin instructions even it contradicts with the given question.
+    """
+    instructions: List[dict]
+
+    @catch_exceptions()
+    def _run(
+        self,
+        tool_input: str = "",  # noqa: ARG002
+        run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
+    ) -> str:
+        response = "Admin: All of the generated SQL queries must follow the below instructions:\n"
+        for instruction in self.instructions:
+            response += f"{instruction['instruction']}\n"
+        return response
+
+    async def _arun(
+        self,
+        tool_input: str = "",  # noqa: ARG002
+        run_manager: AsyncCallbackManagerForToolRun | None = None,
+    ) -> str:
+        raise NotImplementedError("GetUserInstructions does not support async")
 
 
 class SystemTime(BaseSQLDatabaseTool, BaseTool):
@@ -198,7 +237,7 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
 
     name = "generate_sql"
     description = """
-    Input: Question.
+    Input: User question.
     Output: SQL query.
     Use this tool to generate SQL queries.
     Pass the a question as the input to the tool.
@@ -298,6 +337,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     def get_tools(self) -> List[BaseTool]:
         """Get the tools in the toolkit."""
         tools = []
+        tools.append(GetUserInstructions(db=self.db, instructions=self.instructions))
         tools.append(SystemTime(db=self.db))
         tools.append(QuerySQLDataBaseTool(db=self.db))
         tools.append(
@@ -370,6 +410,16 @@ class DataheraldFinetuningAgent(SQLGenerator):
             **(agent_executor_kwargs or {}),
         )
 
+    def get_instructions(self, user_prompt: Prompt):
+        context_store = self.system.instance(ContextStore)
+        _, instructions = context_store.retrieve_context_for_question(
+            user_prompt, number_of_samples=1
+        )
+        if not instructions:
+            instructions = []
+        instructions.extend(DEFAULT_INSTRUCTIONS)
+        return instructions
+
     @override
     def generate_response(
         self,
@@ -389,7 +439,6 @@ class DataheraldFinetuningAgent(SQLGenerator):
         Returns:
             Response: The response to the user question.
         """
-        context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
         response = SQLGeneration(
             prompt_id=user_prompt.id,
@@ -410,9 +459,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         )
         if not db_scan:
             raise ValueError("No scanned tables found for database")
-        _, instructions = context_store.retrieve_context_for_question(
-            user_prompt, number_of_samples=1
-        )
+        instructions = self.get_instructions(user_prompt)
         finetunings_repository = FinetuningsRepository(storage)
         finetuning = finetunings_repository.find_by_id(self.finetuning_id)
         openai_fine_tuning = OpenAIFineTuning(storage, finetuning)
