@@ -55,7 +55,7 @@ const OAUTH_CONFIG = {
             if (installation.team !== undefined) {
                 // single team app installation
                 return await fetch(
-                    `${API_URL}/organization/slack/installation`,
+                    `${API_URL}/organizations/slack/installation`,
                     {
                         method: 'POST',
                         headers: {
@@ -73,7 +73,7 @@ const OAUTH_CONFIG = {
             try {
                 const apiToken = await getApiAuthToken()
                 const response = await fetch(
-                    `${API_URL}/organization/slack/installation?workspace_id=${installQuery.teamId}`,
+                    `${API_URL}/organizations/slack/installation?workspace_id=${installQuery.teamId}`,
                     {
                         headers: {
                             Authorization: `Bearer ${apiToken}`,
