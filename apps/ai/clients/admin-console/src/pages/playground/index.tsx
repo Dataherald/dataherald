@@ -28,7 +28,7 @@ import {
   getDomainStatusColors,
   mapQuery,
 } from '@/lib/domain/query'
-import { FineTuningModels, Query } from '@/models/api'
+import { Query } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import clsx from 'clsx'
 import {
@@ -58,32 +58,44 @@ const PlaygroundPage: FC = () => {
   const activeDatabase = noDatabaseConnection ? (
     'None'
   ) : databaseIsLoading || !databaseConnection ? (
-    <Skeleton className="w-52 h-10" />
+    <Skeleton className="w-100 h-10" />
   ) : (
     databaseConnection?.alias
   )
 
-  const [selectedModel, setSelectedModel] = useState<string>()
-  const [finetuningModels, setFinetuningModels] = useState<FineTuningModels>()
-  const { models, isLoading: modelsLoading } = useFinetunings()
+  const [selectedModelId, setSelectedModelId] = useState<string | undefined>()
+  const [finetuningModels, setFinetuningModels] = useState<
+    {
+      label: string
+      value: string
+    }[]
+  >([{ label: 'None', value: '' }])
+  const { models } = useFinetunings()
 
   useEffect(() => {
     if (!models) return
     if (models.length > 0) {
-      setFinetuningModels(
-        models?.filter((model) => model.status === 'SUCCEEDED'),
-      )
+      setFinetuningModels((prev) => [
+        ...prev,
+        ...models
+          .filter((model) => model.status === 'SUCCEEDED')
+          .map((model) => ({
+            label: model.alias || model.id,
+            value: model.id,
+          })),
+      ])
     }
   }, [models])
 
   useEffect(() => {
     if (!finetuningModels) return
     if (finetuningModels.length > 0) {
-      setSelectedModel(finetuningModels[0].id) // Set default selection to the first model
+      setSelectedModelId(finetuningModels[0].value) // default is None
     }
   }, [finetuningModels])
+
   const handleModelSelect = (value: string) => {
-    setSelectedModel(value)
+    setSelectedModelId(value)
   }
 
   const { submitQuery, cancelSubmitQuery } = useQuerySubmit()
@@ -93,7 +105,7 @@ const PlaygroundPage: FC = () => {
     setPreviousQueryPrompt(currentQueryPrompt)
     setCurrentQueryPrompt(prompt)
     try {
-      const query = await submitQuery(prompt, selectedModel)
+      const query = await submitQuery(prompt, selectedModelId || undefined)
       setQuery(mapQuery(query))
       toast({
         variant: 'success',
@@ -224,35 +236,33 @@ const PlaygroundPage: FC = () => {
         <div className="grow flex flex-col gap-5">
           <div className="grow flex flex-col">{pageContent}</div>
           <div className="bg-slate-50 p-5 flex flex-col gap-3 grow-0 rounded-none border-b-0 border-s-0 border-e-0 border-t">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-24">
+            <div className="px-2 flex items-center justify-between gap-3">
+              <div className="w-3/4 grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2">
-                  <strong>Active database:</strong>
-                  <span className="text-slate-500">{activeDatabase}</span>
+                  <strong className="w-fit">Active database:</strong>
+                  <span className="text-slate-500 grow">{activeDatabase}</span>
                 </div>
-                {finetuningModels?.length && (
-                  <div className="flex items-center gap-2">
-                    <strong>Model:</strong>
-                    <Select
-                      value={selectedModel}
-                      onValueChange={handleModelSelect}
-                      disabled={modelsLoading || submittingQuery}
-                    >
-                      <SelectTrigger aria-label="Model" className="bg-white">
-                        <SelectValue placeholder="Select model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {finetuningModels?.map((model) => (
-                            <SelectItem key={model.id} value={model.id}>
-                              {model.alias || model.id}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  <strong>Model:</strong>
+                  <Select
+                    value={selectedModelId}
+                    onValueChange={handleModelSelect}
+                    disabled={submittingQuery}
+                  >
+                    <SelectTrigger aria-label="Model" className="bg-white">
+                      <SelectValue placeholder="Select model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {finetuningModels?.map(({ label, value }) => (
+                          <SelectItem key={label} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <Button
                 className="px-3 py-1 w-fit h-fit font-normal"
