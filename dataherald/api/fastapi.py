@@ -647,6 +647,8 @@ class FastAPI(API):
             raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLGenerationError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
+        except SQLInjectionError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         return SQLGenerationResponse(**sql_generation.dict())
 
     @override
@@ -671,6 +673,8 @@ class FastAPI(API):
         except PromptNotFoundError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLGenerationError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except SQLInjectionError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         return SQLGenerationResponse(**sql_generation.dict())
 
@@ -750,6 +754,8 @@ class FastAPI(API):
         except PromptNotFoundError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
         except SQLGenerationError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        except SQLInjectionError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         nl_generation_service = NLGenerationService(self.system, self.storage)
