@@ -127,6 +127,19 @@ Related endpoints are:
         "instruction": "string",
     }
 
+
+Prompts
+---------------------
+
+The ``prompt`` object is used to ask questions or pass any natural language text to the LLM.
+
+Related endpoints are:
+
+* :doc:`Create a prompt <api.create_prompt>` -- ``POST api/v1/prompts``
+* :doc:`List prompts <api.list_prompts>` -- ``GET api/v1/prompts``
+* :doc:`Get a prompt <api.get_prompt>` -- ``GET api/v1/prompts/{prompt_id}``
+
+
 Finetuning jobs
 ---------------------
 The ``finetuning`` object is used to finetune the LLM to your data. This is an asynchronous process that uploads your golden records to model provider servers and creates a finetuning job.
@@ -196,6 +209,10 @@ Related endpoints are:
     api.list_responses
     api.get_response
     api.get_response_file
+
+    api.create_prompt
+    api.list_prompts
+    api.get_prompt
 
     api.finetuning
     api.get_finetuning

@@ -15,7 +15,7 @@ Request this ``GET`` endpoint::
    :header: "Name", "Type", "Description"
    :widths: 20, 20, 60
 
-   "db_connection_id", "string", "Database connection we want to get instructions, ``Optional``"
+   "db_connection_id", "string", "Database connection we want to get finetunings, ``Optional``"
 
 **Responses**
 
@@ -69,5 +69,5 @@ HTTP 201 code response
 .. code-block:: rst
 
    curl -X 'GET' \
-  '<host>/api/v1/instructions?db_connection_id=12312312' \
+  '<host>/api/v1/finetunings?db_connection_id=12312312' \
   -H 'accept: application/json
