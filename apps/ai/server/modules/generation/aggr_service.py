@@ -114,7 +114,10 @@ class AggrgationGenerationService:
                 timeout=settings.default_engine_timeout,
             )
             response_json = response.json()
-            if not response_json["sql_generation_id"]:
+            if (
+                "sql_generation_id" not in response_json
+                or not response_json["sql_generation_id"]
+            ):
                 raise_for_status(response.status_code, response.text)
 
             nl_generation = NLGeneration(**response_json)
@@ -735,7 +738,7 @@ class AggrgationGenerationService:
 
         if sql_result:
             rows = sql_result[1]["result"]
-            columns = list(rows[0].keys())
+            columns = list(rows[0].keys()) if len(rows) > 0 else []
             sql_result = {"columns": columns, "rows": rows}
 
         return GenerationResponse(
