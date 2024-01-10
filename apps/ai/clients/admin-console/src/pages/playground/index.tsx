@@ -47,14 +47,19 @@ import { FC, useEffect, useState } from 'react'
 
 const PlaygroundPage: FC = () => {
   const [submittingQuery, setSubmittingQuery] = useState(false)
+
+  const [query, setQuery] = useState<Query | undefined>()
   const [prompt, setPrompt] = useState<string>('')
   const [previousQueryPrompt, setPreviousQueryPrompt] = useState<string>('')
   const [currentQueryPrompt, setCurrentQueryPrompt] = useState<string>('')
-  const [query, setQuery] = useState<Query | undefined>()
+  const [queryError, setQueryError] = useState<string>()
+
   const { organization } = useAppContext()
-  const noDatabaseConnection = organization && !organization.db_connection_id
   const { databaseConnection, isLoading: databaseIsLoading } =
     useDatabaseConnection(organization?.db_connection_id)
+
+  // Active DB
+  const noDatabaseConnection = organization && !organization.db_connection_id
   const activeDatabase = noDatabaseConnection ? (
     'None'
   ) : databaseIsLoading || !databaseConnection ? (
@@ -63,6 +68,7 @@ const PlaygroundPage: FC = () => {
     databaseConnection?.alias
   )
 
+  // Finetuining models
   const [selectedModelId, setSelectedModelId] = useState<string | undefined>()
   const [finetuningModels, setFinetuningModels] = useState<
     {
@@ -101,6 +107,7 @@ const PlaygroundPage: FC = () => {
   const { submitQuery, cancelSubmitQuery } = useQuerySubmit()
 
   const handleSubmitQuery = async () => {
+    setQueryError(undefined)
     setSubmittingQuery(true)
     setPreviousQueryPrompt(currentQueryPrompt)
     setCurrentQueryPrompt(prompt)
@@ -108,21 +115,20 @@ const PlaygroundPage: FC = () => {
       const query = await submitQuery(prompt, selectedModelId || undefined)
       setQuery(mapQuery(query))
       toast({
-        variant: 'success',
-        title: 'Generation completed!',
+        title: 'Generation completed',
       })
     } catch (error) {
       console.error(error)
       if ((error as Error).name === 'AbortError') {
         toast({
-          variant: 'destructive-outline',
           title: 'Generation cancelled',
         })
       } else {
+        setQueryError((error as Error).message)
         toast({
           variant: 'destructive',
           title: 'Oops! Something went wrong.',
-          description: 'There was a problem with running the query',
+          description: 'There was a problem with the SQL generation',
           action: (
             <ToastAction altText="Try again" onClick={handleSubmitQuery}>
               Try again
@@ -157,6 +163,15 @@ const PlaygroundPage: FC = () => {
         <Link href="/databases" className="link">
           <Button variant="link">Go to Databases</Button>
         </Link>
+      </div>
+    )
+  } else if (queryError) {
+    pageContent = (
+      <div className="grow text-slate-500 flex flex-col items-center justify-center gap-3">
+        <ServerCrash size={50} strokeWidth={1} />
+        <span>
+          There was a problem with the SQL Generation. Please try again.
+        </span>
       </div>
     )
   } else if (submittingQuery) {
