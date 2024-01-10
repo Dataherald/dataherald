@@ -26,7 +26,7 @@ def create_sql_query_status(
     """Find the sql query status and populate the fields sql_query_result, sql_generation_status, and error_message"""
     if query == "":
         sql_generation.status = "INVALID"
-        sql_generation.error = "No SQL query has been generated."
+        sql_generation.error = "Sorry, we couldn't generate an SQL from your prompt"
     else:
         try:
             query = db.parser_to_filter_commands(query)
