@@ -1,3 +1,6 @@
+from datetime import datetime
+
+import pytz
 from pydantic import BaseModel, validator
 
 from dataherald.db_scanner.models.types import TableDescription
@@ -13,6 +16,8 @@ class BaseResponse(BaseModel):
     def created_at_as_string(cls, v):
         if not v:
             return None
+        if isinstance(v, datetime):
+            return str(v.replace(tzinfo=pytz.utc).isoformat())
         return str(v)
 
 
@@ -35,6 +40,8 @@ class SQLGenerationResponse(BaseResponse):
     def completed_at_as_string(cls, v):
         if not v:
             return None
+        if isinstance(v, datetime):
+            return str(v.replace(tzinfo=pytz.utc).isoformat())
         return str(v)
 
 
