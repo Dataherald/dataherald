@@ -137,6 +137,8 @@ Related endpoints are:
 * :doc:`Finetuning job create <api.finetuning>` -- ``POST api/v1/finetunings``
 * :doc:`Finetuning job get <api.get_finetuning>` -- ``GET api/v1/finetunings/{finetuning_id}``
 * :doc:`Finetuning job cancel <api.cancel_finetuning>` -- ``POST api/v1/finetunings/{finetuning_id}/cancel``
+* :doc:`Finetuning job delete <api.delete_finetuning>` -- ``DELETE api/v1/finetunings/{finetuning_id}``
+* :doc:`Finetuning job list <api.list_finetunings>` -- ``GET api/v1/finetunings``
 
 
 **Finetuning resource example:**
@@ -198,3 +200,5 @@ Related endpoints are:
     api.finetuning
     api.get_finetuning
     api.cancel_finetuning
+    api.delete_finetuning
+    api.list_finetunings
