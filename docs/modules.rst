@@ -14,6 +14,7 @@ Dataherald is built on a modular architecture and provides standaridized, extens
    evaluator
    vector_store
    db
+   finetuning
 
 Introduction
 ------------
@@ -36,6 +37,8 @@ The following are the core modules which make up the Dataherald engine.
 - :doc:`Vector Store <vector_store>`: The vector store which stores application embeddings.
 
 - :doc:`Database Integration <db>`: Used to store and persist application data.
+
+- :doc:`Finetuning <finetuning>`: The module that responsible for finetuning LLMs on ground truth Question/SQL pairs.
 
 System architecture
 --------------------
