@@ -32,6 +32,7 @@ class FinetuningMetadata(BaseModel):
 
 class BaseFinetuning(BaseModel):
     id: str
+    alias: str | None
     db_connection_id: str | None
     status: str = FineTuningStatus.QUEUED
     error: str | None
