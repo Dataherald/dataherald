@@ -76,16 +76,20 @@ class Pinecone(VectorStore):
 
             records = []
             for key in range(len(golden_sql_batch)):
-                records.append(
-                    (
-                        str(golden_sql_batch[key].id),
-                        embeds[key],
-                        {
-                            "tables_used": Parser(golden_sql_batch[key].sql).tables[0],
-                            "db_connection_id": golden_sql_batch[key].db_connection_id,
-                        },
+                parsed_tables = Parser(golden_sql_batch[key].sql).tables
+                if len(parsed_tables) > 0:
+                    records.append(
+                        (
+                            str(golden_sql_batch[key].id),
+                            embeds[key],
+                            {
+                                "tables_used": parsed_tables[0],
+                                "db_connection_id": golden_sql_batch[
+                                    key
+                                ].db_connection_id,
+                            },
+                        )
                     )
-                )
             index.upsert(vectors=records)
 
     @override
