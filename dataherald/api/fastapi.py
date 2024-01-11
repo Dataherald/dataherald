@@ -636,19 +636,30 @@ class FastAPI(API):
     def create_sql_generation(
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest
     ) -> SQLGenerationResponse:
+        try:
+            ObjectId(prompt_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail="Invalid prompt id") from e
         sql_generation_service = SQLGenerationService(self.system, self.storage)
         try:
             sql_generation = sql_generation_service.create(
                 prompt_id, sql_generation_request
             )
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
         except PromptNotFoundError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
+            return HTTPException(
+                status_code=400,
+                detail={"message": str(e), "sql_generation_id": e.args[1]},
+            )
         except SQLGenerationError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            return HTTPException(
+                status_code=400,
+                detail={"message": str(e), "sql_generation_id": e.args[1]},
+            )
         except SQLInjectionError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            return HTTPException(
+                status_code=400,
+                detail={"message": str(e), "sql_generation_id": e.args[1]},
+            )
         return SQLGenerationResponse(**sql_generation.dict())
 
     @override
@@ -668,14 +679,33 @@ class FastAPI(API):
             sql_generation = sql_generation_service.create(
                 prompt.id, prompt_sql_generation_request
             )
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
         except PromptNotFoundError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": str(e),
+                    "prompt_id": prompt.id,
+                    "sql_generation_id": e.args[1],
+                },
+            ) from e
         except SQLGenerationError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": str(e),
+                    "prompt_id": prompt.id,
+                    "sql_generation_id": e.args[1],
+                },
+            ) from e
         except SQLInjectionError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": str(e),
+                    "prompt_id": prompt.id,
+                    "sql_generation_id": e.args[1],
+                },
+            ) from e
         return SQLGenerationResponse(**sql_generation.dict())
 
     @override
@@ -725,17 +755,27 @@ class FastAPI(API):
     def create_nl_generation(
         self, sql_generation_id: str, nl_generation_request: NLGenerationRequest
     ) -> NLGenerationResponse:
+        try:
+            ObjectId(sql_generation_id)
+        except InvalidId as e:
+            raise HTTPException(
+                status_code=400, detail="Invalid SQL generation id"
+            ) from e
         nl_generation_service = NLGenerationService(self.system, self.storage)
         try:
             nl_generation = nl_generation_service.create(
                 sql_generation_id, nl_generation_request
             )
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
         except SQLGenerationNotFoundError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={"message": str(e), "nl_generation_id": e.args[1]},
+            ) from e
         except NLGenerationError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={"message": str(e), "nl_generation_id": e.args[1]},
+            ) from e
         return NLGenerationResponse(**nl_generation.dict())
 
     @override
@@ -744,31 +784,66 @@ class FastAPI(API):
         prompt_id: str,
         nl_generation_sql_generation_request: NLGenerationsSQLGenerationRequest,
     ) -> NLGenerationResponse:
+        try:
+            ObjectId(prompt_id)
+        except InvalidId as e:
+            raise HTTPException(status_code=400, detail="Invalid prompt id") from e
         sql_generation_service = SQLGenerationService(self.system, self.storage)
         try:
             sql_generation = sql_generation_service.create(
                 prompt_id, nl_generation_sql_generation_request.sql_generation
             )
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
         except PromptNotFoundError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": str(e),
+                    "sql_generation_id": e.args[1],
+                    "nl_generation_id": None,
+                },
+            ) from e
         except SQLGenerationError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": str(e),
+                    "sql_generation_id": e.args[1],
+                    "nl_generation_id": None,
+                },
+            ) from e
         except SQLInjectionError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": str(e),
+                    "sql_generation_id": e.args[1],
+                    "nl_generation_id": None,
+                },
+            ) from e
 
         nl_generation_service = NLGenerationService(self.system, self.storage)
         try:
             nl_generation = nl_generation_service.create(
                 sql_generation.id, nl_generation_sql_generation_request
             )
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
         except SQLGenerationNotFoundError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": str(e),
+                    "sql_generation_id": sql_generation.id,
+                    "nl_generation_id": e.args[1],
+                },
+            ) from e  # noqa: E501
         except NLGenerationError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": str(e),
+                    "sql_generation_id": sql_generation.id,
+                    "nl_generation_id": e.args[1],
+                },
+            ) from e  # noqa: E501
         nl_generation_dict = nl_generation.dict()
         nl_generation_dict["created_at"] = str(nl_generation.created_at)
         return NLGenerationResponse(**nl_generation_dict)
@@ -780,8 +855,6 @@ class FastAPI(API):
         prompt_service = PromptService(self.storage)
         try:
             prompt = prompt_service.create(request.sql_generation.prompt)
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
         except DatabaseConnectionNotFoundError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e  # noqa: B904
 
@@ -790,22 +863,50 @@ class FastAPI(API):
             sql_generation = sql_generation_service.create(
                 prompt.id, request.sql_generation
             )
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
         except PromptNotFoundError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": str(e),
+                    "prompt_id": prompt.id,
+                    "sql_generation_id": e.args[1],
+                    "nl_generation_id": None,
+                },
+            ) from e
         except SQLGenerationError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": str(e),
+                    "prompt_id": prompt.id,
+                    "sql_generation_id": e.args[1],
+                    "nl_generation_id": None,
+                },
+            ) from e
 
         nl_generation_service = NLGenerationService(self.system, self.storage)
         try:
             nl_generation = nl_generation_service.create(sql_generation.id, request)
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
         except SQLGenerationNotFoundError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": str(e),
+                    "prompt_id": prompt.id,
+                    "sql_generation_id": sql_generation.id,
+                    "nl_generation_id": e.args[1],
+                },
+            ) from e  # noqa: E501
         except NLGenerationError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": str(e),
+                    "prompt_id": prompt.id,
+                    "sql_generation_id": sql_generation.id,
+                    "nl_generation_id": e.args[1],
+                },
+            ) from e  # noqa: E501
         return NLGenerationResponse(**nl_generation.dict())
 
     @override
