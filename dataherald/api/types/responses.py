@@ -5,6 +5,7 @@ from pydantic import BaseModel, validator
 
 from dataherald.db_scanner.models.types import TableDescription
 from dataherald.sql_database.models.types import DatabaseConnection
+from dataherald.types import GoldenSQL
 
 
 class BaseResponse(BaseModel):
@@ -55,9 +56,13 @@ class InstructionResponse(BaseResponse):
     db_connection_id: str
 
 
-class DatabaseConnectionResponse(DatabaseConnection, BaseResponse):
+class DatabaseConnectionResponse(BaseResponse, DatabaseConnection):
     pass
 
 
-class TableDescriptionResponse(TableDescription, BaseResponse):
+class TableDescriptionResponse(BaseResponse, TableDescription):
+    pass
+
+
+class GoldenSQLResponse(BaseResponse, GoldenSQL):
     pass
