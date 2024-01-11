@@ -279,7 +279,7 @@ class AggrgationGenerationService:
         )
 
     async def get_generation(self, prompt_id: str, org_id: str) -> GenerationResponse:
-        prompt, sql_generation, nl_generation, sql_result = None, None, None, None
+        prompt, sql_generation, nl_generation = None, None, None
         prompt = self.repo.get_prompt(prompt_id, org_id)
 
         if prompt:
@@ -289,25 +289,8 @@ class AggrgationGenerationService:
                     sql_generation.id, org_id
                 )
 
-                if (
-                    prompt.metadata.dh_internal.generation_status
-                    != GenerationStatus.REJECTED
-                    and sql_generation.status == SQLGenerationStatus.VALID
-                ):
-                    async with httpx.AsyncClient() as client:
-                        sql_result_response = await client.get(
-                            settings.engine_url
-                            + f"/sql-generations/{sql_generation.id}/execute",
-                            timeout=settings.default_engine_timeout,
-                        )
-                        raise_for_status(
-                            sql_result_response.status_code,
-                            sql_result_response.text,
-                        )
-                        sql_result = sql_result_response.json()
-
             return self._get_mapped_generation_response(
-                prompt, sql_generation, nl_generation, sql_result
+                prompt, sql_generation, nl_generation
             )
 
         raise HTTPException(
