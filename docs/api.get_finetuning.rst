@@ -7,6 +7,14 @@ request this ``GET`` endpoint to retrieve the status of the fine-tuning job.
 
     /api/v1/finetunings/<finetuning_id>
 
+**Parameters**
+
+.. csv-table::
+   :header: "Name", "Type", "Description"
+   :widths: 20, 20, 60
+
+   "finetuning_id", "string", "the finetuning_id, ``Required``"
+
 **Responses**
 
 HTTP 200 code response
