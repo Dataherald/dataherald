@@ -22,6 +22,7 @@ from dataherald.api.types.requests import (
 )
 from dataherald.api.types.responses import (
     DatabaseConnectionResponse,
+    GoldenSQLResponse,
     InstructionResponse,
     NLGenerationResponse,
     PromptResponse,
@@ -368,16 +369,16 @@ class FastAPI(API):
         )
 
     @override
-    def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
+    def add_golden_sqls(
+        self, golden_sqls: List[GoldenSQLRequest]
+    ) -> List[GoldenSQLResponse]:
         """Takes in a list of NL <> SQL pairs and stores them to be used in prompts to the LLM"""
         context_store = self.system.instance(ContextStore)
         try:
             golden_sqls = context_store.add_golden_sqls(golden_sqls)
         except MalformedGoldenSQLError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        for golden_sql in golden_sqls:
-            golden_sql.created_at = str(golden_sql.created_at)
-        return golden_sqls
+        return [GoldenSQLResponse(**golden_sql.dict()) for golden_sql in golden_sqls]
 
     @override
     def execute_sql_query(
@@ -845,7 +846,6 @@ class FastAPI(API):
                 },
             ) from e  # noqa: E501
         nl_generation_dict = nl_generation.dict()
-        nl_generation_dict["created_at"] = str(nl_generation.created_at)
         return NLGenerationResponse(**nl_generation_dict)
 
     @override

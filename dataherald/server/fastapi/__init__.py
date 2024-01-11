@@ -20,6 +20,7 @@ from dataherald.api.types.requests import (
 )
 from dataherald.api.types.responses import (
     DatabaseConnectionResponse,
+    GoldenSQLResponse,
     InstructionResponse,
     NLGenerationResponse,
     PromptResponse,
@@ -504,7 +505,9 @@ class FastAPI(dataherald.server.Server):
         """Deletes a golden record"""
         return self._api.delete_golden_sql(golden_sql_id)
 
-    def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
+    def add_golden_sqls(
+        self, golden_sqls: List[GoldenSQLRequest]
+    ) -> List[GoldenSQLResponse]:
         created_records = self._api.add_golden_sqls(golden_sqls)
 
         # Return a JSONResponse with status code 201 and the location header.

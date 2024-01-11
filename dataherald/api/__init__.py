@@ -16,6 +16,7 @@ from dataherald.api.types.requests import (
 )
 from dataherald.api.types.responses import (
     DatabaseConnectionResponse,
+    GoldenSQLResponse,
     InstructionResponse,
     NLGenerationResponse,
     PromptResponse,
@@ -108,7 +109,9 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
+    def add_golden_sqls(
+        self, golden_sqls: List[GoldenSQLRequest]
+    ) -> List[GoldenSQLResponse]:
         pass
 
     @abstractmethod
