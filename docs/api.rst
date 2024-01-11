@@ -165,6 +165,26 @@ Related endpoints are:
 * :doc:`get a SQL a csv file of SQL query results <api.get_csv_file>` -- ``GET api/v1/sql-generations/{sql_generation_id}/csv-file``
 * :doc:`execute a SQL generation <api.execute_sql_generation>` -- ``GET api/v1/sql-generations/{sql_generation_id}/execute``
 
+**SQL generation resource example:**
+
+.. code-block:: json
+        
+    {
+        "id": "str"
+        "prompt_id": "str"
+        "finetuning_id": "str"
+        "evaluate": "bool"
+        "sql": "str"
+        "status": "str"
+        "completed_at": "datetime"
+        "tokens_used": "int"
+        "confidence_score": "float"
+        "error": "str"
+        "created_at": "datetime",
+        "metadata": "dict | None"
+    }
+
+
 
 NL generations
 ---------------------
