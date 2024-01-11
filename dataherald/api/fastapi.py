@@ -123,7 +123,7 @@ class FastAPI(API):
     @override
     def scan_db(
         self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
-    ) -> bool:
+    ) -> list[TableDescriptionResponse]:
         """Takes a db_connection_id and scan all the tables columns"""
         db_connection_repository = DatabaseConnectionRepository(self.storage)
 
@@ -152,7 +152,7 @@ class FastAPI(API):
         else:
             scanner_request.table_names = all_tables
 
-        scanner.synchronizing(
+        rows = scanner.synchronizing(
             scanner_request,
             TableDescriptionRepository(self.storage),
         )
@@ -160,7 +160,7 @@ class FastAPI(API):
         background_tasks.add_task(
             async_scanning, scanner, database, scanner_request, self.storage
         )
-        return True
+        return [TableDescriptionResponse(**row.dict()) for row in rows]
 
     @override
     def create_database_connection(

@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 
 from dataherald.config import Component
+from dataherald.db_scanner.models.types import TableDescription
 from dataherald.db_scanner.repository.base import TableDescriptionRepository
 from dataherald.db_scanner.repository.query_history import QueryHistoryRepository
 from dataherald.sql_database.base import SQLDatabase
@@ -25,7 +26,7 @@ class Scanner(Component, ABC):
         self,
         scanner_request: ScannerRequest,
         repository: TableDescriptionRepository,
-    ) -> None:
+    ) -> list[TableDescription]:
         """ "Update table_description status"""
 
     @abstractmethod

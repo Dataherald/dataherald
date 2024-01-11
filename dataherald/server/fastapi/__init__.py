@@ -358,7 +358,7 @@ class FastAPI(dataherald.server.Server):
 
     def scan_db(
         self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
-    ) -> bool:
+    ) -> list[TableDescriptionResponse]:
         return self._api.scan_db(scanner_request, background_tasks)
 
     def create_prompt(self, prompt_request: PromptRequest) -> PromptResponse:

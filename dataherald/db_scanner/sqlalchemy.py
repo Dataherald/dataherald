@@ -41,17 +41,21 @@ class SqlAlchemyScanner(Scanner):
         self,
         scanner_request: ScannerRequest,
         repository: TableDescriptionRepository,
-    ) -> None:
+    ) -> list[TableDescription]:
         # persist tables to be scanned
+        rows = []
         for table in scanner_request.table_names:
-            repository.save_table_info(
-                TableDescription(
-                    db_connection_id=scanner_request.db_connection_id,
-                    table_name=table,
-                    status=TableDescriptionStatus.SYNCHRONIZING.value,
-                    metadata=scanner_request.metadata,
+            rows.append(
+                repository.save_table_info(
+                    TableDescription(
+                        db_connection_id=scanner_request.db_connection_id,
+                        table_name=table,
+                        status=TableDescriptionStatus.SYNCHRONIZING.value,
+                        metadata=scanner_request.metadata,
+                    )
                 )
             )
+        return rows
 
     @override
     def get_all_tables_and_views(self, database: SQLDatabase) -> list[str]:
