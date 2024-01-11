@@ -48,7 +48,7 @@ class API(Component, ABC):
     @abstractmethod
     def scan_db(
         self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
-    ) -> bool:
+    ) -> list[TableDescriptionResponse]:
         pass
 
     @abstractmethod
