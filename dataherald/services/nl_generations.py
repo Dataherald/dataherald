@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from dataherald.api.types.requests import NLGenerationRequest
 from dataherald.config import System
 from dataherald.repositories.nl_generations import (
@@ -25,11 +27,18 @@ class NLGenerationService:
     def create(
         self, sql_generation_id: str, nl_generation_request: NLGenerationRequest
     ) -> NLGeneration:
+        initial_nl_generation = NLGeneration(
+            sql_generation_id=sql_generation_id,
+            created_at=datetime.now(),
+            metadata=nl_generation_request.metadata,
+        )
+        self.nl_generation_repository.insert(initial_nl_generation)
         sql_generation_repository = SQLGenerationRepository(self.storage)
         sql_generation = sql_generation_repository.find_by_id(sql_generation_id)
         if not sql_generation:
             raise SQLGenerationNotFoundError(
-                f"SQL Generation {sql_generation_id} not found"
+                f"SQL Generation {sql_generation_id} not found",
+                initial_nl_generation.id,
             )
         nl_generator = GeneratesNlAnswer(self.system, self.storage)
         try:
@@ -38,9 +47,9 @@ class NLGenerationService:
                 top_k=nl_generation_request.max_rows,
             )
         except Exception as e:
-            raise NLGenerationError(e) from e
-        nl_generation.metadata = nl_generation_request.metadata
-        return self.nl_generation_repository.insert(nl_generation)
+            raise NLGenerationError(str(e), initial_nl_generation.id) from e
+        initial_nl_generation.text = nl_generation.text
+        return self.nl_generation_repository.update(initial_nl_generation)
 
     def get(self, query) -> list[NLGeneration]:
         return self.nl_generation_repository.find_by(query)

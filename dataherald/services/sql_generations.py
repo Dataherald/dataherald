@@ -36,6 +36,10 @@ class SQLGenerationService:
         self.storage = storage
         self.sql_generation_repository = SQLGenerationRepository(storage)
 
+    def update_error(self, sql_generation: SQLGeneration, error: str) -> SQLGeneration:
+        sql_generation.error = error
+        return self.sql_generation_repository.update(sql_generation)
+
     def create(
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest
     ) -> SQLGeneration:
@@ -48,7 +52,10 @@ class SQLGenerationService:
         prompt_repository = PromptRepository(self.storage)
         prompt = prompt_repository.find_by_id(prompt_id)
         if not prompt:
-            raise PromptNotFoundError(f"Prompt {prompt_id} not found")
+            self.update_error(initial_sql_generation, f"Prompt {prompt_id} not found")
+            raise PromptNotFoundError(
+                f"Prompt {prompt_id} not found", initial_sql_generation.id
+            )
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         db_connection = db_connection_repository.find_by_id(prompt.db_connection_id)
         database = SQLDatabase.get_sql_engine(db_connection)
@@ -58,10 +65,14 @@ class SQLGenerationService:
                 sql=sql_generation_request.sql,
                 tokens_used=0,
             )
-            sql_generation = create_sql_query_status(
-                db=database, query=sql_generation.sql, sql_generation=sql_generation
-            )
-        else:  # noqa: PLR5501
+            try:
+                sql_generation = create_sql_query_status(
+                    db=database, query=sql_generation.sql, sql_generation=sql_generation
+                )
+            except Exception as e:
+                self.update_error(initial_sql_generation, str(e))
+                raise SQLGenerationError(str(e), initial_sql_generation.id) from e
+        else:
             if (
                 sql_generation_request.finetuning_id is None
                 or sql_generation_request.finetuning_id == ""
@@ -78,7 +89,8 @@ class SQLGenerationService:
                     user_prompt=prompt, database_connection=db_connection
                 )
             except Exception as e:
-                raise SQLGenerationError(str(e)) from e
+                self.update_error(initial_sql_generation, str(e))
+                raise SQLGenerationError(str(e), initial_sql_generation.id) from e
         if sql_generation_request.evaluate:
             evaluator = self.system.instance(Evaluator)
             confidence_score = evaluator.get_confidence_score(
