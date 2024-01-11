@@ -1,9 +1,17 @@
 List NL generations
 ============================
 
-request this ``GET`` endpoint to get a prompt.
+request this ``GET`` endpoint to get a list of NL generations.
 
     /api/v1/nl_generations
+
+**Parameters**
+
+.. csv-table::
+   :header: "Name", "Type", "Description"
+   :widths: 20, 20, 60
+
+   "sql_generation_id", "string", "the sql generation id, ``Optional``"
 
 
 **Responses**

@@ -29,7 +29,7 @@ The following parameters are used for prompts:
 * db_connection_id: the id of the database connection
 
 
-Request this ``POST`` endpoint to create a SQL query and a NL response for a given prompt::
+Request this ``POST`` endpoint to create a SQL query, a NL response, and a given prompt::
 
     api/v1/prompts/sql-generations/nl-generations
 

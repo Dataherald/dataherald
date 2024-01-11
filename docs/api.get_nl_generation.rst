@@ -1,7 +1,7 @@
 Get a NL generation
 ============================
 
-request this ``GET`` endpoint to get a prompt.
+request this ``GET`` endpoint to get a NL generation.
 
     /api/v1/nl_generations/<nl_generation_id>
 

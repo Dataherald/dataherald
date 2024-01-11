@@ -151,6 +151,20 @@ Related endpoints are:
             "metadata": "dict | None"
         }
 
+SQL generations
+---------------------
+
+Given a prompt, Dataherald AI agents can generate SQL queries to efficiently answer the question or provide the necessary information.
+
+Related endpoints are:
+
+* :doc:`create a SQL generation for a given prompt <api.create_sql_generation>` -- ``POST api/v1/prompts/{prompt_id}/sql-generations``
+* :doc:`create a prompt and a SQL generation <api.create_prompt_sql_generation>` -- ``POST api/v1/prompts/sql-generations``
+* :doc:`list SQL generations <api.list_sql_generations>` -- ``GET api/v1/sql-generations``
+* :doc:`get a SQL generation <api.get_sql_generation>` -- ``GET api/v1/sql-generations/{sql_generation_id}``
+* :doc:`get a SQL a csv file of SQL query results <api.get_csv_file>` -- ``GET api/v1/sql-generations/{sql_generation_id}/csv-file``
+* :doc:`execute a SQL generation <api.execute_sql_generation>` -- ``GET api/v1/sql-generations/{sql_generation_id}/execute``
+
 
 NL generations
 ---------------------
@@ -242,6 +256,13 @@ Related endpoints are:
     api.create_prompt
     api.list_prompts
     api.get_prompt
+
+    api.create_sql_generation
+    api.create_prompt_sql_generation
+    api.list_sql_generations
+    api.get_sql_generation
+    api.get_csv_file
+    api.execute_sql_generation
 
     api.create_nl_generation
     api.create_sql_generation_nl_generation
