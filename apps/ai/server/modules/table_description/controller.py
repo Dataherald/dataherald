@@ -52,7 +52,7 @@ async def get_table_description(
 @router.post("/sync-schemas", status_code=status.HTTP_201_CREATED)
 async def sync_table_descriptions_schemas(
     scan_request: ScanRequest, api_key: str = Security(get_api_key)
-):
+) -> list[TableDescriptionResponse]:
     return await table_description_service.sync_table_descriptions_schemas(
         scan_request, api_key.organization_id
     )
@@ -105,7 +105,7 @@ async def get_database_table_descriptions(
 @ac_router.post("/sync-schemas", status_code=status.HTTP_201_CREATED)
 async def ac_sync_table_descriptions_schemas(
     scan_request: ScanRequest, token: str = Depends(token_auth_scheme)
-):
+) -> list[TableDescriptionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.sync_table_descriptions_schemas(
         scan_request, user.organization_id
