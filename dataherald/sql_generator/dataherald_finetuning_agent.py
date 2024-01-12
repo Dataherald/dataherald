@@ -41,6 +41,7 @@ from dataherald.utils.agent_prompts import (
     FINETUNING_SYSTEM_INFORMATION,
     FORMAT_INSTRUCTIONS,
 )
+from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
 
 logger = logging.getLogger(__name__)
 
@@ -204,9 +205,11 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
     Pass the a question as the input to the tool.
     """
     finetuning_model_id: str = Field(exclude=True)
+    model_name: str = Field(exclude=True)
     args_schema: Type[BaseModel] = QuestionInput
     db_scan: List[TableDescription]
     api_key: str = Field(exclude=True)
+    openai_fine_tuning: OpenAIFineTuning = Field(exclude=True)
 
     @catch_exceptions()
     def _run(
@@ -215,8 +218,13 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Execute the query, return the results or an error message."""
-        system_prompt = FINETUNING_SYSTEM_INFORMATION + OpenAIFineTuning.format_dataset(
-            self.db_scan
+        system_prompt = (
+            FINETUNING_SYSTEM_INFORMATION
+            + self.openai_fine_tuning.format_dataset(
+                self.db_scan,
+                question,
+                OPENAI_CONTEXT_WIDNOW_SIZES[self.model_name] - 500,
+            )
         )
         user_prompt = "User Question: " + question + "\n SQL: "
         client = OpenAI(api_key=self.api_key)
@@ -284,6 +292,8 @@ class SQLDatabaseToolkit(BaseToolkit):
     db_scan: List[TableDescription] = Field(exclude=True)
     api_key: str = Field(exclude=True)
     finetuning_model_id: str = Field(exclude=True)
+    model_name: str = Field(exclude=True)
+    openai_fine_tuning: OpenAIFineTuning = Field(exclude=True)
 
     @property
     def dialect(self) -> str:
@@ -306,6 +316,8 @@ class SQLDatabaseToolkit(BaseToolkit):
                 db_scan=self.db_scan,
                 api_key=self.api_key,
                 finetuning_model_id=self.finetuning_model_id,
+                model_name=self.model_name,
+                openai_fine_tuning=self.openai_fine_tuning,
             )
         )
         tools.append(SchemaSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
@@ -429,6 +441,8 @@ class DataheraldFinetuningAgent(SQLGenerator):
             db_scan=db_scan,
             api_key=database_connection.decrypt_api_key(),
             finetuning_model_id=finetuning.model_id,
+            model_name=finetuning.base_llm.model_name,
+            openai_fine_tuning=openai_fine_tuning,
         )
         agent_executor = self.create_sql_agent(
             toolkit=toolkit,
