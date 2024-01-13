@@ -21,14 +21,17 @@ class KeyService:
         keys = self.repo.get_keys(org_id)
         return [KeyPreviewResponse(**key.dict(exclude_unset=True)) for key in keys]
 
-    def add_key(self, key_request: KeyGenerationRequest, org_id: str) -> KeyResponse:
-        secret_key = KEY_PREFIX + self.generate_new_key()
+    def add_key(
+        self, key_request: KeyGenerationRequest, org_id: str, api_key: str = None
+    ) -> KeyResponse:
+        if not api_key:
+            api_key = KEY_PREFIX + self.generate_new_key()
         key = APIKey(
-            key_hash=self.hash_key(key=secret_key),
+            key_hash=self.hash_key(key=api_key),
             organization_id=org_id,
             created_at=datetime.now(),
             name=key_request.name,
-            key_preview=KEY_PREFIX + "························" + secret_key[-3:],
+            key_preview=KEY_PREFIX + "························" + api_key[-3:],
         )
         key_id = self.repo.add_key(key.dict(exclude_unset=True))
 
@@ -39,7 +42,7 @@ class KeyService:
                 organization_id=key.organization_id,
                 created_at=key.created_at,
                 key_preview=key.key_preview,
-                api_key=secret_key,
+                api_key=api_key,
             )
 
         raise HTTPException(

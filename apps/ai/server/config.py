@@ -75,7 +75,7 @@ class SlackSettings(BaseSettings):
 class AnalyticSettings(BaseSettings):
     load_dotenv()
 
-    posthog_api_key: str = os.environ.get("POSTHOG_API_KEY", None)
+    posthog_api_key: str = os.environ.get("POSTHOG_API_KEY", "")
     posthog_host: str = os.environ.get("POSTHOG_HOST", None)
     posthog_disabled: bool = os.environ.get("POSTHOG_DISABLED", False)
 

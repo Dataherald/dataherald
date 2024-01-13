@@ -1,0 +1,60 @@
+name: Automated API tests using Postman CLI
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ai-server-api-test.yml"
+      - "apps/ai/server/**"
+      - "!apps/ai/server/.env.example"
+      - "!apps/ai/server/README.md"
+    branches:
+      - main
+      - production
+
+jobs:
+  automated-api-tests:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./apps/ai/server
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          submodules: true
+      - name: Create Docker network
+        run: docker network create backendnetwork
+      - name: Create env files
+        run: |
+          echo "${{ secrets.ENGINE_API_TEST_ENV_FILE }}" > ./dataherald/.env
+          echo "${{ secrets.ENTERPRISE_API_TEST_ENV_FILE }}" > .env
+      - name: Run Engine container
+        run: |
+          docker compose -f ./dataherald/docker-compose.yml up --build -d 
+          echo "Engine container running at http://localhost:80"
+      - name: Run Enterprise container
+        run: |
+          docker compose -f ./docker-compose.yml up --build -d 
+          echo "Enterprise container running at http://localhost:3001"
+      - name: Wait for containers to start
+        run: sleep 5
+      - name: Log docker containers
+        run: |
+          docker ps
+      - name: Populate database
+        run: |
+          docker exec server-app-1 python3 -m database.scripts.initial_setup
+      - name: Install Postman CLI
+        run: |
+          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+      - name: Login to Postman CLI
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+      - name: Run API tests
+        run: |
+          postman collection run "${{ github.workspace }}/apps/ai/server/tests/postman/ai-api-test.json" -e "32202991-0e2096c0-ca88-4ab2-8d70-3167d752e996" --integration-id "156003-${{ github.run_id }}"
+      - name: Dump logs
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2

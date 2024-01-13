@@ -18,6 +18,7 @@ import {
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
+import { useAppContext } from '@/contexts/app-context'
 import usePostDatabaseConnection from '@/hooks/api/usePostDatabaseConnection'
 import { formatDriver } from '@/lib/domain/database'
 import { cn } from '@/lib/utils'
@@ -82,6 +83,7 @@ const DatabaseConnectionFormDialog: FC<{
   const [databaseConnected, setDatabaseConnected] = useState(false)
 
   const connectDatabase = usePostDatabaseConnection()
+  const { updateOrganization } = useAppContext()
 
   const onSubmit = async () => {
     try {
@@ -91,6 +93,7 @@ const DatabaseConnectionFormDialog: FC<{
         mapDatabaseConnectionFormValues(dbConnectionFields),
         file as File | null | undefined,
       )
+      await updateOrganization()
       setDatabaseConnected(true)
       onConnected()
     } catch (e) {

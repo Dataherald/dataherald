@@ -1,0 +1,1909 @@
+{
+	"info": {
+		"_postman_id": "e8fa353e-a5eb-492b-bd44-9745c1becff9",
+		"name": "ai-api-test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "32202991-e8fa353e-a5eb-492b-bd44-9745c1becff9"
+	},
+	"item": [
+		{
+			"name": "Database Connections",
+			"item": [
+				{
+					"name": "Get database connections",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "be5b9917-70a8-42eb-b88b-2eec7f5e07b8",
+								"exec": [
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"db_connection_schema\"))",
+									"}",
+									"    ",
+									"// Test that the response matches the expected schema using built-in schema verification",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "39d03165-a74c-434d-91b7-99b938207c3a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/database-connections",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"database-connections"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a database connection",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b4827da4-c538-4c53-812a-f912d3eeb8af",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"db_connection_schema\"));",
+									"    ",
+									"// Test that the response matches the expected schema using built-in schema verification",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "38f1404d-fd65-45fe-a69d-14ae1eed8cde",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/database-connections/{{db_connection_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"database-connections",
+								"{{db_connection_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "c32cec8d-f940-4cbb-9eb8-5090f7f03abd"
+		},
+		{
+			"name": "Finetunings",
+			"item": [
+				{
+					"name": "Get finetunings",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e2af1ef3-9511-4a89-9072-7c3bf2ae67f6",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"finetuning_schema\"))",
+									"}",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "f25c3aab-2966-4b55-a3a1-67d69f2979f2",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/finetunings?db_connection_id={{db_connection_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"finetunings"
+							],
+							"query": [
+								{
+									"key": "db_connection_id",
+									"value": "{{db_connection_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a funetuning",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "08c29427-2b3f-4189-be00-ddc2800b9eb5",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"finetuning_schema\"));",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "37c28d2f-8179-49ee-94cb-30cc954b11d5",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/finetunings/{{finetuning_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"finetunings",
+								"{{finetuning_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "c38a312e-869b-48fc-ace6-d476daba34c4",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "279f50bd-d66b-49fb-a2b6-6736cd74fb7e",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "ab7c0250-5ccb-4955-9294-2a8050696f7e",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Prompts",
+			"item": [
+				{
+					"name": "Prompt",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0f24501d-6bfc-4c55-8792-1566b22c60fb",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"prompt_schema\"));",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.environment.set(\"prompt_id\", responseJson.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "54e2a46e-4310-44a8-8771-6b4807462b01",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"text\": \"What is the average rent price in Chicago Jan 2023?\",\n  \"db_connection_id\": \"{{db_connection_id}}\",\n  \"metadata\": {\"note\":\"this is a note\"}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/prompts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"prompts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Prompts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "03db0db7-630a-402a-9f82-6c79a4851a9b",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"prompt_schema\"))",
+									"}",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "34204902-231e-4234-ab37-7e865a5f4cc0",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/prompts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"prompts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Prompt",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "aced7c5b-f57e-4e85-ab14-72066a583838",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"prompt_schema\"));",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "3412128b-2075-4f9b-8853-b4f49f7c7340",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/prompts/{{prompt_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"prompts",
+								"{{prompt_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "9ddc9799-a5a0-4fef-b100-7b17eb2f91ea"
+		},
+		{
+			"name": "SQL Generations",
+			"item": [
+				{
+					"name": "SQL Generation with evaluate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "56f6c877-8015-41c2-a15b-b05aabf35b4f",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"sql_generation_schema\"));",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});",
+									"",
+									"pm.test('Returns valid SQL', () => {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('status');",
+									"    pm.expect(responseJson.status).to.equal('VALID');",
+									"})",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.environment.set(\"sql_generation_id\", responseJson.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "b69846f3-6ee8-4831-ba9e-dc4c23f0483a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"evaluate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/prompts/{{prompt_id}}/sql-generations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"prompts",
+								"{{prompt_id}}",
+								"sql-generations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Prompt and SQL Generation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3c285f9a-5fd6-423d-95dd-d947e7d241e1",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"sql_generation_schema\"));",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});",
+									"",
+									"pm.test('Returns valid SQL', () => {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('status');",
+									"    pm.expect(responseJson.status).to.equal('VALID');",
+									"})",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.environment.set(\"sql_generation_id\", responseJson.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "244b37ae-d67e-4cdc-b45c-3ae3251c6fad",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"prompt\": {\n        \"text\": \"What was the median home sale price in CA in May 2023?\",\n        \"db_connection_id\": \"{{db_connection_id}}\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/prompts/sql-generations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"prompts",
+								"sql-generations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Prompt and SQL Generation with finetuning agent",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2421c365-ae09-468d-ac36-b013b5004523",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"sql_generation_schema\"));",
+									"",
+									"// Test that the response matches the expected schema using built-in schema verification",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});",
+									"",
+									"pm.test('Returns valid SQL', () => {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('status');",
+									"    pm.expect(responseJson.status).to.equal('VALID');",
+									"})",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.environment.set(\"sql_generation_id\", responseJson.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "f3262ed2-1dd7-489b-8600-732d73dbedc0",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"finetuning_id\":\"{{finetuning_id}}\",\n    \"prompt\": {\n        \"text\": \"What was the median home sale price in CA in May 2023?\",\n        \"db_connection_id\": \"{{db_connection_id}}\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/prompts/sql-generations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"prompts",
+								"sql-generations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL Generations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "08ef2fa0-ecd1-42b1-88cb-80a1d9c2a705",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"sql_generation_schema\"))",
+									"}",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "720da2ff-d096-4d7a-b986-2c4051a78aca",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/sql-generations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sql-generations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL Generation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "989827b2-7514-4732-83b4-36a611b73099",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"sql_generation_schema\"));",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "168e1585-eb85-40bb-a20a-8f1265aafb70",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sql-generations",
+								"{{sql_generation_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL Generation execute",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d3b771da-28a7-4e30-b04f-8b9eec18c56e",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\"",
+									"}",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "e5274262-dad5-4081-ae55-b301672f2d17",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}/execute?max_rows=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sql-generations",
+								"{{sql_generation_id}}",
+								"execute"
+							],
+							"query": [
+								{
+									"key": "max_rows",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL Generation csv-file",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e55e907f-05c0-4bbc-a3c2-baafaae954a1",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "d4e1ddef-3548-45d4-95fe-19fea3f951df",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}/csv-file",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sql-generations",
+								"{{sql_generation_id}}",
+								"csv-file"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL Generations with prompt_id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "cf759e6b-f5b3-4e02-8437-98b1469e3611",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"sql_generation_schema\"))",
+									"}",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "e7b9ba95-6dee-47d7-9b4b-6aaba632f624",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/prompts/{{prompt_id}}/sql-generations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"prompts",
+								"{{prompt_id}}",
+								"sql-generations"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "1a76571f-cd5e-4178-80bf-405a49e5f6a9"
+		},
+		{
+			"name": "NL Generations",
+			"item": [
+				{
+					"name": "NL Generation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ba831e7c-423f-46fc-a358-2241d715ca99",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"nl_generation_schema\"));",
+									"",
+									"// Test that the response matches the expected schema using built-in schema verification",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.environment.set(\"nl_generation_id\", responseJson.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "b233d8c8-19f6-4d9e-bab1-fe10dcdc7a4f",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"max_rows\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}/nl-generations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sql-generations",
+								"{{sql_generation_id}}",
+								"nl-generations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL, and NL Generations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3ddcd493-08d9-4150-9bf9-a38692ba133b",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"nl_generation_schema\"));",
+									"",
+									"// Test that the response matches the expected schema using built-in schema verification",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.environment.set(\"nl_generation_id\", responseJson.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "e259e688-2cad-48a8-9024-4334ff695f9a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"max_rows\":50,\n    \"sql_generation\": {\n        \"evaluate\": false\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/prompts/{{prompt_id}}/sql-generations/nl-generations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"prompts",
+								"{{prompt_id}}",
+								"sql-generations",
+								"nl-generations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Prompts, SQL, and NL Generations with finetuning agent",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2525e416-c315-48db-b53c-aae52f86f96b",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"nl_generation_schema\"));",
+									"",
+									"// Test that the response matches the expected schema using built-in schema verification",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.environment.set(\"nl_generation_id\", responseJson.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "61dc68b9-5c79-48a6-bb16-e3b57aad8f6a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"max_rows\":50,\n    \"sql_generation\": {\n        \"finetuning_id\": \"{{finetuning_id}}\",\n        \"evaluate\": false,\n        \"prompt\": {\n            \"text\": \"What is the average rent price in San Francisco in August 2023?\",\n            \"db_connection_id\": \"{{db_connection_id}}\",\n            \"metadata\": {\"note\": \"this is a note\"}\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/prompts/sql-generations/nl-generations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"prompts",
+								"sql-generations",
+								"nl-generations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NL Generations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f10aba95-8284-4073-a8e6-a087dd11f49b",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"nl_generation_schema\"))",
+									"};",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "ebc35836-6c84-4cca-8373-a13558176aeb",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/nl-generations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl-generations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NL Generation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1194d4bb-a050-4f3f-9a86-0cc6bdae54d0",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"nl_generation_schema\"));",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "d6769c14-3864-404d-b182-c0ea03991bba",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/nl-generations/{{nl_generation_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl-generations",
+								"{{nl_generation_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NL Generations with sql_generation_id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0dca8810-2288-4d74-a04d-00d3f8976be1",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"nl_generation_schema\"))",
+									"}",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "433d9d38-6743-4620-a548-523855461780",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}/nl-generations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sql-generations",
+								"{{sql_generation_id}}",
+								"nl-generations"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "8c38aeba-b799-4d90-8a00-218c9d3fd5ca"
+		},
+		{
+			"name": "Golden SQLs",
+			"item": [
+				{
+					"name": "Golden SQLs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a58a26a3-4feb-4339-a85f-2be3c17713ff",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"golden_sql_schema\"))",
+									"};",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.environment.set(\"golden_sql_id\", responseJson[0].id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "d71a87c3-615f-4627-953b-4d91020172b3",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"db_connection_id\": \"{{db_connection_id}}\",\n        \"prompt_text\": \"what was the most expensive zip code to rent in Los Angeles county in May 2022?\",\n        \"sql\": \"SELECT location_name,        metric_value FROM renthub_median_rent WHERE dh_county_name = 'Los Angeles'   AND dh_state_name = 'California'   AND property_type = 'All Residential'   AND period_start='2022-05-01'   AND geo_type='zip' ORDER BY metric_value DESC LIMIT 1;\",\n        \"metadata\": {}\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/golden-sqls",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"golden-sqls"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Golden SQLs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0e43abbf-0750-40c2-bdc0-fd1cf8c7fc47",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"golden_sql_schema\"))",
+									"};",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "33f0cc1b-6955-476b-88d5-86cf48af1758",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/golden-sqls",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"golden-sqls"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Golden SQL",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2bb2b504-d1a0-4726-a6a4-96762c6283b3",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"golden_sql_schema\"));",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "93614bd9-62bf-4c67-83ee-1b26594753dd",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/golden-sqls/{{golden_sql_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"golden-sqls",
+								"{{golden_sql_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Golden SQL",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0e5f0da7-c200-4409-bd61-a2239d739bae",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Returns deleted id', () => {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('id');",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "dda4fef9-0496-49d7-b678-8faf88ad8bf8",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/golden-sqls/{{golden_sql_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"golden-sqls",
+								"{{golden_sql_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "bac0b8ce-e87b-41de-85cf-4069408aed6a"
+		},
+		{
+			"name": "Instructions",
+			"item": [
+				{
+					"name": "Instruction",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7f3d7302-89b4-443c-95e0-23a548e55031",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.environment.set(\"instruction_id\", responseJson.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "85c65984-38b7-4257-800c-e6e0c0a84e39",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"instruction\": \"This is a test instruction\",\n  \"db_connection_id\": \"{{db_connection_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/instructions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"instructions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Instructions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b9cdccc2-c9d5-4175-ba56-9108a1c1289b",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"instruction_schema\"))",
+									"};",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "09cd4596-4781-42eb-a71e-c07f8e81b695",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/instructions?db_connection_id={{db_connection_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"instructions"
+							],
+							"query": [
+								{
+									"key": "db_connection_id",
+									"value": "{{db_connection_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Instruction",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "ff1924b1-f545-4c58-897e-05d6337ac74f",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4eee5fbd-bb7f-4b23-af65-ba202b959a2a",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"instruction_schema\"));",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "3512b543-7090-4863-b436-97f59f5d0a74",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/instructions/{{instruction_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"instructions",
+								"{{instruction_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Instruction",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b5b863ca-1cdf-48ae-9820-00dc58d5bc77",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"instruction_schema\"));",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "c57b1ed5-7878-4b29-bb29-73789b9711b4",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"instruction\": \"This is an updated test instruction\",\n  \"db_connection_id\": \"{{db_connection_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/instructions/{{instruction_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"instructions",
+								"{{instruction_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Instruction",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a6642ec7-b260-4580-b98b-3aa69bec5cdd",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Returns deleted id', () => {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('id');",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "13540639-7337-421d-bae0-66f66b1cd7fd",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/instructions/{{instruction_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"instructions",
+								"{{instruction_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "accbf152-72c7-4ae6-9beb-675f70606fff"
+		},
+		{
+			"name": "Table Descriptions",
+			"item": [
+				{
+					"name": "Table Descriptions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c260cad4-95cf-49be-bbcf-2da4d60edf83",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"table_description_schema\"))",
+									"};",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "9a08deae-7a51-4a1b-a1d1-c27398ae80ee",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/table-descriptions?db_connection_id={{db_connection_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"table-descriptions"
+							],
+							"query": [
+								{
+									"key": "db_connection_id",
+									"value": "{{db_connection_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Table Descriptions with table_name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2e367954-2ac0-4fbb-b334-f38bc40c392e",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"table_description_schema\"))",
+									"};",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "1b189af4-5013-43a5-a435-b7759c21e2d4",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/table-descriptions?db_connection_id={{db_connection_id}}&table_name=redfin_avg_sale_to_list",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"table-descriptions"
+							],
+							"query": [
+								{
+									"key": "db_connection_id",
+									"value": "{{db_connection_id}}"
+								},
+								{
+									"key": "table_name",
+									"value": "redfin_avg_sale_to_list"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "f2d6036b-854a-4acf-a74e-169031034bd8"
+		},
+		{
+			"name": "Aggregated Generations",
+			"item": [
+				{
+					"name": "Generations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "34d6db5a-24d1-408c-859a-f8f9ac936b75",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = {",
+									"    \"type\": \"array\",",
+									"    \"items\": JSON.parse(pm.collectionVariables.get(\"generation_list_schema\"))",
+									"};",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "3d476528-6284-467e-810e-f5c2756de18e",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/generations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"generations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "23b8903d-0a3a-41bf-b7c5-b59ce73f360b",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"generation_schema\"));",
+									"",
+									"pm.test('response matches JSON schema', () => {",
+									"    pm.response.to.have.jsonSchema(expectedSchema);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "811760c8-4bc3-412b-9140-e8a63dfb2a44",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/generations/{{prompt_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"generations",
+								"{{prompt_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "f1cd0463-59b4-4cf8-9096-e80e2a3b04b9"
+		},
+		{
+			"name": "heartbeat",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ff11cde7-6e85-4b0a-9899-0f112ab7b46f",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"id": "391ee5f2-0ca7-41f4-bce0-ac5e0a87a830",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/heartbeat",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"heartbeat"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "{{api_key}}",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "X-API-Key",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "683b18ac-79e3-4cf2-a082-b27ecce3bbce",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "c126c2cc-6710-4185-9216-f62f250f23c0",
+				"type": "text/javascript",
+				"exec": [
+					"",
+					"if (pm.info.requestName === \"SQL Generation csv-file\"){",
+					"    pm.test('Response has a valid Content-Type header', function () {",
+					"    pm.expect(pm.response).to.have.header('Content-Type', 'text/csv; charset=utf-8');",
+					"})",
+					"} else {",
+					"    pm.test('Response has a valid Content-Type header', function () {",
+					"        pm.expect(pm.response).to.have.header('Content-Type', 'application/json');",
+					"    })",
+					"}",
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "3d00719a-2422-4208-9e05-f73e52d0bc87",
+			"key": "db_connection_schema",
+			"value": "{\n            \"type\": \"object\",\n            \"properties\": {\n                \"alias\": {\n                    \"title\": \"Alias\",\n                    \"type\": \"string\"\n                },\n                \"use_ssh\": {\n                    \"title\": \"Use Ssh\",\n                    \"type\": \"boolean\",\n                    \"default\": false\n                },\n                \"connection_uri\": {\n                    \"title\": \"Connection Uri\",\n                    \"type\": [\"string\", \"null\"]\n                },\n                \n                \"id\": {\n                    \"title\": \"Id\",\n                    \"type\": \"string\"\n                },\n                \"created_at\": {\n                    \"title\": \"Created At\",\n                    \"type\": \"string\",\n                    \"format\": \"date-time\"\n                }\n                },\n            \"required\": [\n                \"id\",\n                \"alias\",\n                \"created_at\"\n            ]\n        }",
+			"type": "string"
+		},
+		{
+			"id": "031c9083-e4c5-4586-959b-f355c78169af",
+			"key": "prompt_schema",
+			"value": "{\n    \"required\": [\"id\", \"text\", \"db_connection_id\"],\n    \"type\": \"object\",\n    \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"text\": { \"title\": \"Text\", \"type\": \"string\" },\n        \"db_connection_id\": { \"title\": \"Db Connection Id\", \"type\": \"string\" },\n        \"created_at\": {\n            \"title\": \"Created At\",\n            \"type\": \"string\",\n            \"format\": \"date-time\"\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"id": "5bfc2b32-d805-4b13-a7a9-5d788865c086",
+			"key": "finetuning_schema",
+			"value": "{\n    \"title\": \"FinetuningResponse\",\n        \"required\": [\"id\"],\n            \"type\": \"object\",\n                \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"db_connection_id\": { \"title\": \"Db Connection Id\", \"type\": \"string\" },\n        \"status\": {\n            \"title\": \"Status\",\n                \"type\": \"string\",\n                    \"default\": \"queued\"\n        },\n        \"error\": { \"title\": \"Error\", \"type\": [\"string\", \"null\"] },\n        \"base_llm\": {\n            \"title\": \"BaseLLM\",\n                \"type\": [\"object\", \"null\"],\n                    \"properties\": {\n                \"model_provider\": { \"title\": \"Model Provider\", \"type\": [\"string\", \"null\"] },\n                \"model_name\": { \"title\": \"Model Name\", \"type\": [\"string\", \"null\"] },\n                \"model_parameters\": {\n                    \"title\": \"Model Parameters\",\n                        \"type\": [\"object\", \"null\"],\n                            \"additionalProperties\": { \"type\": [\"string\", \"null\"] }\n                }\n            }\n        },\n        \"finetuning_file_id\": {\n            \"title\": \"Finetuning File Id\",\n                \"type\": \"string\"\n        },\n        \"finetuning_job_id\": {\n            \"title\": \"Finetuning Job Id\",\n                \"type\": \"string\"\n        },\n        \"model_id\": { \"title\": \"Model Id\", \"type\": \"string\" },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        },\n        \"golden_records\": {\n            \"title\": \"Golden Records\",\n                \"type\": [\"array\", \"null\"],\n                    \"items\": { \"type\": \"string\" }\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"id": "49a0c51e-334c-4391-ac11-017970507e9c",
+			"key": "sql_generation_schema",
+			"value": "{\n    \"type\": \"object\",\n        \"properties\": {\n        \"id\": {\n            \"title\": \"Id\",\n                \"type\": \"string\"\n        },\n        \"prompt_id\": {\n            \"title\": \"Prompt Id\",\n                \"type\": \"string\"\n        },\n        \"finetuning_id\": {\n            \"title\": \"Finetuning Id\",\n                \"type\": [\n                    \"string\",\n                    \"null\"\n                ]\n        },\n        \"sql\": {\n            \"title\": \"Sql\",\n                \"type\": \"string\"\n        },\n        \"status\": {\n            \"title\": \"SQLGenerationStatus\",\n                \"enum\": [\"VALID\", \"INVALID\"],\n                    \"type\": \"string\",\n                        \"description\": \"An enumeration.\"\n        },\n        \"tokens_used\": {\n            \"title\": \"Tokens Used\",\n                \"type\": \"integer\"\n        },\n        \"confidence_score\": {\n            \"title\": \"Confidence Score\",\n                \"maximum\": 1,\n                    \"minimum\": 0,\n                        \"type\": [\n                            \"number\",\n                            \"null\"\n                        ]\n        },\n        \"error\": {\n            \"title\": \"Error\",\n                \"type\": [\n                    \"string\",\n                    \"null\"\n                ]\n        },\n        \"completed_at\": {\n            \"title\": \"Completed At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        }\n    },\n    \"required\": [\n        \"prompt_id\",\n        \"status\",\n        \"sql\",\n        \"created_at\",\n        \"completed_at\"\n    ]\n}",
+			"type": "string"
+		},
+		{
+			"id": "8a00f45d-0381-4d7a-b02a-b3268469eb4a",
+			"key": "nl_generation_schema",
+			"value": "{\n    \"title\": \"NLGenerationResponse\",\n        \"type\": \"object\",\n            \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"text\": { \"title\": \"Text\", \"type\": \"string\" },\n        \"sql_generation_id\": {\n            \"title\": \"Sql Generation Id\",\n                \"type\": \"string\"\n        },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        }\n    },\n    \"required\": [\n        \"id\",\n        \"text\",\n        \"sql_generation_id\",\n        \"created_at\"\n    ]\n}",
+			"type": "string"
+		},
+		{
+			"id": "3facf6a4-cc74-42a5-bc28-d1a299e522d8",
+			"key": "golden_sql_schema",
+			"value": "{\n        \"title\": \"GoldenSQLResponse\",\n        \"required\": [\"db_connection_id\", \"prompt_text\", \"sql\", \"id\"],\n        \"type\": \"object\",\n        \"properties\": {\n          \"db_connection_id\": { \"title\": \"Db Connection Id\", \"type\": \"string\" },\n          \"prompt_text\": { \"title\": \"Prompt Text\", \"type\": \"string\" },\n          \"sql\": { \"title\": \"Sql\", \"type\": \"string\" },\n          \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n          \"created_at\": {\n            \"title\": \"Created At\",\n            \"type\": \"string\",\n            \"format\": \"date-time\"\n          }\n        }\n      }",
+			"type": "string"
+		},
+		{
+			"id": "51add3e4-0ed8-4892-8cba-22721285902d",
+			"key": "instruction_schema",
+			"value": "{\n    \"required\": [\"instruction\", \"id\"],\n    \"type\": \"object\",\n    \"properties\": {\n        \"instruction\": { \"title\": \"Instruction\", \"type\": \"string\" },\n        \"db_connection_id\": { \"title\": \"Db Connection Id\", \"type\": \"string\" },\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"created_at\": {\n        \"title\": \"Created At\",\n        \"type\": \"string\",\n        \"format\": \"date-time\"\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"id": "361ef31d-cc6e-4134-9889-2d095c2e9149",
+			"key": "generation_schema",
+			"value": "{\n    \"title\": \"GenerationResponse\",\n        \"required\": [\"id\", \"db_connection_id\", \"prompt_text\", \"organization_id\"],\n            \"type\": \"object\",\n                \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"db_connection_id\": { \"title\": \"Db Connection Id\", \"type\": \"string\" },\n        \"prompt_text\": { \"title\": \"Prompt Text\", \"type\": \"string\" },\n        \"created_by\": { \"title\": \"Created By\", \"type\": [\"string\", \"null\"] },\n        \"updated_by\": { \"title\": \"Updated By\", \"type\": [\"string\", \"null\"] },\n        \"organization_id\": { \"title\": \"Organization Id\", \"type\": \"string\" },\n        \"display_id\": { \"title\": \"Display Id\", \"type\": [\"string\", \"null\"] },\n        \"slack_info\": {\n            \"title\": \"SlackInfo\",\n                \"type\": [\"object\", \"null\"],\n                    \"properties\": {\n                \"user_id\": { \"title\": \"User Id\", \"type\": \"string\" },\n                \"channel_id\": { \"title\": \"Channel Id\", \"type\": \"string\" },\n                \"thread_ts\": { \"title\": \"Thread Ts\", \"type\": \"string\" }\n            }\n        },\n        \"message\": { \"title\": \"Message\", \"type\": [\"string\", \"null\"] },\n        \"sql\": { \"title\": \"Sql\", \"type\": [\"string\", \"null\"] },\n        \"confidence_score\": { \"title\": \"Confidence Score\", \"type\": [\"number\", \"null\"] },\n        \"sql_generation_error\": {\n            \"title\": \"Sql Generation Error\",\n                \"type\": [\"string\", \"null\"]\n        },\n        \"nl_generation_text\": {\n            \"title\": \"Nl Generation Text\",\n                \"type\": [\"string\", \"null\"]\n        },\n        \"updated_at\": {\n            \"title\": \"Updated At\",\n                \"type\": [\"string\", \"null\"],\n                    \"format\": \"date-time\"\n        },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        },\n        \"status\": {\n            \"title\": \"GenerationStatus\",\n                \"enum\": [\n                    \"INITIALIZED\",\n                    \"IN_PROGRESS\",\n                    \"NOT_VERIFIED\",\n                    \"VERIFIED\",\n                    \"ERROR\",\n                    \"REJECTED\"\n                ],\n                    \"type\": \"string\",\n                        \"description\": \"An enumeration.\"\n        },\n        \"sql_result\": { \"title\": \"Sql Result\", \"type\": [\"object\", \"null\"] }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"id": "22bdbd18-1a1c-423f-b87a-5c867727c198",
+			"key": "generation_list_schema",
+			"value": "{\n    \"title\": \"GenerationListResponse\",\n        \"required\": [\"id\", \"created_by\", \"prompt_text\"],\n            \"type\": \"object\",\n                \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"created_by\": { \"title\": \"Created By\", \"type\": [\"string\", \"null\"] },\n        \"prompt_text\": { \"title\": \"Prompt Text\", \"type\": \"string\" },\n        \"nl_generation_text\": {\n            \"title\": \"Nl Generation Text\",\n                \"type\": [\"string\", \"null\"]\n        },\n        \"sql\": { \"title\": \"Sql\", \"type\": [\"string\", \"null\"] },\n        \"status\": {\n            \"title\": \"GenerationStatus\",\n                \"enum\": [\n                    \"INITIALIZED\",\n                    \"IN_PROGRESS\",\n                    \"NOT_VERIFIED\",\n                    \"VERIFIED\",\n                    \"ERROR\",\n                    \"REJECTED\"\n                ],\n                    \"type\": \"string\",\n                        \"description\": \"An enumeration.\"\n        },\n        \"confidence_score\": { \"title\": \"Confidence Score\", \"type\": [\"number\", \"null\"] },\n        \"display_id\": { \"title\": \"Display Id\", \"type\": [\"string\", \"null\"] },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"id": "a5391de7-8e56-451d-a3be-440a433b839e",
+			"key": "table_description_schema",
+			"value": "{\n    \"title\": \"TableDescriptionResponse\",\n        \"type\": \"object\",\n            \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"table_name\": { \"title\": \"Table Name\", \"type\": \"string\" },\n        \"db_connection_id\": { \"title\": \"Db Connection Id\", \"type\": [\"string\", \"null\"] },\n        \"description\": { \"title\": \"Description\", \"type\": [\"string\", \"null\"] },\n        \"columns\": {\n            \"title\": \"Columns\",\n                \"type\": \"array\",\n                    \"items\": {\n                \"title\": \"ColumnDescription\",\n                    \"type\": [\"object\", \"null\"],\n                        \"properties\": {\n                    \"name\": { \"title\": \"Name\", \"type\": [\"string\", \"null\"] },\n                    \"description\": { \"title\": \"Description\", \"type\": [\"string\", \"null\"] },\n                    \"is_primary_key\": { \"title\": \"Is Primary Key\", \"type\": \"boolean\" },\n                    \"data_type\": { \"title\": \"Data Type\", \"type\": [\"string\", \"null\"] },\n                    \"low_cardinality\": { \"title\": \"Low Cardinality\", \"type\": \"boolean\" },\n                    \"categories\": {\n                        \"title\": \"Categories\",\n                            \"type\": [\"array\", \"null\"],\n                                \"items\": { \"type\": [\"string\", \"null\"] }\n                    },\n                    \"forengin_key\": { \"title\": \"Forengin Key\", \"type\": \"object\" }\n                }\n            }\n        },\n        \"examples\": { \"title\": \"Examples\", \"type\": [\"array\", \"null\"], \"items\": { } },\n        \"status\": {\n            \"title\": \"SchemaStatus\",\n                \"enum\": [\n                    \"NOT_SCANNED\",\n                    \"SYNCHRONIZING\",\n                    \"SCANNED\",\n                    \"DEPRECATED\",\n                    \"FAILED\"\n                ],\n                    \"description\": \"An enumeration.\"\n        },\n        \"last_schema_sync\": {\n            \"title\": \"Last Schema Sync\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        }\n    }\n}",
+			"type": "string"
+		}
+	]
+}

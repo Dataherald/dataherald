@@ -29,9 +29,21 @@ docker-compose up
 ```
 
 ## Testing
+
+### API Tests
+To run the Postman API test locally, use the Postman CLI:
+```
+postman login --with-api-key
+postman collection run "tests/postman/ai-api-test.json
+```
+Can you also use the Postman UI to run the tests instead, the test suite is under project `DHAI` from APIs in Postman.
+
+Besure to choose the appropriate enviornment from postman. For local environment, run the initialzation script first.
+
+### Unit Tests
 To test the endpoints in the server, create your python enviornment with required packages installed and run the pytest:
 ```
-python3 -m pytest test/
+python3 -m pytest tests/
 ```
 
 The test does not cover end to end testing and mocks authentication, authorization, and repository objects. 
