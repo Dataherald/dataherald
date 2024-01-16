@@ -44,9 +44,6 @@ HTTP 201 code response
       "id": "string",
       "question_id": "string",
       "response": "string",
-      "intermediate_steps": [
-        "string"
-      ],
       "sql_query": "string",
       "sql_query_result": {
         "columns": [
@@ -87,9 +84,6 @@ HTTP 201 code response
       "id": "64dbd8f4944f867b3c450468",
       "question_id": "64dbd8cf944f867b3c450467",
       "response": "The median rent price for single homes in Los Angeles city is approximately $2827.65.",
-      "intermediate_steps": [
-        "",
-      ],
       "sql_query": "SELECT property_type, percentile_cont(0.5) WITHIN GROUP (ORDER BY metric_value) AS median_rent\nFROM db_table\nWHERE dh_city_name = 'Los Angeles'\nGROUP BY property_type\nLIMIT 13;",
       "sql_query_result": {
         "columns": [

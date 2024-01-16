@@ -44,45 +44,42 @@ Related endpoints are:
         }
     }
 
-Responses
-------------------
-The ``responses`` object is created from the answering natural language questions from the relational data.
+.. Responses
+.. ------------------
+.. The ``responses`` object is created from the answering natural language questions from the relational data.
 
-The related endpoints are:
+.. The related endpoints are:
 
-* :doc:`add_question <api.question>` -- ``POST api/v1/questions``
-* :doc:`add_responses <api.add_responses>` -- ``POST api/v1/responses``
-* :doc:`list_responses <api.list_responses>` -- ``GET api/v1/responses``
-* :doc:`get_response <api.get_response>` -- ``GET api/v1/responses/{response_id}``
-* :doc:`get_response_file <api.get_response_file>` -- ``GET api/v1/responses/{response_id}/file``
+.. * :doc:`add_question <api.question>` -- ``POST api/v1/questions``
+.. * :doc:`add_responses <api.add_responses>` -- ``POST api/v1/responses``
+.. * :doc:`list_responses <api.list_responses>` -- ``GET api/v1/responses``
+.. * :doc:`get_response <api.get_response>` -- ``GET api/v1/responses/{response_id}``
+.. * :doc:`get_response_file <api.get_response_file>` -- ``GET api/v1/responses/{response_id}/file``
 
-**Response resource example:**
+.. **Response resource example:**
 
-.. code-block:: json
+.. .. code-block:: json
 
-    {
-      "question_id": "string",
-      "response": "string",
-      "intermediate_steps": [
-        "string"
-      ],
-      "sql_query": "string",
-      "sql_query_result": {
-        "columns": [
-          "string"
-        ],
-        "rows": [
-          {}
-        ]
-      },
-      "sql_generation_status": "INVALID",
-      "error_message": "string",
-      "exec_time": 0,
-      "total_tokens": 0,
-      "total_cost": 0,
-      "confidence_score": 0,
-      "created_at": "2023-10-12T16:26:40.951158"
-    }
+..     {
+..       "question_id": "string",
+..       "response": "string",
+..       "sql_query": "string",
+..       "sql_query_result": {
+..         "columns": [
+..           "string"
+..         ],
+..         "rows": [
+..           {}
+..         ]
+..       },
+..       "sql_generation_status": "INVALID",
+..       "error_message": "string",
+..       "exec_time": 0,
+..       "total_tokens": 0,
+..       "total_cost": 0,
+..       "confidence_score": 0,
+..       "created_at": "2023-10-12T16:26:40.951158"
+..     }
 
 Table Descriptions
 ---------------------
@@ -130,6 +127,91 @@ Related endpoints are:
         "instruction": "string",
     }
 
+
+Prompts
+---------------------
+
+The ``prompt`` object is used to ask questions or pass any natural language text to the LLM.
+
+Related endpoints are:
+
+* :doc:`Create a prompt <api.create_prompt>` -- ``POST api/v1/prompts``
+* :doc:`List prompts <api.list_prompts>` -- ``GET api/v1/prompts``
+* :doc:`Get a prompt <api.get_prompt>` -- ``GET api/v1/prompts/{prompt_id}``
+
+**prompt resource example:**
+
+.. code-block:: json
+    
+        {
+            "id": "str"
+            "db_connection_id": "str"
+            "text": "str"
+            "created_at": "datetime",
+            "metadata": "dict | None"
+        }
+
+SQL generations
+---------------------
+
+Given a prompt, Dataherald AI agents can generate SQL queries to efficiently answer the question or provide the necessary information.
+
+Related endpoints are:
+
+* :doc:`create a SQL generation for a given prompt <api.create_sql_generation>` -- ``POST api/v1/prompts/{prompt_id}/sql-generations``
+* :doc:`create a prompt and a SQL generation <api.create_prompt_sql_generation>` -- ``POST api/v1/prompts/sql-generations``
+* :doc:`list SQL generations <api.list_sql_generations>` -- ``GET api/v1/sql-generations``
+* :doc:`get a SQL generation <api.get_sql_generation>` -- ``GET api/v1/sql-generations/{sql_generation_id}``
+* :doc:`get a SQL a csv file of SQL query results <api.get_csv_file>` -- ``GET api/v1/sql-generations/{sql_generation_id}/csv-file``
+* :doc:`execute a SQL generation <api.execute_sql_generation>` -- ``GET api/v1/sql-generations/{sql_generation_id}/execute``
+
+**SQL generation resource example:**
+
+.. code-block:: json
+        
+    {
+        "id": "str"
+        "prompt_id": "str"
+        "finetuning_id": "str"
+        "evaluate": "bool"
+        "sql": "str"
+        "status": "str"
+        "completed_at": "datetime"
+        "tokens_used": "int"
+        "confidence_score": "float"
+        "error": "str"
+        "created_at": "datetime",
+        "metadata": "dict | None"
+    }
+
+
+
+NL generations
+---------------------
+
+For each SQL generation, the LLMs can generate a natural language response based on the SQL query results.
+
+Related endpoints are:
+
+* :doc:`create a NL generation for a given SQL generation <api.create_nl_generation>` -- ``POST api/v1/sql-generations/{sql_generation_id}/nl-generations``
+* :doc:`create a SQL generation and a NL generation for a given prompt <api.create_sql_generation_nl_generation>` -- ``POST api/v1/prompts/{prompt_id}/sql-generations/nl-generations``
+* :doc:`create a prompt and a SQL generation and a NL generation <api.create_prompt_sql_generation_nl_generation>` -- ``POST api/v1/prompts/sql-generations/nl-generations``
+* :doc:`list NL generations <api.list_nl_generations>` -- ``GET api/v1/nl-generations``
+* :doc:`get a NL generation <api.get_nl_generation>` -- ``GET api/v1/nl-generations/{nl_generation_id}``
+
+**Nl generation resource example:**
+
+.. code-block:: json
+    
+        {
+            "id": "str"
+            "sql_generation_id": "str"
+            "text": "str"
+            "created_at": "datetime",
+            "metadata": "dict | None"
+        }
+
+
 Finetuning jobs
 ---------------------
 The ``finetuning`` object is used to finetune the LLM to your data. This is an asynchronous process that uploads your golden records to model provider servers and creates a finetuning job.
@@ -140,6 +222,8 @@ Related endpoints are:
 * :doc:`Finetuning job create <api.finetuning>` -- ``POST api/v1/finetunings``
 * :doc:`Finetuning job get <api.get_finetuning>` -- ``GET api/v1/finetunings/{finetuning_id}``
 * :doc:`Finetuning job cancel <api.cancel_finetuning>` -- ``POST api/v1/finetunings/{finetuning_id}/cancel``
+* :doc:`Finetuning job delete <api.delete_finetuning>` -- ``DELETE api/v1/finetunings/{finetuning_id}``
+* :doc:`Finetuning job list <api.list_finetunings>` -- ``GET api/v1/finetunings``
 
 
 **Finetuning resource example:**
@@ -166,7 +250,7 @@ Related endpoints are:
         "model_id": "Model ID after finetuning",
         "created_at": "datetime",
         "golden_records": "array[ids]", // Default is None, meaning use all golden records
-        "metadata": "dict[str, str] | None" // Optional, default None
+        "metadata": "dict | None" // Optional, default None
     }
 
 .. toctree::
@@ -187,17 +271,27 @@ Related endpoints are:
     api.update_instructions
     api.delete_instructions
 
-    api.golden_record
+    api.golden_sql
 
-    api.question
-    api.list_questions
-    api.get_question
+    api.create_prompt
+    api.list_prompts
+    api.get_prompt
 
-    api.add_responses
-    api.list_responses
-    api.get_response
-    api.get_response_file
+    api.create_sql_generation
+    api.create_prompt_sql_generation
+    api.list_sql_generations
+    api.get_sql_generation
+    api.get_csv_file
+    api.execute_sql_generation
+
+    api.create_nl_generation
+    api.create_sql_generation_nl_generation
+    api.create_prompt_sql_generation_nl_generation
+    api.list_nl_generations
+    api.get_nl_generation
 
     api.finetuning
     api.get_finetuning
     api.cancel_finetuning
+    api.delete_finetuning
+    api.list_finetunings

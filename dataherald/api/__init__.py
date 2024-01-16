@@ -1,26 +1,39 @@
+import io
 from abc import ABC, abstractmethod
 from typing import List
 
 from fastapi import BackgroundTasks
-from fastapi.responses import FileResponse
 
-from dataherald.api.types import Query
+from dataherald.api.types.query import Query
+from dataherald.api.types.requests import (
+    NLGenerationRequest,
+    NLGenerationsSQLGenerationRequest,
+    PromptRequest,
+    PromptSQLGenerationNLGenerationRequest,
+    PromptSQLGenerationRequest,
+    SQLGenerationRequest,
+    UpdateMetadataRequest,
+)
+from dataherald.api.types.responses import (
+    DatabaseConnectionResponse,
+    GoldenSQLResponse,
+    InstructionResponse,
+    NLGenerationResponse,
+    PromptResponse,
+    SQLGenerationResponse,
+    TableDescriptionResponse,
+)
 from dataherald.config import Component
-from dataherald.db_scanner.models.types import QueryHistory, TableDescription
-from dataherald.sql_database.models.types import DatabaseConnection, SSHSettings
+from dataherald.db_scanner.models.types import QueryHistory
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import (
     CancelFineTuningRequest,
-    CreateResponseRequest,
     DatabaseConnectionRequest,
     Finetuning,
     FineTuningRequest,
-    GoldenRecord,
-    GoldenRecordRequest,
-    Instruction,
+    GoldenSQL,
+    GoldenSQLRequest,
     InstructionRequest,
-    Question,
-    QuestionRequest,
-    Response,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateInstruction,
@@ -36,43 +49,13 @@ class API(Component, ABC):
     @abstractmethod
     def scan_db(
         self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
-    ) -> bool:
-        pass
-
-    @abstractmethod
-    def answer_question(
-        self,
-        run_evaluator: bool = True,
-        generate_csv: bool = False,
-        question_request: QuestionRequest = None,
-    ) -> Response:
-        pass
-
-    @abstractmethod
-    def answer_question_with_timeout(
-        self,
-        run_evaluator: bool = True,
-        generate_csv: bool = False,
-        question_request: QuestionRequest = None,
-    ) -> Response:
-        pass
-
-    @abstractmethod
-    def update_response(self, response_id: str) -> Response:
-        pass
-
-    @abstractmethod
-    def get_questions(self, db_connection_id: str | None = None) -> list[Question]:
-        pass
-
-    @abstractmethod
-    def get_question(self, question_id: str) -> Question:
+    ) -> list[TableDescriptionResponse]:
         pass
 
     @abstractmethod
     def create_database_connection(
         self, database_connection_request: DatabaseConnectionRequest
-    ) -> DatabaseConnection:
+    ) -> DatabaseConnectionResponse:
         pass
 
     @abstractmethod
@@ -92,37 +75,53 @@ class API(Component, ABC):
         self,
         table_description_id: str,
         table_description_request: TableDescriptionRequest,
-    ) -> TableDescription:
+    ) -> TableDescriptionResponse:
         pass
 
     @abstractmethod
     def list_table_descriptions(
         self, db_connection_id: str, table_name: str | None = None
-    ) -> list[TableDescription]:
+    ) -> list[TableDescriptionResponse]:
         pass
 
     @abstractmethod
-    def get_table_description(self, table_description_id: str) -> TableDescription:
+    def get_table_description(
+        self, table_description_id: str
+    ) -> TableDescriptionResponse:
         pass
 
     @abstractmethod
-    def add_golden_records(
-        self, golden_records: List[GoldenRecordRequest]
-    ) -> List[GoldenRecord]:
+    def create_prompt(self, prompt_request: PromptRequest) -> PromptResponse:
         pass
 
     @abstractmethod
-    def execute_sql_query(self, query: Query) -> tuple[str, dict]:
+    def get_prompt(self, prompt_id) -> PromptResponse:
         pass
 
     @abstractmethod
-    def create_response(
-        self,
-        run_evaluator: bool = True,
-        sql_response_only: bool = False,
-        generate_csv: bool = False,
-        query_request: CreateResponseRequest = None,
-    ) -> Response:
+    def update_prompt(
+        self, prompt_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> PromptResponse:
+        pass
+
+    @abstractmethod
+    def get_prompts(self, db_connection_id: str | None = None) -> List[PromptResponse]:
+        pass
+
+    @abstractmethod
+    def add_golden_sqls(
+        self, golden_sqls: List[GoldenSQLRequest]
+    ) -> List[GoldenSQLResponse]:
+        pass
+
+    @abstractmethod
+    def execute_sql_query(
+        self, sql_generation_id: str, max_rows: int = 100
+    ) -> tuple[str, dict]:
+        pass
+
+    @abstractmethod
+    def export_csv_file(self, sql_generation_id: str) -> io.StringIO:
         pass
 
     @abstractmethod
@@ -130,37 +129,31 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def get_responses(self, question_id: str | None = None) -> list[Response]:
+    def delete_golden_sql(self, golden_sql_id: str) -> dict:
         pass
 
     @abstractmethod
-    def get_response(self, response_id: str) -> Response:
-        pass
-
-    @abstractmethod
-    def get_response_file(
-        self, response_id: str, background_tasks: BackgroundTasks
-    ) -> FileResponse:
-        pass
-
-    @abstractmethod
-    def delete_golden_record(self, golden_record_id: str) -> dict:
-        pass
-
-    @abstractmethod
-    def get_golden_records(
+    def get_golden_sqls(
         self, db_connection_id: str = None, page: int = 1, limit: int = 10
-    ) -> List[GoldenRecord]:
+    ) -> List[GoldenSQL]:
         pass
 
     @abstractmethod
-    def add_instruction(self, instruction_request: InstructionRequest) -> Instruction:
+    def update_golden_sql(
+        self, golden_sql_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> GoldenSQL:
+        pass
+
+    @abstractmethod
+    def add_instruction(
+        self, instruction_request: InstructionRequest
+    ) -> InstructionResponse:
         pass
 
     @abstractmethod
     def get_instructions(
         self, db_connection_id: str = None, page: int = 1, limit: int = 10
-    ) -> List[Instruction]:
+    ) -> List[InstructionResponse]:
         pass
 
     @abstractmethod
@@ -172,7 +165,7 @@ class API(Component, ABC):
         self,
         instruction_id: str,
         instruction_request: UpdateInstruction,
-    ) -> Instruction:
+    ) -> InstructionResponse:
         pass
 
     @abstractmethod
@@ -188,5 +181,82 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
+    def get_finetunings(self, db_connection_id: str | None = None) -> list[Finetuning]:
+        pass
+
+    @abstractmethod
+    def delete_finetuning_job(self, finetuning_job_id: str) -> dict:
+        pass
+
+    @abstractmethod
     def get_finetuning_job(self, finetuning_job_id: str) -> Finetuning:
+        pass
+
+    @abstractmethod
+    def update_finetuning_job(
+        self, finetuning_job_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> Finetuning:
+        pass
+
+    @abstractmethod
+    def create_sql_generation(
+        self, prompt_id: str, sql_generation_request: SQLGenerationRequest
+    ) -> SQLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def create_prompt_and_sql_generation(
+        self, prompt_sql_generation_request: PromptSQLGenerationRequest
+    ) -> SQLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def get_sql_generations(
+        self, prompt_id: str | None = None
+    ) -> list[SQLGenerationResponse]:
+        pass
+
+    @abstractmethod
+    def get_sql_generation(self, sql_generation_id: str) -> SQLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def update_sql_generation(
+        self, sql_generation_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> SQLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def create_nl_generation(
+        self, sql_generation_id: str, nl_generation_request: NLGenerationRequest
+    ) -> NLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def create_sql_and_nl_generation(
+        self,
+        prompt_id: str,
+        nl_generation_sql_generation_request: NLGenerationsSQLGenerationRequest,
+    ) -> NLGenerationResponse:
+        pass
+
+    def create_prompt_sql_and_nl_generation(
+        self, request: PromptSQLGenerationNLGenerationRequest
+    ) -> NLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def get_nl_generations(
+        self, sql_generation_id: str | None = None
+    ) -> list[NLGenerationResponse]:
+        pass
+
+    @abstractmethod
+    def get_nl_generation(self, nl_generation_id: str) -> NLGenerationResponse:
+        pass
+
+    @abstractmethod
+    def update_nl_generation(
+        self, nl_generation_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> NLGenerationResponse:
         pass

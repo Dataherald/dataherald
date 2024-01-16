@@ -5,6 +5,10 @@ from dataherald.sql_database.models.types import DatabaseConnection
 DB_COLLECTION = "database_connections"
 
 
+class DatabaseConnectionNotFoundError(Exception):
+    pass
+
+
 class DatabaseConnectionRepository:
     def __init__(self, storage):
         self.storage = storage

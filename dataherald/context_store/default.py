@@ -6,11 +6,15 @@ from sql_metadata import Parser
 
 from dataherald.config import System
 from dataherald.context_store import ContextStore
-from dataherald.repositories.golden_records import GoldenRecordRepository
+from dataherald.repositories.golden_sqls import GoldenSQLRepository
 from dataherald.repositories.instructions import InstructionRepository
-from dataherald.types import GoldenRecord, GoldenRecordRequest, Question
+from dataherald.types import GoldenSQL, GoldenSQLRequest, Prompt
 
 logger = logging.getLogger(__name__)
+
+
+class MalformedGoldenSQLError(Exception):
+    pass
 
 
 class DefaultContextStore(ContextStore):
@@ -19,25 +23,25 @@ class DefaultContextStore(ContextStore):
 
     @override
     def retrieve_context_for_question(
-        self, nl_question: Question, number_of_samples: int = 3
+        self, prompt: Prompt, number_of_samples: int = 3
     ) -> Tuple[List[dict] | None, List[dict] | None]:
-        logger.info(f"Getting context for {nl_question.question}")
+        logger.info(f"Getting context for {prompt.text}")
         closest_questions = self.vector_store.query(
-            query_texts=[nl_question.question],
-            db_connection_id=nl_question.db_connection_id,
-            collection=self.golden_record_collection,
+            query_texts=[prompt.text],
+            db_connection_id=prompt.db_connection_id,
+            collection=self.golden_sql_collection,
             num_results=number_of_samples,
         )
 
         samples = []
-        golden_records_repository = GoldenRecordRepository(self.db)
+        golden_sqls_repository = GoldenSQLRepository(self.db)
         for question in closest_questions:
-            golden_record = golden_records_repository.find_by_id(question["id"])
-            if golden_record is not None:
+            golden_sql = golden_sqls_repository.find_by_id(question["id"])
+            if golden_sql is not None:
                 samples.append(
                     {
-                        "nl_question": golden_record.question,
-                        "sql_query": golden_record.sql_query,
+                        "prompt_text": golden_sql.prompt_text,
+                        "sql": golden_sql.sql,
                         "score": question["score"],
                     }
                 )
@@ -47,7 +51,7 @@ class DefaultContextStore(ContextStore):
         instruction_repository = InstructionRepository(self.db)
         all_instructions = instruction_repository.find_all()
         for instruction in all_instructions:
-            if instruction.db_connection_id == nl_question.db_connection_id:
+            if instruction.db_connection_id == prompt.db_connection_id:
                 instructions.append(
                     {
                         "instruction": instruction.instruction,
@@ -59,45 +63,38 @@ class DefaultContextStore(ContextStore):
         return samples, instructions
 
     @override
-    def add_golden_records(
-        self, golden_records: List[GoldenRecordRequest]
-    ) -> List[GoldenRecord]:
-        """Creates embeddings of the questions and adds them to the VectorDB. Also adds the golden records to the DB"""
-        golden_records_repository = GoldenRecordRepository(self.db)
-        retruned_golden_records = []
-        for record in golden_records:
-            tables = Parser(record.sql_query).tables
-            question = record.question
-            golden_record = GoldenRecord(
-                question=question,
-                sql_query=record.sql_query,
+    def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
+        """Creates embeddings of the questions and adds them to the VectorDB. Also adds the golden sqls to the DB"""
+        golden_sqls_repository = GoldenSQLRepository(self.db)
+        stored_golden_sqls = []
+        for record in golden_sqls:
+            try:
+                Parser(record.sql).tables  # noqa: B018
+            except Exception as e:
+                raise MalformedGoldenSQLError(
+                    f"SQL {record.sql} is malformed. Please check the syntax."
+                ) from e
+            prompt_text = record.prompt_text
+            golden_sql = GoldenSQL(
+                prompt_text=prompt_text,
+                sql=record.sql,
                 db_connection_id=record.db_connection_id,
+                metadata=record.metadata,
             )
-            retruned_golden_records.append(golden_record)
-            golden_record = golden_records_repository.insert(golden_record)
-            self.vector_store.add_record(
-                documents=question,
-                db_connection_id=record.db_connection_id,
-                collection=self.golden_record_collection,
-                metadata=[
-                    {
-                        "tables_used": tables[0],
-                        "db_connection_id": record.db_connection_id,
-                    }
-                ],  # this should be updated for multiple tables
-                ids=[str(golden_record.id)],
-            )
-        return retruned_golden_records
+            stored_golden_sqls.append(golden_sqls_repository.insert(golden_sql))
+
+        self.vector_store.add_records(stored_golden_sqls, self.golden_sql_collection)
+        return stored_golden_sqls
 
     @override
-    def remove_golden_records(self, ids: List) -> bool:
-        """Removes the golden records from the DB and the VectorDB"""
-        golden_records_repository = GoldenRecordRepository(self.db)
+    def remove_golden_sqls(self, ids: List) -> bool:
+        """Removes the golden sqls from the DB and the VectorDB"""
+        golden_sqls_repository = GoldenSQLRepository(self.db)
         for id in ids:
             self.vector_store.delete_record(
-                collection=self.golden_record_collection, id=id
+                collection=self.golden_sql_collection, id=id
             )
-            deleted = golden_records_repository.delete_by_id(id)
+            deleted = golden_sqls_repository.delete_by_id(id)
             if deleted == 0:
                 logger.warning(f"Golden record with id {id} not found")
         return True
