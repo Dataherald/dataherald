@@ -36,7 +36,7 @@ if __name__ == "__main__":
     add_db_connection_id("nl_question", storage)
     # Refresh vector stores
     golden_record_collection = os.environ.get(
-        "GOLDEN_RECORD_COLLECTION", "dataherald-staging"
+        "GOLDEN_SQL_COLLECTION", "dataherald-staging"
     )
     vector_store = system.instance(VectorStore)
     try:

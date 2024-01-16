@@ -5,6 +5,8 @@ One of the features that our framework provides is the ability to finetune a mod
 
 This endpoint will create a file that is expected to be uploaded to the model provider. After the file is uploaded, we will create a finetuning job and train the model. After the model is trained, the model provider will assign a model id to the model and you can use this model id inside our agent.
 
+The only required parameter for this endpoint is the ``db_connection_id``. This is the id of the database connection that you want to use for finetuning. You can get the list of database connections by using the GET /api/v1/db-connections endpoint.
+
 
 Request this ``POST`` endpoint to create a finetuning job::
 

@@ -28,7 +28,7 @@ from dataherald.config import System
 from dataherald.eval import Evaluation, Evaluator
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
-from dataherald.types import Question, Response
+from dataherald.types import Prompt, SQLGeneration
 
 logger = logging.getLogger(__name__)
 
@@ -240,13 +240,13 @@ class EvaluationAgent(Evaluator):
     @override
     def evaluate(
         self,
-        question: Question,
-        generated_answer: Response,
+        user_prompt: Prompt,
+        sql_generation: SQLGeneration,
         database_connection: DatabaseConnection,
     ) -> Evaluation:
         start_time = time.time()
         logger.info(
-            f"Generating score for the question/sql pair: {str(question.question)}/ {str(generated_answer.sql_query)}"
+            f"Generating score for the question/sql pair: {str(user_prompt.text)}/ {str(sql_generation.sql)}"
         )
         self.llm = self.model.get_model(
             database_connection=database_connection,
@@ -254,8 +254,8 @@ class EvaluationAgent(Evaluator):
             model_name=os.getenv("LLM_MODEL", "gpt-4"),
         )
         database = SQLDatabase.get_sql_engine(database_connection)
-        user_question = question.question
-        sql = generated_answer.sql_query
+        user_question = user_prompt.text
+        sql = sql_generation.sql
         database._sample_rows_in_table_info = self.sample_rows
         toolkit = SQLEvaluationToolkit(db=database)
         agent_executor = self.create_evaluation_agent(
@@ -269,5 +269,5 @@ class EvaluationAgent(Evaluator):
         end_time = time.time()
         logger.info(f"Evaluation time elapsed: {str(end_time - start_time)}")
         return Evaluation(
-            question_id=question.id, answer_id=generated_answer.id, score=score
+            question_id=user_prompt.id, answer_id=sql_generation.id, score=score
         )

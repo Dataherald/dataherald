@@ -1,4 +1,6 @@
 import os
+from datetime import date, datetime
+from decimal import Decimal
 
 from langchain.chains import LLMChain
 from langchain.prompts.chat import (
@@ -6,20 +8,20 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
+from sqlalchemy import text
 
 from dataherald.model.chat_model import ChatModel
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
-from dataherald.repositories.question import QuestionRepository
-from dataherald.sql_database.base import SQLDatabase
-from dataherald.sql_generator.create_sql_query_status import create_sql_query_status
-from dataherald.types import Response
+from dataherald.repositories.prompts import PromptRepository
+from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
+from dataherald.types import NLGeneration, SQLGeneration
 
 SYSTEM_TEMPLATE = """ Given a Question, a Sql query and the sql query result try to answer the question
 If the sql query result doesn't answer the question just say 'I don't know'
 """
 
 HUMAN_TEMPLATE = """ Answer the question given the sql query and the sql query result.
-Question: {question}
+Question: {prompt}
 SQL query: {sql_query}
 SQL query result: {sql_query_result}
 """
@@ -33,16 +35,15 @@ class GeneratesNlAnswer:
 
     def execute(
         self,
-        query_response: Response,
-        sql_response_only: bool = False,
-        generate_csv: bool = False,
-    ) -> Response:
-        question_repository = QuestionRepository(self.storage)
-        question = question_repository.find_by_id(query_response.question_id)
+        sql_generation: SQLGeneration,
+        top_k: int = 100,
+    ) -> NLGeneration:
+        prompt_repository = PromptRepository(self.storage)
+        prompt = prompt_repository.find_by_id(sql_generation.prompt_id)
 
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         database_connection = db_connection_repository.find_by_id(
-            question.db_connection_id
+            prompt.db_connection_id
         )
         self.llm = self.model.get_model(
             database_connection=database_connection,
@@ -51,35 +52,56 @@ class GeneratesNlAnswer:
         )
         database = SQLDatabase.get_sql_engine(database_connection)
 
-        if not query_response.sql_query_result:
-            query_response = create_sql_query_status(
-                database,
-                query_response.sql_query,
-                query_response,
-                top_k=int(os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50")),
-                generate_csv=generate_csv,
-                database_connection=database_connection,
+        if sql_generation.status == "INVALID":
+            return NLGeneration(
+                sql_generation_id=sql_generation.id,
+                text="I don't know, the SQL query is invalid.",
+                created_at=datetime.now(),
             )
 
-        if query_response.csv_file_path:
-            query_response.response = None
-            return query_response
+        try:
+            query = database.parser_to_filter_commands(sql_generation.sql)
+            with database._engine.connect() as connection:
+                execution = connection.execute(text(query))
+                result = execution.fetchmany(top_k)
+            rows = []
+            for row in result:
+                modified_row = {}
+                for key, value in zip(row.keys(), row, strict=True):
+                    if type(value) in [
+                        date,
+                        datetime,
+                    ]:  # Check if the value is an instance of datetime.date
+                        modified_row[key] = str(value)
+                    elif (
+                        type(value) is Decimal
+                    ):  # Check if the value is an instance of decimal.Decimal
+                        modified_row[key] = float(value)
+                    else:
+                        modified_row[key] = value
+                rows.append(modified_row)
 
-        if not sql_response_only:
-            system_message_prompt = SystemMessagePromptTemplate.from_template(
-                SYSTEM_TEMPLATE
-            )
-            human_message_prompt = HumanMessagePromptTemplate.from_template(
-                HUMAN_TEMPLATE
-            )
-            chat_prompt = ChatPromptTemplate.from_messages(
-                [system_message_prompt, human_message_prompt]
-            )
-            chain = LLMChain(llm=self.llm, prompt=chat_prompt)
-            nl_resp = chain.run(
-                question=question.question,
-                sql_query=query_response.sql_query,
-                sql_query_result=str(query_response.sql_query_result),
-            )
-            query_response.response = nl_resp
-        return query_response
+        except SQLInjectionError as e:
+            raise SQLInjectionError(
+                "Sensitive SQL keyword detected in the query."
+            ) from e
+
+        system_message_prompt = SystemMessagePromptTemplate.from_template(
+            SYSTEM_TEMPLATE
+        )
+        human_message_prompt = HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE)
+        chat_prompt = ChatPromptTemplate.from_messages(
+            [system_message_prompt, human_message_prompt]
+        )
+        chain = LLMChain(llm=self.llm, prompt=chat_prompt)
+        nl_resp = chain.run(
+            prompt=prompt.text,
+            sql_query=sql_generation.sql,
+            sql_query_result="\n".join([str(row) for row in rows]),
+        )
+
+        return NLGeneration(
+            sql_generation_id=sql_generation.id,
+            text=nl_resp,
+            created_at=datetime.now(),
+        )

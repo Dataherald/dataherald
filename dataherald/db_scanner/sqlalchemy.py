@@ -4,8 +4,9 @@ from typing import Any, List
 
 import sqlalchemy
 from overrides import override
-from sqlalchemy import MetaData, inspect
+from sqlalchemy import Column, MetaData, Table, inspect
 from sqlalchemy.schema import CreateTable
+from sqlalchemy.sql.sqltypes import NullType
 
 from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.models.types import (
@@ -21,6 +22,7 @@ from dataherald.db_scanner.services.big_query_scanner import BigQueryScanner
 from dataherald.db_scanner.services.postgre_sql_scanner import PostgreSqlScanner
 from dataherald.db_scanner.services.snowflake_scanner import SnowflakeScanner
 from dataherald.sql_database.base import SQLDatabase
+from dataherald.types import ScannerRequest
 
 MIN_CATEGORY_VALUE = 1
 MAX_CATEGORY_VALUE = 60
@@ -37,19 +39,23 @@ class SqlAlchemyScanner(Scanner):
     @override
     def synchronizing(
         self,
-        tables: list[str],
-        db_connection_id: str,
+        scanner_request: ScannerRequest,
         repository: TableDescriptionRepository,
-    ) -> None:
+    ) -> list[TableDescription]:
         # persist tables to be scanned
-        for table in tables:
-            repository.save_table_info(
-                TableDescription(
-                    db_connection_id=db_connection_id,
-                    table_name=table,
-                    status=TableDescriptionStatus.SYNCHRONIZING.value,
+        rows = []
+        for table in scanner_request.table_names:
+            rows.append(
+                repository.save_table_info(
+                    TableDescription(
+                        db_connection_id=scanner_request.db_connection_id,
+                        table_name=table,
+                        status=TableDescriptionStatus.SYNCHRONIZING.value,
+                        metadata=scanner_request.metadata,
+                    )
                 )
             )
+        return rows
 
     @override
     def get_all_tables_and_views(self, database: SQLDatabase) -> list[str]:
@@ -121,13 +127,26 @@ class SqlAlchemyScanner(Scanner):
     def get_table_schema(
         self, meta: MetaData, db_engine: SQLDatabase, table: str
     ) -> str:
-        print(f"Create table schema: {table}")
-        create_table = str(
-            CreateTable([x for x in meta.sorted_tables if x.name == table][0]).compile(
-                db_engine.engine
-            )
-        )
-        return f"{create_table.rstrip()}"
+        print(f"Create table schema for: {table}")
+
+        original_table = next((x for x in meta.sorted_tables if x.name == table), None)
+        if original_table is None:
+            raise ValueError(f"Table '{table}' not found in metadata.")
+
+        valid_columns = []
+        for col in original_table.columns:
+            if isinstance(col.type, NullType):
+                logger.warning(
+                    f"Column {col} is ignored due to its NullType data type which is not supported"
+                )
+                continue
+            valid_columns.append(col)
+
+        new_columns = [Column(col.name, col.type) for col in valid_columns]
+        new_table = Table(original_table.name, MetaData(), *new_columns)
+        create_table_ddl = str(CreateTable(new_table).compile(db_engine.engine))
+
+        return create_table_ddl.rstrip()
 
     def scan_single_table(
         self,
@@ -162,7 +181,8 @@ class SqlAlchemyScanner(Scanner):
                 meta=meta, db_engine=db_engine, table=table, rows_number=3
             ),
             last_schema_sync=datetime.now(),
-            status=TableDescriptionStatus.SYNCHRONIZED.value,
+            error_message="",
+            status=TableDescriptionStatus.SCANNED.value,
         )
 
         repository.save_table_info(object)

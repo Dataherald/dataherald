@@ -29,7 +29,7 @@ class TableDescriptionRepository:
     ) -> TableDescription | None:
         row = self.storage.find_one(
             DB_COLLECTION,
-            {"db_connection_id": ObjectId(db_connection_id), "table_name": table_name},
+            {"db_connection_id": str(db_connection_id), "table_name": table_name},
         )
         if row:
             row["id"] = str(row["_id"])
@@ -46,22 +46,26 @@ class TableDescriptionRepository:
             tables.append(TableDescription(**row))
         return tables
 
-    def save_table_info(self, table_info: TableDescription) -> None:
+    def save_table_info(self, table_info: TableDescription) -> TableDescription:
         table_info_dict = table_info.dict(exclude={"id"})
-        table_info_dict["db_connection_id"] = ObjectId(table_info.db_connection_id)
-        self.storage.update_or_create(
-            DB_COLLECTION,
-            {
-                "db_connection_id": table_info_dict["db_connection_id"],
-                "table_name": table_info.table_name,
-            },
-            table_info_dict,
+        table_info_dict["db_connection_id"] = str(table_info.db_connection_id)
+        table_info_dict = {k: v for k, v in table_info_dict.items() if v is not None}
+        table_info.id = str(
+            self.storage.update_or_create(
+                DB_COLLECTION,
+                {
+                    "db_connection_id": table_info_dict["db_connection_id"],
+                    "table_name": table_info.table_name,
+                },
+                table_info_dict,
+            )
         )
+        return table_info
 
     def update(self, table_info: TableDescription) -> TableDescription:
         table_info_dict = table_info.dict(exclude={"id"})
-        table_info_dict["db_connection_id"] = ObjectId(table_info.db_connection_id)
-
+        table_info_dict["db_connection_id"] = str(table_info.db_connection_id)
+        table_info_dict = {k: v for k, v in table_info_dict.items() if v is not None}
         self.storage.update_or_create(
             DB_COLLECTION,
             {"_id": ObjectId(table_info.id)},
@@ -94,6 +98,9 @@ class TableDescriptionRepository:
     def update_fields(self, table: TableDescription, table_description_request):
         if table_description_request.description is not None:
             table.description = table_description_request.description
+
+        if table_description_request.metadata is not None:
+            table.metadata = table_description_request.metadata
 
         if table_description_request.columns:
             columns = [column.name for column in table.columns]
