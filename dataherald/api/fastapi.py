@@ -7,6 +7,7 @@ from typing import List
 
 from bson.objectid import InvalidId, ObjectId
 from fastapi import BackgroundTasks, HTTPException
+from fastapi.responses import JSONResponse
 from overrides import override
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -647,19 +648,19 @@ class FastAPI(API):
                 prompt_id, sql_generation_request
             )
         except PromptNotFoundError as e:
-            return HTTPException(
+            return JSONResponse(
                 status_code=400,
-                detail={"message": str(e), "sql_generation_id": e.args[1]},
+                content={"message": str(e.args[0]), "sql_generation_id": e.args[1]},
             )
         except SQLGenerationError as e:
-            return HTTPException(
+            return JSONResponse(
                 status_code=400,
-                detail={"message": str(e), "sql_generation_id": e.args[1]},
+                content={"message": str(e.args[0]), "sql_generation_id": e.args[1]},
             )
         except SQLInjectionError as e:
-            return HTTPException(
+            return JSONResponse(
                 status_code=400,
-                detail={"message": str(e), "sql_generation_id": e.args[1]},
+                content={"message": str(e.args[0]), "sql_generation_id": e.args[1]},
             )
         return SQLGenerationResponse(**sql_generation.dict())
 
@@ -681,28 +682,28 @@ class FastAPI(API):
                 prompt.id, prompt_sql_generation_request
             )
         except PromptNotFoundError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={
-                    "message": str(e),
+                content={
+                    "message": str(e.args[0]),
                     "prompt_id": prompt.id,
                     "sql_generation_id": e.args[1],
                 },
             ) from e
         except SQLGenerationError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={
-                    "message": str(e),
+                content={
+                    "message": str(e.args[0]),
                     "prompt_id": prompt.id,
                     "sql_generation_id": e.args[1],
                 },
             ) from e
         except SQLInjectionError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={
-                    "message": str(e),
+                content={
+                    "message": str(e.args[0]),
                     "prompt_id": prompt.id,
                     "sql_generation_id": e.args[1],
                 },
@@ -768,14 +769,14 @@ class FastAPI(API):
                 sql_generation_id, nl_generation_request
             )
         except SQLGenerationNotFoundError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={"message": str(e), "nl_generation_id": e.args[1]},
+                content={"message": str(e.args[0]), "nl_generation_id": e.args[1]},
             ) from e
         except NLGenerationError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={"message": str(e), "nl_generation_id": e.args[1]},
+                content={"message": str(e.args[0]), "nl_generation_id": e.args[1]},
             ) from e
         return NLGenerationResponse(**nl_generation.dict())
 
@@ -795,28 +796,28 @@ class FastAPI(API):
                 prompt_id, nl_generation_sql_generation_request.sql_generation
             )
         except PromptNotFoundError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={
-                    "message": str(e),
+                content={
+                    "message": str(e.args[0]),
                     "sql_generation_id": e.args[1],
                     "nl_generation_id": None,
                 },
             ) from e
         except SQLGenerationError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={
-                    "message": str(e),
+                content={
+                    "message": str(e.args[0]),
                     "sql_generation_id": e.args[1],
                     "nl_generation_id": None,
                 },
             ) from e
         except SQLInjectionError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={
-                    "message": str(e),
+                content={
+                    "message": str(e.args[0]),
                     "sql_generation_id": e.args[1],
                     "nl_generation_id": None,
                 },
@@ -828,19 +829,19 @@ class FastAPI(API):
                 sql_generation.id, nl_generation_sql_generation_request
             )
         except SQLGenerationNotFoundError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={
-                    "message": str(e),
+                content={
+                    "message": str(e.args[0]),
                     "sql_generation_id": sql_generation.id,
                     "nl_generation_id": e.args[1],
                 },
             ) from e  # noqa: E501
         except NLGenerationError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={
-                    "message": str(e),
+                content={
+                    "message": str(e.args[0]),
                     "sql_generation_id": sql_generation.id,
                     "nl_generation_id": e.args[1],
                 },
@@ -864,20 +865,20 @@ class FastAPI(API):
                 prompt.id, request.sql_generation
             )
         except PromptNotFoundError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={
-                    "message": str(e),
+                content={
+                    "message": str(e.args[0]),
                     "prompt_id": prompt.id,
                     "sql_generation_id": e.args[1],
                     "nl_generation_id": None,
                 },
             ) from e
         except SQLGenerationError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={
-                    "message": str(e),
+                content={
+                    "message": str(e.args[0]),
                     "prompt_id": prompt.id,
                     "sql_generation_id": e.args[1],
                     "nl_generation_id": None,
@@ -888,20 +889,20 @@ class FastAPI(API):
         try:
             nl_generation = nl_generation_service.create(sql_generation.id, request)
         except SQLGenerationNotFoundError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={
-                    "message": str(e),
+                content={
+                    "message": str(e.args[0]),
                     "prompt_id": prompt.id,
                     "sql_generation_id": sql_generation.id,
                     "nl_generation_id": e.args[1],
                 },
             ) from e  # noqa: E501
         except NLGenerationError as e:
-            raise HTTPException(
+            raise JSONResponse(
                 status_code=400,
-                detail={
-                    "message": str(e),
+                content={
+                    "message": str(e.args[0]),
                     "prompt_id": prompt.id,
                     "sql_generation_id": sql_generation.id,
                     "nl_generation_id": e.args[1],
