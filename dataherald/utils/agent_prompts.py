@@ -111,7 +111,6 @@ Thought: I should use the generate_sql tool to generate a SQL query for the give
 
 FINETUNING_AGENT_PREFIX = """You are an agent designed to interact with a SQL database to find a correct SQL query for the given question.
 Given an input question, return a syntactically correct {dialect} query, always execute the query to make sure it is correct, and return the SQL query in ```sql and ``` format.
-If the question is complex, break it into multiple sub-questions and use the generate_sql tool to generate a SQL query for each sub-question, then combine the SQL queries into one SQL query.
 
 Using `current_date()` or `current_datetime()` in SQL queries is banned, use system_time tool to get the exact time of the query execution.
 If SQL results has None or NULL values, handle them by adding a WHERE clause to filter them out.

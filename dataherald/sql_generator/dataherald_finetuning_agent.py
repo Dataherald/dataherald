@@ -198,10 +198,10 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
 
     name = "generate_sql"
     description = """
-    Input: Question.
+    Input: user question.
     Output: SQL query.
-    Use this tool to generate SQL queries.
-    Pass the a question as the input to the tool.
+    Use this tool to a generate SQL queries.
+    Pass the user question as input to the tool.
     """
     finetuning_model_id: str = Field(exclude=True)
     args_schema: Type[BaseModel] = QuestionInput
