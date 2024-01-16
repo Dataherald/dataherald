@@ -39,8 +39,11 @@ class FinetuningsRepository:
         obj.id = str(row["_id"])
         return obj
 
-    def find_by(self, query: dict, page: int = 1, limit: int = 10) -> list[Finetuning]:
-        rows = self.storage.find(DB_COLLECTION, query, page=page, limit=limit)
+    def find_by(self, query: dict, page: int = 0, limit: int = 0) -> list[Finetuning]:
+        if page > 0 and limit > 0:
+            rows = self.storage.find(DB_COLLECTION, query, page=page, limit=limit)
+        else:
+            rows = self.storage.find_all(DB_COLLECTION)
         result = []
         for row in rows:
             obj = Finetuning(**row)
