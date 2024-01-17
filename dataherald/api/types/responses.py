@@ -61,7 +61,7 @@ class DatabaseConnectionResponse(BaseResponse, DatabaseConnection):
 
 
 class TableDescriptionResponse(BaseResponse, TableDescription):
-    pass
+    id: str | None
 
 
 class GoldenSQLResponse(BaseResponse, GoldenSQL):
