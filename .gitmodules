@@ -1,7 +1,6 @@
 [submodule "apps/ai/server/dataherald"]
 	path = apps/ai/server/dataherald
 	url = https://github.com/Dataherald/dataherald
-	branch = kula
 [submodule "apps/bariloche/programmatic-seo"]
 	path = apps/bariloche/programmatic-seo
 	url = https://github.com/Dataherald/programmatic-seo
