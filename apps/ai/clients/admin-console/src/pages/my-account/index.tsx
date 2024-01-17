@@ -2,7 +2,7 @@ import PageLayout from '@/components/layout/page-layout'
 import { ContentBox } from '@/components/ui/content-box'
 import { useAppContext } from '@/contexts/app-context'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
-import { User2 } from 'lucide-react'
+import { UserRound } from 'lucide-react'
 import { FC } from 'react'
 
 const MyAccountPage: FC = () => {
@@ -16,7 +16,7 @@ const MyAccountPage: FC = () => {
         <div className="grid grid-cols-2 gap-4 m-6">
           <ContentBox>
             <div className="flex items-center gap-2">
-              <User2 size={18} strokeWidth={2.5} />
+              <UserRound size={20} strokeWidth={2.5} />
               <h1 className="font-bold">Profile</h1>
             </div>
             {[

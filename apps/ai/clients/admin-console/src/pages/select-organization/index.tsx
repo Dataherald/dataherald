@@ -51,7 +51,7 @@ const SelectOrganizationPage: FC = () => {
   }, [router, selectedOrganization, setAdminOrganization])
 
   const handleCancel = useCallback(() => {
-    router.push('/organization-settings')
+    router.push('/organization')
   }, [router])
 
   return (

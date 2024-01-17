@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
-import { Calendar, Clock, User2 } from 'lucide-react'
+import { Calendar, Clock, UserRound } from 'lucide-react'
 import { FC, HTMLAttributes } from 'react'
 
 export interface QueryQuestionProps extends HTMLAttributes<HTMLDivElement> {
@@ -19,7 +19,7 @@ const QueryQuestion: FC<QueryQuestionProps> = ({
     <h1 className="text-xl font-bold first-letter:capitalize">{prompt_text}</h1>
     <div className="flex gap-5">
       {[
-        { icon: User2, text: created_by },
+        { icon: UserRound, text: created_by },
         { icon: Calendar, text: format(questionDate, 'MMMM dd, yyyy') },
         { icon: Clock, text: format(questionDate, 'hh:mm a') },
       ].map((item, index) => (

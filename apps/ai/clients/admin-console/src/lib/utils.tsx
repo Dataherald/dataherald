@@ -7,7 +7,11 @@ export const cn = (...inputs: ClassValue[]): string => {
 }
 
 export const formatUrl = (segment: string): string =>
-  segment.replace('sql', 'SQL').replace('api', 'API')
+  segment
+    .replace('-', ' ')
+    .replace('sql', 'SQL')
+    .replace('api', 'API')
+    .replace('fine tuning', 'fine-tuning')
 
 export const formatKey = (key: string): string =>
   key.replace('_', ' ').toLowerCase()

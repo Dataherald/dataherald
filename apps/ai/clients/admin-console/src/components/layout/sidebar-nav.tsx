@@ -2,22 +2,25 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { buttonVariants } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import UserPicture from '@/components/user/user-picture'
-import UserSettingsPopover from '@/components/user/user-settings-popover'
 
 import { Separator } from '@/components/ui/separator'
 import { useAppContext } from '@/contexts/app-context'
 import { cn } from '@/lib/utils'
 import {
+  Building2,
   Database,
   KeyRound,
   ListChecks,
+  LogOut,
   LucideIcon,
   Microscope,
   SlidersIcon,
   TerminalSquare,
+  UserRound,
 } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 
 export interface MenuItem {
   text: string
@@ -60,6 +63,11 @@ const CONFIG_NAV_ITEMS: MenuItems = [
     href: '/api-keys',
     icon: KeyRound,
   },
+  {
+    text: 'Organization',
+    href: '/organization',
+    icon: Building2,
+  },
 ]
 
 const SidebarNav = ({
@@ -67,10 +75,12 @@ const SidebarNav = ({
   ...props
 }: React.HTMLAttributes<HTMLElement>) => {
   const pathname = usePathname()
-  const { user, organization } = useAppContext()
+  const { user, organization, logout } = useAppContext()
+
+  const handleLogout = logout
 
   return (
-    <aside className="min-w-[250px] flex flex-col justify-between bg-gray-50 border-r">
+    <aside className="min-w-[220px] flex flex-col justify-between bg-gray-50 border-r">
       <div className="flex flex-col gap-5">
         <Image
           priority
@@ -129,18 +139,54 @@ const SidebarNav = ({
         </nav>
       </div>
       {user && organization && (
-        <div className="flex flex-col items-center  gap-3 p-3 m-3 border rounded-xl bg-white">
-          <div className="w-full flex items-center justify-between gap-2 ">
-            <div className="flex items-center gap-2">
-              <UserPicture pictureUrl={user.picture} />
-              <div className="flex flex-col">
-                <span className="text-xs">{organization?.name}</span>{' '}
-                <span className="font-semibold text-sm">{user.name}</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <div className="flex flex-col items-center  gap-3 p-3 m-3 border rounded-xl bg-white cursor-pointer">
+              <div className="w-full flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <UserPicture pictureUrl={user.picture} />
+                  <div className="flex flex-col">
+                    <span className="text-xs">{organization?.name}</span>{' '}
+                    <span className="font-semibold text-sm">{user.name}</span>
+                  </div>
+                </div>
+                <PopoverContent
+                  align="end"
+                  className="flex flex-col gap-3 ml-3 p-3"
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="flex flex-col items-center gap-2 mt-1.5">
+                      <span className="text-xs text-slate-500">
+                        {user.email}
+                      </span>
+                      <span className="text-sm text-slate-900">
+                        {organization.name}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center justify-center gap-3 p-2">
+                    <h1>Hi, {user.name}!</h1>
+                    <UserPicture pictureUrl={user.picture} size={75} />
+                  </div>
+                  <Link href="/my-account">
+                    <Button variant="ghost" size="sm" className="w-full">
+                      <UserRound className="mr-2" size={18} /> My account
+                    </Button>
+                  </Link>
+                  <Separator />
+                  <Button
+                    variant="destructive-outline"
+                    size="sm"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-2" size={18} />
+                    Sign out
+                  </Button>
+                </PopoverContent>
               </div>
             </div>
-            <UserSettingsPopover user={user} organization={organization} />
-          </div>
-        </div>
+          </PopoverTrigger>
+        </Popover>
       )}
     </aside>
   )
