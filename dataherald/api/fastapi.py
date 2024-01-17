@@ -682,32 +682,32 @@ class FastAPI(API):
                 prompt.id, prompt_sql_generation_request
             )
         except PromptNotFoundError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={
                     "message": str(e.args[0]),
                     "prompt_id": prompt.id,
                     "sql_generation_id": e.args[1],
                 },
-            ) from e
+            )
         except SQLGenerationError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={
                     "message": str(e.args[0]),
                     "prompt_id": prompt.id,
                     "sql_generation_id": e.args[1],
                 },
-            ) from e
+            )
         except SQLInjectionError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={
                     "message": str(e.args[0]),
                     "prompt_id": prompt.id,
                     "sql_generation_id": e.args[1],
                 },
-            ) from e
+            )
         return SQLGenerationResponse(**sql_generation.dict())
 
     @override
@@ -769,15 +769,15 @@ class FastAPI(API):
                 sql_generation_id, nl_generation_request
             )
         except SQLGenerationNotFoundError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={"message": str(e.args[0]), "nl_generation_id": e.args[1]},
-            ) from e
+            )
         except NLGenerationError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={"message": str(e.args[0]), "nl_generation_id": e.args[1]},
-            ) from e
+            )
         return NLGenerationResponse(**nl_generation.dict())
 
     @override
@@ -796,32 +796,32 @@ class FastAPI(API):
                 prompt_id, nl_generation_sql_generation_request.sql_generation
             )
         except PromptNotFoundError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={
                     "message": str(e.args[0]),
                     "sql_generation_id": e.args[1],
                     "nl_generation_id": None,
                 },
-            ) from e
+            )
         except SQLGenerationError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={
                     "message": str(e.args[0]),
                     "sql_generation_id": e.args[1],
                     "nl_generation_id": None,
                 },
-            ) from e
+            )
         except SQLInjectionError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={
                     "message": str(e.args[0]),
                     "sql_generation_id": e.args[1],
                     "nl_generation_id": None,
                 },
-            ) from e
+            )
 
         nl_generation_service = NLGenerationService(self.system, self.storage)
         try:
@@ -829,23 +829,23 @@ class FastAPI(API):
                 sql_generation.id, nl_generation_sql_generation_request
             )
         except SQLGenerationNotFoundError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={
                     "message": str(e.args[0]),
                     "sql_generation_id": sql_generation.id,
                     "nl_generation_id": e.args[1],
                 },
-            ) from e  # noqa: E501
+            )
         except NLGenerationError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={
                     "message": str(e.args[0]),
                     "sql_generation_id": sql_generation.id,
                     "nl_generation_id": e.args[1],
                 },
-            ) from e  # noqa: E501
+            )
         nl_generation_dict = nl_generation.dict()
         return NLGenerationResponse(**nl_generation_dict)
 
@@ -865,7 +865,7 @@ class FastAPI(API):
                 prompt.id, request.sql_generation
             )
         except PromptNotFoundError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={
                     "message": str(e.args[0]),
@@ -873,9 +873,9 @@ class FastAPI(API):
                     "sql_generation_id": e.args[1],
                     "nl_generation_id": None,
                 },
-            ) from e
+            )
         except SQLGenerationError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={
                     "message": str(e.args[0]),
@@ -883,13 +883,13 @@ class FastAPI(API):
                     "sql_generation_id": e.args[1],
                     "nl_generation_id": None,
                 },
-            ) from e
+            )
 
         nl_generation_service = NLGenerationService(self.system, self.storage)
         try:
             nl_generation = nl_generation_service.create(sql_generation.id, request)
         except SQLGenerationNotFoundError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={
                     "message": str(e.args[0]),
@@ -897,9 +897,9 @@ class FastAPI(API):
                     "sql_generation_id": sql_generation.id,
                     "nl_generation_id": e.args[1],
                 },
-            ) from e  # noqa: E501
+            )
         except NLGenerationError as e:
-            raise JSONResponse(
+            return JSONResponse(
                 status_code=400,
                 content={
                     "message": str(e.args[0]),
@@ -907,7 +907,7 @@ class FastAPI(API):
                     "sql_generation_id": sql_generation.id,
                     "nl_generation_id": e.args[1],
                 },
-            ) from e  # noqa: E501
+            )
         return NLGenerationResponse(**nl_generation.dict())
 
     @override
