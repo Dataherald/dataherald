@@ -27,15 +27,10 @@ You have the flexibility to configure your own file storage service credentials,
     "path_to_credentials_file": "string",
     "llm_api_key": "string",
     "ssh_settings": {
-      "db_name": "string",
       "host": "string",
       "username": "string",
       "password": "string",
-      "remote_host": "string",
-      "remote_db_name": "string",
-      "remote_db_password": "string",
-      "private_key_password": "string",
-      "db_driver": "string"
+      "private_key_password": "string"
     },
     "file_storage": {
         "name": "string",
@@ -48,20 +43,24 @@ You have the flexibility to configure your own file storage service credentials,
 
 **SSH Parameters**
 
+- Set the **use_ssh** field to **true**
+- Set the **connection_uri** field using the following structure::
+
+    <db-driver>://<user>:<password>@<host>/<db-name>`
+
+- Set in **path_to_credentials_file** your SSH key file location, if you use s3 like this::
+
+    "s3://<bucket-name>/<file-name>"
+
 .. csv-table::
    :header: "Name", "Type", "Description"
    :widths: 20, 20, 60
 
-    "db_name", "string", "The name of the database you want to connect to"
     "host", "string", "The hostname or IP address of the SSH server you need to access"
     "username", "string", "Your username for SSH authentication"
     "password", "string", "Your password for SSH authentication"
-    "remote_host", "string", "The hostname or IP address of the remote database server you want to connect to."
-    "remote_db_name", "string", "The name of the remote database you want to interact with."
-    "remote_db_password", "string", "The password for accessing the remote database."
-    "path_to_credentials_file", "string", "The file path to locate your id_rsa private key file. For example, if you are using Docker and the file is located at the root, the path would be /app/id_rsa. Ensure that you include this file in your Docker container by building it."
     "private_key_password", "string", "The password for the id_rsa private key file, if it is password-protected"
-    "db_driver", "string", "Set the database driver. For example, for PostgreSQL, the driver should be set to `postgresql+psycopg2`"
+
 
 **File Storage Parameters**
 
@@ -84,20 +83,15 @@ HTTP 201 code response
     {
       "id": "64f251ce9614e0e94b0520bc",
       "alias": "string_999",
-      "use_ssh": false,
-      "uri": "gAAAAABk8lHQNAUn5XARb94Q8H1OfHpVzOtzP3b2LCpwxUsNCe7LGkwkN8FX-IF3t65oI5mTzgDMR0BY2lzvx55gO0rxlQxRDA==",
+      "use_ssh": true,
+      "connection_uri": "gAAAAABk8lHQNAUn5XARb94Q8H1OfHpVzOtzP3b2LCpwxUsNCe7LGkwkN8FX-IF3t65oI5mTzgDMR0BY2lzvx55gO0rxlQxRDA==",
       "path_to_credentials_file": "string",
       "llm_api_key": "gAAAAABlCz5TeU0ym4hW3bf9u21dz7B9tlnttOGLRDt8gq2ykkblNvpp70ZjT9FeFcoyMv-Csvp3GNQfw66eYvQBrcBEPsLokkLO2Jc2DD-Q8Aw6g_8UahdOTxJdT4izA6MsiQrf7GGmYBGZqbqsjTdNmcq661wF9Q==",
       "ssh_settings": {
-        "db_name": "string",
         "host": "string",
         "username": "string",
         "password": "gAAAAABk8lHQAaaSuoUKxddkMHw7jerwFmUeiE3hL6si06geRt8CV-r43fbckZjI6LbIULWPZ4HlQUF9_YpfaYfM6FarQbhDUQ==",
-        "remote_host": "string",
-        "remote_db_name": "string",
-        "remote_db_password": "gAAAAABk8lHQpZyZ6ow8EuYPWe5haP-roQbBWkZn3trLgdO632IDoKcXAW-8yjzDDQ4uH03iWFzEgJq8HRxkJTC6Ht7Qrlz2PQ==",
-        "private_key_password": "gAAAAABk8lHQWilFpIbCADvunHGYFMqgoPKIml_WRXf5Yuowqng28DVsq6-sChl695y5D_mWrr1I3hcJCZqkmhDqpma6iz3PKA==",
-        "db_driver": "string"
+        "private_key_password": "gAAAAABk8lHQWilFpIbCADvunHGYFMqgoPKIml_WRXf5Yuowqng28DVsq6-sChl695y5D_mWrr1I3hcJCZqkmhDqpma6iz3PKA=="
       },
       "file_storage": {
         "name": "S3",
@@ -145,16 +139,12 @@ With a SSH connection
       -d '{
       "alias": "my_db_alias",
       "use_ssh": true,
+      "connection_uri": "postgresql+psycopg2://<user>:<password>@<host>/<db-name>"
       "ssh_settings": {
-        "db_name": "db_name",
         "host": "string",
         "username": "string",
         "password": "string",
-        "remote_host": "string",
-        "remote_db_name": "string",
-        "remote_db_password": "string",
         "private_key_password": "string",
-        "db_driver": "string"
       }
     }'
 
@@ -171,17 +161,13 @@ With a SSH connection and LLM credentials
       -d '{
       "alias": "my_db_alias",
       "use_ssh": true,
+      "connection_uri": "postgresql+psycopg2://<user>:<password>@<host>/<db-name>",
       "llm_api_key": "api_key",
       "ssh_settings": {
-        "db_name": "db_name",
         "host": "string",
         "username": "string",
         "password": "string",
-        "remote_host": "string",
-        "remote_db_name": "string",
-        "remote_db_password": "string",
-        "private_key_password": "string",
-        "db_driver": "string"
+        "private_key_password": "string"
       }
     }'
 

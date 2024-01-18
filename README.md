@@ -186,16 +186,12 @@ curl -X 'POST' \
   -d '{
   "alias": "my_db_alias",
   "use_ssh": true,
+  "connection_uri": "postgresql+psycopg2://<user>:<password>@<host>/<db-name>",
   "ssh_settings": {
-    "db_name": "db_name",
     "host": "string",
     "username": "string",
     "password": "string",
-    "remote_host": "string",
-    "remote_db_name": "string",
-    "remote_db_password": "string",
-    "private_key_password": "string",
-    "db_driver": "string"
+    "private_key_password": "string"
   }
 }'
 ```
@@ -204,7 +200,7 @@ If you need to set up an SSH connection to connect to your DB you need to fill o
 By default, DB credentials are stored in `database_connection` collection in MongoDB. Connection URI information is encrypted using the ENCRYPT_KEY you provided as an environment variable
 
 ##### Connecting to supported Data warehouses
-You can generate the `connection_uri` parameter in the API call for each of the supported warehouses by using the steps outlined below.
+You can generate the `uri` parameter in the API call for each of the supported warehouses by using the steps outlined below.
 
 **Postgres**
 ```

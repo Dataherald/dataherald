@@ -81,19 +81,20 @@ class SQLDatabase(LangchainSQLDatabase):
             return DBConnections.db_connections[database_info.id]
 
         fernet_encrypt = FernetEncrypt()
-        if database_info.use_ssh:
-            engine = cls.from_uri_ssh(database_info)
-            DBConnections.add(database_info.id, engine)
-            return engine
-        db_uri = unquote(fernet_encrypt.decrypt(database_info.uri))
-        if db_uri.lower().startswith("bigquery"):
-            file_path = database_info.path_to_credentials_file
-            if file_path.lower().startswith("s3"):
-                s3 = S3()
-                file_path = s3.download(file_path)
-
-            db_uri = db_uri + f"?credentials_path={file_path}"
         try:
+            if database_info.use_ssh:
+                engine = cls.from_uri_ssh(database_info)
+                DBConnections.add(database_info.id, engine)
+                return engine
+            db_uri = unquote(fernet_encrypt.decrypt(database_info.uri))
+            if db_uri.lower().startswith("bigquery"):
+                file_path = database_info.path_to_credentials_file
+                if file_path.lower().startswith("s3"):
+                    s3 = S3()
+                    file_path = s3.download(file_path)
+
+                db_uri = db_uri + f"?credentials_path={file_path}"
+
             engine = cls.from_uri(db_uri)
             DBConnections.add(database_info.id, engine)
         except Exception as e:
