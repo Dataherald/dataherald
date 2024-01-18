@@ -55,34 +55,17 @@ const QueriesPage: FC = () => {
         data={items}
         isLoadingMore={isLoadingMore}
         isReachingEnd={isReachingEnd}
+        isRefreshing={isRefreshing}
         onRowClick={handleQueryClick}
         onLoadMore={handleLoadMore}
+        onRefresh={handleRefresh}
         noMoreDataMessage="No more queries"
       />
     )
 
   return (
     <PageLayout>
-      <ContentBox className="m-6">
-        <div className="flex items-center justify-between bg-gray-50 py-0">
-          <h1 className="font-bold">Latest Queries</h1>
-          <Button
-            variant="ghost"
-            disabled={isRefreshing || isLoadingFirst || isLoadingMore}
-            onClick={handleRefresh}
-          >
-            <RefreshCcw
-              size={18}
-              className={
-                isRefreshing || isLoadingFirst || isLoadingMore
-                  ? 'animate-spin'
-                  : ''
-              }
-            />
-          </Button>
-        </div>
-        {pageContent}
-      </ContentBox>
+      <ContentBox className="m-6">{pageContent}</ContentBox>
     </PageLayout>
   )
 }

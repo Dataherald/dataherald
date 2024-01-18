@@ -3,7 +3,6 @@ import { LoadingTable } from '@/components/data-table/loading-table'
 import { getColumns } from '@/components/golden-sql/columns'
 import PageLayout from '@/components/layout/page-layout'
 import QueriesError from '@/components/queries/error'
-import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
@@ -11,7 +10,6 @@ import { toast } from '@/components/ui/use-toast'
 import { useDeleteGoldenSql } from '@/hooks/api/useDeleteGoldenSql'
 import useGoldenSqlList from '@/hooks/api/useGoldenSqlList'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
-import { RefreshCcw } from 'lucide-react'
 import { FC, useCallback, useMemo, useState } from 'react'
 
 const GoldenSQLPage: FC = () => {
@@ -83,9 +81,11 @@ const GoldenSQLPage: FC = () => {
       <DataTable
         columns={columns}
         data={items}
+        isRefreshing={isRefreshing}
         isLoadingMore={isLoadingMore}
         isReachingEnd={isReachingEnd}
         onLoadMore={handleLoadMore}
+        onRefresh={handleRefresh}
         noMoreDataMessage="No more queries"
       />
     )
@@ -106,26 +106,7 @@ const GoldenSQLPage: FC = () => {
             editor.
           </p>
         </div>
-        <ContentBox>
-          <div className="flex items-center justify-between">
-            <h1 className="font-bold">Training Queries</h1>
-            <Button
-              variant="ghost"
-              disabled={isRefreshing || isLoadingFirst || isLoadingMore}
-              onClick={handleRefresh}
-            >
-              <RefreshCcw
-                size={18}
-                className={
-                  isRefreshing || isLoadingFirst || isLoadingMore
-                    ? 'animate-spin'
-                    : ''
-                }
-              />
-            </Button>
-          </div>
-          {pageContent}
-        </ContentBox>
+        <ContentBox>{pageContent}</ContentBox>
       </div>
       <Toaster />
     </PageLayout>

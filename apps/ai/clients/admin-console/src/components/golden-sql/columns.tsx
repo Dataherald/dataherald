@@ -1,3 +1,4 @@
+import { SortHeader } from '@/components/data-table/data-table'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +23,13 @@ export const getColumns: (actions: {
 }) => ColumnDef<GoldenSqlListItem>[] = ({ deleteAction }) => [
   {
     id: 'id',
-    header: () => <div className="min-w-[70px]">ID</div>,
+    header: ({ column }) => {
+      return (
+        <div className="min-w-[70px]">
+          <SortHeader text="ID" column={column} />
+        </div>
+      )
+    },
     accessorKey: 'metadata.dh_internal.display_id',
   },
   {
@@ -47,7 +54,11 @@ export const getColumns: (actions: {
   },
   {
     id: 'created_at',
-    header: () => <div className="min-w-[140px]">Time added</div>,
+    header: ({ column }) => (
+      <div className="min-w-[140px]">
+        <SortHeader text="Time added" column={column} />
+      </div>
+    ),
     accessorKey: 'created_at',
     cell: ({ row }) =>
       format(new Date(row.getValue('created_at')), 'yyyy-MM-dd hh:mm a'),

@@ -1,3 +1,4 @@
+import { SortHeader } from '@/components/data-table/data-table'
 import {
   formatQueryStatusWithScore,
   getDomainStatus,
@@ -11,7 +12,11 @@ import { format } from 'date-fns'
 export const columns: ColumnDef<QueryListItem>[] = [
   {
     id: 'id',
-    header: () => <div className="min-w-[70px]">Query ID</div>,
+    header: ({ column }) => (
+      <div className="min-w-[70px]">
+        <SortHeader text="Query ID" column={column} />
+      </div>
+    ),
     accessorKey: 'display_id',
   },
   {
@@ -46,7 +51,11 @@ export const columns: ColumnDef<QueryListItem>[] = [
   },
   {
     id: 'time',
-    header: () => <div className="min-w-[140px]">Time</div>,
+    header: ({ column }) => (
+      <div className="min-w-[140px]">
+        <SortHeader text="Time" column={column} />
+      </div>
+    ),
     accessorKey: 'created_at',
     cell: ({ row }) =>
       format(new Date(row.getValue('time')), 'yyyy-MM-dd hh:mm a'),
