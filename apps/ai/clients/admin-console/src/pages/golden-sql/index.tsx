@@ -81,6 +81,7 @@ const GoldenSQLPage: FC = () => {
       <DataTable
         columns={columns}
         data={items}
+        enableFiltering
         isRefreshing={isRefreshing}
         isLoadingMore={isLoadingMore}
         isReachingEnd={isReachingEnd}

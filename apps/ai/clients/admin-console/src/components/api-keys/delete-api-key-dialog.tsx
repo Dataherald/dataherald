@@ -49,7 +49,7 @@ const DeleteApiKeyDialog: FC<DeleteApiKeyDialogProps> = ({ deleteFnc }) => {
     <AlertDialog open={open}>
       <Button
         variant="ghost"
-        className="rounded-xl p-2 hover:bg-gray-200 hover:text-black/90"
+        className="rounded-xl hover:bg-gray-200 hover:text-black/90"
         onClick={() => setOpen(true)}
       >
         <Trash2 strokeWidth={1.5} size={18} />

@@ -1,5 +1,6 @@
 import { LoadingTableRows } from '@/components/data-table/loading-rows'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -12,7 +13,6 @@ import { cn } from '@/lib/utils'
 import {
   Column,
   ColumnDef,
-  ColumnFiltersState,
   SortingState,
   VisibilityState,
   flexRender,
@@ -50,7 +50,7 @@ export function DataTable<TData, TValue>({
   onRefresh,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [globalFilter, setGlobalFilter] = useState('')
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
   const table = useReactTable({
@@ -60,11 +60,11 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
-      columnFilters,
+      globalFilter,
       columnVisibility,
     },
   })
@@ -78,7 +78,15 @@ export function DataTable<TData, TValue>({
             enableFiltering ? 'justify-between' : 'justify-end',
           )}
         >
-          {enableFiltering && <>{/* TODO */}</>}
+          {enableFiltering && (
+            <div className="w-full flex items-center max-w-sm py-3">
+              <Input
+                placeholder="Search..."
+                value={globalFilter}
+                onChange={(e) => setGlobalFilter(e.target.value)}
+              />
+            </div>
+          )}
           <Button
             variant="ghost"
             disabled={isRefreshing || isLoadingMore}
@@ -143,28 +151,30 @@ export function DataTable<TData, TValue>({
             </TableRow>
           )}
           {isLoadingMore && <LoadingTableRows columnLength={columns.length} />}
-          {table.getRowModel().rows?.length > 0 && !isLoadingMore && (
-            <TableRow className="border-none hover:bg-gray-50">
-              <TableCell
-                colSpan={columns.length}
-                className="p-0 pt-2 text-center"
-              >
-                {!isReachingEnd ? (
-                  <Button
-                    variant="outline"
-                    className="w-full bg-gray-50"
-                    onClick={onLoadMore}
-                  >
-                    Load More
-                  </Button>
-                ) : (
-                  noMoreDataMessage && (
-                    <div className="p-4">{noMoreDataMessage}</div>
-                  )
-                )}
-              </TableCell>
-            </TableRow>
-          )}
+          {!globalFilter &&
+            table.getRowModel().rows?.length > 0 &&
+            !isLoadingMore && (
+              <TableRow className="border-none hover:bg-gray-50">
+                <TableCell
+                  colSpan={columns.length}
+                  className="p-0 pt-2 text-center"
+                >
+                  {!isReachingEnd ? (
+                    <Button
+                      variant="outline"
+                      className="w-full bg-slate-50 text-slate-900 hover:bg-slate-100 border-slate-300"
+                      onClick={onLoadMore}
+                    >
+                      Load More
+                    </Button>
+                  ) : (
+                    noMoreDataMessage && (
+                      <div className="p-4">{noMoreDataMessage}</div>
+                    )
+                  )}
+                </TableCell>
+              </TableRow>
+            )}
         </TableBody>
       </Table>
     </div>

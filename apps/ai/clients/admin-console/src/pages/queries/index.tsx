@@ -53,6 +53,7 @@ const QueriesPage: FC = () => {
       <DataTable
         columns={columns}
         data={items}
+        enableFiltering
         isLoadingMore={isLoadingMore}
         isReachingEnd={isReachingEnd}
         isRefreshing={isRefreshing}

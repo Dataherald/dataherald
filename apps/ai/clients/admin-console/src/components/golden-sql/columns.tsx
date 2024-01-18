@@ -66,7 +66,11 @@ export const getColumns: (actions: {
   {
     id: 'source',
     header: 'Source',
-    accessorKey: 'metadata.dh_internal.source',
+    accessorFn: ({
+      metadata: {
+        dh_internal: { source },
+      },
+    }) => formatKey(source),
     cell: ({ row }) => {
       const { source, prompt_id } = row.original.metadata.dh_internal
       const badge =
@@ -75,13 +79,13 @@ export const getColumns: (actions: {
             className={badgeVariants({ variant: 'success' })}
             href={`/queries/${prompt_id as string}`}
           >
-            <span className="mr-1">{formatKey(row.getValue('source'))}</span>
+            <span className="mr-1">{row.getValue('source')}</span>
             <div>
               <ExternalLink size={14} strokeWidth={2.5} />
             </div>
           </Link>
         ) : (
-          <Badge variant="sky">{formatKey(row.getValue('source'))}</Badge>
+          <Badge variant="sky">{row.getValue('source')}</Badge>
         )
       return <div className="capitalize">{badge}</div>
     },
