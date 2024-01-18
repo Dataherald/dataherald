@@ -76,7 +76,11 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    Object.fromEntries(columns.map(({ id }) => [id, true])),
+    Object.fromEntries(
+      columns
+        .filter((c) => c.enableHiding !== false)
+        .map(({ id }) => [id, true]),
+    ),
   )
 
   const table = useReactTable({
@@ -134,8 +138,8 @@ export function DataTable<TData, TValue>({
                           className="capitalize pe-10 cursor-pointer max-w-lg"
                           checked={column.getIsVisible()}
                           onCheckedChange={(value) =>
-                            value === true ||
-                            (value === false &&
+                            value === true || // always let display the column
+                            (value === false && // check if there are more than 1 visible columns before hiding
                               Object.values(columnVisibility).filter(
                                 (v) => v === true,
                               ).length > 1)

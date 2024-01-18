@@ -29,11 +29,13 @@ export const getColumns: (actions: {
         </div>
       )
     },
+    headerFilterDisplay: 'ID',
     accessorKey: 'metadata.dh_internal.display_id',
   },
   {
     id: 'prompt_text',
     header: 'Question',
+    headerFilterDisplay: 'Question',
     accessorKey: 'prompt_text',
     cell: ({ row }) => (
       <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
@@ -44,6 +46,7 @@ export const getColumns: (actions: {
   {
     id: 'sql',
     header: 'SQL',
+    headerFilterDisplay: 'SQL',
     accessorKey: 'sql',
     cell: ({ row }) => (
       <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
@@ -58,6 +61,7 @@ export const getColumns: (actions: {
         <SortHeader text="Time added" column={column} />
       </div>
     ),
+    headerFilterDisplay: 'Time added',
     accessorKey: 'created_at',
     cell: ({ row }) =>
       format(new Date(row.getValue('created_at')), 'yyyy-MM-dd hh:mm a'),
@@ -65,6 +69,7 @@ export const getColumns: (actions: {
   {
     id: 'source',
     header: 'Source',
+    headerFilterDisplay: 'Source',
     accessorFn: ({
       metadata: {
         dh_internal: { source },
@@ -92,6 +97,7 @@ export const getColumns: (actions: {
   {
     id: 'delete',
     size: 20,
+    enableHiding: false,
     cell: ({ row }) => {
       const { id } = row.original
       const { source } = row.original.metadata.dh_internal

@@ -82,6 +82,7 @@ const GoldenSQLPage: FC = () => {
         columns={columns}
         data={items}
         enableFiltering
+        enableColumnVisibility
         isRefreshing={isRefreshing}
         isLoadingMore={isLoadingMore}
         isReachingEnd={isReachingEnd}
