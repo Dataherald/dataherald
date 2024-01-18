@@ -16,6 +16,7 @@ from modules.generation.models.responses import (
 )
 from modules.generation.service import GenerationService
 from utils.auth import get_api_key
+from utils.validation import ObjectIdString
 
 router = APIRouter(
     prefix="/api",
@@ -59,7 +60,7 @@ async def create_prompt_sql_nl_generation(
 
 @router.post("/prompts/{id}/sql-generations", status_code=status.HTTP_201_CREATED)
 async def create_sql_generation(
-    id: str,
+    id: ObjectIdString,
     sql_generation_request: SQLGenerationRequest,
     api_key: str = Security(get_api_key),
 ) -> SQLGenerationResponse:
@@ -72,7 +73,7 @@ async def create_sql_generation(
     "/prompts/{id}/sql-generations/nl-generations", status_code=status.HTTP_201_CREATED
 )
 async def create_sql_nl_generation(
-    id: str,
+    id: ObjectIdString,
     sql_nl_generation_request: SQLNLGenerationRequest,
     api_key: str = Security(get_api_key),
 ) -> NLGenerationResponse:
@@ -85,7 +86,7 @@ async def create_sql_nl_generation(
     "/sql-generations/{id}/nl-generations", status_code=status.HTTP_201_CREATED
 )
 async def create_nl_generation(
-    id: str,
+    id: ObjectIdString,
     nl_generation_request: NLGenerationRequest,
     api_key: str = Security(get_api_key),
 ) -> NLGenerationResponse:
@@ -109,7 +110,7 @@ async def get_prompts(
 
 @router.get("/prompts/{id}")
 async def get_prompt(
-    id: str,
+    id: ObjectIdString,
     api_key: str = Security(get_api_key),
 ) -> PromptResponse:
     return generation_service.get_prompt(id, api_key.organization_id)
@@ -117,7 +118,7 @@ async def get_prompt(
 
 @router.get("/prompts/{id}/sql-generations")
 async def get_sql_generations_by_prompt_id(
-    id: str,
+    id: ObjectIdString,
     page: int = 0,
     page_size: int = 20,
     order: str = "created_at",
@@ -144,7 +145,7 @@ async def get_sql_generations(
 
 @router.get("/sql-generations/{id}")
 async def get_sql_generation(
-    id: str,
+    id: ObjectIdString,
     api_key: str = Security(get_api_key),
 ) -> SQLGenerationResponse:
     return generation_service.get_sql_generation(id, api_key.organization_id)
@@ -152,7 +153,7 @@ async def get_sql_generation(
 
 @router.get("/sql-generations/{id}/nl-generations")
 async def get_nl_generations_by_sql_generation_id(
-    id: str,
+    id: ObjectIdString,
     page: int = 0,
     page_size: int = 20,
     order: str = "created_at",
@@ -179,7 +180,7 @@ async def get_nl_generations(
 
 @router.get("/nl-generations/{id}")
 async def get_nl_generation(
-    id: str,
+    id: ObjectIdString,
     api_key: str = Security(get_api_key),
 ) -> NLGenerationResponse:
     return generation_service.get_nl_generation(id, api_key.organization_id)
@@ -187,7 +188,7 @@ async def get_nl_generation(
 
 @router.get("/sql-generations/{id}/execute")
 async def execute_sql_generation(
-    id: str,
+    id: ObjectIdString,
     max_rows: int = 100,
     api_key: str = Security(get_api_key),
 ) -> tuple[str, dict]:
@@ -198,6 +199,6 @@ async def execute_sql_generation(
 
 @router.get("/sql-generations/{id}/csv-file")
 async def export_csv_file(
-    id: str, api_key: str = Security(get_api_key)
+    id: ObjectIdString, api_key: str = Security(get_api_key)
 ) -> StreamingResponse:
     return await generation_service.export_csv_file(id, api_key.organization_id)

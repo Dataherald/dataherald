@@ -54,13 +54,13 @@ async function handleMessage(context, say) {
         })
         if (!response.ok) {
             try {
-                const { id, display_id, error_message } =
+                const { prompt_id, display_id, error_message } =
                     await response.json()
                 error(
-                    `API Response not ok: status code ${response.status}, ${response.statusText}, error message: ${error_message}, query id: ${id}`
+                    `API Response not ok: status code ${response.status}, ${response.statusText}, error message: ${error_message}, query id: ${prompt_id}`
                 )
                 const responseMessage =
-                    id == undefined || display_id == undefined
+                    prompt_id == undefined || display_id == undefined
                         ? `:exclamation: Sorry, something went wrong when I was processing your request. Please try again later.`
                         : `:warning: Sorry, something went wrong while generating response for query ${display_id}. We'll get back to you once it's been reviewed by the data-team admins.`
                 await say({

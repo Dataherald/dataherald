@@ -9,6 +9,7 @@ from modules.organization.models.requests import (
 from modules.organization.models.responses import OrganizationResponse
 from modules.organization.service import OrganizationService
 from utils.auth import Authorize, VerifyToken
+from utils.validation import ObjectIdString
 
 router = APIRouter(
     prefix="/organizations",
@@ -30,7 +31,7 @@ async def get_organizations(
 
 @router.get("/{id}")
 async def get_organization(
-    id: str, token: str = Depends(token_auth_scheme)
+    id: ObjectIdString, token: str = Depends(token_auth_scheme)
 ) -> OrganizationResponse:
     user_id = authorize.user(VerifyToken(token.credentials).verify()).id
     authorize.user_in_organization(user_id, id)
@@ -47,7 +48,9 @@ async def add_organization(
 
 @router.put("/{id}")
 async def update_organization(
-    id: str, org_request: OrganizationRequest, token: str = Depends(token_auth_scheme)
+    id: ObjectIdString,
+    org_request: OrganizationRequest,
+    token: str = Depends(token_auth_scheme),
 ) -> OrganizationResponse:
     user_id = authorize.user(VerifyToken(token.credentials).verify()).id
     authorize.user_in_organization(user_id, id)
@@ -55,7 +58,9 @@ async def update_organization(
 
 
 @router.delete("/{id}")
-async def delete_organization(id: str, token: str = Depends(token_auth_scheme)):
+async def delete_organization(
+    id: ObjectIdString, token: str = Depends(token_auth_scheme)
+):
     user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_admin_user(user)
     authorize.is_not_self(user.organization_id, id)

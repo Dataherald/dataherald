@@ -7,6 +7,7 @@ from modules.key.models.requests import KeyGenerationRequest
 from modules.key.models.responses import KeyPreviewResponse, KeyResponse
 from modules.key.service import KeyService
 from utils.auth import Authorize, VerifyToken
+from utils.validation import ObjectIdString
 
 router = APIRouter(
     prefix="/keys",
@@ -33,6 +34,6 @@ async def add_key(
 
 
 @router.delete("/{id}")
-async def revoke_key(id: str, token: str = Depends(token_auth_scheme)):
+async def revoke_key(id: ObjectIdString, token: str = Depends(token_auth_scheme)):
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return key_service.revoke_key(id, org_id)

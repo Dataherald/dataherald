@@ -113,14 +113,9 @@ class AggrgationGenerationService:
                 json=generation_request.dict(exclude_unset=True),
                 timeout=settings.default_engine_timeout,
             )
-            response_json = response.json()
-            if (
-                "sql_generation_id" not in response_json
-                or not response_json["sql_generation_id"]
-            ):
-                raise_for_status(response.status_code, response.text)
+            self._raise_for_generation_status(response, display_id=display_id)
 
-            nl_generation = NLGeneration(**response_json)
+            nl_generation = NLGeneration(**response.json())
             sql_generation = self.repo.get_sql_generation(
                 nl_generation.sql_generation_id, organization.id
             )
@@ -155,14 +150,6 @@ class AggrgationGenerationService:
                     "asker": created_by,
                 },
             )
-
-            if response.status_code != status.HTTP_201_CREATED:
-                raise GenerationEngineError(
-                    response.status_code,
-                    prompt.id,
-                    display_id,
-                    sql_generation.error,
-                )
 
             if (
                 organization.confidence_threshold == 1
@@ -246,11 +233,9 @@ class AggrgationGenerationService:
                 json=generation_request.dict(exclude_unset=True),
                 timeout=settings.default_engine_timeout,
             )
-            response_json = response.json()
-            if not response_json["id"]:
-                raise_for_status(response.status_code, response.text)
+            self._raise_for_generation_status(response)
 
-            sql_generation = SQLGeneration(**response_json)
+            sql_generation = SQLGeneration(**response.json())
             prompt = self.repo.get_prompt(sql_generation.prompt_id, organization.id)
             self.repo.update_prompt_dh_metadata(
                 prompt.id,
@@ -478,7 +463,7 @@ class AggrgationGenerationService:
                 json=generation_request.dict(exclude_unset=True),
                 timeout=settings.default_engine_timeout,
             )
-            raise_for_status(response.status_code, response.text)
+            self._raise_for_generation_status(response, prompt=prompt)
             nl_generation = NLGeneration(**response.json())
             sql_generation = self.repo.get_sql_generation(
                 nl_generation.sql_generation_id, org_id
@@ -562,7 +547,8 @@ class AggrgationGenerationService:
                 json=generation_request.dict(exclude_unset=True),
                 timeout=settings.default_engine_timeout,
             )
-            raise_for_status(response.status_code, response.text)
+            print(response.json())
+            self._raise_for_generation_status(response, prompt=prompt)
             sql_generation = SQLGeneration(**response.json())
 
             self.repo.update_prompt_dh_metadata(
@@ -738,3 +724,26 @@ class AggrgationGenerationService:
             sql_result=sql_result,
             **prompt.metadata.dh_internal.dict(exclude_unset=True),
         )
+
+    def _raise_for_generation_status(
+        self, response: httpx.Response, prompt: Prompt = None, display_id: str = None
+    ):
+        response_json = response.json()
+        if response.status_code != status.HTTP_201_CREATED:
+            if prompt or ("prompt_id" in response_json and response_json["prompt_id"]):
+                prompt_id = prompt.id if prompt else response_json["prompt_id"]
+                self.repo.update_prompt_dh_metadata(
+                    prompt_id,
+                    DHPromptMetadata(
+                        generation_status=GenerationStatus.ERROR,
+                    ),
+                )
+                raise GenerationEngineError(
+                    status_code=response.status_code,
+                    prompt_id=prompt_id,
+                    display_id=display_id or prompt.metadata.dh_internal.display_id
+                    if prompt
+                    else None,
+                    error_message=response_json["message"],
+                )
+            raise_for_status(response.status_code, response.text)

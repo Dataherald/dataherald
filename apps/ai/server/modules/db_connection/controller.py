@@ -6,6 +6,7 @@ from modules.db_connection.models.requests import DBConnectionRequest
 from modules.db_connection.models.responses import DBConnectionResponse
 from modules.db_connection.service import DBConnectionService
 from utils.auth import Authorize, VerifyToken, get_api_key
+from utils.validation import ObjectIdString
 
 router = APIRouter(
     prefix="/api/database-connections",
@@ -31,7 +32,7 @@ async def get_db_connections(
 
 @router.get("/{id}", status_code=status.HTTP_200_OK)
 async def get_db_connection(
-    id: str,
+    id: ObjectIdString,
     api_key: str = Security(get_api_key),
 ) -> DBConnectionResponse:
     return db_connection_service.get_db_connection(id, api_key.organization_id)
@@ -49,7 +50,7 @@ async def add_db_connection(
 
 @router.put("/{id}", status_code=status.HTTP_200_OK)
 async def update_db_connection(
-    id: str,
+    id: ObjectIdString,
     db_connection_request: DBConnectionRequest,
     api_key: str = Security(get_api_key),
 ) -> DBConnectionResponse:
@@ -68,7 +69,8 @@ async def ac_get_db_connections(
 
 @ac_router.get("/{id}", status_code=status.HTTP_200_OK)
 async def ac_get_db_connection(
-    id: str, token: str = Depends(token_auth_scheme)
+    id: ObjectIdString,
+    token: str = Depends(token_auth_scheme),
 ) -> DBConnectionResponse:
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return db_connection_service.get_db_connection(id, org_id)
@@ -89,7 +91,7 @@ async def ac_add_db_connection(
 
 @ac_router.put("/{id}", status_code=status.HTTP_200_OK)
 async def ac_update_db_connection(
-    id: str,
+    id: ObjectIdString,
     db_connection_request_json: Json = Form(...),
     file: UploadFile = None,
     token: str = Depends(token_auth_scheme),

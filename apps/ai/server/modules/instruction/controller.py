@@ -5,6 +5,7 @@ from modules.instruction.models.requests import InstructionRequest
 from modules.instruction.models.responses import InstructionResponse
 from modules.instruction.service import InstructionService
 from utils.auth import Authorize, VerifyToken, get_api_key
+from utils.validation import ObjectIdString
 
 router = APIRouter(
     prefix="/api/instructions",
@@ -25,7 +26,7 @@ instruction_service = InstructionService()
 
 @router.get("")
 async def get_instructions(
-    db_connection_id: str,
+    db_connection_id: ObjectIdString,
     api_key: str = Security(get_api_key),
 ) -> list[InstructionResponse]:
     org_id = api_key.organization_id
@@ -34,7 +35,7 @@ async def get_instructions(
 
 @router.get("/{id}")
 async def get_instruction(
-    id: str, api_key: str = Security(get_api_key)
+    id: ObjectIdString, api_key: str = Security(get_api_key)
 ) -> InstructionResponse:
     org_id = api_key.organization_id
     return instruction_service.get_instruction(id, org_id)
@@ -52,7 +53,7 @@ async def add_instructions(
 
 @router.put("/{id}")
 async def update_instruction(
-    id: str,
+    id: ObjectIdString,
     instruction_request: InstructionRequest,
     api_key: str = Security(get_api_key),
 ) -> InstructionResponse:
@@ -63,7 +64,7 @@ async def update_instruction(
 
 @router.delete("/{id}")
 async def delete_instruction(
-    id: str,
+    id: ObjectIdString,
     api_key: str = Security(get_api_key),
 ):
     return await instruction_service.delete_instruction(id, api_key.organization_id)
@@ -71,7 +72,7 @@ async def delete_instruction(
 
 @ac_router.get("")
 async def ac_get_instructions(
-    db_connection_id: str,
+    db_connection_id: ObjectIdString,
     token: str = Depends(token_auth_scheme),
 ) -> list[InstructionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
@@ -88,7 +89,7 @@ async def ac_get_first_instruction(
 
 @ac_router.get("/{id}")
 async def ac_get_instruction(
-    id: str,
+    id: ObjectIdString,
     token: str = Depends(token_auth_scheme),
 ) -> InstructionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
@@ -108,7 +109,7 @@ async def ac_add_instructions(
 
 @ac_router.put("/{id}")
 async def ac_update_instruction(
-    id: str,
+    id: ObjectIdString,
     instruction_request: InstructionRequest,
     token: str = Depends(token_auth_scheme),
 ) -> InstructionResponse:
@@ -120,7 +121,7 @@ async def ac_update_instruction(
 
 @ac_router.delete("/{id}")
 async def ac_delete_instruction(
-    id: str,
+    id: ObjectIdString,
     token: str = Depends(token_auth_scheme),
 ):
     user = authorize.user(VerifyToken(token.credentials).verify())

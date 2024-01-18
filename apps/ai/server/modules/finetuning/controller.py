@@ -5,6 +5,7 @@ from modules.finetuning.models.requests import FinetuningRequest
 from modules.finetuning.models.responses import FinetuningResponse
 from modules.finetuning.service import FinetuningService
 from utils.auth import Authorize, VerifyToken, get_api_key
+from utils.validation import ObjectIdString
 
 router = APIRouter(
     prefix="/api/finetunings",
@@ -33,7 +34,7 @@ async def get_finetuning_jobs(
 
 @router.get("/{id}")
 async def get_finetuning_job(
-    id: str,
+    id: ObjectIdString,
     api_key: str = Security(get_api_key),
 ) -> FinetuningResponse:
     return await finetuning_service.get_finetuning_job(id, api_key.organization_id)
@@ -51,7 +52,7 @@ async def create_finetuning_job(
 
 @router.post("/{id}/cancel")
 async def cancel_finetuning_job(
-    id: str,
+    id: ObjectIdString,
     api_key: str = Security(get_api_key),
 ) -> FinetuningResponse:
     return await finetuning_service.cancel_finetuning_job(id, api_key.organization_id)
@@ -70,7 +71,7 @@ async def ac_get_finetuning_jobs(
 
 @ac_router.get("/{id}")
 async def ac_get_finetuning_job(
-    id: str, token: str = Depends(token_auth_scheme)
+    id: ObjectIdString, token: str = Depends(token_auth_scheme)
 ) -> FinetuningResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await finetuning_service.get_finetuning_job(id, user.organization_id)
@@ -89,7 +90,7 @@ async def ac_create_finetuning_job(
 
 @ac_router.post("/{id}/cancel")
 async def ac_cancel_finetuning_job(
-    id: str,
+    id: ObjectIdString,
     token: str = Depends(token_auth_scheme),
 ) -> FinetuningResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())

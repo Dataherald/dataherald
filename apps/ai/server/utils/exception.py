@@ -8,10 +8,10 @@ logger = logging.getLogger(__name__)
 
 class GenerationEngineError(Exception):
     def __init__(
-        self, status_code: int, query_id: str, display_id: str, error_message: str
+        self, status_code: int, prompt_id: str, display_id: str, error_message: str
     ):
         self.status_code = status_code
-        self.query_id = query_id
+        self.prompt_id = prompt_id
         self.display_id = display_id
         self.error_message = error_message
 
@@ -22,7 +22,7 @@ async def query_engine_exception_handler(
     return JSONResponse(
         status_code=exc.status_code,
         content={
-            "query_id": exc.query_id,
+            "prompt_id": exc.prompt_id,
             "display_id": exc.display_id,
             "error_message": exc.error_message,
         },

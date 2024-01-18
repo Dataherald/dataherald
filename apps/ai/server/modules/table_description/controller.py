@@ -11,6 +11,7 @@ from modules.table_description.models.responses import (
 )
 from modules.table_description.service import TableDescriptionService
 from utils.auth import Authorize, VerifyToken, get_api_key
+from utils.validation import ObjectIdString
 
 router = APIRouter(
     prefix="/api/table-descriptions",
@@ -30,7 +31,7 @@ table_description_service = TableDescriptionService()
 
 @router.get("")
 async def get_table_descriptions(
-    db_connection_id: str,
+    db_connection_id: ObjectIdString,
     table_name: str = "",
     api_key: str = Security(get_api_key),
 ) -> list[TableDescriptionResponse]:
@@ -41,7 +42,7 @@ async def get_table_descriptions(
 
 @router.get("/{id}")
 async def get_table_description(
-    id: str,
+    id: ObjectIdString,
     api_key: str = Security(get_api_key),
 ) -> TableDescriptionResponse:
     return await table_description_service.get_table_description(
@@ -60,7 +61,7 @@ async def sync_table_descriptions_schemas(
 
 @router.put("/{id}")
 async def update_table_description(
-    id: str,
+    id: ObjectIdString,
     table_description_request: TableDescriptionRequest,
     api_key: str = Security(get_api_key),
 ) -> TableDescriptionResponse:
@@ -71,7 +72,7 @@ async def update_table_description(
 
 @ac_router.get("")
 async def ac_get_table_descriptions(
-    db_connection_id: str,
+    db_connection_id: ObjectIdString,
     table_name: str = "",
     token: str = Depends(token_auth_scheme),
 ) -> list[TableDescriptionResponse]:
@@ -83,7 +84,7 @@ async def ac_get_table_descriptions(
 
 @ac_router.get("/{id}")
 async def ac_get_table_description(
-    id: str, token: str = Depends(token_auth_scheme)
+    id: ObjectIdString, token: str = Depends(token_auth_scheme)
 ) -> TableDescriptionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.get_table_description(
@@ -114,7 +115,7 @@ async def ac_sync_table_descriptions_schemas(
 
 @ac_router.put("/{id}")
 async def ac_update_table_description(
-    id: str,
+    id: ObjectIdString,
     table_description_request: TableDescriptionRequest,
     token: str = Depends(token_auth_scheme),
 ) -> TableDescriptionResponse:

@@ -11,6 +11,7 @@ from modules.golden_sql.models.responses import (
 )
 from modules.golden_sql.service import GoldenSQLService
 from utils.auth import Authorize, VerifyToken, get_api_key
+from utils.validation import ObjectIdString
 
 router = APIRouter(
     prefix="/api/golden-sqls",
@@ -46,7 +47,7 @@ async def get_golden_sqls(
 
 @router.get("/{id}")
 async def get_golden_sql(
-    id: str, api_key: str = Security(get_api_key)
+    id: ObjectIdString, api_key: str = Security(get_api_key)
 ) -> GoldenSQLResponse:
     return golden_sql_service.get_golden_sql(id, api_key.organization_id)
 
@@ -61,7 +62,7 @@ async def add_user_upload_golden_sql(
 
 
 @router.delete("/{id}")
-async def delete_golden_sql(id: str, api_key: str = Security(get_api_key)):
+async def delete_golden_sql(id: ObjectIdString, api_key: str = Security(get_api_key)):
     return await golden_sql_service.delete_golden_sql(
         id, api_key.organization_id, GenerationStatus.NOT_VERIFIED
     )
@@ -83,7 +84,7 @@ async def ac_get_golden_sqls(
 
 @ac_router.get("/{id}")
 async def ac_get_golden_sql(
-    id: str, token: str = Depends(token_auth_scheme)
+    id: ObjectIdString, token: str = Depends(token_auth_scheme)
 ) -> AdminConsoleGoldenSqlResponse:
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return golden_sql_service.get_golden_sql(id, org_id)
@@ -100,7 +101,9 @@ async def ac_add_user_upload_golden_sql(
 
 
 @ac_router.delete("/{id}")
-async def ac_delete_golden_sql(id: str, token: str = Depends(token_auth_scheme)):
+async def ac_delete_golden_sql(
+    id: ObjectIdString, token: str = Depends(token_auth_scheme)
+):
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return await golden_sql_service.delete_golden_sql(
         id, org_id, GenerationStatus.NOT_VERIFIED
