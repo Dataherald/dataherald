@@ -1,5 +1,11 @@
 import { LoadingTableRows } from '@/components/data-table/loading-rows'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import {
   Table,
@@ -13,6 +19,7 @@ import { cn } from '@/lib/utils'
 import {
   Column,
   ColumnDef,
+  RowData,
   SortingState,
   VisibilityState,
   flexRender,
@@ -21,17 +28,33 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { ArrowDown, ArrowUp, RefreshCcw } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowDownUp,
+  ArrowUp,
+  ChevronDown,
+  Columns3,
+  LucideIcon,
+  RefreshCcw,
+} from 'lucide-react'
 import { useState } from 'react'
 
+export type CustomColumnDef<
+  TData extends RowData,
+  TValue = unknown,
+> = ColumnDef<TData, TValue> & {
+  headerFilterDisplay?: string
+}
+
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
+  columns: CustomColumnDef<TData, TValue>[] | CustomColumnDef<TData, TValue>[]
   data: TData[]
   isRefreshing?: boolean
   isLoadingMore?: boolean
   isReachingEnd?: boolean
   noMoreDataMessage?: string
   enableFiltering?: boolean
+  enableColumnVisibility?: boolean
   onRowClick?: (row: TData) => void
   onLoadMore?: () => void
   onRefresh?: () => void
@@ -45,13 +68,16 @@ export function DataTable<TData, TValue>({
   isReachingEnd = true,
   noMoreDataMessage = '',
   enableFiltering = false,
+  enableColumnVisibility = false,
   onRowClick,
   onLoadMore,
   onRefresh,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    Object.fromEntries(columns.map(({ id }) => [id, true])),
+  )
 
   const table = useReactTable({
     data,
@@ -87,16 +113,57 @@ export function DataTable<TData, TValue>({
               />
             </div>
           )}
-          <Button
-            variant="ghost"
-            disabled={isRefreshing || isLoadingMore}
-            onClick={onRefresh}
-          >
-            <RefreshCcw
-              size={18}
-              className={isRefreshing || isLoadingMore ? 'animate-spin' : ''}
-            />
-          </Button>
+          <div className="flex items-center gap-2">
+            {enableColumnVisibility && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="ml-auto text-slate-500">
+                    <Columns3 size={18} className="mr-2" />
+                    Select visible columns
+                    <ChevronDown size={18} className="ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {table
+                    .getAllColumns()
+                    .filter((column) => column.getCanHide())
+                    .map((column) => {
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={column.id}
+                          className="capitalize pe-10 cursor-pointer max-w-lg"
+                          checked={column.getIsVisible()}
+                          onCheckedChange={(value) =>
+                            value === true ||
+                            (value === false &&
+                              Object.values(columnVisibility).filter(
+                                (v) => v === true,
+                              ).length > 1)
+                              ? column.toggleVisibility(!!value)
+                              : undefined
+                          }
+                        >
+                          {
+                            (column.columnDef as CustomColumnDef<TData, TValue>)
+                              .headerFilterDisplay
+                          }
+                        </DropdownMenuCheckboxItem>
+                      )
+                    })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            <Button
+              variant="ghost"
+              disabled={isRefreshing || isLoadingMore}
+              onClick={onRefresh}
+            >
+              <RefreshCcw
+                size={18}
+                className={isRefreshing || isLoadingMore ? 'animate-spin' : ''}
+              />
+            </Button>
+          </div>
         </div>
       )}
       <Table>
@@ -150,7 +217,14 @@ export function DataTable<TData, TValue>({
               </TableCell>
             </TableRow>
           )}
-          {isLoadingMore && <LoadingTableRows columnLength={columns.length} />}
+          {isLoadingMore && (
+            <LoadingTableRows
+              columnLength={
+                Object.values(columnVisibility).filter((v) => v !== false)
+                  .length || columns.length
+              }
+            />
+          )}
           {!globalFilter &&
             table.getRowModel().rows?.length > 0 &&
             !isLoadingMore && (
@@ -186,17 +260,21 @@ interface SortHeaderProps<T> {
   column: Column<T, unknown>
 }
 
-export const SortHeader = <T,>({ text, column }: SortHeaderProps<T>) => (
-  <Button
-    variant="ghost"
-    className="p-0 hover:bg-transparent uppercase"
-    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-  >
-    {text}
-    {column.getIsSorted() === 'asc' ? (
-      <ArrowUp className="ml-2 h-4 w-4" />
-    ) : (
-      <ArrowDown className="ml-2 h-4 w-4" />
-    )}
-  </Button>
-)
+export const SortHeader = <T,>({ text, column }: SortHeaderProps<T>) => {
+  const OrderIcon: LucideIcon =
+    column.getIsSorted() === false
+      ? ArrowDownUp
+      : column.getIsSorted() === 'asc'
+      ? ArrowUp
+      : ArrowDown
+  return (
+    <Button
+      variant="ghost"
+      className="p-0 hover:bg-transparent uppercase"
+      onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+    >
+      {text}
+      <OrderIcon className="ml-2 h-4 w-4" />
+    </Button>
+  )
+}

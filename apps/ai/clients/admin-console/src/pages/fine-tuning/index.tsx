@@ -1,4 +1,4 @@
-import { DataTable } from '@/components/data-table/data-table'
+import { DataTable } from '@/components/data-table'
 import { LoadingTable } from '@/components/data-table/loading-table'
 import { finetunningsColumns } from '@/components/fine-tunnings/columns'
 import FineTunningsError from '@/components/fine-tunnings/error'

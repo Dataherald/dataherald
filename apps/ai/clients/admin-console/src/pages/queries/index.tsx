@@ -1,14 +1,12 @@
-import { DataTable } from '@/components/data-table/data-table'
+import { DataTable } from '@/components/data-table'
 import { LoadingTable } from '@/components/data-table/loading-table'
 import PageLayout from '@/components/layout/page-layout'
 import { columns as cols } from '@/components/queries/columns'
 import QueriesError from '@/components/queries/error'
-import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
 import useQueries from '@/hooks/api/query/useQueries'
 import { QueryListItem } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
-import { RefreshCcw } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { FC, useMemo, useState } from 'react'
 
@@ -54,6 +52,7 @@ const QueriesPage: FC = () => {
         columns={columns}
         data={items}
         enableFiltering
+        enableColumnVisibility
         isLoadingMore={isLoadingMore}
         isReachingEnd={isReachingEnd}
         isRefreshing={isRefreshing}

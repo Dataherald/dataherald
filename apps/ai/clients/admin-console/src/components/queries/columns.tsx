@@ -1,4 +1,4 @@
-import { SortHeader } from '@/components/data-table/data-table'
+import { CustomColumnDef, SortHeader } from '@/components/data-table'
 import {
   formatQueryStatusWithScore,
   getDomainStatus,
@@ -6,10 +6,9 @@ import {
 } from '@/lib/domain/query'
 import { cn } from '@/lib/utils'
 import { QueryListItem } from '@/models/api'
-import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 
-export const columns: ColumnDef<QueryListItem>[] = [
+export const columns: CustomColumnDef<QueryListItem>[] = [
   {
     id: 'id',
     header: ({ column }) => (
@@ -17,11 +16,13 @@ export const columns: ColumnDef<QueryListItem>[] = [
         <SortHeader text="Query ID" column={column} />
       </div>
     ),
+    headerFilterDisplay: 'Query ID',
     accessorKey: 'display_id',
   },
   {
     id: 'created_by',
     header: 'User',
+    headerFilterDisplay: 'User',
     accessorKey: 'created_by',
     cell: ({ row }) => (
       <div className="truncate max-w-[10rem] 2xl:max-w-none">
@@ -32,6 +33,7 @@ export const columns: ColumnDef<QueryListItem>[] = [
   {
     id: 'prompt_text',
     header: 'Question',
+    headerFilterDisplay: 'Question',
     accessorKey: 'prompt_text',
     cell: ({ row }) => (
       <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
@@ -42,6 +44,7 @@ export const columns: ColumnDef<QueryListItem>[] = [
   {
     id: 'sql',
     header: 'Generated SQL',
+    headerFilterDisplay: 'Generated SQL',
     accessorKey: 'sql',
     cell: ({ row }) => (
       <div className="truncate max-w-[12rem] 2xl:max-w-[25rem]">
@@ -56,6 +59,7 @@ export const columns: ColumnDef<QueryListItem>[] = [
         <SortHeader text="Time" column={column} />
       </div>
     ),
+    headerFilterDisplay: 'Time',
     accessorKey: 'created_at',
     cell: ({ row }) =>
       format(new Date(row.getValue('time')), 'yyyy-MM-dd hh:mm a'),
@@ -63,6 +67,7 @@ export const columns: ColumnDef<QueryListItem>[] = [
   {
     id: 'status',
     header: () => <div className="min-w-[185px]">Status</div>,
+    headerFilterDisplay: 'Status',
     accessorFn: ({ status, confidence_score }) => {
       const domainStatus = getDomainStatus(status, confidence_score)
       return formatQueryStatusWithScore(domainStatus, confidence_score)

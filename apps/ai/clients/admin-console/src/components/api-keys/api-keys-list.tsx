@@ -1,7 +1,7 @@
 import { getApiKeysColumns } from '@/components/api-keys/columns'
 import ApiKeysError from '@/components/api-keys/error'
 import GenerateApiKeyDialog from '@/components/api-keys/generate-api-key-dialog'
-import { DataTable } from '@/components/data-table/data-table'
+import { DataTable } from '@/components/data-table'
 import { LoadingTable } from '@/components/data-table/loading-table'
 import { Button } from '@/components/ui/button'
 import useApiKeys from '@/hooks/api/api-keys/useApiKeys'

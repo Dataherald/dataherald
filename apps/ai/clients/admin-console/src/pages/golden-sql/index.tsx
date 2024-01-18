@@ -1,4 +1,4 @@
-import { DataTable } from '@/components/data-table/data-table'
+import { DataTable } from '@/components/data-table'
 import { LoadingTable } from '@/components/data-table/loading-table'
 import { getColumns } from '@/components/golden-sql/columns'
 import PageLayout from '@/components/layout/page-layout'

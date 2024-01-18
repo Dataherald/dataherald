@@ -1,4 +1,4 @@
-import { SortHeader } from '@/components/data-table/data-table'
+import { CustomColumnDef, SortHeader } from '@/components/data-table'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,14 +13,13 @@ import {
 import { Badge, badgeVariants } from '@/components/ui/badge'
 import { formatKey } from '@/lib/utils'
 import { EGoldenSqlSource, GoldenSqlListItem } from '@/models/api'
-import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import { ExternalLink, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
 export const getColumns: (actions: {
   deleteAction: (id: string) => void
-}) => ColumnDef<GoldenSqlListItem>[] = ({ deleteAction }) => [
+}) => CustomColumnDef<GoldenSqlListItem>[] = ({ deleteAction }) => [
   {
     id: 'id',
     header: ({ column }) => {

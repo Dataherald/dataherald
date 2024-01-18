@@ -5,6 +5,11 @@ import { usePathname } from 'next/navigation'
 import { Button, buttonVariants } from '@/components/ui/button'
 import UserPicture from '@/components/user/user-picture'
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useAppContext } from '@/contexts/app-context'
 import { cn } from '@/lib/utils'
@@ -20,7 +25,6 @@ import {
   TerminalSquare,
   UserRound,
 } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 
 export interface MenuItem {
   text: string
