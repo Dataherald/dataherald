@@ -115,9 +115,7 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
-    def execute_sql_query(
-        self, sql_generation_id: str, max_rows: int = 100
-    ) -> tuple[str, dict]:
+    def execute_sql_query(self, sql_generation_id: str, max_rows: int = 100) -> list:
         pass
 
     @abstractmethod
