@@ -95,8 +95,8 @@ const GoldenSQLPage: FC = () => {
   return (
     <PageLayout>
       <div className="grow flex flex-col gap-4 m-6">
-        <div className="flex flex-col gap-3">
-          <p className="max-w-5xl">
+        <div className="flex flex-col gap-3 max-w-5xl">
+          <p>
             When a query is marked as verified in the query editor, or manually
             uploaded through our API, it is stored as a{' '}
             <strong>Golden SQL Query</strong> and used to further train the

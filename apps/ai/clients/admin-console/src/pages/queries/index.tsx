@@ -65,7 +65,16 @@ const QueriesPage: FC = () => {
 
   return (
     <PageLayout>
-      <ContentBox className="m-6">{pageContent}</ContentBox>
+      <div className="grow flex flex-col gap-4 m-6">
+        <div className="flex flex-col gap-3 max-w-5xl">
+          <p>
+            Explore the list of queries sourced from our API or Slack
+            interactions. Select any query to validate its response in the query
+            editor.
+          </p>
+        </div>
+        <ContentBox>{pageContent}</ContentBox>
+      </div>
     </PageLayout>
   )
 }

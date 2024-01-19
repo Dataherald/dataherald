@@ -1,5 +1,16 @@
 import DatabaseResourceSheet from '@/components/databases/database-resource-sheet'
 import DatabaseTree from '@/components/databases/database-tree'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
@@ -8,7 +19,7 @@ import { toast } from '@/components/ui/use-toast'
 import useSynchronizeSchemas from '@/hooks/api/useSynchronizeSchemas'
 import { cn } from '@/lib/utils'
 import { Database, ETableSyncStatus } from '@/models/api'
-import { Loader, RefreshCw, UploadCloud } from 'lucide-react'
+import { Loader, RefreshCw, ScanText } from 'lucide-react'
 import React, { ComponentType, FC, useState } from 'react'
 
 interface DatabaseDetailsProps {
@@ -65,8 +76,8 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
       })
       toast({
         variant: 'success',
-        title: 'Synchronization queued',
-        description: `${selectedNodes.size} tables schemas were succesfully queued for synchronization.`,
+        title: 'Scanning queued',
+        description: `${selectedNodes.size} table schemas were succesfully queued for scanning.`,
       })
       setIsSynchronizing(false)
       resetSyncSelection()
@@ -77,7 +88,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
         toast({
           variant: 'destructive',
           title: 'Oops! Something went wrong.',
-          description: 'There was a problem refreshing your Database.',
+          description: 'There was a problem refreshing your Databases.',
           action: (
             <ToastAction
               altText="Try again"
@@ -94,7 +105,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
         variant: 'destructive',
         title: 'Oops! Something went wrong.',
         description:
-          'There was a problem synchronizing your Database tables schemas.',
+          'There was a problem scanning your Database table schemas.',
         action: (
           <ToastAction altText="Try again" onClick={handleSynchronization}>
             Try again
@@ -109,23 +120,61 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
   return (
     <>
       <div className="flex items-center justify-between bg-gray-50 py-0">
-        <h1 className="font-bold">Connected Database</h1>
+        <h1 className="font-bold">Connected Databases</h1>
         <div className="flex gap-3">
-          <Button
-            disabled={
-              isSynchronizing || isRefreshing || selectedNodes.size === 0
-            }
-            onClick={handleSynchronization}
-          >
-            {isSynchronizing ? (
-              <Loader size={18} className="mr-2 animate-spin" />
-            ) : (
-              <UploadCloud size={18} className="mr-2" />
-            )}
-            {`${isSynchronizing ? `Synchronizing` : 'Synchronize'} ${
-              selectedNodes.size
-            } tables schemas`}
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                disabled={
+                  isSynchronizing || isRefreshing || selectedNodes.size === 0
+                }
+              >
+                <ScanText size={18} className="mr-2" />
+                {`Scan table ${
+                  selectedNodes.size === 0
+                    ? 'schemas'
+                    : `${selectedNodes.size} ${
+                        selectedNodes.size === 1 ? 'schema' : 'schemas'
+                      }`
+                }`}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <ScanText size={18} />
+                  Scan Databases
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  You are about to add{' '}
+                  {`${selectedNodes.size} ${
+                    selectedNodes.size === 1 ? 'table schema' : 'tables schemas'
+                  }`}{' '}
+                  to the scanning queue. This asynchronous process could take a
+                  while to complete.
+                </AlertDialogDescription>
+                <AlertDialogDescription>
+                  Do you wish to continue?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleSynchronization}>
+                  {isSynchronizing ? (
+                    <>
+                      <Loader size={18} className="mr-2 animate-spin" />
+                      Scanning
+                    </>
+                  ) : (
+                    <>
+                      <ScanText size={18} className="mr-2" />
+                      Scan
+                    </>
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button
             variant="ghost"
             disabled={isRefreshing || isSynchronizing}

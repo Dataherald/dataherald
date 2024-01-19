@@ -152,8 +152,8 @@ const DatabaseConnectionFormDialog: FC<{
               <div className="grow flex flex-col gap-5 px-1">
                 <p>
                   Connection successful! To begin using this database for
-                  queries, select the tables you wish to synchronize with the
-                  platform.
+                  queries, select the tables you wish to scan and synchronize
+                  with the platform.
                 </p>
                 <Alert variant="info" className="flex items-start gap-2">
                   <div>

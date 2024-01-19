@@ -31,7 +31,15 @@ import {
   EDomainQueryWorkspaceStatus,
   QueryWorkspaceStatus,
 } from '@/models/domain'
-import { Ban, Box, Code2, Loader, Play, Verified, XOctagon } from 'lucide-react'
+import {
+  Ban,
+  Code2,
+  Loader,
+  Play,
+  ShieldQuestion,
+  Verified,
+  XOctagon,
+} from 'lucide-react'
 import { useRouter } from 'next/router'
 import { FC, useEffect, useState } from 'react'
 
@@ -386,7 +394,8 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
             )}
             <SectionHeader>
               <SectionHeaderTitle>
-                <Box strokeWidth={2}></Box>Query Status
+                <ShieldQuestion strokeWidth={2} />
+                Status
               </SectionHeaderTitle>
             </SectionHeader>
             <div className="p-6 flex flex-col gap-5">

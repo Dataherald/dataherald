@@ -17,10 +17,10 @@ import {
   Building2,
   Database,
   KeyRound,
-  ListChecks,
   LogOut,
   LucideIcon,
-  Microscope,
+  ShieldCheck,
+  ShieldQuestion,
   SlidersIcon,
   TerminalSquare,
   UserRound,
@@ -38,7 +38,7 @@ const NAV_ITEMS: MenuItems = [
   {
     text: 'Queries',
     href: '/queries',
-    icon: Microscope,
+    icon: ShieldQuestion,
   },
   {
     text: 'Databases',
@@ -48,7 +48,7 @@ const NAV_ITEMS: MenuItems = [
   {
     text: 'Golden SQL',
     href: '/golden-sql',
-    icon: ListChecks,
+    icon: ShieldCheck,
   },
 ]
 const CONFIG_NAV_ITEMS: MenuItems = [
