@@ -1,7 +1,7 @@
 """SQL wrapper around SQLDatabase in langchain."""
 import logging
 from typing import Any, List
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 
 import sqlparse
 from langchain.sql_database import SQLDatabase as LangchainSQLDatabase
@@ -81,19 +81,20 @@ class SQLDatabase(LangchainSQLDatabase):
             return DBConnections.db_connections[database_info.id]
 
         fernet_encrypt = FernetEncrypt()
-        if database_info.use_ssh:
-            engine = cls.from_uri_ssh(database_info)
-            DBConnections.add(database_info.id, engine)
-            return engine
-        db_uri = unquote(fernet_encrypt.decrypt(database_info.uri))
-        if db_uri.lower().startswith("bigquery"):
-            file_path = database_info.path_to_credentials_file
-            if file_path.lower().startswith("s3"):
-                s3 = S3()
-                file_path = s3.download(file_path)
-
-            db_uri = db_uri + f"?credentials_path={file_path}"
         try:
+            if database_info.use_ssh:
+                engine = cls.from_uri_ssh(database_info)
+                DBConnections.add(database_info.id, engine)
+                return engine
+            db_uri = unquote(fernet_encrypt.decrypt(database_info.uri))
+            if db_uri.lower().startswith("bigquery"):
+                file_path = database_info.path_to_credentials_file
+                if file_path.lower().startswith("s3"):
+                    s3 = S3()
+                    file_path = s3.download(file_path)
+
+                db_uri = db_uri + f"?credentials_path={file_path}"
+
             engine = cls.from_uri(db_uri)
             DBConnections.add(database_info.id, engine)
         except Exception as e:
@@ -110,21 +111,24 @@ class SQLDatabase(LangchainSQLDatabase):
             file_path = s3.download(file_path)
 
         fernet_encrypt = FernetEncrypt()
+        db_uri = unquote(fernet_encrypt.decrypt(database_info.uri))
+        db_uri_obj = urlparse(db_uri)
         ssh = database_info.ssh_settings
+
         server = SSHTunnelForwarder(
             (ssh.host, 22),
             ssh_username=ssh.username,
             ssh_password=fernet_encrypt.decrypt(ssh.password),
             ssh_pkey=file_path,
             ssh_private_key_password=fernet_encrypt.decrypt(ssh.private_key_password),
-            remote_bind_address=(ssh.remote_host, 5432),
+            remote_bind_address=(db_uri_obj.hostname, 5432),
         )
         server.start()
         local_port = str(server.local_bind_port)
         local_host = str(server.local_bind_host)
 
         return cls.from_uri(
-            f"{ssh.db_driver}://{ssh.remote_db_name}:{fernet_encrypt.decrypt(ssh.remote_db_password)}@{local_host}:{local_port}/{ssh.db_name}"
+            f"{db_uri_obj.scheme}://{db_uri_obj.username}:{db_uri_obj.password}@{local_host}:{local_port}{db_uri_obj.path}"
         )
 
     @classmethod
