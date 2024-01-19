@@ -43,7 +43,7 @@ class FinetuningsRepository:
         if page > 0 and limit > 0:
             rows = self.storage.find(DB_COLLECTION, query, page=page, limit=limit)
         else:
-            rows = self.storage.find_all(DB_COLLECTION)
+            rows = self.storage.find(DB_COLLECTION, query)
         result = []
         for row in rows:
             obj = Finetuning(**row)

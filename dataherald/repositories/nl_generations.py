@@ -45,10 +45,11 @@ class NLGenerationRepository:
         row["id"] = str(row["_id"])
         return NLGeneration(**row)
 
-    def find_by(
-        self, query: dict, page: int = 1, limit: int = 10
-    ) -> list[NLGeneration]:
-        rows = self.storage.find(DB_COLLECTION, query, page=page, limit=limit)
+    def find_by(self, query: dict, page: int = 0, limit: int = 0) -> list[NLGeneration]:
+        if page > 0 and limit > 0:
+            rows = self.storage.find(DB_COLLECTION, query, page=page, limit=limit)
+        else:
+            rows = self.storage.find(DB_COLLECTION, query)
         result = []
         for row in rows:
             row["id"] = str(row["_id"])
