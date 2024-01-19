@@ -121,7 +121,10 @@ export function DataTable<TData, TValue>({
             {enableColumnVisibility && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="ml-auto text-slate-500">
+                  <Button
+                    variant="outline"
+                    className="h-10 border-input text-slate-600 hover:bg-white"
+                  >
                     <Columns3 size={18} className="mr-2" />
                     Select visible columns
                     <ChevronDown size={18} className="ml-2" />
