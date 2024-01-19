@@ -485,9 +485,7 @@ class FastAPI(dataherald.server.Server):
         """Get description"""
         return self._api.get_query_history(db_connection_id)
 
-    def execute_sql_query(
-        self, sql_generation_id: str, max_rows: int = 100
-    ) -> tuple[str, dict]:
+    def execute_sql_query(self, sql_generation_id: str, max_rows: int = 100) -> list:
         """Executes a query on the given db_connection_id"""
         return self._api.execute_sql_query(sql_generation_id, max_rows)
 
