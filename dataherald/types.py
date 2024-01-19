@@ -80,7 +80,7 @@ class ScannerRequest(DBConnectionValidation):
 class DatabaseConnectionRequest(BaseModel):
     alias: str
     use_ssh: bool = False
-    connection_uri: str | None
+    connection_uri: str
     path_to_credentials_file: str | None
     llm_api_key: str | None
     ssh_settings: SSHSettings | None
