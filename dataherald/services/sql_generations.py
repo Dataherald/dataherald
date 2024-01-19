@@ -85,7 +85,7 @@ class SQLGenerationService:
                     sql_generation_request.finetuning_id
                 )
             try:
-                sql_generation = sql_generator.generate_response(
+                sql_generation, logprobs = sql_generator.generate_response(
                     user_prompt=prompt, database_connection=db_connection
                 )
             except Exception as e:
@@ -97,6 +97,7 @@ class SQLGenerationService:
                 user_prompt=prompt,
                 sql_generation=sql_generation,
                 database_connection=db_connection,
+                logprobs=logprobs,
             )
             initial_sql_generation.evaluate = sql_generation_request.evaluate
             initial_sql_generation.confidence_score = confidence_score

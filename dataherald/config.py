@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     )
 
     eval_impl: str = os.environ.get(
-        "EVALUATOR", "dataherald.eval.simple_evaluator.SimpleEvaluator"
+        "EVALUATOR", "dataherald.eval.logprob_evaluator.LogProbEvaluator"
     )
     db_impl: str = os.environ.get("DB", "dataherald.db.mongo.MongoDB")
 

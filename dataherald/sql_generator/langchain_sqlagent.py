@@ -4,7 +4,7 @@ import datetime
 import logging
 import os
 import time
-from typing import Any, List
+from typing import Any, List, Tuple
 
 from langchain.agents import initialize_agent
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
@@ -30,7 +30,7 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-    ) -> SQLGeneration:  # type: ignore
+    ) -> Tuple[SQLGeneration, list]:  # type: ignore
         logger.info(f"Generating SQL response to question: {str(user_prompt.dict())}")
         response = SQLGeneration(
             prompt_id=user_prompt.id, created_at=datetime.datetime.now()
@@ -80,8 +80,11 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
         response.sql = (sql_query_list[-1] if len(sql_query_list) > 0 else "",)
         response.tokens_used = cb.total_tokens
         response.completed_at = datetime.datetime.now()
-        return self.create_sql_query_status(
-            self.database,
-            response.sql,
-            response,
+        return (
+            self.create_sql_query_status(
+                self.database,
+                response.sql,
+                response,
+            ),
+            [],
         )

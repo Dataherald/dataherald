@@ -243,6 +243,7 @@ class EvaluationAgent(Evaluator):
         user_prompt: Prompt,
         sql_generation: SQLGeneration,
         database_connection: DatabaseConnection,
+        logprobs: list,  # noqa: ARG002
     ) -> Evaluation:
         start_time = time.time()
         logger.info(

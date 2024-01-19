@@ -1,8 +1,9 @@
 import datetime
 import logging
+import math
 import os
 from functools import wraps
-from typing import Any, Callable, Dict, List, Type
+from typing import Any, Callable, Dict, List, Tuple, Type
 
 import openai
 from google.api_core.exceptions import GoogleAPIError
@@ -34,6 +35,9 @@ from dataherald.sql_database.models.types import (
     DatabaseConnection,
 )
 from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
+from dataherald.sql_generator.log_probs_callback_handler import (
+    OpenAILogProbsCallbackHandler,
+)
 from dataherald.types import FineTuningStatus, Prompt, SQLGeneration
 from dataherald.utils.agent_prompts import (
     FINETUNING_AGENT_PREFIX,
@@ -208,6 +212,15 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
     db_scan: List[TableDescription]
     api_key: str = Field(exclude=True)
 
+    def compute_confidence(self, response: Any) -> float:
+        """Compute the confidence score."""
+        logprobs = response.choices[0].logprobs.content
+        probs = []
+        for token in logprobs:
+            probs.append(math.exp(token.logprob))
+        result = sum(probs) / len(probs)
+        return format(result, ".2f")
+
     @catch_exceptions()
     def _run(
         self,
@@ -223,12 +236,15 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
         response = client.chat.completions.create(
             model=self.finetuning_model_id,
             temperature=0.0,
+            logprobs=True,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
         )
-        return response.choices[0].message.content
+        query = response.choices[0].message.content
+        confidence = self.compute_confidence(response)
+        return query + f"\nConfidence: {confidence}"
 
     async def _arun(
         self,
@@ -370,13 +386,30 @@ class DataheraldFinetuningAgent(SQLGenerator):
             **(agent_executor_kwargs or {}),
         )
 
+    def create_logprobs(
+        self, results: Any, callback: OpenAILogProbsCallbackHandler
+    ) -> list:
+        logprobs = []
+        actions = []
+        for step in results["intermediate_steps"]:
+            actions.append(step[0].tool)
+        actions.append("final_answer")
+        for token_step, logprob_step, action in zip(
+            callback.tokens, callback.logprobs, actions, strict=False
+        ):
+            temp_logprobs = []
+            for token, logprob in zip(token_step, logprob_step, strict=False):
+                temp_logprobs.append({"token": token, "logprob": logprob})
+            logprobs.append([action, temp_logprobs])
+        return logprobs
+
     @override
     def generate_response(
         self,
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,  # noqa: ARG002
-    ) -> SQLGeneration:
+    ) -> Tuple[SQLGeneration, list]:
         """
         generate_response generates a response to a user question using a Finetuning model.
 
@@ -396,9 +429,12 @@ class DataheraldFinetuningAgent(SQLGenerator):
             created_at=datetime.datetime.now(),
             finetuning_id=self.finetuning_id,
         )
+        callback = OpenAILogProbsCallbackHandler()
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
+            callbacks=BaseCallbackManager([callback]),
+            logprobs=True,
             model_name=os.getenv("LLM_MODEL", "gpt-4-1106-preview"),
         )
         repository = TableDescriptionRepository(storage)
@@ -469,8 +505,12 @@ class DataheraldFinetuningAgent(SQLGenerator):
         response.sql = sql_query
         response.tokens_used = cb.total_tokens
         response.completed_at = datetime.datetime.now()
-        return self.create_sql_query_status(
-            self.database,
-            response.sql,
-            response,
+        logprobs = self.create_logprobs(result, callback)
+        return (
+            self.create_sql_query_status(
+                self.database,
+                response.sql,
+                response,
+            ),
+            logprobs,
         )

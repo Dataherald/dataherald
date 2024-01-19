@@ -2,7 +2,7 @@
 import datetime
 import logging
 import os
-from typing import Any, List
+from typing import Any, List, Tuple
 
 import tiktoken
 from langchain.callbacks.openai_info import MODEL_COST_PER_1K_TOKENS
@@ -34,7 +34,7 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-    ) -> SQLGeneration:
+    ) -> Tuple[SQLGeneration, list]:
         logger.info(f"Generating SQL response to question: {str(user_prompt.dict())}")
         response = SQLGeneration(
             prompt_id=user_prompt.id,
@@ -104,8 +104,11 @@ class LlamaIndexSQLGenerator(SQLGenerator):
         response.tokens_used = token_counter.total_llm_token_count
         response.sql = self.format_sql_query(result.metadata["sql_query"])
         response.completed_at = datetime.datetime.now()
-        return self.create_sql_query_status(
-            self.database,
-            response.sql,
-            response,
+        return (
+            self.create_sql_query_status(
+                self.database,
+                response.sql,
+                response,
+            ),
+            [],
         )
