@@ -393,7 +393,7 @@ class FastAPI(API):
             raise HTTPException(status_code=400, detail=str(e)) from e
         except SQLAlchemyError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        return results[1]["result"]
+        return results[1].get("result", [])
 
     @override
     def export_csv_file(self, sql_generation_id: str) -> io.StringIO:
