@@ -45,9 +45,7 @@ class NLGenerationRepository:
         row["id"] = str(row["_id"])
         return NLGeneration(**row)
 
-    def find_by(
-        self, query: dict, page: int = 0, limit: int = 0
-    ) -> list[NLGeneration]:
+    def find_by(self, query: dict, page: int = 0, limit: int = 0) -> list[NLGeneration]:
         if page > 0 and limit > 0:
             rows = self.storage.find(DB_COLLECTION, query, page=page, limit=limit)
         else:

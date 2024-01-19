@@ -162,14 +162,14 @@ class SQLDatabase(LangchainSQLDatabase):
         If the statement returns no rows, an empty string is returned.
         """
         with self._engine.connect() as connection:
-                command = self.parser_to_filter_commands(command)
-                cursor = connection.execute(text(command))
-                if cursor.returns_rows and top_k:
-                    result = cursor.fetchmany(top_k)
-                    return str(result), {"result": result}
-                if cursor.returns_rows:
-                    result = cursor.fetchall()
-                    return str(result), {"result": result}
+            command = self.parser_to_filter_commands(command)
+            cursor = connection.execute(text(command))
+            if cursor.returns_rows and top_k:
+                result = cursor.fetchmany(top_k)
+                return str(result), {"result": result}
+            if cursor.returns_rows:
+                result = cursor.fetchall()
+                return str(result), {"result": result}
         return "", {}
 
     # from llama-index's sql-wrapper
