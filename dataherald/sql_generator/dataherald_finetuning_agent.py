@@ -217,9 +217,11 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
         logprobs = response.choices[0].logprobs.content
         probs = []
         for token in logprobs:
-            probs.append(math.exp(token.logprob))
-        result = sum(probs) / len(probs)
-        return format(result, ".2f")
+            probs.append(format(math.exp(token.logprob), ".3f"))
+        output = []
+        for token, prob in zip(logprobs, probs, strict=False):
+            output.append({"token": token.token, "prob": prob})
+        return output
 
     @catch_exceptions()
     def _run(
