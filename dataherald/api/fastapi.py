@@ -382,9 +382,7 @@ class FastAPI(API):
         return [GoldenSQLResponse(**golden_sql.dict()) for golden_sql in golden_sqls]
 
     @override
-    def execute_sql_query(
-        self, sql_generation_id: str, max_rows: int = 100
-    ) -> tuple[str, dict]:
+    def execute_sql_query(self, sql_generation_id: str, max_rows: int = 100) -> list:
         """Executes a SQL query against the database and returns the results"""
         sql_generation_service = SQLGenerationService(self.system, self.storage)
         try:
@@ -395,7 +393,7 @@ class FastAPI(API):
             raise HTTPException(status_code=400, detail=str(e)) from e
         except SQLAlchemyError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        return results
+        return results[1].get("result", [])
 
     @override
     def export_csv_file(self, sql_generation_id: str) -> io.StringIO:
