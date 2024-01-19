@@ -393,6 +393,8 @@ class FastAPI(API):
             raise HTTPException(status_code=400, detail=str(e)) from e
         except SQLAlchemyError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         return results[1].get("result", [])
 
     @override

@@ -162,7 +162,6 @@ class SQLDatabase(LangchainSQLDatabase):
         If the statement returns no rows, an empty string is returned.
         """
         with self._engine.connect() as connection:
-            try:
                 command = self.parser_to_filter_commands(command)
                 cursor = connection.execute(text(command))
                 if cursor.returns_rows and top_k:
@@ -171,8 +170,6 @@ class SQLDatabase(LangchainSQLDatabase):
                 if cursor.returns_rows:
                     result = cursor.fetchall()
                     return str(result), {"result": result}
-            except Exception as e:
-                logger.info(f"Error while executing the SQL query: {str(e)}")
         return "", {}
 
     # from llama-index's sql-wrapper
