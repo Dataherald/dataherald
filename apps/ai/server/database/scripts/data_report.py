@@ -1,9 +1,9 @@
 import csv
+import datetime
 import sys
 import uuid
 
 import pymongo
-from bson import ObjectId
 
 import config
 
@@ -37,63 +37,67 @@ if __name__ == "__main__":
 
     filter = {}
     if "organization_id" in output_dict.keys():
-        filter["organization_id"] = ObjectId(output_dict["organization_id"])
+        filter["metadata.dh_internal.organization_id"] = str(
+            output_dict["organization_id"]
+        )
     if (
         "question_date_gte" in output_dict.keys()
         or "question_date_lt" in output_dict.keys()
     ):
-        filter["question_date"] = {}
+        filter["created_at"] = {}
     if "question_date_gte" in output_dict.keys():
-        filter["question_date"]["$gte"] = output_dict["question_date_gte"]
+        filter["created_at"]["$gte"] = datetime.datetime.strptime(
+            output_dict["question_date_gte"], "%Y-%m-%d"
+        )
     if "question_date_lt" in output_dict.keys():
-        filter["question_date"]["$lt"] = output_dict["question_date_lt"]
+        filter["created_at"]["$lt"] = datetime.datetime.strptime(
+            output_dict["question_date_lt"], "%Y-%m-%d"
+        )
 
-    queries = data_store["queries"].find(filter)
-
+    prompts = data_store["prompts"].find(filter)
     rows = []
-    for query in queries:
-        question = data_store["questions"].find_one({"_id": query["question_id"]})
-        responses = (
-            data_store["responses"]
-            .find({"question_id": query["question_id"]})
+    for prompt in prompts:
+        sql_generations = (
+            data_store["sql_generations"]
+            .find({"prompt_id": str(prompt["_id"])})
             .sort("created_at", -1)
         )
-        responses = list(responses)
+        sql_generations = list(sql_generations)
 
-        if len(responses) > 0:
-            original_response = responses[-1]
-            final_response = responses[0]
+        if len(sql_generations) > 0:
+            original_response = sql_generations[-1]
+            final_response = sql_generations[0]
             rows.append(
                 {
-                    "query_id": query["display_id"],
-                    "question_id": str(query["question_id"]),
-                    "question": question["question"],
+                    "display_id": prompt["metadata"]["dh_internal"].get("display_id"),
+                    "prompt_id": str(prompt["_id"]),
+                    "prompt": prompt["text"],
                     "original_confidence": original_response["confidence_score"],
-                    "original_sql_query": original_response["sql_query"],
-                    "original_status": original_response["sql_generation_status"],
-                    "latest_status": query["status"],
+                    "original_sql_query": original_response["sql"],
+                    "original_sql_status": original_response["status"],
+                    "latest_sql_status": final_response["status"],
                     "final_confidence": None
-                    if len(responses) == 1
+                    if len(sql_generations) == 1
                     else final_response["confidence_score"],
                     "final_sql_query": None
-                    if len(responses) == 1
-                    else final_response["sql_query"],
+                    if len(sql_generations) == 1
+                    else final_response["sql"],
                     "final_sql_status": None
-                    if len(responses) == 1
-                    else final_response["sql_generation_status"],
+                    if len(sql_generations) == 1
+                    else final_response["status"],
                     "was_the_original_correct": True
-                    if query["status"] == "VERIFIED"
+                    if prompt["metadata"]["dh_internal"]["generation_status"]
+                    == "VERIFIED"
                     and (
-                        len(responses) == 1
+                        len(sql_generations) == 1
                         or (
-                            len(responses) > 1
-                            and original_response["sql_query"]
-                            == final_response["sql_query"]
+                            len(sql_generations) > 1
+                            and original_response["sql"] == final_response["sql"]
                         )
                     )
                     else False,
                     "question_asked_date": str(original_response["created_at"]),
-                    "num_responses": len(responses),
+                    "num_responses": len(sql_generations),
                 }
             )
     if len(rows) > 0:
