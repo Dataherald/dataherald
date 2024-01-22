@@ -8,15 +8,19 @@ if __name__ == "__main__":
     system = System(settings)
     system.start()
     storage = system.instance(DB)
+    # Rename field
+    storage.rename_field("database_connections", "uri", "connection_uri")
     fernet_encrypt = FernetEncrypt()
     database_connections = storage.find("database_connections", {"use_ssh": True})
     for database_connection in database_connections:
-        if "db_driver" not in database_connection["ssh_settings"]:
+        if "db_driver" not in database_connection[
+            "ssh_settings"
+        ] and database_connection.get("connection_uri") not in ["", None]:
             continue
 
         new_uri = f"{database_connection['ssh_settings']['db_driver']}://{database_connection['ssh_settings']['remote_db_name']}:{fernet_encrypt.decrypt(database_connection['ssh_settings']['remote_db_password'])}@{database_connection['ssh_settings']['remote_host']}/{database_connection['ssh_settings']['db_name']}"
 
-        database_connection["uri"] = fernet_encrypt.encrypt(new_uri)
+        database_connection["connection_uri"] = fernet_encrypt.encrypt(new_uri)
         database_connection["ssh_settings"] = {
             "host": database_connection["ssh_settings"]["host"],
             "username": database_connection["ssh_settings"]["username"],
