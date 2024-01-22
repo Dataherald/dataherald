@@ -9,10 +9,11 @@ from utils.encrypt import FernetEncrypt
 
 
 class S3:
-    def create_and_upload(self, content: str):
+    def create_and_upload(self, content: str, file_name: str | None = None):
         fernet_encrypt = FernetEncrypt()
         # The file extension is hardcoded
-        file_name = f"{str(uuid.uuid4())}.json"
+        if not file_name:
+            file_name = f"{str(uuid.uuid4())}.json"
         file_location = f"tmp/{file_name}"
         with open(file_location, "w") as file_object:
             file_object.write(fernet_encrypt.encrypt(content))

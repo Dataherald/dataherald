@@ -40,7 +40,7 @@ if __name__ == "__main__":
             "_id": db_connection_id,
             "alias": "snowflake_local_test",
             "use_ssh": False,
-            "uri": fernet_encrypt.encrypt(
+            "connection_uri": fernet_encrypt.encrypt(
                 "snowflake://Leo:Dat31642099.00@ksxgmup-qrb65970/v2_real_estate/public"
             ),
             "ssh_settings": None,

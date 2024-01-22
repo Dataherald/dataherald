@@ -63,6 +63,15 @@ class AuthSettings(BaseSettings):
         return getattr(self, key)
 
 
+class SSHSettings(BaseSettings):
+    load_dotenv()
+    private_key_password: str = os.environ.get("SSH_PRIVATE_KEY_PASSWORD")
+    path_to_credentials_file: str = os.environ.get("SSH_PATH_TO_CREDENTIAL_FILE")
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
+
+
 class SlackSettings(BaseSettings):
     load_dotenv()
 
@@ -89,3 +98,4 @@ auth_settings = AuthSettings()
 slack_settings = SlackSettings()
 aws_s3_settings = AWSS3Settings()
 analytic_settings = AnalyticSettings()
+ssh_settings = SSHSettings()

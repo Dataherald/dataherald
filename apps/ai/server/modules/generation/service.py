@@ -329,7 +329,7 @@ class GenerationService:
         sql_generation_id: str,
         max_rows: int,
         org_id: str,
-    ) -> tuple[str, dict]:
+    ) -> list[dict]:
         sql_generation = self.get_sql_generation_in_org(sql_generation_id, org_id)
         if sql_generation.status != SQLGenerationStatus.VALID:
             raise HTTPException(

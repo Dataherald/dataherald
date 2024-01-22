@@ -4,16 +4,9 @@ from pydantic import BaseModel, Extra
 
 
 class SSHSettings(BaseModel):
-    db_name: str | None
     host: str | None
     username: str | None
     password: str | None
-
-    remote_host: str | None
-    remote_db_name: str | None
-    remote_db_password: str | None
-    private_key_password: str | None
-    db_driver: str | None
 
 
 # TODO: find a better way to do this for all metadata
@@ -32,15 +25,20 @@ class BaseDBConnection(BaseModel):
     llm_api_key: str | None
     alias: str | None
     use_ssh: bool = False
-    connection_uri: str | None
+    connection_uri: str
     ssh_settings: SSHSettings | None
     metadata: DBConnectionMetadata | None
+
+
+class InternalSSHSettings(SSHSettings):
+    private_key_password: str | None
 
 
 class DBConnection(BaseDBConnection):
     id: str | None
     created_at: datetime | None
     path_to_credentials_file: str | None
+    ssh_settings: InternalSSHSettings | None
 
 
 class Driver(BaseModel):

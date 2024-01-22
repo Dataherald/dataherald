@@ -41,17 +41,12 @@ const mapDatabaseConnectionFormValues = (
     : {
         alias: formValues.alias,
         use_ssh: true,
+        connection_uri:
+          formatDriver(formValues.data_warehouse) + formValues.connection_uri,
         ssh_settings: {
-          db_driver: formValues.data_warehouse,
-          db_name: formValues.ssh_settings.db_name as string,
           host: formValues.ssh_settings.host as string,
           username: formValues.ssh_settings.username as string,
           password: formValues.ssh_settings.password as string,
-          remote_host: formValues.ssh_settings.remote_host as string,
-          remote_db_name: formValues.ssh_settings.remote_db_name as string,
-          remote_db_password: formValues.ssh_settings
-            .remote_db_password as string,
-          private_key_password: formValues.ssh_settings.private_key_password,
         },
       }
 
@@ -67,15 +62,9 @@ const DatabaseConnectionFormDialog: FC<{
       connection_uri: '',
       file: null,
       ssh_settings: {
-        db_driver: '',
-        db_name: '',
         host: '',
         username: '',
         password: '',
-        remote_host: '',
-        remote_db_name: '',
-        remote_db_password: '',
-        private_key_password: '',
       },
     },
   })

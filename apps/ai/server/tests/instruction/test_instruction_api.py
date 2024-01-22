@@ -27,7 +27,11 @@ client = TestClient(app)
 )
 @patch(
     "modules.db_connection.service.DBConnectionService.get_db_connection",
-    Mock(return_value=DBConnection(id="123")),
+    Mock(
+        return_value=DBConnection(
+            id="123", alias="test_alias", connection_uri="foo://bar/K2"
+        )
+    ),
 )
 class TestInstructionAPI(TestCase):
     url = "/instructions"

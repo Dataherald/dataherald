@@ -689,7 +689,7 @@ class AggrgationGenerationService:
         prompt: Prompt,
         sql_generation: SQLGeneration | None,
         nl_generation: NLGeneration | None,
-        sql_result: tuple[str, dict] | None = None,
+        sql_result: list[dict] | None = None,
     ) -> GenerationResponse:
         if not sql_generation:
             sql_generation = SQLGeneration(
@@ -706,9 +706,8 @@ class AggrgationGenerationService:
             )
 
         if sql_result:
-            rows = sql_result[1]["result"]
-            columns = list(rows[0].keys()) if len(rows) > 0 else []
-            sql_result = {"columns": columns, "rows": rows}
+            columns = list(sql_result[0].keys()) if len(sql_result) > 0 else []
+            sql_result = {"columns": columns, "rows": sql_result}
 
         return GenerationResponse(
             id=prompt.id,

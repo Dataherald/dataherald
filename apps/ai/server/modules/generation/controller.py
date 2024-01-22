@@ -191,7 +191,7 @@ async def execute_sql_generation(
     id: ObjectIdString,
     max_rows: int = 100,
     api_key: str = Security(get_api_key),
-) -> tuple[str, dict]:
+) -> list[dict]:
     return await generation_service.execute_sql_generation(
         id, max_rows, api_key.organization_id
     )

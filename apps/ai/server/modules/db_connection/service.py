@@ -3,7 +3,7 @@ import json
 import httpx
 from fastapi import HTTPException, UploadFile, status
 
-from config import settings
+from config import settings, ssh_settings
 from modules.db_connection.models.entities import (
     DBConnection,
     DBConnectionMetadata,
@@ -35,9 +35,9 @@ class DBConnectionService:
         self, db_connection_request: DBConnectionRequest, file: UploadFile | None
     ) -> str | None:
         s3 = S3()
-        if db_connection_request.credential_file_content:
+        if db_connection_request.bigquery_credential_file_content:
             return s3.create_and_upload(
-                json.dumps(db_connection_request.credential_file_content)
+                json.dumps(db_connection_request.bigquery_credential_file_content)
             )
         if file:
             return s3.upload(file)
@@ -61,6 +61,14 @@ class DBConnectionService:
         db_connection_internal_request.path_to_credentials_file = self.upload_file(
             db_connection_request, file
         )
+
+        if db_connection_request.use_ssh:
+            db_connection_internal_request.ssh_settings.private_key_password = (
+                ssh_settings.private_key_password
+            )
+            db_connection_internal_request.path_to_credentials_file = (
+                ssh_settings.path_to_credentials_file
+            )
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -97,6 +105,14 @@ class DBConnectionService:
         db_connection_internal_request.path_to_credentials_file = self.upload_file(
             db_connection_request, file
         )
+
+        if db_connection_request.use_ssh:
+            db_connection_internal_request.ssh_settings.private_key_password = (
+                ssh_settings.private_key_password
+            )
+            db_connection_internal_request.path_to_credentials_file = (
+                ssh_settings.path_to_credentials_file
+            )
 
         async with httpx.AsyncClient() as client:
             response = await client.put(
