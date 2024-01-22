@@ -86,7 +86,7 @@ class SQLDatabase(LangchainSQLDatabase):
                 engine = cls.from_uri_ssh(database_info)
                 DBConnections.add(database_info.id, engine)
                 return engine
-            db_uri = unquote(fernet_encrypt.decrypt(database_info.uri))
+            db_uri = unquote(fernet_encrypt.decrypt(database_info.connection_uri))
             if db_uri.lower().startswith("bigquery"):
                 file_path = database_info.path_to_credentials_file
                 if file_path.lower().startswith("s3"):
@@ -111,7 +111,7 @@ class SQLDatabase(LangchainSQLDatabase):
             file_path = s3.download(file_path)
 
         fernet_encrypt = FernetEncrypt()
-        db_uri = unquote(fernet_encrypt.decrypt(database_info.uri))
+        db_uri = unquote(fernet_encrypt.decrypt(database_info.connection_uri))
         db_uri_obj = urlparse(db_uri)
         ssh = database_info.ssh_settings
 
