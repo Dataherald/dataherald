@@ -73,7 +73,7 @@ class DatabaseConnection(BaseModel):
     id: str | None
     alias: str
     use_ssh: bool = False
-    uri: str | None
+    connection_uri: str | None
     path_to_credentials_file: str | None
     llm_api_key: str | None = None
     ssh_settings: SSHSettings | None = None
@@ -81,7 +81,7 @@ class DatabaseConnection(BaseModel):
     metadata: dict | None
     created_at: datetime = Field(default_factory=datetime.now)
 
-    @validator("uri", "llm_api_key", pre=True, always=True)
+    @validator("connection_uri", "llm_api_key", pre=True, always=True)
     def encrypt(cls, value: str):
         fernet_encrypt = FernetEncrypt()
         try:

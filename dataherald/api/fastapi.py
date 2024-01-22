@@ -171,7 +171,7 @@ class FastAPI(API):
         try:
             db_connection = DatabaseConnection(
                 alias=database_connection_request.alias,
-                uri=database_connection_request.connection_uri,
+                connection_uri=database_connection_request.connection_uri,
                 path_to_credentials_file=database_connection_request.path_to_credentials_file,
                 llm_api_key=database_connection_request.llm_api_key,
                 use_ssh=database_connection_request.use_ssh,
@@ -212,7 +212,7 @@ class FastAPI(API):
             db_connection = DatabaseConnection(
                 id=db_connection_id,
                 alias=database_connection_request.alias,
-                uri=database_connection_request.connection_uri,
+                connection_uri=database_connection_request.connection_uri,
                 path_to_credentials_file=database_connection_request.path_to_credentials_file,
                 llm_api_key=database_connection_request.llm_api_key,
                 use_ssh=database_connection_request.use_ssh,
