@@ -282,7 +282,7 @@ Once a database was scanned you can use this endpoint to retrieve the tables log
 
 ```
 curl -X 'GET' \
-  'http://localhost/api/v1/query-history?db_connection_id=656e52cb4d1fda50cae7b939' \
+  '<host>/api/v1/query-history?db_connection_id=656e52cb4d1fda50cae7b939' \
   -H 'accept: application/json'
 ```
 
@@ -426,7 +426,7 @@ You can create a prompt from the `POST /api/v1/prompts` endpoint. The `db_connec
 
 ```
 curl -X 'POST' \
-  'http://localhost/api/v1/prompts' \
+  '<host>/api/v1/prompts' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -441,7 +441,7 @@ Once you have created a prompt, you can generate SQL for it from the `POST /api/
 
 ```
 curl -X 'POST' \
-  'http://localhost/api/v1/prompts/65afd66de2c082ad29cde973/sql-generations' \
+  '<host>/api/v1/prompts/65afd66de2c082ad29cde973/sql-generations' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -455,7 +455,7 @@ After you have created a SQL generation, you can generate a natural language res
 
 ```
 curl -X 'POST' \
-  'http://localhost/api/v1/sql-generations/65afd674e2c082ad29cde974/nl-generations' \
+  '<host>/api/v1/sql-generations/65afd674e2c082ad29cde974/nl-generations' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -469,7 +469,7 @@ In order to improve the accuracy of the generated SQL, you can finetune GPT mode
 
 ```
 curl -X 'POST' \
-  'http://localhost/api/v1/finetunings' \
+  '<host>/api/v1/finetunings' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
