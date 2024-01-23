@@ -43,41 +43,41 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
 
   const handleSynchronization = async () => {
     setIsSynchronizing(true)
-    const queuingScanningDatabases: Databases = databases
-      .filter((db) => globalSelection[db.db_connection_id]?.size > 0) // filter out db with empty selection
-      .map((db) => {
-        return {
-          ...db,
-          tables: db.tables.map((t) => ({
-            ...t,
-            ...(globalSelection[db.db_connection_id].has(t.name)
-              ? {
-                  sync_status: ETableSyncStatus.QUEUING_FOR_SCAN,
-                  last_sync: null,
-                  columns: [],
-                }
-              : {}),
-          })),
-        }
-      })
+    const queuingScanningDatabases: Databases = databases.map((db) => {
+      return globalSelection[db.db_connection_id]?.size > 0 // filter out db with empty selection
+        ? {
+            ...db,
+            tables: db.tables.map((t) => ({
+              ...t,
+              ...(globalSelection[db.db_connection_id].has(t.name)
+                ? {
+                    sync_status: ETableSyncStatus.QUEUING_FOR_SCAN,
+                    last_sync: null,
+                    columns: [],
+                  }
+                : {}),
+            })),
+          }
+        : db
+    })
     onUpdateDatabasesData(queuingScanningDatabases)
-    const optimisticDatabasesUpdate: Databases = databases
-      .filter((db) => globalSelection[db.db_connection_id]?.size > 0) // filter out db with empty selection
-      .map((db) => {
-        return {
-          ...db,
-          tables: db.tables.map((t) => ({
-            ...t,
-            ...(globalSelection[db.db_connection_id].has(t.name)
-              ? {
-                  sync_status: ETableSyncStatus.SYNCHRONIZING,
-                  last_sync: new Date().toISOString(),
-                  columns: [],
-                }
-              : {}),
-          })),
-        }
-      })
+    const optimisticDatabasesUpdate: Databases = databases.map((db) => {
+      return globalSelection[db.db_connection_id]?.size > 0 // filter out db with empty selection
+        ? {
+            ...db,
+            tables: db.tables.map((t) => ({
+              ...t,
+              ...(globalSelection[db.db_connection_id].has(t.name)
+                ? {
+                    sync_status: ETableSyncStatus.SYNCHRONIZING,
+                    last_sync: new Date().toISOString(),
+                    columns: [],
+                  }
+                : {}),
+            })),
+          }
+        : db
+    })
     try {
       const scanRequestPayload: ScanRequest = Object.keys(globalSelection)
         .filter((dbId) => globalSelection[dbId]?.size > 0)
