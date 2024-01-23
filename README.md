@@ -311,18 +311,19 @@ curl -X 'GET' \
 ```
 
 #### Adding verified SQL
-Sample NL<>SQL pairs (golden SQL) can be stored in the context store and used for few-shot in context learning. In the default context store and NL 2 SQL engine, these samples are stored in a vector store and the closest samples are retrieved for few shot learning. You can add golden SQL to the context store from the `POST /api/v1/golden-records` endpoint
+Sample NL<>SQL pairs (golden SQL) can be stored in the context store and used for few-shot in context learning. In the default context store and NL 2 SQL engine, these samples are stored in a vector store and the closest samples are retrieved for few shot learning. You can add golden SQL to the context store from the `POST /api/v1/golden-sqls` endpoint
 
 ```
 curl -X 'POST' \
-  '<host>/api/v1/golden-records' \
+  '<host>/api/v1/golden-sqls' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '[
         {
-            "nl_question":"what was the most expensive zip code to rent in Los Angeles county in May 2022?", 
+            "prompt_text":"what was the most expensive zip code to rent in Los Angeles county in May 2022?", 
             "sql": "SELECT location_name, metric_value FROM table_name WHERE dh_county_name = '\''Los Angeles'\'' AND dh_state_name = '\''California'\''   AND period_start='\''2022-05-01'\'' AND geo_type='\''zip'\'' ORDER BY metric_value DESC LIMIT 1;", 
-            "db":"db_name"
+            "db_connection_id":"db_id",
+            "metadata": {}
         }
   ]'
 ```
@@ -418,33 +419,70 @@ curl -X 'PUT' \
 
 
 ### Querying the Database in Natural Language
-Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse using the `POST /api/v1/questions` endpoint.
+Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse by creating prompts. Prompts are natural language questions that are passed to the engine to create SQL generations. Each of the SQL generation can then be converted to a natural language responses using the NL generation endpoints.
+
+#### Creating a prompt
+You can create a prompt from the `POST /api/v1/prompts` endpoint. The `db_connection_id` is required and the `metadata` field is optional. The `metadata` field can be used to pass additional information to the engine.
 
 ```
 curl -X 'POST' \
-  '<host>/api/v1/questions' \
+  'http://localhost/api/v1/prompts' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-        "question": "Your question in natural language",
-        "db_connection_id": "db_connection_id"
-    }'
+  "text": "What is the average rent price in Los Angelese?",
+  "db_connection_id": "6595907efef5f74dd0069519",
+  "metadata": {}
+}'
 ```
 
-### Create new response based on a previously created question
-After utilizing the `questions` endpoint, you have the option to generate a new response associated with a specific question_id. 
-You can modify the `sql_query` to produce an alternative `sql_query_result` and a distinct response. In the event that you do not 
-specify a `sql_query`, the system will reprocess the question to generate the `sql_query`, execute the `sql_query_result`, and subsequently 
-generate the response.
+#### Creating SQL generation for a prompt
+Once you have created a prompt, you can generate SQL for it from the `POST /api/v1/prompts/{prompt_id}/sql-generations` endpoint. The `evaluate` field is optional and can be used to evaluate the correctness of the generated SQL using LLMs. `finetuning_id` is another optional paramter that can be used to specify the finetuning model to use for the generation. If not specified, the default agent without using any finetuned model will be used.
 
 ```
 curl -X 'POST' \
-  '<host>/api/v1/responses?run_evaluator=true&sql_response_only=false&generate_csv=false' \
+  'http://localhost/api/v1/prompts/65afd66de2c082ad29cde973/sql-generations' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "question_id": "11fa1e419fe93d137536fe99",
-  "sql_query": "select * from sales order by created_at DESC limit 10"
+  "evaluate": false,
+  "metadata": {}
+}'
+```
+
+#### Creating a Natural Language response for a SQL generation
+After you have created a SQL generation, you can generate a natural language response for it from the `POST /api/v1/sql-generations/{sql_generation_id}/nl-generations` endpoint. The `max_rows` field is optional and can be used to specify the maximum number of rows to use for the NL response. 
+
+```
+curl -X 'POST' \
+  'http://localhost/api/v1/sql-generations/65afd674e2c082ad29cde974/nl-generations' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "max_rows": 100,
+  "metadata": {}
+}'
+```
+
+### Finetuning GPT models on your golden SQLs
+In order to improve the accuracy of the generated SQL, you can finetune GPT models on your golden SQLs. You can create a finetuning from the `POST /api/v1/finetunings` endpoint. The `db_connection_id` field is required. The `alias` field is optional and can be used to give a name to the finetuning. The `base_llm` field is optional and can be used to specify the base LLM to use for the finetuning. Right now only OpenAI LLMs are supported. 
+
+```
+curl -X 'POST' \
+  'http://localhost/api/v1/finetunings' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "db_connection_id": "6595907efef5f74dd0069519",
+  "alias": "test_model",
+  "base_llm": {
+    "model_provider": "openai",
+    "model_name": "gpt-3.5-turbo-1106",
+    "model_parameters": {
+      "n_epochs": 3
+    }
+  },
+  "metadata": {}
 }'
 ```
 
