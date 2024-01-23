@@ -140,6 +140,7 @@ class OpenAIFineTuning(FinetuningModel):
         finetuning_dataset_path = f"tmp/{str(uuid.uuid4())}.jsonl"
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.find_by_id(self.fine_tuning_model.id)
+        total_number_of_tokens = 0
         for golden_sql_id in self.fine_tuning_model.golden_sqls:
             golden_sql = golden_sqls_repository.find_by_id(golden_sql_id)
             question = golden_sql.prompt_text
@@ -156,6 +157,7 @@ class OpenAIFineTuning(FinetuningModel):
                     ]
                 }
                 number_of_tokens = self.count_tokens(messages)
+                total_number_of_tokens += number_of_tokens
                 if (
                     number_of_tokens
                     > OPENAI_CONTEXT_WIDNOW_SIZES[
@@ -169,6 +171,7 @@ class OpenAIFineTuning(FinetuningModel):
                     return
                 json.dump(messages, outfile)
                 outfile.write("\n")
+        logger.info(f"Toral number of tokens: {total_number_of_tokens}")
         model.finetuning_file_id = self.client.files.create(
             file=open(finetuning_dataset_path, "rb"), purpose="fine-tune"
         ).id
