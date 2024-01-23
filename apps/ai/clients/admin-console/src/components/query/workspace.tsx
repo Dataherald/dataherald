@@ -70,6 +70,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     prompt_text,
     created_at,
     nl_generation_text, // TODO delete this
+    db_connection_alias,
     sql,
     sql_result = null,
     sql_generation_error,
@@ -258,7 +259,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
         <div id="header" className="flex items-end justify-between gap-3 px-6">
           <QueryQuestion
             className="max-w-2xl"
-            {...{ created_by, prompt_text, questionDate }}
+            {...{ created_by, prompt_text, questionDate, db_connection_alias }}
           />
           <QueryMetadata
             {...{

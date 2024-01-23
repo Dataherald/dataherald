@@ -1,9 +1,10 @@
-import { capitalize } from '@/lib/utils'
+import { capitalizeFirstLetter } from '@/lib/utils'
 import { ETableSyncStatus, TableSyncStatus } from '@/models/api'
 import { ColorClasses, ResourceColors } from '@/models/domain'
 import {
   Check,
   CircleSlash,
+  Loader,
   LucideIcon,
   RefreshCcw,
   ShieldAlert,
@@ -13,7 +14,7 @@ import {
 export const DOMAIN_TABLE_SYNC_STATUS_COLORS: ResourceColors<TableSyncStatus> =
   {
     [ETableSyncStatus.NOT_SCANNED]: {
-      text: 'text-gray-500',
+      text: 'text-slate-500',
     },
     [ETableSyncStatus.SYNCHRONIZING]: {
       text: 'text-yellow-600',
@@ -26,6 +27,9 @@ export const DOMAIN_TABLE_SYNC_STATUS_COLORS: ResourceColors<TableSyncStatus> =
     },
     [ETableSyncStatus.FAILED]: {
       text: 'text-red-600',
+    },
+    [ETableSyncStatus.QUEUING_FOR_SCAN]: {
+      text: 'text-slate-700',
     },
   }
 
@@ -58,13 +62,16 @@ export const getDomainTableSyncStatusIcon = (
       return ShieldAlert
     case ETableSyncStatus.FAILED:
       return XCircle
+    case ETableSyncStatus.QUEUING_FOR_SCAN:
+      return Loader
     default:
       return null
   }
 }
 
 export const formatTableSyncStatus = (sync_status: TableSyncStatus): string => {
-  return capitalize(sync_status?.replace('_', ' ').toLowerCase())
+  const text = sync_status === 'SYNCHRONIZING' ? 'scanning' : sync_status
+  return capitalizeFirstLetter(text.replace(/_/g, ' ').toLowerCase())
 }
 
 export const isDatabaseResource = (type?: string): boolean =>

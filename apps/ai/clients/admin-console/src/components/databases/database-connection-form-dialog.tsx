@@ -21,7 +21,6 @@ import { toast } from '@/components/ui/use-toast'
 import { useAppContext } from '@/contexts/app-context'
 import usePostDatabaseConnection from '@/hooks/api/usePostDatabaseConnection'
 import { formatDriver } from '@/lib/domain/database'
-import { cn } from '@/lib/utils'
 import { DatabaseConnection } from '@/models/api'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { AlertCircle, CheckCircle, Loader, UploadCloud } from 'lucide-react'
@@ -110,8 +109,6 @@ const DatabaseConnectionFormDialog: FC<{
     }
   }
 
-  const isSshFormDisplayed = form.watch('use_ssh')
-
   return (
     <>
       <Dialog onOpenChange={handleDialogOpenChange}>
@@ -122,10 +119,7 @@ const DatabaseConnectionFormDialog: FC<{
           </Button>
         </DialogTrigger>
         <DialogContent
-          className={cn(
-            isSshFormDisplayed ? 'h-[90vh]' : 'h-[70vh]',
-            'max-w-[70vw] lg:max-w-[700px] flex flex-col',
-          )}
+          className="max-w-[70vw] lg:max-w-[700px] h-[75vh] flex flex-col"
           onInteractOutside={(e) => e.preventDefault()}
         >
           {databaseConnected ? (

@@ -2,7 +2,7 @@ import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
 import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { Databases } from '@/models/api'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 
 interface DatabasesResponse {
@@ -10,6 +10,7 @@ interface DatabasesResponse {
   isLoading: boolean
   error: unknown
   mutate: (optimisticData?: Databases) => Promise<Databases | void>
+  updateDatabases: (data: Databases) => void
 }
 
 const useDatabases = (): DatabasesResponse => {
@@ -17,7 +18,7 @@ const useDatabases = (): DatabasesResponse => {
   const { token } = useAuth()
   const { apiFetcher } = useApiFetcher()
   const {
-    data,
+    data: serverData,
     isLoading,
     error,
     mutate: swrMutate,
@@ -26,26 +27,31 @@ const useDatabases = (): DatabasesResponse => {
     revalidateOnFocus: false,
   })
 
-  const [isValidating, setIsValidating] = useState(false)
+  const [data, setData] = useState<Databases | undefined>(serverData)
 
   const optimisticMutate = async (optimisticDatabases?: Databases) =>
     new Promise<Databases | void>((resolve, reject) => {
-      setIsValidating(true)
       return swrMutate(apiFetcher<Databases>(endpointUrl), {
-        optimisticData: optimisticDatabases || data,
+        optimisticData: optimisticDatabases || serverData,
         revalidate: false,
         rollbackOnError: true,
       })
         .then(resolve)
         .catch(reject)
-        .finally(() => setIsValidating(false))
     })
+
+  const updateDatabases = (databases: Databases) => {
+    setData(databases)
+  }
+
+  useEffect(() => setData(serverData), [serverData])
 
   return {
     databases: data,
-    isLoading: isLoading || isValidating || (!data && !error),
+    isLoading: isLoading || (!data && !error),
     error,
     mutate: optimisticMutate,
+    updateDatabases,
   }
 }
 

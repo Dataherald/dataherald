@@ -6,7 +6,7 @@ from fastapi.security import HTTPBearer
 from modules.generation.models.entities import GenerationStatus
 from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.models.responses import (
-    AdminConsoleGoldenSqlResponse,
+    ACGoldenSQLResponse,
     GoldenSQLResponse,
 )
 from modules.golden_sql.service import GoldenSQLService
@@ -75,7 +75,7 @@ async def ac_get_golden_sqls(
     order: str = "created_at",
     ascend: bool = False,
     token: str = Depends(token_auth_scheme),
-) -> list[AdminConsoleGoldenSqlResponse]:
+) -> list[ACGoldenSQLResponse]:
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return golden_sql_service.get_golden_sqls(
         page=page, page_size=page_size, order=order, ascend=ascend, org_id=org_id
@@ -85,7 +85,7 @@ async def ac_get_golden_sqls(
 @ac_router.get("/{id}")
 async def ac_get_golden_sql(
     id: ObjectIdString, token: str = Depends(token_auth_scheme)
-) -> AdminConsoleGoldenSqlResponse:
+) -> ACGoldenSQLResponse:
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return golden_sql_service.get_golden_sql(id, org_id)
 
@@ -93,7 +93,7 @@ async def ac_get_golden_sql(
 @ac_router.post("", status_code=status.HTTP_201_CREATED)
 async def ac_add_user_upload_golden_sql(
     golden_sql_requests: List[GoldenSQLRequest], token: str = Depends(token_auth_scheme)
-) -> List[AdminConsoleGoldenSqlResponse]:
+) -> List[ACGoldenSQLResponse]:
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return await golden_sql_service.add_user_upload_golden_sql(
         golden_sql_requests, org_id

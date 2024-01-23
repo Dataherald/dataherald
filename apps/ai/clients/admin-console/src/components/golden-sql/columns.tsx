@@ -33,6 +33,12 @@ export const getColumns: (actions: {
     accessorKey: 'metadata.dh_internal.display_id',
   },
   {
+    id: 'db_connection_alias',
+    header: 'Database',
+    headerFilterDisplay: 'Database',
+    accessorKey: 'db_connection_alias',
+  },
+  {
     id: 'prompt_text',
     header: 'Question',
     headerFilterDisplay: 'Question',

@@ -33,3 +33,7 @@ class GoldenSQL(BaseGoldenSQL):
     id: str
     created_at: datetime | None
     metadata: GoldenSQLMetadata | None
+
+
+class AggrGoldenSQL(GoldenSQL):
+    db_connection_alias: str | None

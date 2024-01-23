@@ -13,6 +13,11 @@ export const finetunningsColumns: ColumnDef<FineTuningModel>[] = [
     },
   },
   {
+    id: 'db_connection_alias',
+    header: 'Database',
+    accessorKey: 'db_connection_alias',
+  },
+  {
     id: 'created_at',
     header: () => <div className="min-w-[5rem]">Created at</div>,
     accessorKey: 'created_at',

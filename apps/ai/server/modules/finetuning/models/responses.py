@@ -1,4 +1,4 @@
-from modules.finetuning.models.entities import Finetuning
+from modules.finetuning.models.entities import AggrFinetuning, Finetuning
 
 
 class FinetuningResponse(Finetuning):
@@ -7,3 +7,7 @@ class FinetuningResponse(Finetuning):
         if "metadata" in dic and dic["metadata"] and "dh_internal" in dic["metadata"]:
             del dic["metadata"]["dh_internal"]
         return dic
+
+
+class ACFinetuningResponse(AggrFinetuning):
+    pass

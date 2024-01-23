@@ -1,4 +1,4 @@
-from modules.instruction.models.entities import Instruction
+from modules.instruction.models.entities import AggrInstruction, Instruction
 
 
 class InstructionResponse(Instruction):
@@ -7,3 +7,7 @@ class InstructionResponse(Instruction):
         if "metadata" in dic and dic["metadata"] and "dh_internal" in dic["metadata"]:
             del dic["metadata"]["dh_internal"]
         return dic
+
+
+class ACInstructionResponse(AggrInstruction):
+    pass

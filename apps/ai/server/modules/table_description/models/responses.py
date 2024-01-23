@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 
-from modules.table_description.models.entities import SchemaStatus, TableDescription
+from modules.table_description.models.entities import (
+    AggrTableDescription,
+    SchemaStatus,
+    TableDescription,
+)
 
 
 class TableDescriptionResponse(TableDescription):
@@ -9,6 +13,10 @@ class TableDescriptionResponse(TableDescription):
         if "metadata" in dic and dic["metadata"] and "dh_internal" in dic["metadata"]:
             del dic["metadata"]["dh_internal"]
         return dic
+
+
+class ACTableDescriptionResponse(AggrTableDescription):
+    pass
 
 
 class BasicTableDescriptionResponse(BaseModel):
@@ -20,6 +28,6 @@ class BasicTableDescriptionResponse(BaseModel):
 
 
 class DatabaseDescriptionResponse(BaseModel):
-    alias: str
+    db_connection_id: str
+    db_connection_alias: str | None
     tables: list[BasicTableDescriptionResponse]
-    db_connection_id: str | None

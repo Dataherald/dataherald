@@ -24,6 +24,7 @@ class GenerationListResponse(BaseModel):
     id: str
     created_by: str
     prompt_text: str
+    db_connection_alias: str | None
     nl_generation_text: str | None
     sql: str | None
     status: GenerationStatus | None

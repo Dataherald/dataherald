@@ -25,7 +25,14 @@ export const renderIcon = (
   },
 ) => {
   if (IconComponent) {
-    return <IconComponent {...config} />
+    return (
+      <IconComponent
+        {...config}
+        className={
+          IconComponent?.displayName === 'Loader' ? 'animate-spin' : ''
+        }
+      />
+    )
   }
   return null
 }
@@ -34,6 +41,16 @@ export const capitalize = (value: string) =>
   value
     .split(' ')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+
+export const capitalizeFirstLetter = (value: string) =>
+  value
+    .split(' ')
+    .map((word, index) =>
+      index === 0
+        ? word.charAt(0).toUpperCase() + word.slice(1)
+        : word.toLowerCase(),
+    )
     .join(' ')
 
 export const formatStatus = (status?: string): string =>

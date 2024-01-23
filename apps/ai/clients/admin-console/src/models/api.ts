@@ -26,13 +26,17 @@ export interface SlackInstallation {
   bot: SlackBot | null
 }
 
+export interface SlackConfig {
+  slack_installation: SlackInstallation
+  db_connection_id: string
+}
+
 export interface Organization {
   id: string
   name: string
   confidence_threshold: number
-  db_connection_id?: string
   llm_api_key?: string
-  slack_installation?: SlackInstallation
+  slack_config?: SlackConfig
 }
 
 export type Organizations = Organization[]
@@ -77,6 +81,8 @@ export interface QueryListItem {
   confidence_score: number
   display_id: string
   created_at: string
+  db_connection_id: string
+  db_connection_alias: string
 }
 
 export type QueryList = QueryListItem[]
@@ -92,6 +98,7 @@ export interface Query {
   // prompt
   id: string
   db_connection_id: string
+  db_connection_alias: string
   prompt_text: string
   created_by: string
   updated_by: string
@@ -137,6 +144,7 @@ export type GoldenSqlMetadata = {
 export interface GoldenSqlListItem {
   id: string
   db_connection_id: string
+  db_connection_alias: string
   prompt_text: string
   sql: string
   created_at: string
@@ -151,6 +159,7 @@ export enum ETableSyncStatus {
   SCANNED = 'SCANNED',
   DEPRECATED = 'DEPRECATED',
   FAILED = 'FAILED',
+  QUEUING_FOR_SCAN = 'QUEUING_FOR_SCAN', // front-end only
 }
 
 export type TableSyncStatus = keyof typeof ETableSyncStatus
@@ -181,7 +190,7 @@ export type ColumnDescription = {
 
 export interface Database {
   db_connection_id: string
-  alias: string
+  db_connection_alias: string
   tables: {
     id: string
     name: string
@@ -200,11 +209,14 @@ export interface SshSettings {
 }
 
 export interface DatabaseConnection {
+  id?: string
   alias: string
   use_ssh: boolean
   connection_uri: string
   ssh_settings?: SshSettings
 }
+
+export type DatabaseConnections = DatabaseConnection[]
 
 export enum EFineTuningStatus {
   QUEUED = 'queued',
@@ -237,6 +249,7 @@ export interface FineTuningModel {
   status: FineTuningStatus
   alias?: string
   db_connection_id?: string
+  db_connection_alias?: string
   error?: string
   base_llm?: BaseLLM
   finetuning_file_id?: string

@@ -12,7 +12,7 @@ export const columns: CustomColumnDef<QueryListItem>[] = [
   {
     id: 'id',
     header: ({ column }) => (
-      <div className="min-w-[70px]">
+      <div className="min-w-[90px]">
         <SortHeader text="Query ID" column={column} />
       </div>
     ),
@@ -20,15 +20,10 @@ export const columns: CustomColumnDef<QueryListItem>[] = [
     accessorKey: 'display_id',
   },
   {
-    id: 'created_by',
-    header: 'User',
-    headerFilterDisplay: 'User',
-    accessorKey: 'created_by',
-    cell: ({ row }) => (
-      <div className="truncate max-w-[10rem] 2xl:max-w-none">
-        {row.getValue('created_by')}
-      </div>
-    ),
+    id: 'db_connection_alias',
+    header: 'Database',
+    headerFilterDisplay: 'Database',
+    accessorKey: 'db_connection_alias',
   },
   {
     id: 'prompt_text',
@@ -63,6 +58,17 @@ export const columns: CustomColumnDef<QueryListItem>[] = [
     accessorKey: 'created_at',
     cell: ({ row }) =>
       format(new Date(row.getValue('time')), 'yyyy-MM-dd hh:mm a'),
+  },
+  {
+    id: 'created_by',
+    header: 'User',
+    headerFilterDisplay: 'User',
+    accessorKey: 'created_by',
+    cell: ({ row }) => (
+      <div className="truncate max-w-[10rem] 2xl:max-w-none">
+        {row.getValue('created_by')}
+      </div>
+    ),
   },
   {
     id: 'status',

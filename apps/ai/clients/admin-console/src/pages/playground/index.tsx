@@ -14,15 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
-import { useAppContext } from '@/contexts/app-context'
 import useFinetunings from '@/hooks/api/fine-tuning/useFinetunings'
 import useQuerySubmit from '@/hooks/api/query/useQuerySubmit'
-import useDatabaseConnection from '@/hooks/api/useDatabaseConnection'
+import useDatabaseConnections from '@/hooks/api/useDatabaseConnections'
 import {
   formatQueryConfidence,
   getDomainStatusColors,
@@ -54,19 +52,41 @@ const PlaygroundPage: FC = () => {
   const [currentQueryPrompt, setCurrentQueryPrompt] = useState<string>('')
   const [queryError, setQueryError] = useState<string>()
 
-  const { organization } = useAppContext()
-  const { databaseConnection, isLoading: databaseIsLoading } =
-    useDatabaseConnection(organization?.db_connection_id)
+  const { dbConnections, isLoading: loadingDatabases } =
+    useDatabaseConnections()
 
-  // Active DB
-  const noDatabaseConnection = organization && !organization.db_connection_id
-  const activeDatabase = noDatabaseConnection ? (
-    'None'
-  ) : databaseIsLoading || !databaseConnection ? (
-    <Skeleton className="w-100 h-10" />
-  ) : (
-    databaseConnection?.alias
-  )
+  // Database connections
+  const [selectedDbConnectionId, setSelectedDbConnectionId] =
+    useState<string>('')
+  const [dbConnectionOptions, setDbConnectionOptions] = useState<
+    {
+      label: string
+      value: string
+    }[]
+  >()
+
+  useEffect(() => {
+    if (!dbConnections) return
+    if (dbConnections.length > 0) {
+      setDbConnectionOptions(
+        dbConnections.map(({ id, alias }) => ({
+          label: (alias || id) as string,
+          value: id as string,
+        })),
+      )
+    }
+  }, [dbConnections])
+
+  useEffect(() => {
+    if (!dbConnectionOptions) return
+    if (dbConnectionOptions.length > 0) {
+      setSelectedDbConnectionId(dbConnectionOptions[0].value) // default is first one
+    }
+  }, [dbConnectionOptions])
+
+  const handleDatabaseSelect = (databaseId: string) => {
+    setSelectedDbConnectionId(databaseId)
+  }
 
   // Finetuining models
   const [selectedModelId, setSelectedModelId] = useState<string | undefined>()
@@ -100,8 +120,8 @@ const PlaygroundPage: FC = () => {
     }
   }, [finetuningModels])
 
-  const handleModelSelect = (value: string) => {
-    setSelectedModelId(value)
+  const handleModelSelect = (modelId: string) => {
+    setSelectedModelId(modelId)
   }
 
   const { submitQuery, cancelSubmitQuery } = useQuerySubmit()
@@ -112,7 +132,11 @@ const PlaygroundPage: FC = () => {
     setPreviousQueryPrompt(currentQueryPrompt)
     setCurrentQueryPrompt(prompt)
     try {
-      const query = await submitQuery(prompt, selectedModelId || undefined)
+      const query = await submitQuery(
+        prompt,
+        selectedDbConnectionId,
+        selectedModelId || undefined,
+      )
       setQuery(mapQuery(query))
       toast({
         title: 'Generation completed',
@@ -155,11 +179,13 @@ const PlaygroundPage: FC = () => {
 
   let pageContent = <></>
 
-  if (noDatabaseConnection) {
+  if (!loadingDatabases && !dbConnectionOptions?.length) {
     pageContent = (
       <div className="grow text-slate-500 flex flex-col items-center justify-center gap-3">
         <DatabaseZap size={50} strokeWidth={1} />
-        <span>Set up your database connection before using the Playground</span>
+        <span>
+          Set up your first database connection before using the Playground
+        </span>
         <Link href="/databases" className="link">
           <Button variant="link">Go to Databases</Button>
         </Link>
@@ -254,15 +280,44 @@ const PlaygroundPage: FC = () => {
             <div className="px-2 flex items-center justify-between gap-3">
               <div className="w-3/4 grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2">
-                  <strong className="w-fit">Active database:</strong>
-                  <span className="text-slate-500 grow">{activeDatabase}</span>
+                  <strong className="w-fit">Database:</strong>
+                  <Select
+                    value={selectedDbConnectionId}
+                    onValueChange={handleDatabaseSelect}
+                    disabled={
+                      loadingDatabases ||
+                      !dbConnectionOptions?.length ||
+                      submittingQuery
+                    }
+                  >
+                    <SelectTrigger aria-label="Database" className="bg-white">
+                      <SelectValue
+                        placeholder={
+                          loadingDatabases ? 'Loading...' : 'Select a Database'
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {dbConnectionOptions?.map(({ label, value }) => (
+                          <SelectItem key={label} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-center gap-2">
                   <strong>Model:</strong>
                   <Select
                     value={selectedModelId}
                     onValueChange={handleModelSelect}
-                    disabled={submittingQuery}
+                    disabled={
+                      loadingDatabases ||
+                      !dbConnectionOptions?.length ||
+                      submittingQuery
+                    }
                   >
                     <SelectTrigger aria-label="Model" className="bg-white">
                       <SelectValue placeholder="Select model" />
@@ -282,7 +337,12 @@ const PlaygroundPage: FC = () => {
               <Button
                 className="px-3 py-1 w-fit h-fit font-normal"
                 variant="ghost"
-                disabled={noDatabaseConnection || !query || submittingQuery}
+                disabled={
+                  loadingDatabases ||
+                  !dbConnectionOptions?.length ||
+                  submittingQuery ||
+                  !query
+                }
                 size="sm"
                 onClick={handleClear}
               >
@@ -293,7 +353,11 @@ const PlaygroundPage: FC = () => {
               <Textarea
                 className="border-none text-md resize-none shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent"
                 placeholder="Enter your natural language prompt..."
-                disabled={noDatabaseConnection || submittingQuery}
+                disabled={
+                  loadingDatabases ||
+                  !dbConnectionOptions?.length ||
+                  submittingQuery
+                }
                 rows={2}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -313,7 +377,9 @@ const PlaygroundPage: FC = () => {
                   className="px-3 py-1 h-fit"
                   variant="primary"
                   onClick={handleSubmitQuery}
-                  disabled={noDatabaseConnection || submittingQuery || !prompt}
+                  disabled={
+                    !dbConnectionOptions?.length || submittingQuery || !prompt
+                  }
                 >
                   {submittingQuery ? (
                     <Loader size={18} className="mr-2 animate-spin" />

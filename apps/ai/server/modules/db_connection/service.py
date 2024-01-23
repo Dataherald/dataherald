@@ -12,7 +12,6 @@ from modules.db_connection.models.entities import (
 from modules.db_connection.models.requests import DBConnectionRequest
 from modules.db_connection.models.responses import DBConnectionResponse
 from modules.db_connection.repository import DBConnectionRepository
-from modules.organization.service import OrganizationService
 from utils.exception import raise_for_status
 from utils.misc import reserved_key_in_metadata
 from utils.s3 import S3
@@ -21,10 +20,9 @@ from utils.s3 import S3
 class DBConnectionService:
     def __init__(self):
         self.repo = DBConnectionRepository()
-        self.org_service = OrganizationService()
 
     def get_db_connections(self, org_id: str) -> list[DBConnectionResponse]:
-        return self.repo.get_db_connections(org_id)
+        return sorted(self.repo.get_db_connections(org_id), key=lambda x: x.alias)
 
     def get_db_connection(
         self, db_connection_id: str, org_id: str
@@ -78,10 +76,6 @@ class DBConnectionService:
             )
 
             raise_for_status(response.status_code, response.text)
-
-            response_json = response.json()
-
-            self.org_service.update_db_connection_id(org_id, response_json["id"])
 
             return DBConnectionResponse(**response.json())
 

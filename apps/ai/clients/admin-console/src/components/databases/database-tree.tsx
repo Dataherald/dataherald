@@ -14,7 +14,7 @@ import { FC, useMemo } from 'react'
 const mapDatabaseToTreeData = (database: Database): TreeNode => ({
   id: database.db_connection_id,
   type: 'database',
-  name: database.alias,
+  name: database.db_connection_alias,
   icon: DatabaseIcon,
   clickable: true,
   selectable: database.tables.some((table) => isSyncEnabled(table.sync_status)),

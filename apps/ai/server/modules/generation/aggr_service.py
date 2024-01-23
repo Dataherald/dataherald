@@ -81,7 +81,7 @@ class AggrgationGenerationService:
             sql_generation=PromptSQLGenerationRequest(
                 prompt=PromptRequest(
                     text=question_string,
-                    db_connection_id=organization.db_connection_id,
+                    db_connection_id=organization.slack_config.db_connection_id,
                     metadata=PromptMetadata(
                         dh_internal=DHPromptMetadata(
                             generation_status=GenerationStatus.INITIALIZED,
@@ -143,7 +143,7 @@ class AggrgationGenerationService:
                     "organization_id": organization.id,
                     "organization_name": organization.name,
                     "database_name": self.db_connection_service.get_db_connection(
-                        organization.db_connection_id, organization.id
+                        organization.slack_config.db_connection_id, organization.id
                     ).alias,
                     "confidence_score": sql_generation.confidence_score,
                     "status": sql_generation.status,
@@ -171,7 +171,7 @@ class AggrgationGenerationService:
                         "organization_id": organization.id,
                         "organization_name": organization.name,
                         "database_name": self.db_connection_service.get_db_connection(
-                            organization.db_connection_id, organization.id
+                            organization.slack_config.db_connection_id, organization.id
                         ).alias,
                         "confidence_score": sql_generation.confidence_score,
                         "status": sql_generation.status,
@@ -211,7 +211,7 @@ class AggrgationGenerationService:
         generation_request = PromptSQLGenerationRequest(
             prompt=PromptRequest(
                 text=request.prompt,
-                db_connection_id=organization.db_connection_id,
+                db_connection_id=request.db_connection_id,
                 metadata=PromptMetadata(
                     dh_internal=DHPromptMetadata(
                         generation_status=GenerationStatus.INITIALIZED,
@@ -297,6 +297,10 @@ class AggrgationGenerationService:
             ascend=ascend,
             org_id=org_id,
         )
+        db_connection_dict = {
+            db_connection.id: db_connection
+            for db_connection in self.db_connection_service.get_db_connections(org_id)
+        }
 
         generation_list = []
 
@@ -311,6 +315,11 @@ class AggrgationGenerationService:
                 GenerationListResponse(
                     id=prompt.id,
                     prompt_text=prompt.text,
+                    db_connection_alias=db_connection_dict[
+                        prompt.db_connection_id
+                    ].alias
+                    if prompt.db_connection_id in db_connection_dict
+                    else None,
                     nl_generation_text=nl_generation.text if nl_generation else None,
                     sql=sql_generation.sql if sql_generation else None,
                     confidence_score=sql_generation.confidence_score
@@ -547,7 +556,6 @@ class AggrgationGenerationService:
                 json=generation_request.dict(exclude_unset=True),
                 timeout=settings.default_engine_timeout,
             )
-            print(response.json())
             self._raise_for_generation_status(response, prompt=prompt)
             sql_generation = SQLGeneration(**response.json())
 
@@ -691,6 +699,9 @@ class AggrgationGenerationService:
         nl_generation: NLGeneration | None,
         sql_result: list[dict] | None = None,
     ) -> GenerationResponse:
+        db_connection = self.db_connection_service.get_db_connection_in_org(
+            prompt.db_connection_id, prompt.metadata.dh_internal.organization_id
+        )
         if not sql_generation:
             sql_generation = SQLGeneration(
                 id=None,
@@ -711,7 +722,8 @@ class AggrgationGenerationService:
 
         return GenerationResponse(
             id=prompt.id,
-            db_connection_id=prompt.db_connection_id,
+            db_connection_id=db_connection.id,
+            db_connection_alias=db_connection.alias,
             status=prompt.metadata.dh_internal.generation_status,
             prompt_text=prompt.text,
             nl_generation_text=nl_generation.text,

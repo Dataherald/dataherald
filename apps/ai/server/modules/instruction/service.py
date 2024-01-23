@@ -9,9 +9,8 @@ from modules.instruction.models.entities import (
     InstructionMetadata,
 )
 from modules.instruction.models.requests import InstructionRequest
-from modules.instruction.models.responses import InstructionResponse
+from modules.instruction.models.responses import AggrInstruction
 from modules.instruction.repository import InstructionRepository
-from modules.organization.service import OrganizationService
 from utils.exception import raise_for_status
 from utils.misc import reserved_key_in_metadata
 
@@ -19,45 +18,59 @@ from utils.misc import reserved_key_in_metadata
 class InstructionService:
     def __init__(self):
         self.repo = InstructionRepository()
-        self.org_service = OrganizationService()
         self.db_connection_service = DBConnectionService()
 
     def get_instructions(
-        self, db_connection_id: str, org_id: str
-    ) -> list[InstructionResponse]:
-        db_connection = self.db_connection_service.get_db_connection(
-            db_connection_id, org_id
+        self, org_id: str, db_connection_id: str = None
+    ) -> list[AggrInstruction]:
+        instructions = []
+        if db_connection_id:
+            db_connections = [
+                self.db_connection_service.get_db_connection(db_connection_id, org_id)
+            ]
+        else:
+            db_connections = self.db_connection_service.get_db_connections(org_id)
+
+        for db_connection in db_connections:
+            instructions += [
+                AggrInstruction(
+                    **instruction.dict(), db_connection_alias=db_connection.alias
+                )
+                for instruction in self.repo.get_instructions(db_connection.id, org_id)
+            ]
+        return instructions
+
+    def get_instruction(self, instruction_id: str, org_id: str) -> AggrInstruction:
+        instruction = self.get_instruction_in_org(instruction_id, org_id)
+        return AggrInstruction(
+            **instruction.dict(),
+            db_connection_alias=self.db_connection_service.get_db_connection_in_org(
+                instruction.db_connection_id, org_id
+            ).alias,
         )
 
-        if not db_connection:
-            return []
-
-        return self.repo.get_instructions(db_connection_id, org_id)
-
-    def get_instruction(self, instruction_id: str, org_id: str) -> InstructionResponse:
-        return self.get_instruction_in_org(instruction_id, org_id)
-
-    def get_first_instruction(self, org_id: str) -> InstructionResponse:
-        organization = self.org_service.get_organization(org_id)
-        instructions = self.repo.get_instructions(organization.db_connection_id, org_id)
+    def get_first_instruction(
+        self, db_connection_id: str, org_id: str
+    ) -> AggrInstruction:
+        db_connection = self.db_connection_service.get_db_connection_in_org(
+            db_connection_id, org_id
+        )
+        instructions = self.repo.get_instructions(db_connection_id, org_id)
         if len(instructions) == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Instruction not found",
             )
-        return instructions[0]
+        return AggrInstruction(
+            **instructions[0].dict(), db_connection_alias=db_connection.alias
+        )
 
     async def add_instruction(
         self, instruction_request: InstructionRequest, org_id: str
-    ) -> InstructionResponse:
+    ) -> AggrInstruction:
         reserved_key_in_metadata(instruction_request.metadata)
 
-        if not instruction_request.db_connection_id:
-            instruction_request.db_connection_id = self.org_service.get_organization(
-                org_id
-            ).db_connection_id
-
-        self.db_connection_service.get_db_connection_in_org(
+        db_connection = self.db_connection_service.get_db_connection_in_org(
             instruction_request.db_connection_id, org_id
         )
 
@@ -71,21 +84,23 @@ class InstructionService:
                 json=instruction_request.dict(exclude_unset=True),
             )
             raise_for_status(response.status_code, response.text)
-            return InstructionResponse(**response.json())
+            return AggrInstruction(
+                **response.json(), db_connection_alias=db_connection.alias
+            )
 
     async def update_instruction(
         self,
         instruction_id: str,
         instruction_request: InstructionRequest,
         org_id: str,
-    ) -> InstructionResponse:
+    ) -> AggrInstruction:
         reserved_key_in_metadata(instruction_request.metadata)
         instruction = self.get_instruction_in_org(instruction_id, org_id)
 
         if not instruction_request.db_connection_id:
             instruction_request.db_connection_id = instruction.db_connection_id
 
-        self.db_connection_service.get_db_connection_in_org(
+        db_connection = self.db_connection_service.get_db_connection_in_org(
             instruction_request.db_connection_id, org_id
         )
 
@@ -100,7 +115,9 @@ class InstructionService:
                 json=instruction_request.dict(exclude_unset=True),
             )
             raise_for_status(response.status_code, response.text)
-            return InstructionResponse(**response.json())
+            return AggrInstruction(
+                **response.json(), db_connection_alias=db_connection.alias
+            )
 
     async def delete_instruction(self, instruction_id: str, org_id: str):
         instruction = self.get_instruction_in_org(instruction_id, org_id)

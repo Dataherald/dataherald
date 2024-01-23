@@ -32,11 +32,15 @@ class SlackInstallation(BaseModel):
     bot: SlackBot | None
 
 
+class SlackConfig(BaseModel):
+    slack_installation: SlackInstallation | None
+    db_connection_id: str | None
+
+
 class BaseOrganization(BaseModel):
     name: str | None
-    db_connection_id: str | None
     confidence_threshold: confloat(ge=0, le=1) | None
-    slack_installation: SlackInstallation | None
+    slack_config: SlackConfig | None
     llm_api_key: str | None
 
 

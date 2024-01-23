@@ -36,7 +36,7 @@ class TableDescriptionMetadata(BaseModel):
 class BaseTableDescription(BaseModel):
     id: str | None
     table_name: str | None
-    db_connection_id: str | None
+    db_connection_id: str
     description: str | None
     columns: list[ColumnDescription] | None
     examples: list | None
@@ -50,3 +50,7 @@ class BaseTableDescription(BaseModel):
 
 class TableDescription(BaseTableDescription):
     metadata: TableDescriptionMetadata | None
+
+
+class AggrTableDescription(TableDescription):
+    db_connection_alias: str | None

@@ -32,8 +32,8 @@ class FinetuningMetadata(BaseModel):
 
 class BaseFinetuning(BaseModel):
     id: str
-    alias: str | None
-    db_connection_id: str | None
+    alias: str
+    db_connection_id: str
     status: str = FineTuningStatus.QUEUED
     error: str | None
     base_llm: BaseLLM | None
@@ -47,3 +47,7 @@ class BaseFinetuning(BaseModel):
 
 class Finetuning(BaseFinetuning):
     pass
+
+
+class AggrFinetuning(Finetuning):
+    db_connection_alias: str | None

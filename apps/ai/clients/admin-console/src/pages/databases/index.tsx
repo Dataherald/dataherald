@@ -4,28 +4,30 @@ import DatabasesError from '@/components/databases/error'
 import LoadingDatabases from '@/components/databases/loading'
 import PageLayout from '@/components/layout/page-layout'
 import { ContentBox } from '@/components/ui/content-box'
+import { GlobalTreeSelectionProvider } from '@/components/ui/tree-view-global-context'
 import useDatabases from '@/hooks/api/useDatabases'
-import { Database, Databases } from '@/models/api'
+import { Databases } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { FC, useEffect, useState } from 'react'
 
 const DatabasesPage: FC = () => {
-  const { databases, isLoading, error, mutate } = useDatabases()
+  const { databases, isLoading, error, mutate, updateDatabases } =
+    useDatabases()
   const [connectingDB, setConnectingDB] = useState<boolean>(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const refreshDatabases = async (optimisticData?: Databases) => {
+    setIsRefreshing(true)
     try {
-      mutate(optimisticData)
+      await mutate(optimisticData)
+      setIsRefreshing(false)
     } catch (e) {
       setIsRefreshing(false)
     }
   }
 
-  const handleRefresh = async (newDatabase?: Database) => {
-    setIsRefreshing(true)
-    await refreshDatabases(newDatabase ? [newDatabase] : undefined)
-    setIsRefreshing(false)
+  const handleRefresh = async (newDatabases?: Databases) => {
+    await refreshDatabases(newDatabases ? newDatabases : undefined)
   }
 
   const handleDatabaseConnectionFinish = () => {
@@ -57,11 +59,14 @@ const DatabasesPage: FC = () => {
     )
   } else {
     pageContent = (
-      <DatabaseDetails
-        database={(databases as Databases)[0]} // Assuming only one database for now
-        isRefreshing={isRefreshing}
-        onRefresh={handleRefresh}
-      />
+      <GlobalTreeSelectionProvider>
+        <DatabaseDetails
+          databases={databases as Databases}
+          isRefreshing={isRefreshing}
+          onRefresh={handleRefresh}
+          onUpdateDatabasesData={updateDatabases}
+        />
+      </GlobalTreeSelectionProvider>
     )
   }
   return (

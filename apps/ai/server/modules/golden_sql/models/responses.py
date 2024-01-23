@@ -1,4 +1,4 @@
-from modules.golden_sql.models.entities import GoldenSQL
+from modules.golden_sql.models.entities import AggrGoldenSQL, GoldenSQL
 
 
 class GoldenSQLResponse(GoldenSQL):
@@ -9,5 +9,5 @@ class GoldenSQLResponse(GoldenSQL):
         return dic
 
 
-class AdminConsoleGoldenSqlResponse(GoldenSQL):
+class ACGoldenSQLResponse(AggrGoldenSQL):
     pass

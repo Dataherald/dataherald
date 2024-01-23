@@ -6,6 +6,7 @@ from modules.table_description.models.requests import (
     TableDescriptionRequest,
 )
 from modules.table_description.models.responses import (
+    ACTableDescriptionResponse,
     DatabaseDescriptionResponse,
     TableDescriptionResponse,
 )
@@ -52,9 +53,9 @@ async def get_table_description(
 
 @router.post("/sync-schemas", status_code=status.HTTP_201_CREATED)
 async def sync_table_descriptions_schemas(
-    scan_request: ScanRequest, api_key: str = Security(get_api_key)
+    scan_request: list[ScanRequest], api_key: str = Security(get_api_key)
 ) -> list[TableDescriptionResponse]:
-    return await table_description_service.sync_table_descriptions_schemas(
+    return await table_description_service.sync_databases_schemas(
         scan_request, api_key.organization_id
     )
 
@@ -75,7 +76,7 @@ async def ac_get_table_descriptions(
     db_connection_id: ObjectIdString,
     table_name: str = "",
     token: str = Depends(token_auth_scheme),
-) -> list[TableDescriptionResponse]:
+) -> list[ACTableDescriptionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.get_table_descriptions(
         db_connection_id, table_name, user.organization_id
@@ -85,7 +86,7 @@ async def ac_get_table_descriptions(
 @ac_router.get("/{id}")
 async def ac_get_table_description(
     id: ObjectIdString, token: str = Depends(token_auth_scheme)
-) -> TableDescriptionResponse:
+) -> ACTableDescriptionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.get_table_description(
         id, user.organization_id
@@ -94,22 +95,22 @@ async def ac_get_table_description(
 
 # used for admin console, does not need api version endpoint
 @ac_router.get("/database/list")
-async def get_database_table_descriptions(
+async def get_database_description_list(
     token: str = Depends(token_auth_scheme),
 ) -> list[DatabaseDescriptionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    return await table_description_service.get_database_table_descriptions(
+    return await table_description_service.get_database_description_list(
         user.organization_id
     )
 
 
 @ac_router.post("/sync-schemas", status_code=status.HTTP_201_CREATED)
 async def ac_sync_table_descriptions_schemas(
-    scan_request: ScanRequest, token: str = Depends(token_auth_scheme)
-) -> list[TableDescriptionResponse]:
+    scan_requests: list[ScanRequest], token: str = Depends(token_auth_scheme)
+) -> list[ACTableDescriptionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    return await table_description_service.sync_table_descriptions_schemas(
-        scan_request, user.organization_id
+    return await table_description_service.sync_databases_schemas(
+        scan_requests, user.organization_id
     )
 
 
@@ -118,7 +119,7 @@ async def ac_update_table_description(
     id: ObjectIdString,
     table_description_request: TableDescriptionRequest,
     token: str = Depends(token_auth_scheme),
-) -> TableDescriptionResponse:
+) -> ACTableDescriptionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.update_table_description(
         id, table_description_request, user.organization_id

@@ -102,9 +102,11 @@ class NLGeneration(BaseNLGeneration):
 
 
 class Generation(BaseModel):
+    # db connection
+    db_connection_id: str
+    db_connection_alias: str | None
     # Prompt
     id: str
-    db_connection_id: str
     prompt_text: str
     created_by: str | None
     updated_by: str | None

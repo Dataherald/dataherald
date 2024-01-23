@@ -3,7 +3,6 @@ from fastapi import HTTPException, status
 
 from config import settings
 from modules.db_connection.service import DBConnectionService
-from modules.organization.service import OrganizationService
 from modules.table_description.models.entities import (
     DHTableDescriptionMetadata,
     TableDescription,
@@ -14,9 +13,9 @@ from modules.table_description.models.requests import (
     TableDescriptionRequest,
 )
 from modules.table_description.models.responses import (
+    AggrTableDescription,
     BasicTableDescriptionResponse,
     DatabaseDescriptionResponse,
-    TableDescriptionResponse,
 )
 from modules.table_description.repository import TableDescriptionRepository
 from utils.exception import raise_for_status
@@ -26,13 +25,14 @@ from utils.misc import reserved_key_in_metadata
 class TableDescriptionService:
     def __init__(self):
         self.repo = TableDescriptionRepository()
-        self.org_service = OrganizationService()
         self.db_connection_service = DBConnectionService()
 
     async def get_table_descriptions(
         self, db_connection_id: str, table_name: str, org_id: str
-    ) -> list[TableDescriptionResponse]:
-        self.db_connection_service.get_db_connection_in_org(db_connection_id, org_id)
+    ) -> list[AggrTableDescription]:
+        db_connection = self.db_connection_service.get_db_connection_in_org(
+            db_connection_id, org_id
+        )
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 settings.engine_url + "/table-descriptions",
@@ -41,7 +41,9 @@ class TableDescriptionService:
             )
             raise_for_status(response.status_code, response.text)
             table_descriptions = [
-                TableDescriptionResponse(**table_description)
+                AggrTableDescription(
+                    **table_description, db_connection_alias=db_connection.alias
+                )
                 for table_description in response.json()
             ]
             for table_description in table_descriptions:
@@ -54,15 +56,22 @@ class TableDescriptionService:
 
     async def get_table_description(
         self, table_description_id: str, org_id: str
-    ) -> TableDescriptionResponse:
-        self.get_table_description_in_org(table_description_id, org_id)
+    ) -> AggrTableDescription:
+        table_description = self.get_table_description_in_org(
+            table_description_id, org_id
+        )
+        db_connection = self.db_connection_service.get_db_connection_in_org(
+            table_description.db_connection_id, org_id
+        )
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 settings.engine_url + f"/table-descriptions/{table_description_id}",
                 timeout=settings.default_engine_timeout,
             )
             raise_for_status(response.status_code, response.text)
-            table_description = TableDescriptionResponse(**response.json())
+            table_description = AggrTableDescription(
+                **response.json(), db_connection_alias=db_connection.alias
+            )
             for column in table_description.columns:
                 column.categories = (
                     sorted(column.categories) if column.categories else None
@@ -70,79 +79,87 @@ class TableDescriptionService:
 
             return table_description
 
-    async def get_database_table_descriptions(
+    async def get_database_description_list(
         self, org_id: str
     ) -> list[DatabaseDescriptionResponse]:
-        organization = self.org_service.get_organization(org_id)
-        # TODO: remove this try catch block after front-end is updated
-        try:
-            db_connection = self.db_connection_service.get_db_connection_in_org(
-                organization.db_connection_id, org_id
-            )
-        except Exception:
-            return []
-
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                settings.engine_url + "/table-descriptions",
-                params={"db_connection_id": db_connection.id},
-                timeout=settings.default_engine_timeout,
-            )
-            raise_for_status(response.status_code, response.text)
-            table_descriptions = [
-                TableDescriptionResponse(**table_description)
-                for table_description in response.json()
-            ]
-
-            tables = [
-                BasicTableDescriptionResponse(
-                    id=td.id,
-                    name=td.table_name,
-                    columns=[c.name for c in td.columns],
-                    sync_status=td.status,
-                    last_sync=str(td.last_schema_sync) if td.last_schema_sync else None,
+        database_description_list = []
+        db_connections = self.db_connection_service.get_db_connections(org_id)
+        for db_connection in db_connections:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    settings.engine_url + "/table-descriptions",
+                    params={"db_connection_id": db_connection.id},
+                    timeout=settings.default_engine_timeout,
                 )
-                for td in table_descriptions
-            ]
-            return [
-                DatabaseDescriptionResponse(
-                    alias=db_connection.alias,
-                    tables=tables,
-                    db_connection_id=db_connection.id,
+                raise_for_status(response.status_code, response.text)
+                table_descriptions = [
+                    AggrTableDescription(**table_description)
+                    for table_description in response.json()
+                ]
+
+                tables = [
+                    BasicTableDescriptionResponse(
+                        id=td.id,
+                        name=td.table_name,
+                        columns=[c.name for c in td.columns],
+                        sync_status=td.status,
+                        last_sync=str(td.last_schema_sync)
+                        if td.last_schema_sync
+                        else None,
+                    )
+                    for td in table_descriptions
+                ]
+                database_description_list.append(
+                    DatabaseDescriptionResponse(
+                        db_connection_id=db_connection.id,
+                        db_connection_alias=db_connection.alias,
+                        tables=tables,
+                    )
                 )
-            ]
+        return database_description_list
 
-    async def sync_table_descriptions_schemas(
-        self, scan_request: ScanRequest, org_id: str
-    ) -> bool:
-        reserved_key_in_metadata(scan_request.metadata)
-        self.db_connection_service.get_db_connection_in_org(
-            scan_request.db_connection_id, org_id
-        )
-
-        scan_request.metadata = TableDescriptionMetadata(
-            **scan_request.metadata,
-            dh_internal=DHTableDescriptionMetadata(organization_id=org_id),
-        )
-
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                settings.engine_url + "/table-descriptions/sync-schemas",
-                json=scan_request.dict(exclude_unset=True),
-                timeout=settings.default_engine_timeout,
+    async def sync_databases_schemas(
+        self, scan_requests: list[ScanRequest], org_id: str
+    ) -> list[AggrTableDescription]:
+        sync_result = []
+        for scan_request in scan_requests:
+            reserved_key_in_metadata(scan_request.metadata)
+            self.db_connection_service.get_db_connection_in_org(
+                scan_request.db_connection_id, org_id
             )
-            raise_for_status(response.status_code, response.text)
-            return response.json()
+
+            scan_request.metadata = TableDescriptionMetadata(
+                **scan_request.metadata,
+                dh_internal=DHTableDescriptionMetadata(organization_id=org_id),
+            )
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    settings.engine_url + "/table-descriptions/sync-schemas",
+                    json=scan_request.dict(exclude_unset=True),
+                    timeout=settings.default_engine_timeout,
+                )
+                raise_for_status(response.status_code, response.text)
+                table_descriptions = [
+                    AggrTableDescription(**table_description)
+                    for table_description in response.json()
+                ]
+                sync_result += table_descriptions
+        return sync_result
 
     async def update_table_description(
         self,
         table_description_id: str,
         table_description_request: TableDescriptionRequest,
         org_id: str,
-    ) -> TableDescriptionResponse:
+    ) -> AggrTableDescription:
         reserved_key_in_metadata(table_description_request.metadata)
-        self.get_table_description_in_org(table_description_id, org_id)
-
+        table_description = self.get_table_description_in_org(
+            table_description_id, org_id
+        )
+        db_connection = self.db_connection_service.get_db_connection_in_org(
+            table_description.db_connection_id, org_id
+        )
         table_description_request.metadata = TableDescriptionMetadata(
             **table_description_request.metadata,
             dh_internal=DHTableDescriptionMetadata(organization_id=org_id),
@@ -154,17 +171,9 @@ class TableDescriptionService:
                 json=table_description_request.dict(exclude_unset=True),
             )
             raise_for_status(response.status_code, response.text)
-            return TableDescriptionResponse(**response.json())
-
-    async def delete_table_description(self, table_description_id: str, org_id: str):
-        self.get_table_description_in_org(table_description_id, org_id)
-
-        async with httpx.AsyncClient() as client:
-            response = await client.delete(
-                settings.engine_url + f"/table-descriptions/{table_description_id}",
+            return AggrTableDescription(
+                **response.json(), db_connection_alias=db_connection.alias
             )
-            raise_for_status(response.status_code, response.text)
-            return True
 
     def get_table_description_in_org(
         self, table_description_id: str, org_id: str

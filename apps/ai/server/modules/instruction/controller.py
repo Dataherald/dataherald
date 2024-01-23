@@ -2,7 +2,10 @@ from fastapi import APIRouter, Depends, Security, status
 from fastapi.security import APIKeyHeader, HTTPBearer
 
 from modules.instruction.models.requests import InstructionRequest
-from modules.instruction.models.responses import InstructionResponse
+from modules.instruction.models.responses import (
+    ACInstructionResponse,
+    InstructionResponse,
+)
 from modules.instruction.service import InstructionService
 from utils.auth import Authorize, VerifyToken, get_api_key
 from utils.validation import ObjectIdString
@@ -26,11 +29,11 @@ instruction_service = InstructionService()
 
 @router.get("")
 async def get_instructions(
-    db_connection_id: ObjectIdString,
+    db_connection_id: ObjectIdString = None,
     api_key: str = Security(get_api_key),
 ) -> list[InstructionResponse]:
     org_id = api_key.organization_id
-    return instruction_service.get_instructions(db_connection_id, org_id)
+    return instruction_service.get_instructions(org_id, db_connection_id)
 
 
 @router.get("/{id}")
@@ -72,26 +75,29 @@ async def delete_instruction(
 
 @ac_router.get("")
 async def ac_get_instructions(
-    db_connection_id: ObjectIdString,
+    db_connection_id: ObjectIdString = None,
     token: str = Depends(token_auth_scheme),
-) -> list[InstructionResponse]:
+) -> list[ACInstructionResponse]:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    return instruction_service.get_instructions(db_connection_id, user.organization_id)
+    return instruction_service.get_instructions(user.organization_id, db_connection_id)
 
 
 @ac_router.get("/first")
 async def ac_get_first_instruction(
+    db_connection_id: ObjectIdString,
     token: str = Depends(token_auth_scheme),
-) -> InstructionResponse:
+) -> ACInstructionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    return instruction_service.get_first_instruction(user.organization_id)
+    return instruction_service.get_first_instruction(
+        db_connection_id, user.organization_id
+    )
 
 
 @ac_router.get("/{id}")
 async def ac_get_instruction(
     id: ObjectIdString,
     token: str = Depends(token_auth_scheme),
-) -> InstructionResponse:
+) -> ACInstructionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return instruction_service.get_instruction(id, user.organization_id)
 
@@ -100,7 +106,7 @@ async def ac_get_instruction(
 async def ac_add_instructions(
     instruction_request: InstructionRequest,
     token: str = Depends(token_auth_scheme),
-) -> InstructionResponse:
+) -> ACInstructionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await instruction_service.add_instruction(
         instruction_request, user.organization_id
@@ -112,7 +118,7 @@ async def ac_update_instruction(
     id: ObjectIdString,
     instruction_request: InstructionRequest,
     token: str = Depends(token_auth_scheme),
-) -> InstructionResponse:
+) -> ACInstructionResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
     return await instruction_service.update_instruction(
         id, instruction_request, user.organization_id

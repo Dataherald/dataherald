@@ -55,4 +55,5 @@ class PromptSQLNLGenerationRequest(NLGenerationRequest):
 
 class SQLGenerationExecuteRequest(BaseModel):
     prompt: str
+    db_connection_id: str
     model: str | None = None

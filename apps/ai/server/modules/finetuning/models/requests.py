@@ -7,7 +7,7 @@ from modules.finetuning.models.entities import BaseLLM
 
 class FinetuningRequest(BaseModel):
     db_connection_id: str
-    alias: str | None
+    alias: str
     base_llm: BaseLLM | None
     golden_records: list[str] | None = None
     metadata: dict[str, Any] | None = {}

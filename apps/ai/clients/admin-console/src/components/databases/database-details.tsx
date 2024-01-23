@@ -1,5 +1,4 @@
-import DatabaseResourceSheet from '@/components/databases/database-resource-sheet'
-import DatabaseTree from '@/components/databases/database-tree'
+import DatabasesTree from '@/components/databases/databases-tree'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,75 +13,88 @@ import {
 import { Button } from '@/components/ui/button'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
-import { TreeProvider, useTree } from '@/components/ui/tree-view-context'
+import { useGlobalTreeSelection } from '@/components/ui/tree-view-global-context'
 import { toast } from '@/components/ui/use-toast'
-import useSynchronizeSchemas from '@/hooks/api/useSynchronizeSchemas'
+import useSynchronizeSchemas, {
+  ScanRequest,
+} from '@/hooks/api/useSynchronizeSchemas'
 import { cn } from '@/lib/utils'
-import { Database, ETableSyncStatus } from '@/models/api'
+import { Databases, ETableSyncStatus } from '@/models/api'
 import { Loader, RefreshCw, ScanText } from 'lucide-react'
-import React, { ComponentType, FC, useState } from 'react'
+import { FC, useState } from 'react'
 
 interface DatabaseDetailsProps {
-  database: Database
+  databases: Databases
   isRefreshing: boolean
-  onRefresh: (newData?: Database) => Promise<void>
-}
-
-type WithDatabaseSelection = (
-  Component: ComponentType<DatabaseDetailsProps>,
-) => React.FC<DatabaseDetailsProps>
-
-const withDatabaseSelection: WithDatabaseSelection = (Component) => {
-  return function WithDatabaseSelection(
-    props: DatabaseDetailsProps,
-  ): JSX.Element {
-    return (
-      <TreeProvider>
-        <Component {...props} />
-      </TreeProvider>
-    )
-  }
+  onRefresh: (newData?: Databases) => Promise<void>
+  onUpdateDatabasesData: (loadingData: Databases) => void
 }
 
 const DatabaseDetails: FC<DatabaseDetailsProps> = ({
-  database,
+  databases,
   isRefreshing,
   onRefresh,
+  onUpdateDatabasesData,
 }) => {
   const [isSynchronizing, setIsSynchronizing] = useState(false)
-  const { selectedNodes, resetSelection } = useTree()
+  const { globalSelection, globalSelectionSize, triggerReset } =
+    useGlobalTreeSelection()
   const synchronizeSchemas = useSynchronizeSchemas()
-
-  const resetSyncSelection = resetSelection
 
   const handleSynchronization = async () => {
     setIsSynchronizing(true)
-    const optimisticDatabaseUpdate = {
-      ...database,
-      tables: database.tables.map((t) => ({
-        ...t,
-        ...(selectedNodes.has(t.name)
-          ? {
-              sync_status: ETableSyncStatus.SYNCHRONIZING,
-              last_sync: null,
-            }
-          : {}),
-      })),
-    }
-    try {
-      await synchronizeSchemas({
-        db_connection_id: database.db_connection_id,
-        table_names: Array.from(selectedNodes),
+    const queuingScanningDatabases: Databases = databases
+      .filter((db) => globalSelection[db.db_connection_id]?.size > 0) // filter out db with empty selection
+      .map((db) => {
+        return {
+          ...db,
+          tables: db.tables.map((t) => ({
+            ...t,
+            ...(globalSelection[db.db_connection_id].has(t.name)
+              ? {
+                  sync_status: ETableSyncStatus.QUEUING_FOR_SCAN,
+                  last_sync: null,
+                  columns: [],
+                }
+              : {}),
+          })),
+        }
       })
+    onUpdateDatabasesData(queuingScanningDatabases)
+    const optimisticDatabasesUpdate: Databases = databases
+      .filter((db) => globalSelection[db.db_connection_id]?.size > 0) // filter out db with empty selection
+      .map((db) => {
+        return {
+          ...db,
+          tables: db.tables.map((t) => ({
+            ...t,
+            ...(globalSelection[db.db_connection_id].has(t.name)
+              ? {
+                  sync_status: ETableSyncStatus.SYNCHRONIZING,
+                  last_sync: new Date().toISOString(),
+                  columns: [],
+                }
+              : {}),
+          })),
+        }
+      })
+    try {
+      const scanRequestPayload: ScanRequest = Object.keys(globalSelection)
+        .filter((dbId) => globalSelection[dbId]?.size > 0)
+        .map((dbId) => ({
+          db_connection_id: dbId,
+          table_names: Array.from(globalSelection[dbId]),
+        }))
+      await synchronizeSchemas(scanRequestPayload)
       toast({
         variant: 'success',
         title: 'Scanning queued',
-        description: `${selectedNodes.size} table schemas were succesfully queued for scanning.`,
+        description: `${globalSelectionSize} table schemas were succesfully queued for scanning.`,
       })
+      triggerReset()
       setIsSynchronizing(false)
-      resetSyncSelection()
       try {
-        await onRefresh(optimisticDatabaseUpdate)
+        await onRefresh(optimisticDatabasesUpdate)
       } catch (e) {
         console.error(e)
         toast({
@@ -101,11 +113,12 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
       }
     } catch (e) {
       console.error(e)
+      onUpdateDatabasesData(databases)
       toast({
         variant: 'destructive',
         title: 'Oops! Something went wrong.',
         description:
-          'There was a problem scanning your Database table schemas.',
+          'There was a problem scanning your Databases table schemas.',
         action: (
           <ToastAction altText="Try again" onClick={handleSynchronization}>
             Try again
@@ -126,17 +139,26 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
             <AlertDialogTrigger asChild>
               <Button
                 disabled={
-                  isSynchronizing || isRefreshing || selectedNodes.size === 0
+                  isSynchronizing || isRefreshing || globalSelectionSize === 0
                 }
               >
-                <ScanText size={18} className="mr-2" />
-                {`Scan table ${
-                  selectedNodes.size === 0
-                    ? 'schemas'
-                    : `${selectedNodes.size} ${
-                        selectedNodes.size === 1 ? 'schema' : 'schemas'
-                      }`
-                }`}
+                {isSynchronizing ? (
+                  <>
+                    <Loader size={18} className="mr-2 animate-spin" />
+                    Scanning...
+                  </>
+                ) : (
+                  <>
+                    <ScanText size={18} className="mr-2" />
+                    {`Scan ${
+                      globalSelectionSize === 0
+                        ? 'table schemas'
+                        : `${globalSelectionSize} table ${
+                            globalSelectionSize === 1 ? 'schema' : 'schemas'
+                          }`
+                    }`}
+                  </>
+                )}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -147,8 +169,10 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   You are about to add{' '}
-                  {`${selectedNodes.size} ${
-                    selectedNodes.size === 1 ? 'table schema' : 'tables schemas'
+                  {`${globalSelectionSize} ${
+                    globalSelectionSize === 1
+                      ? 'table schema'
+                      : 'tables schemas'
                   }`}{' '}
                   to the scanning queue. This asynchronous process could take a
                   while to complete.
@@ -184,16 +208,16 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
               size={18}
               className={cn('mr-2', isRefreshing ? 'animate-spin' : '')}
             />
-            {isRefreshing ? 'Refreshing' : 'Refresh'}
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
         </div>
       </div>
 
-      <DatabaseTree database={database}></DatabaseTree>
-      <DatabaseResourceSheet></DatabaseResourceSheet>
+      <DatabasesTree databases={databases} />
+
       <Toaster />
     </>
   )
 }
 
-export default withDatabaseSelection(DatabaseDetails)
+export default DatabaseDetails

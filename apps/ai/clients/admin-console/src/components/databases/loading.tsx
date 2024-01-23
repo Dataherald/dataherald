@@ -28,7 +28,7 @@ const LoadingDatabases: FC = () => (
     <div className="flex items-center gap-3 pt-2 pb-6">
       <Hourglass size={14} className="animate-spin" />
       <h1>
-        Retrieving your Database... This can take up to 1 minute for large
+        Retrieving your Databases... This can take up to 1 minute for large
         Databases...
       </h1>
     </div>

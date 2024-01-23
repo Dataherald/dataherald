@@ -1,4 +1,5 @@
 import { TreeNode } from '@/components/ui/tree-view'
+import { useGlobalTreeSelection } from '@/components/ui/tree-view-global-context'
 import {
   buildSelectionTree,
   findLeafNodes,
@@ -34,6 +35,7 @@ const TreeContext = createContext<TreeContextProps | undefined>(undefined)
 export const TreeProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const { subscribeToReset, updateTreeSelection } = useGlobalTreeSelection()
   const [rootNode, setRootNode] = useState<TreeNode | null>(null)
   const [clickedRow, setClickedRow] = useState<TreeNode | null>(null)
   const [selectionRootNode, setSelectionRootNode] =
@@ -66,6 +68,7 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     setSelectedNodes(newSelectedNodes)
+    updateTreeSelection(selectionRootNode.id, newSelectedNodes)
   }
 
   const resetSelection = () => setSelectedNodes(new Set())
@@ -77,8 +80,9 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
     if (rootNode) {
       const newSelectableRootNode = buildSelectionTree(rootNode, null, true)
       setSelectionRootNode(newSelectableRootNode)
+      subscribeToReset(resetSelection)
     }
-  }, [rootNode])
+  }, [rootNode, subscribeToReset])
 
   const value = {
     rootNode,

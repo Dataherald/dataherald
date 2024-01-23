@@ -5,7 +5,7 @@ from pydantic import BaseModel, Extra
 
 class BaseInstruction(BaseModel):
     instruction: str
-    db_connection_id: str | None
+    db_connection_id: str
 
 
 class DHInstructionMetadata(BaseModel):
@@ -23,3 +23,7 @@ class Instruction(BaseInstruction):
     id: str
     created_at: datetime | None
     metadata: InstructionMetadata | None
+
+
+class AggrInstruction(Instruction):
+    db_connection_alias: str | None

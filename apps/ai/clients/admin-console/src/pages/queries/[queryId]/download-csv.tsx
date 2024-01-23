@@ -30,6 +30,7 @@ const DownloadCsvPage: FC = () => {
       created_by,
       status,
       display_id,
+      db_connection_alias,
     } = query as Query
 
     const questionDate: Date = new Date(created_at)
@@ -50,7 +51,12 @@ const DownloadCsvPage: FC = () => {
           >
             <QueryQuestion
               className="max-w-2xl"
-              {...{ created_by, prompt_text, questionDate }}
+              {...{
+                created_by,
+                prompt_text,
+                questionDate,
+                db_connection_alias,
+              }}
             />
             <QueryMetadata
               {...{

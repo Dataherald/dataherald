@@ -39,19 +39,21 @@ class OrganizationService:
             org_request.llm_api_key = self._encrypt_llm_credentials(
                 org_request.llm_api_key
             )
-        new_org_data = Organization(**org_request.dict(), created_at=datetime.now())
-        new_org_data.db_connection_id = new_org_data.db_connection_id
-
-        new_org_data.confidence_threshold = (
-            1.0
-            if new_org_data.confidence_threshold is None
-            else new_org_data.confidence_threshold
+        organization = Organization(**org_request.dict(), created_at=datetime.now())
+        organization.slack_config.db_connection_id = (
+            organization.slack_config.db_connection_id
         )
 
-        new_id = self.repo.add_organization(new_org_data.dict(exclude_unset=True))
+        organization.confidence_threshold = (
+            1.0
+            if organization.confidence_threshold is None
+            else organization.confidence_threshold
+        )
+
+        new_id = self.repo.add_organization(organization.dict(exclude_unset=True))
         if new_id:
-            new_org = self.repo.get_organization(new_id)
-            return OrganizationResponse(**new_org.dict())
+            new_organization = self.repo.get_organization(new_id)
+            return OrganizationResponse(**new_organization.dict())
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -66,21 +68,23 @@ class OrganizationService:
             org_request.llm_api_key = self._encrypt_llm_credentials(
                 org_request.llm_api_key
             )
-        updated_org_data = Organization(**org_request.dict(exclude_unset=True))
-        updated_org_data.db_connection_id = updated_org_data.db_connection_id
+        organization = Organization(**org_request.dict(exclude_unset=True))
+        organization.slack_config.db_connection_id = (
+            organization.slack_config.db_connection_id
+        )
 
         if (
-            self.repo.update_organization(
-                org_id, updated_org_data.dict(exclude_unset=True)
-            )
+            self.repo.update_organization(org_id, organization.dict(exclude_unset=True))
             == 1
         ):
-            new_org = self.repo.get_organization(org_id)
+            new_organization = self.repo.get_organization(org_id)
 
-            if new_org.llm_api_key:
-                self.repo.update_db_connections_llm_api_key(org_id, new_org.llm_api_key)
+            if new_organization.llm_api_key:
+                self.repo.update_db_connections_llm_api_key(
+                    org_id, new_organization.llm_api_key
+                )
 
-            return new_org
+            return new_organization
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -98,7 +102,7 @@ class OrganizationService:
 
     def add_organization_by_slack_installation(
         self, slack_installation_request: SlackInstallation
-    ):
+    ) -> OrganizationResponse:
         current_org = self.repo.get_organization_by_slack_workspace_id(
             slack_installation_request.team.id
         )
@@ -118,14 +122,14 @@ class OrganizationService:
                 detail="An error ocurred while updating organization",
             )
 
-        new_org_data = Organization(
+        organization = Organization(
             name=slack_installation_request.team.name,
             slack_installation=slack_installation_request,
             confidence_threshold=1.0,
             created_at=datetime.now(),
         )
 
-        new_id = self.repo.add_organization(new_org_data.dict(exclude={"id"}))
+        new_id = self.repo.add_organization(organization.dict(exclude={"id"}))
         if new_id:
             return self.repo.get_organization(new_id)
 
@@ -141,26 +145,10 @@ class OrganizationService:
             slack_workspace_id
         )
         if organization:
-            return organization.slack_installation
+            return organization.slack_config.slack_installation
 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="slack installation not found"
-        )
-
-    def update_db_connection_id(
-        self, org_id: str, db_connection_id: str
-    ) -> OrganizationResponse:
-        if (
-            self.repo.update_organization(
-                org_id, {"db_connection_id": db_connection_id}
-            )
-            == 1
-        ):
-            return self.repo.get_organization(org_id)
-
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Organization not found or cannot be updated",
         )
 
     def _encrypt_llm_credentials(self, llm_api_key: str) -> str:
