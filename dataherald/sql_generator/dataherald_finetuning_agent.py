@@ -221,6 +221,15 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
         output = []
         for token, prob in zip(logprobs, probs, strict=False):
             output.append({"token": token.token, "prob": prob})
+
+        sum_prob = 0
+        for prob in probs:
+            sum_prob += float(prob)
+        average_prob = format(sum_prob / len(probs), ".3f")
+
+        output.append({"token": "min_prob", "prob": min(probs)})
+        output.append({"token": "avg_prob", "prob": average_prob})
+
         return output
 
     @catch_exceptions()
@@ -244,9 +253,7 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
                 {"role": "user", "content": user_prompt},
             ],
         )
-        query = response.choices[0].message.content
-        confidence = self.compute_confidence(response)
-        return query + f"\nConfidence: {confidence}"
+        return response.choices[0].message.content
 
     async def _arun(
         self,
@@ -487,7 +494,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
                 return SQLGeneration(
                     prompt_id=user_prompt.id,
                     tokens_used=cb.total_tokens,
-                    finetuning_id=self.finetuned_llm_id,
+                    finetuning_id=self.finetuning_id,
                     completed_at=datetime.datetime.now(),
                     sql="",
                     status="INVALID",

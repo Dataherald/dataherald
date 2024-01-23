@@ -43,6 +43,7 @@ class LogProbEvaluator(Evaluator):
             for token in self.encoder.encode(query)
         ]
         score = 0
+        from ipdb import set_trace; set_trace()
         if "final_answer" == logprobs[-1][0]:
             step_logprobs = logprobs[-1][1]
             tokens_list = [token["token"] for token in step_logprobs]
