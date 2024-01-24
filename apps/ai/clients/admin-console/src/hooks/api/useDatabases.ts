@@ -48,7 +48,7 @@ const useDatabases = (): DatabasesResponse => {
 
   return {
     databases: data,
-    isLoading: isLoading || (!data && !error),
+    isLoading,
     error,
     mutate: optimisticMutate,
     updateDatabases,

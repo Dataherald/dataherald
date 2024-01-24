@@ -14,7 +14,9 @@ import { FC, useEffect, useState } from 'react'
 const DatabasesPage: FC = () => {
   const { databases, isLoading, error, mutate, updateDatabases } =
     useDatabases()
-  const [connectingDB, setConnectingDB] = useState<boolean>(false)
+  const [isConnectingFirstDB, setIsConnectingFirstDB] = useState(false)
+  const [isLoadingAfterFirstConnection, setIsLoadingAfterFirstConnection] =
+    useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const handleRefresh = async (newDatabases?: Databases) => {
@@ -27,46 +29,53 @@ const DatabasesPage: FC = () => {
     }
   }
 
-  const handleDatabaseConnectionFinish = () => {
-    setConnectingDB(false)
+  const handleFirstDBConnected = async () => {
+    setIsLoadingAfterFirstConnection(true)
+    try {
+      await mutate()
+      setIsLoadingAfterFirstConnection(false)
+    } catch (e) {
+      setIsLoadingAfterFirstConnection(false)
+    }
+  }
+
+  const handleFirstConnectionFinish = () => {
+    setIsConnectingFirstDB(false)
   }
 
   useEffect(() => {
-    if (!isLoading) {
-      if (databases?.length === 0) {
-        setConnectingDB(true)
-      } else {
-        setConnectingDB(false)
-      }
+    if (databases && databases.length === 0) {
+      setIsConnectingFirstDB(true)
     }
-  }, [isLoading, databases, connectingDB])
+  }, [databases])
 
   let pageContent: JSX.Element = <></>
 
-  if (!isLoading && error) {
+  if (error) {
     pageContent = (
       <div className="m-6">
         <DatabasesError />
       </div>
     )
-  } else if (isLoading && !connectingDB && !isRefreshing) {
+  } else if (
+    (isLoading || isLoadingAfterFirstConnection) &&
+    !isRefreshing &&
+    !isConnectingFirstDB
+  ) {
     pageContent = <LoadingDatabases />
-  } else if (connectingDB) {
+  } else if (isConnectingFirstDB) {
     pageContent = (
       <DatabaseConnection
-        onConnected={handleRefresh}
-        onFinish={handleDatabaseConnectionFinish}
+        onConnected={handleFirstDBConnected}
+        onFinish={handleFirstConnectionFinish}
       />
     )
-  } else {
+  } else if (databases && databases.length > 0) {
     pageContent = (
       <GlobalTreeSelectionProvider>
         <div className="grow flex flex-col gap-4 m-6">
           <div>
-            <DatabaseConnectionFormDialog
-              onConnected={handleRefresh}
-              onFinish={handleDatabaseConnectionFinish}
-            />
+            <DatabaseConnectionFormDialog onConnected={handleRefresh} />
           </div>
           <ContentBox className="grow">
             <DatabaseDetails

@@ -15,7 +15,7 @@ export const dbConnectionFormSchema = Yup.object({
     .max(250, 'The database connection URI is too long'),
   file: Yup.mixed()
     .nullable()
-    .when(['use_ssh', 'data_warehouse'], ([useSsh, data_warehouse], schema) => {
+    .when(['data_warehouse'], ([data_warehouse], schema) => {
       return data_warehouse === 'bigquery'
         ? schema.required('Service account key file is required for BigQuery')
         : schema.notRequired()

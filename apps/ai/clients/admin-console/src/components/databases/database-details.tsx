@@ -70,7 +70,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
               ...(globalSelection[db.db_connection_id].has(t.name)
                 ? {
                     sync_status: ETableSyncStatus.SYNCHRONIZING,
-                    last_sync: new Date().toISOString(),
+                    last_sync: null,
                     columns: [],
                   }
                 : {}),

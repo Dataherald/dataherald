@@ -18,7 +18,6 @@ import {
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
-import { useAppContext } from '@/contexts/app-context'
 import usePostDatabaseConnection from '@/hooks/api/usePostDatabaseConnection'
 import { formatDriver } from '@/lib/domain/database'
 import { DatabaseConnection } from '@/models/api'
@@ -58,7 +57,7 @@ const mapDatabaseConnectionFormValues = (
 interface DatabaseConnectionFormDialogProps {
   isFirstConnection?: boolean
   onConnected: () => void
-  onFinish: () => void
+  onFinish?: () => void
 }
 
 const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
@@ -84,7 +83,6 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
   const [databaseConnected, setDatabaseConnected] = useState(false)
 
   const connectDatabase = usePostDatabaseConnection()
-  const { updateOrganization } = useAppContext()
 
   const onSubmit = async () => {
     try {
@@ -94,7 +92,6 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
         mapDatabaseConnectionFormValues(dbConnectionFields),
         file as File | null | undefined,
       )
-      await updateOrganization()
       setDatabaseConnected(true)
       onConnected()
     } catch (e) {
@@ -118,7 +115,7 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
     if (databaseConnected && !open) {
       form.reset()
       setDatabaseConnected(false)
-      onFinish()
+      onFinish && onFinish()
     }
   }
 
