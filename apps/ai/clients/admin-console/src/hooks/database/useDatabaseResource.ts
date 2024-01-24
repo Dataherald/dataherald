@@ -17,7 +17,9 @@ export const useDatabaseResource = (
 
   const isNodeDatabaseResource = node && isDatabaseResource(node.type)
 
-  const resourceUrl = isNodeDatabaseResource ? `${INSTRUCTION_URL}/first` : null
+  const resourceUrl = isNodeDatabaseResource
+    ? `${INSTRUCTION_URL}/first?db_connection_id=${node.id}`
+    : null
 
   const {
     data: databaseInstruction,
@@ -51,7 +53,10 @@ export const useDatabaseResource = (
           resourceUrl,
           apiFetcher(url, {
             method,
-            body: JSON.stringify({ instruction: newInstruction }),
+            body: JSON.stringify({
+              instruction: newInstruction,
+              db_connection_id: node?.id,
+            }),
           }),
         )
         toast({ variant: 'success', title: 'Database instructions updated' })
@@ -63,7 +68,7 @@ export const useDatabaseResource = (
         })
       }
     },
-    [INSTRUCTION_URL, apiFetcher, databaseInstruction, resourceUrl],
+    [INSTRUCTION_URL, apiFetcher, databaseInstruction, node?.id, resourceUrl],
   )
 
   return { resource, isLoading, error, updateResource }
