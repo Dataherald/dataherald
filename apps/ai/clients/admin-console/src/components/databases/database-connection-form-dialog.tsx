@@ -23,7 +23,13 @@ import usePostDatabaseConnection from '@/hooks/api/usePostDatabaseConnection'
 import { formatDriver } from '@/lib/domain/database'
 import { DatabaseConnection } from '@/models/api'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { AlertCircle, CheckCircle, Loader, UploadCloud } from 'lucide-react'
+import {
+  AlertCircle,
+  CheckCircle,
+  DatabaseZap,
+  Loader,
+  Plus,
+} from 'lucide-react'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -49,10 +55,17 @@ const mapDatabaseConnectionFormValues = (
         },
       }
 
-const DatabaseConnectionFormDialog: FC<{
+interface DatabaseConnectionFormDialogProps {
+  isFirstConnection?: boolean
   onConnected: () => void
   onFinish: () => void
-}> = ({ onConnected, onFinish }) => {
+}
+
+const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
+  isFirstConnection = false,
+  onConnected,
+  onFinish,
+}) => {
   const form = useForm<DatabaseConnectionFormValues>({
     resolver: yupResolver(dbConnectionFormSchema),
     defaultValues: {
@@ -113,9 +126,18 @@ const DatabaseConnectionFormDialog: FC<{
     <>
       <Dialog onOpenChange={handleDialogOpenChange}>
         <DialogTrigger asChild>
-          <Button size="lg">
-            <UploadCloud className="mr-2" size={20} />
-            Connect your Database
+          <Button size={isFirstConnection ? 'lg' : 'default'}>
+            {isFirstConnection ? (
+              <>
+                <DatabaseZap className="mr-2" size={18} />
+                Connect your Database
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2" size={18} />
+                Add Database
+              </>
+            )}
           </Button>
         </DialogTrigger>
         <DialogContent
@@ -128,7 +150,9 @@ const DatabaseConnectionFormDialog: FC<{
                 <DialogTitle>
                   <div className="flex flex-row items-center gap-2">
                     <CheckCircle />
-                    Database connected
+                    {isFirstConnection
+                      ? 'Database Connected'
+                      : 'Database Added'}
                   </div>
                 </DialogTitle>
               </DialogHeader>
@@ -157,9 +181,13 @@ const DatabaseConnectionFormDialog: FC<{
           ) : (
             <>
               <DialogHeader className="flex-none px-1">
-                <DialogTitle>Connect your Database</DialogTitle>
+                <DialogTitle>
+                  {isFirstConnection ? 'Connect your Database' : 'Add Database'}
+                </DialogTitle>
                 <DialogDescription>
-                  Connect your database to start using the platform.
+                  {isFirstConnection
+                    ? 'Connect your database to start using the platform.'
+                    : 'Connect another database to the platform.'}
                 </DialogDescription>
               </DialogHeader>
               <div className="grow flex flex-col overflow-auto p-1">
@@ -179,10 +207,14 @@ const DatabaseConnectionFormDialog: FC<{
                           size={16}
                           strokeWidth={2.5}
                         />{' '}
-                        Connecting
+                        {isFirstConnection ? 'Connecting' : 'Adding'} Database
                       </>
                     ) : (
-                      'Connect Database'
+                      <>
+                        {isFirstConnection
+                          ? 'Connect Database'
+                          : 'Add Database'}
+                      </>
                     )}
                   </Button>
                 </DialogFooter>

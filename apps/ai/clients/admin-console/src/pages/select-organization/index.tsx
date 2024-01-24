@@ -119,7 +119,7 @@ const SelectOrganizationPage: FC = () => {
                     size={20}
                     strokeWidth={2.5}
                   />{' '}
-                  Saving...
+                  Saving
                 </>
               ) : (
                 'Continue'

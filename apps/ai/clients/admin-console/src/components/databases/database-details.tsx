@@ -145,7 +145,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
                 {isSynchronizing ? (
                   <>
                     <Loader size={18} className="mr-2 animate-spin" />
-                    Scanning...
+                    Preparing scan queue
                   </>
                 ) : (
                   <>
@@ -208,7 +208,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
               size={18}
               className={cn('mr-2', isRefreshing ? 'animate-spin' : '')}
             />
-            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            {isRefreshing ? 'Refreshing' : 'Refresh'}
           </Button>
         </div>
       </div>

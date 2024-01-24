@@ -117,7 +117,7 @@ const QueryMetadata: FC<QueryMetadataProps> = ({
       >
         {updatingQuery ? (
           <div className="text-slate-500 flex items-center gap-2">
-            <Loader className="animate-spin" size={20} /> Updating query...
+            <Loader className="animate-spin" size={20} /> Updating query
           </div>
         ) : (
           <>

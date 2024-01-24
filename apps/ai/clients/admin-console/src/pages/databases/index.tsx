@@ -1,4 +1,5 @@
 import DatabaseConnection from '@/components/databases/database-connection'
+import DatabaseConnectionFormDialog from '@/components/databases/database-connection-form-dialog'
 import DatabaseDetails from '@/components/databases/database-details'
 import DatabasesError from '@/components/databases/error'
 import LoadingDatabases from '@/components/databases/loading'
@@ -16,18 +17,14 @@ const DatabasesPage: FC = () => {
   const [connectingDB, setConnectingDB] = useState<boolean>(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const refreshDatabases = async (optimisticData?: Databases) => {
+  const handleRefresh = async (newDatabases?: Databases) => {
     setIsRefreshing(true)
     try {
-      await mutate(optimisticData)
+      await mutate(newDatabases)
       setIsRefreshing(false)
     } catch (e) {
       setIsRefreshing(false)
     }
-  }
-
-  const handleRefresh = async (newDatabases?: Databases) => {
-    await refreshDatabases(newDatabases ? newDatabases : undefined)
   }
 
   const handleDatabaseConnectionFinish = () => {
@@ -47,33 +44,43 @@ const DatabasesPage: FC = () => {
   let pageContent: JSX.Element = <></>
 
   if (!isLoading && error) {
-    pageContent = <DatabasesError />
+    pageContent = (
+      <div className="m-6">
+        <DatabasesError />
+      </div>
+    )
   } else if (isLoading && !connectingDB && !isRefreshing) {
     pageContent = <LoadingDatabases />
   } else if (connectingDB) {
     pageContent = (
       <DatabaseConnection
-        onConnected={refreshDatabases}
+        onConnected={handleRefresh}
         onFinish={handleDatabaseConnectionFinish}
       />
     )
   } else {
     pageContent = (
       <GlobalTreeSelectionProvider>
-        <DatabaseDetails
-          databases={databases as Databases}
-          isRefreshing={isRefreshing}
-          onRefresh={handleRefresh}
-          onUpdateDatabasesData={updateDatabases}
-        />
+        <div className="grow flex flex-col gap-4 m-6">
+          <div>
+            <DatabaseConnectionFormDialog
+              onConnected={handleRefresh}
+              onFinish={handleDatabaseConnectionFinish}
+            />
+          </div>
+          <ContentBox className="grow">
+            <DatabaseDetails
+              databases={databases as Databases}
+              isRefreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              onUpdateDatabasesData={updateDatabases}
+            />
+          </ContentBox>
+        </div>
       </GlobalTreeSelectionProvider>
     )
   }
-  return (
-    <PageLayout>
-      <ContentBox className="m-6">{pageContent}</ContentBox>
-    </PageLayout>
-  )
+  return <PageLayout>{pageContent}</PageLayout>
 }
 
 export default withPageAuthRequired(DatabasesPage)

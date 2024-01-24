@@ -181,7 +181,7 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({ onGeneratedKey }) => {
                         size={20}
                         strokeWidth={2.5}
                       />{' '}
-                      Generating key...
+                      Generating key
                     </>
                   ) : (
                     'Generate secrete key'

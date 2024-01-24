@@ -73,8 +73,8 @@ const DeleteApiKeyDialog: FC<DeleteApiKeyDialogProps> = ({ deleteFnc }) => {
           <Button variant="destructive" onClick={handleDeleteConfirm}>
             {deleting ? (
               <>
-                <Loader className="mr-2" size={18} />
-                Revoking...
+                <Loader className="mr-2 animate-spin" size={18} />
+                Revoking
               </>
             ) : (
               'Revoke key'

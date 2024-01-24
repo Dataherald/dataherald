@@ -1,5 +1,6 @@
+import { ContentBox } from '@/components/ui/content-box'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Hourglass } from 'lucide-react'
+import { Loader } from 'lucide-react'
 import { FC, ReactNode } from 'react'
 
 const TreeItemSkeleton: FC = () => (
@@ -24,19 +25,25 @@ const TreeNestedItemSkeleton: FC<{ children?: ReactNode }> = ({ children }) => (
 )
 
 const LoadingDatabases: FC = () => (
-  <>
-    <div className="flex items-center gap-3 pt-2 pb-6">
-      <Hourglass size={14} className="animate-spin" />
+  <div className="grow flex flex-col m-6">
+    <div className="flex items-center gap-2 pt-2 pb-6">
+      <Loader size={18} className="animate-spin" />
       <h1>
-        Retrieving your Databases... This can take up to 1 minute for large
-        Databases...
+        Retrieving your Databases. This can take up to 1 minute for large
+        Databases.
       </h1>
     </div>
-    <div className="space-y-5 px-3">
-      <TreeNestedItemSkeleton />
-      <TreeNestedItemSkeleton />
-    </div>
-  </>
+    <ContentBox className="grow flex flex-col gap-4 p-6">
+      <div className="flex items-center justify-between py-4 gap-2">
+        <Skeleton className="w-1/5 h-6" />
+        <Skeleton className="w-2/5 h-6" />
+      </div>
+      <div className="space-y-5 px-3">
+        <TreeNestedItemSkeleton />
+        <TreeNestedItemSkeleton />
+      </div>
+    </ContentBox>
+  </div>
 )
 
 export default LoadingDatabases

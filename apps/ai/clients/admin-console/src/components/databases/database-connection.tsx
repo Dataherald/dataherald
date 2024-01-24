@@ -25,6 +25,7 @@ const DatabaseConnection: FC<{
       ))}
     </div>
     <DatabaseConnectionFormDialog
+      isFirstConnection
       onConnected={() => onConnected()}
       onFinish={() => onFinish()}
     />
