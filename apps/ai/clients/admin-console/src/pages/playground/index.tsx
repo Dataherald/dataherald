@@ -39,6 +39,7 @@ import {
   ServerCrash,
   StopCircle,
   Terminal,
+  TerminalSquare,
 } from 'lucide-react'
 import Link from 'next/link'
 import { FC, useEffect, useState } from 'react'
@@ -177,10 +178,10 @@ const PlaygroundPage: FC = () => {
     setCurrentQueryPrompt('')
   }
 
-  let pageContent = <></>
+  let content = <></>
 
-  if (!loadingDatabases && !dbConnectionOptions?.length) {
-    pageContent = (
+  if (!dbConnectionOptions?.length) {
+    content = (
       <div className="grow text-slate-500 flex flex-col items-center justify-center gap-3">
         <DatabaseZap size={50} strokeWidth={1} />
         <span>
@@ -192,7 +193,7 @@ const PlaygroundPage: FC = () => {
       </div>
     )
   } else if (queryError) {
-    pageContent = (
+    content = (
       <div className="grow text-slate-500 flex flex-col items-center justify-center gap-3">
         <ServerCrash size={50} strokeWidth={1} />
         <span>
@@ -201,7 +202,7 @@ const PlaygroundPage: FC = () => {
       </div>
     )
   } else if (submittingQuery) {
-    pageContent = (
+    content = (
       <div className="grow flex flex-col items-center justify-center gap-3">
         <div className="flex items-center gap-1 font-source-code">
           <Terminal size={22} strokeWidth={2} />
@@ -215,7 +216,7 @@ const PlaygroundPage: FC = () => {
   } else if (query) {
     const { status, confidence_score, sql, sql_result, sql_generation_error } =
       query
-    pageContent = sql_generation_error ? (
+    content = sql_generation_error ? (
       <div className="grow text-slate-500 flex flex-col items-center justify-center gap-3 max-w-2xl text-justify m-auto">
         <ServerCrash size={50} strokeWidth={1} />
         <span>{sql_generation_error}</span>
@@ -274,132 +275,147 @@ const PlaygroundPage: FC = () => {
   return (
     <>
       <PageLayout>
-        <div className="grow flex flex-col gap-5">
-          <div className="grow flex flex-col">{pageContent}</div>
-          <div className="bg-slate-50 p-5 flex flex-col gap-3 grow-0 rounded-none border-b-0 border-s-0 border-e-0 border-t">
-            <div className="px-2 flex items-center justify-between gap-3">
-              <div className="w-3/4 grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2">
-                  <strong className="w-fit">Database:</strong>
-                  <Select
-                    value={selectedDbConnectionId}
-                    onValueChange={handleDatabaseSelect}
-                    disabled={
-                      loadingDatabases ||
-                      !dbConnectionOptions?.length ||
-                      submittingQuery
-                    }
-                  >
-                    <SelectTrigger aria-label="Database" className="bg-white">
-                      <SelectValue
-                        placeholder={
-                          loadingDatabases ? 'Loading...' : 'Select a Database'
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {dbConnectionOptions?.map(({ label, value }) => (
-                          <SelectItem key={label} value={value}>
-                            {label}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center gap-2">
-                  <strong>Model:</strong>
-                  <Select
-                    value={selectedModelId}
-                    onValueChange={handleModelSelect}
-                    disabled={
-                      loadingDatabases ||
-                      !dbConnectionOptions?.length ||
-                      submittingQuery
-                    }
-                  >
-                    <SelectTrigger aria-label="Model" className="bg-white">
-                      <SelectValue placeholder="Select model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {finetuningModels?.map(({ label, value }) => (
-                          <SelectItem key={label} value={value}>
-                            {label}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <Button
-                className="px-3 py-1 w-fit h-fit font-normal"
-                variant="ghost"
-                disabled={
-                  loadingDatabases ||
-                  !dbConnectionOptions?.length ||
-                  submittingQuery ||
-                  !query
-                }
-                size="sm"
-                onClick={handleClear}
-              >
-                <Eraser size={14} className="mr-2" /> Clear
-              </Button>
-            </div>
-            <div className="bg-white border-2 border-slate-200 rounded-xl p-3 flex flex-col items-end gap-2">
-              <Textarea
-                className="border-none text-md resize-none shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent"
-                placeholder="Enter your natural language prompt..."
-                disabled={
-                  loadingDatabases ||
-                  !dbConnectionOptions?.length ||
-                  submittingQuery
-                }
-                rows={2}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-              />
-              <div className="flex items-center gap-3">
-                {submittingQuery && (
-                  <Button
-                    className="px-3 py-1 h-fit text-slate-500"
-                    variant="ghost"
-                    onClick={handleStopGenerating}
-                  >
-                    <StopCircle size={18} className="mr-2" />
-                    Stop generating
-                  </Button>
-                )}
-                <Button
-                  className="px-3 py-1 h-fit"
-                  variant="primary"
-                  onClick={handleSubmitQuery}
-                  disabled={
-                    !dbConnectionOptions?.length || submittingQuery || !prompt
-                  }
-                >
-                  {submittingQuery ? (
-                    <Loader size={18} className="mr-2 animate-spin" />
-                  ) : (
-                    <PlayCircle
-                      size={18}
-                      className={clsx(
-                        'mr-2',
+        {loadingDatabases ? (
+          <div className="grow flex items-center justify-center gap-2">
+            <TerminalSquare
+              size={25}
+              strokeWidth={1.5}
+              className="animate-bounce"
+            />
+            <span className="font-source-code font-semibold">
+              Preparing everything...
+            </span>
+          </div>
+        ) : (
+          <div className="grow flex flex-col">
+            {content}
+            <div className="bg-slate-50 p-5 flex flex-col gap-3 grow-0 rounded-none border-b-0 border-s-0 border-e-0 border-t">
+              <div className="px-2 flex items-center justify-between gap-3">
+                <div className="w-3/4 grid grid-cols-2 gap-3">
+                  <div className="flex items-center gap-2">
+                    <strong className="w-fit">Database:</strong>
+                    <Select
+                      value={selectedDbConnectionId}
+                      onValueChange={handleDatabaseSelect}
+                      disabled={
+                        loadingDatabases ||
+                        !dbConnectionOptions?.length ||
                         submittingQuery
-                          ? 'opacity-50'
-                          : 'hover:opacity-80 hover:cursor-pointer',
-                      )}
-                    />
-                  )}
-                  Generate SQL
+                      }
+                    >
+                      <SelectTrigger aria-label="Database" className="bg-white">
+                        <SelectValue
+                          placeholder={
+                            loadingDatabases
+                              ? 'Loading...'
+                              : 'Select a Database'
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {dbConnectionOptions?.map(({ label, value }) => (
+                            <SelectItem key={label} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <strong>Model:</strong>
+                    <Select
+                      value={selectedModelId}
+                      onValueChange={handleModelSelect}
+                      disabled={
+                        loadingDatabases ||
+                        !dbConnectionOptions?.length ||
+                        submittingQuery
+                      }
+                    >
+                      <SelectTrigger aria-label="Model" className="bg-white">
+                        <SelectValue placeholder="Select model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {finetuningModels?.map(({ label, value }) => (
+                            <SelectItem key={label} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <Button
+                  className="px-3 py-1 w-fit h-fit font-normal"
+                  variant="ghost"
+                  disabled={
+                    loadingDatabases ||
+                    !dbConnectionOptions?.length ||
+                    submittingQuery ||
+                    !query
+                  }
+                  size="sm"
+                  onClick={handleClear}
+                >
+                  <Eraser size={14} className="mr-2" /> Clear
                 </Button>
+              </div>
+              <div className="bg-white border-2 border-slate-200 rounded-xl p-3 flex flex-col items-end gap-2">
+                <Textarea
+                  className="border-none text-md resize-none shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent"
+                  placeholder="Enter your natural language prompt..."
+                  disabled={
+                    loadingDatabases ||
+                    !dbConnectionOptions?.length ||
+                    submittingQuery
+                  }
+                  rows={2}
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                />
+                <div className="flex items-center gap-3">
+                  {submittingQuery && (
+                    <Button
+                      className="px-3 py-1 h-fit text-slate-500"
+                      variant="ghost"
+                      onClick={handleStopGenerating}
+                    >
+                      <StopCircle size={18} className="mr-2" />
+                      Stop generating
+                    </Button>
+                  )}
+                  <Button
+                    className="px-3 py-1 h-fit"
+                    variant="primary"
+                    onClick={handleSubmitQuery}
+                    disabled={
+                      !dbConnectionOptions?.length || submittingQuery || !prompt
+                    }
+                  >
+                    {submittingQuery ? (
+                      <Loader size={18} className="mr-2 animate-spin" />
+                    ) : (
+                      <PlayCircle
+                        size={18}
+                        className={clsx(
+                          'mr-2',
+                          submittingQuery
+                            ? 'opacity-50'
+                            : 'hover:opacity-80 hover:cursor-pointer',
+                        )}
+                      />
+                    )}
+                    Generate SQL
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </PageLayout>
       <Toaster />
     </>
