@@ -178,7 +178,7 @@ const PlaygroundPage: FC = () => {
     setCurrentQueryPrompt('')
   }
 
-  let content = <></>
+  let content = <div className="grow"></div>
 
   if (!dbConnectionOptions?.length) {
     content = (
