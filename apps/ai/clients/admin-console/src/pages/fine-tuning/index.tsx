@@ -18,7 +18,7 @@ const FineTuningPage: FC = () => {
 
   if (isLoading) {
     pageContent = (
-      <LoadingTable columnLength={3} rowLength={5} className="rounded-none" />
+      <LoadingTable columnLength={4} rowLength={5} className="rounded-none" />
     )
   } else if (error) {
     pageContent = <FineTunningsError />

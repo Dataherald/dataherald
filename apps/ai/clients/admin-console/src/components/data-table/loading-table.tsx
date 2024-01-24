@@ -13,18 +13,26 @@ import { HTMLAttributes } from 'react'
 type LoadingTableProps = HTMLAttributes<HTMLDivElement> & {
   columnLength?: number
   rowLength?: number
+  loadFilters?: boolean
   disableHeader?: boolean
 }
 
 export function LoadingTable({
   columnLength = 5,
   rowLength = 10,
+  loadFilters = false,
   disableHeader = false,
   className,
 }: LoadingTableProps) {
   const columns = Array.from({ length: columnLength })
   return (
     <div className={cn('rounded-md overflow-hidden', className)}>
+      {loadFilters && (
+        <div className="flex items-center justify-between py-4 gap-2">
+          <Skeleton className="bg-slate-300 w-2/6 h-9" />
+          <Skeleton className="bg-slate-300 w-2/6 h-9" />
+        </div>
+      )}
       <Table>
         {!disableHeader && (
           <TableHeader>
