@@ -3,7 +3,11 @@ from datetime import datetime
 import openai
 from fastapi import HTTPException, status
 
-from modules.organization.models.entities import Organization, SlackInstallation
+from modules.organization.models.entities import (
+    Organization,
+    SlackConfig,
+    SlackInstallation,
+)
 from modules.organization.models.requests import OrganizationRequest
 from modules.organization.models.responses import OrganizationResponse
 from modules.organization.repository import OrganizationRepository
@@ -103,7 +107,9 @@ class OrganizationService:
             if (
                 self.repo.update_organization(
                     str(current_org.id),
-                    {"slack_installation": slack_installation_request.dict()},
+                    {
+                        "slack_config.slack_installation": slack_installation_request.dict()
+                    },
                 )
                 == 1
             ):
@@ -117,7 +123,7 @@ class OrganizationService:
 
         organization = Organization(
             name=slack_installation_request.team.name,
-            slack_installation=slack_installation_request,
+            slack_config=SlackConfig(slack_installation_request, db_connection_id=None),
             confidence_threshold=1.0,
             created_at=datetime.now(),
         )

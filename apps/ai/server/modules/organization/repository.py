@@ -24,7 +24,8 @@ class OrganizationRepository:
         self, slack_workspace_id: str
     ) -> Organization:
         organization = MongoDB.find_one(
-            ORGANIZATION_COL, {"slack_installation.team.id": slack_workspace_id}
+            ORGANIZATION_COL,
+            {"slack_config.slack_installation.team.id": slack_workspace_id},
         )
         return (
             Organization(id=str(organization["_id"]), **organization)

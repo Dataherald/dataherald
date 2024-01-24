@@ -70,7 +70,7 @@ class AggrgationGenerationService:
 
         created_by = (
             SlackWebClient(
-                organization.slack_installation.bot.token
+                organization.slack_config.slack_installation.bot.token
             ).get_user_real_name(slack_generation_request.slack_info.user_id)
             if slack_generation_request.slack_info
             else None
@@ -656,7 +656,9 @@ class AggrgationGenerationService:
             + f":memo: *Generated SQL Generation*: \n ```{sql_generation.sql if sql_generation else 'None'}```"
         )
 
-        SlackWebClient(organization.slack_installation.bot.token).send_message(
+        SlackWebClient(
+            organization.slack_config.slack_installation.bot.token
+        ).send_message(
             prompt.metadata.dh_internal.slack_info.channel_id,
             prompt.metadata.dh_internal.slack_info.thread_ts,
             message,
