@@ -22,7 +22,6 @@ class DBConnectionMetadata(BaseModel):
 
 
 class BaseDBConnection(BaseModel):
-    llm_api_key: str | None
     alias: str
     use_ssh: bool = False
     connection_uri: str

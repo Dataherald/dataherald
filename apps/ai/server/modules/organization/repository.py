@@ -1,6 +1,6 @@
 from bson import ObjectId
 
-from config import DATABASE_CONNECTION_COL, ORGANIZATION_COL
+from config import ORGANIZATION_COL
 from database.mongo import MongoDB
 from modules.organization.models.entities import Organization
 
@@ -45,12 +45,3 @@ class OrganizationRepository:
         if MongoDB.find_one(ORGANIZATION_COL, {"name": new_org_data["name"]}):
             return None
         return str(MongoDB.insert_one(ORGANIZATION_COL, new_org_data))
-
-    # this violates the architecture, but it's a quick fix for now
-    # TODO: need to avoid cross resource dependency and avoid circular dependency
-    def update_db_connections_llm_api_key(self, org_id: str, llm_api_key: str) -> int:
-        return MongoDB.update_many(
-            DATABASE_CONNECTION_COL,
-            {"metadata.dh_internal.organization_id": org_id},
-            {"llm_api_key": llm_api_key},
-        )

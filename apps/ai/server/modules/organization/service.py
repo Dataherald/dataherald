@@ -77,14 +77,7 @@ class OrganizationService:
             self.repo.update_organization(org_id, organization.dict(exclude_unset=True))
             == 1
         ):
-            new_organization = self.repo.get_organization(org_id)
-
-            if new_organization.llm_api_key:
-                self.repo.update_db_connections_llm_api_key(
-                    org_id, new_organization.llm_api_key
-                )
-
-            return new_organization
+            return self.repo.get_organization(org_id)
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
