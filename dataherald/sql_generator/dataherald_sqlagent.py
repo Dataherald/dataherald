@@ -3,7 +3,7 @@ import difflib
 import logging
 import os
 from functools import wraps
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List
 
 import numpy as np
 import openai
@@ -38,9 +38,6 @@ from dataherald.sql_database.models.types import (
     DatabaseConnection,
 )
 from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
-from dataherald.sql_generator.log_probs_callback_handler import (
-    OpenAILogProbsCallbackHandler,
-)
 from dataherald.types import Prompt, SQLGeneration
 from dataherald.utils.agent_prompts import (
     AGENT_PREFIX,
@@ -600,41 +597,22 @@ class DataheraldSQLAgent(SQLGenerator):
             **(agent_executor_kwargs or {}),
         )
 
-    def create_logprobs(
-        self, results: Any, callback: OpenAILogProbsCallbackHandler
-    ) -> list:
-        logprobs = []
-        actions = []
-        for step in results["intermediate_steps"]:
-            actions.append(step[0].tool)
-        actions.append("final_answer")
-        for token_step, logprob_step, action in zip(
-            callback.tokens, callback.logprobs, actions, strict=False
-        ):
-            temp_logprobs = []
-            for token, logprob in zip(token_step, logprob_step, strict=False):
-                temp_logprobs.append({"token": token, "logprob": logprob})
-            logprobs.append([action, temp_logprobs])
-        return logprobs
-
     @override
     def generate_response(  # noqa: C901
         self,
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-    ) -> Tuple[SQLGeneration, list]:
+    ) -> SQLGeneration:
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
         response = SQLGeneration(
             prompt_id=user_prompt.id,
             created_at=datetime.datetime.now(),
         )
-        callback = OpenAILogProbsCallbackHandler()
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            callbacks=BaseCallbackManager([callback]),
             logprobs=True,
             model_name=os.getenv("LLM_MODEL", "gpt-4-1106-preview"),
         )
@@ -709,12 +687,8 @@ class DataheraldSQLAgent(SQLGenerator):
         response.sql = sql_query
         response.tokens_used = cb.total_tokens
         response.completed_at = datetime.datetime.now()
-        logprobs = self.create_logprobs(result, callback)
-        return (
-            self.create_sql_query_status(
+        return self.create_sql_query_status(
                 self.database,
                 response.sql,
                 response,
-            ),
-            logprobs,
-        )
+            )

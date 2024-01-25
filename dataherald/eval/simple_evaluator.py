@@ -91,7 +91,6 @@ class SimpleEvaluator(Evaluator):
         user_prompt: Prompt,
         sql_generation: SQLGeneration,
         database_connection: DatabaseConnection,
-        logprobs: list,  # noqa: ARG002
     ) -> Evaluation:
         database = SQLDatabase.get_sql_engine(database_connection)
         logger.info(

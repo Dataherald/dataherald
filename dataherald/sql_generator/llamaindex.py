@@ -109,6 +109,5 @@ class LlamaIndexSQLGenerator(SQLGenerator):
                 self.database,
                 response.sql,
                 response,
-            ),
-            [],
+            )
         )

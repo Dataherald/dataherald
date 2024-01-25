@@ -29,15 +29,13 @@ class Evaluator(Component, ABC):
         self,
         user_prompt: Prompt,
         sql_generation: SQLGeneration,
-        database_connection: DatabaseConnection,
-        logprobs: list,
+        database_connection: DatabaseConnection
     ) -> confloat:
         """Determines if a generated response from the engine is acceptable considering the ACCEPTANCE_THRESHOLD"""
         evaluation = self.evaluate(
             user_prompt=user_prompt,
             sql_generation=sql_generation,
-            database_connection=database_connection,
-            logprobs=logprobs,
+            database_connection=database_connection
         )
         return evaluation.score
 
@@ -46,7 +44,6 @@ class Evaluator(Component, ABC):
         self,
         user_prompt: Prompt,
         sql_generation: SQLGeneration,
-        database_connection: DatabaseConnection,
-        logprobs: list,
+        database_connection: DatabaseConnection
     ) -> Evaluation:
         """Evaluates a question with an SQL pair."""

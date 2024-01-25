@@ -82,6 +82,6 @@ class SQLGenerator(Component, ABC):
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
-    ) -> Tuple[SQLGeneration, list]:  # noqa: E999
+    ) -> SQLGeneration:  # noqa: E999
         """Generates a response to a user question."""
         pass

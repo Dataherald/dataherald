@@ -85,6 +85,5 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
                 self.database,
                 response.sql,
                 response,
-            ),
-            [],
+            )
         )
