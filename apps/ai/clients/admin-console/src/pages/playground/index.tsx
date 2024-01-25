@@ -252,7 +252,10 @@ const PlaygroundPage: FC = () => {
             <SqlEditor disabled query={sql} />
           </div>
           <div id="query_results" className="flex flex-col border bg-white">
-            {sql_result === null ? (
+            {sql_result === null ||
+            !sql_result ||
+            !sql_result.columns ||
+            !sql_result.rows ? (
               <div className="w-full h-44 flex items-center justify-center bg-gray-100">
                 <div className="text-gray-600">No Results</div>
               </div>

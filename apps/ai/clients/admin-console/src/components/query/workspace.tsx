@@ -371,7 +371,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                       }))}
                       data={[]}
                     />
-                  ) : (
+                  ) : sql_result && sql_result.columns && sql_result.rows ? (
                     <SqlResultsTable
                       columns={sql_result.columns.map((columnKey: string) => ({
                         id: columnKey,
@@ -380,6 +380,10 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                       }))}
                       data={sql_result.rows}
                     />
+                  ) : (
+                    <div className="grow flex items-center justify-center bg-slate-50">
+                      No results.
+                    </div>
                   )}
                 </div>
               )}

@@ -66,8 +66,8 @@ export enum EQueryStatus {
 export type QueryStatus = keyof typeof EQueryStatus
 
 export type QuerySqlResult = {
-  columns: string[]
-  rows: QuerySqlResultData[]
+  columns?: string[]
+  rows?: QuerySqlResultData[]
 }
 
 export type QuerySqlResultData = { [columnKey: string]: string | number }

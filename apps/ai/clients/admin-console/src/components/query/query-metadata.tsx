@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils'
 import { QueryStatus } from '@/models/api'
 import { EDomainQueryStatus } from '@/models/domain'
-import { Ban, BrainCircuit, Loader } from 'lucide-react'
+import { Ban, Bot, Loader } from 'lucide-react'
 import { FC, HTMLAttributes } from 'react'
 
 export interface QueryMetadataProps extends HTMLAttributes<HTMLDivElement> {
@@ -59,7 +59,7 @@ const QueryMetadata: FC<QueryMetadataProps> = ({
                 disabled={updatingQuery}
                 className="flex items-center gap-2 h-9"
               >
-                <BrainCircuit size={18} strokeWidth={1.5} />
+                <Bot size={18} strokeWidth={2} />
                 Resubmit
               </Button>
             </AlertDialogTrigger>
@@ -70,7 +70,7 @@ const QueryMetadata: FC<QueryMetadataProps> = ({
                   <AlertDialogTitle>Resubmit Query</AlertDialogTitle>
                 </AlertDialogHeader>
                 <AlertDialogDescription>
-                  The platform will generate an entire new response for the
+                  The AI platform will generate an entire new response for the
                   question. The process can take a couple of minutes.
                 </AlertDialogDescription>
                 <AlertDialogDescription>
@@ -79,7 +79,7 @@ const QueryMetadata: FC<QueryMetadataProps> = ({
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction onClick={onResubmit}>
-                    <BrainCircuit size={18} className="mr-2" />
+                    <Bot size={18} className="mr-2" />
                     Resubmit
                   </AlertDialogAction>
                 </AlertDialogFooter>{' '}
