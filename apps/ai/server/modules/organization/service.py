@@ -123,7 +123,9 @@ class OrganizationService:
 
         organization = Organization(
             name=slack_installation_request.team.name,
-            slack_config=SlackConfig(slack_installation_request, db_connection_id=None),
+            slack_config=SlackConfig(
+                slack_installation=slack_installation_request, db_connection_id=None
+            ),
             confidence_threshold=1.0,
             created_at=datetime.now(),
         )
