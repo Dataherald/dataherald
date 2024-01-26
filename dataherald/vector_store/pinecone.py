@@ -12,7 +12,7 @@ from dataherald.repositories.database_connections import DatabaseConnectionRepos
 from dataherald.types import GoldenSQL
 from dataherald.vector_store import VectorStore
 
-EMBEDDING_MODEL = "text-embedding-ada-002"
+EMBEDDING_MODEL = "text-embedding-3-small"
 
 
 class Pinecone(VectorStore):
