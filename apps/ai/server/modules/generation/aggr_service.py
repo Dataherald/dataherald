@@ -221,7 +221,7 @@ class AggrgationGenerationService:
                 ),
             ),
             evaluate=True,
-            finetuning_id=request.model,
+            finetuning_id=request.finetuning_id,
             metadata=SQLGenerationMetadata(
                 dh_internal=DHSQLGenerationMetadata(organization_id=organization.id)
             ),

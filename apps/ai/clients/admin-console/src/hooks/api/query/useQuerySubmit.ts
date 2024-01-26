@@ -10,14 +10,14 @@ const useQuerySubmit = () => {
     async (
       prompt: string,
       db_connection_id: string,
-      finetunedModelId?: string,
+      finetuning_id?: string,
     ): Promise<Query> =>
       apiFetcher<Query>(`${API_URL}/generations/prompts/sql-generations`, {
         method: 'POST',
         body: JSON.stringify({
           prompt,
           db_connection_id,
-          ...(finetunedModelId ? { finetunedModelId } : {}),
+          ...(finetuning_id ? { finetuning_id } : {}),
         }),
       }),
     [apiFetcher],
