@@ -77,12 +77,23 @@ class SQLGenerationService:
                 sql_generation_request.finetuning_id is None
                 or sql_generation_request.finetuning_id == ""
             ):
+                if sql_generation_request.use_finetuned_model_only:
+                    raise SQLGenerationError(
+                        "Cannot use finetuned model without finetuning id",
+                        initial_sql_generation.id,
+                    )
                 sql_generator = DataheraldSQLAgent(self.system)
             else:
                 sql_generator = DataheraldFinetuningAgent(self.system)
                 sql_generator.finetuning_id = sql_generation_request.finetuning_id
+                sql_generator.use_fintuned_model_only = (
+                    sql_generation_request.use_finetuned_model_only
+                )
                 initial_sql_generation.finetuning_id = (
                     sql_generation_request.finetuning_id
+                )
+                initial_sql_generation.use_fintuned_model_only = (
+                    sql_generation_request.use_finetuned_model_only
                 )
             try:
                 sql_generation = sql_generator.generate_response(

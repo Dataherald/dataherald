@@ -9,6 +9,7 @@ SQL generation parameters
 The following parameters are used for SQL generation:
 
 * finetuning_id: the id of the finetuning model. If this is not provided we use a reasoning LLM with retrieval augmented generation. If specified we use the finetuning model for sql generation.
+* use_finetuned_model_only: whether to use the finetuned model only. If this is set to true we just check the correctness of the SQL query and do not use the retrieval augmented generation.
 * evaluate: whether to evaluate the generated SQL query.
 * sql: if you want to manually create the SQL query you can provide it here. If this is not provided we use the prompt to generate the SQL query.
 
@@ -33,6 +34,7 @@ Request this ``POST`` endpoint to create a SQL query for a given prompt::
 
    {
         "finetuning_id": "string",
+        "use_finetuned_model_only": false,
         "evaluate": false,
         "sql": "string",
         "metadata": {}
