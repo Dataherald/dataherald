@@ -9,6 +9,7 @@ class PromptRequest(BaseModel):
 
 class SQLGenerationRequest(BaseModel):
     finetuning_id: str | None
+    low_latency_mode: bool = False
     evaluate: bool = False
     sql: str | None
     metadata: dict | None

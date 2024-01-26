@@ -37,6 +37,7 @@ from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
 from dataherald.types import FineTuningStatus, Prompt, SQLGeneration
 from dataherald.utils.agent_prompts import (
     FINETUNING_AGENT_PREFIX,
+    FINETUNING_AGENT_PREFIX_FINETUNING_ONLY,
     FINETUNING_AGENT_SUFFIX,
     FINETUNING_SYSTEM_INFORMATION,
     FORMAT_INSTRUCTIONS,
@@ -284,6 +285,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     db_scan: List[TableDescription] = Field(exclude=True)
     api_key: str = Field(exclude=True)
     finetuning_model_id: str = Field(exclude=True)
+    use_finetuned_model_only: bool = Field(exclude=True, default=None)
 
     @property
     def dialect(self) -> str:
@@ -298,7 +300,10 @@ class SQLDatabaseToolkit(BaseToolkit):
     def get_tools(self) -> List[BaseTool]:
         """Get the tools in the toolkit."""
         tools = []
-        tools.append(SystemTime(db=self.db))
+        if not self.use_finetuned_model_only:
+            tools.append(SystemTime(db=self.db))
+            tools.append(SchemaSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
+            tools.append(TablesSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
         tools.append(QuerySQLDataBaseTool(db=self.db))
         tools.append(
             GenerateSQL(
@@ -308,8 +313,6 @@ class SQLDatabaseToolkit(BaseToolkit):
                 finetuning_model_id=self.finetuning_model_id,
             )
         )
-        tools.append(SchemaSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
-        tools.append(TablesSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
         return tools
 
 
@@ -320,6 +323,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
 
     llm: Any = None
     finetuning_id: str = Field(exclude=True)
+    use_fintuned_model_only: bool = Field(exclude=True, default=False)
 
     def create_sql_agent(
         self,
@@ -342,6 +346,8 @@ class DataheraldFinetuningAgent(SQLGenerator):
         if toolkit.instructions:
             for index, instruction in enumerate(toolkit.instructions):
                 admin_instructions += f"{index+1}) {instruction['instruction']}\n"
+        if self.use_fintuned_model_only:
+            prefix = FINETUNING_AGENT_PREFIX_FINETUNING_ONLY
         prefix = prefix.format(
             dialect=toolkit.dialect, admin_instructions=admin_instructions
         )
@@ -429,6 +435,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
             db_scan=db_scan,
             api_key=database_connection.decrypt_api_key(),
             finetuning_model_id=finetuning.model_id,
+            use_finetuned_model_only=self.use_fintuned_model_only,
         )
         agent_executor = self.create_sql_agent(
             toolkit=toolkit,

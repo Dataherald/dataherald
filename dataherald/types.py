@@ -164,6 +164,7 @@ class SQLGeneration(BaseModel):
     id: str | None = None
     prompt_id: str
     finetuning_id: str | None
+    low_latency_mode: bool = False
     evaluate: bool = False
     sql: str | None
     status: str = "INVALID"
