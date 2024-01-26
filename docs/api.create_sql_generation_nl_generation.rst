@@ -17,6 +17,7 @@ SQL generation parameters
 The following parameters are used for SQL generation:
 
 * finetuning_id: the id of the finetuning model. If this is not provided we use a reasoning LLM with retrieval augmented generation. If specified we use the finetuning model for sql generation.
+* low_latency_mode: When this flag is set, some of the agent steps are removed, which can lead to faster responses but reduce the accuracy. This is only supported for our new agent. 
 * evaluate: whether to evaluate the generated SQL query.
 * sql: if you want to manually create the SQL query you can provide it here. If this is not provided we use the prompt to generate the SQL query.
 
@@ -43,6 +44,7 @@ Request this ``POST`` endpoint to create a SQL query, a NL response, and a given
         "metadata": {},
         "sql_generation": {
             "finetuning_id": "string",
+            "low_latency_mode": flase,
             "evaluate": false,
             "sql": "string",
             "metadata": {},

@@ -77,12 +77,23 @@ class SQLGenerationService:
                 sql_generation_request.finetuning_id is None
                 or sql_generation_request.finetuning_id == ""
             ):
+                if sql_generation_request.low_latency_mode:
+                    raise SQLGenerationError(
+                        "Low latency mode is not supported for our old agent with no finetuning. Please specify a finetuning id.",
+                        initial_sql_generation.id,
+                    )
                 sql_generator = DataheraldSQLAgent(self.system)
             else:
                 sql_generator = DataheraldFinetuningAgent(self.system)
                 sql_generator.finetuning_id = sql_generation_request.finetuning_id
+                sql_generator.use_fintuned_model_only = (
+                    sql_generation_request.low_latency_mode
+                )
                 initial_sql_generation.finetuning_id = (
                     sql_generation_request.finetuning_id
+                )
+                initial_sql_generation.low_latency_mode = (
+                    sql_generation_request.low_latency_mode
                 )
             try:
                 sql_generation = sql_generator.generate_response(
