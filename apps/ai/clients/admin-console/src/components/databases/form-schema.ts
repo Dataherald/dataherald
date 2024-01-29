@@ -34,9 +34,7 @@ export const dbConnectionFormSchema = Yup.object({
               username: Yup.string().required(
                 "The SSH username can't be empty",
               ),
-              password: Yup.string().required(
-                "The SSH password can't be empty",
-              ),
+              password: Yup.string(),
             })
             .required()
         : schema
