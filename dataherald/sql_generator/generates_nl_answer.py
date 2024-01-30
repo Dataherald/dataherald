@@ -48,7 +48,8 @@ class GeneratesNlAnswer:
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            model_name=os.getenv("LLM_MODEL", "gpt-4"),
+            model_name=os.getenv("LLM_MODEL", "gpt-4-turbo-preview"),
+            api_base=database_connection.llm_config.llm_api_base,
         )
         database = SQLDatabase.get_sql_engine(database_connection)
 

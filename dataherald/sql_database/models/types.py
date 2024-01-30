@@ -69,19 +69,34 @@ class SSHSettings(BaseSettings):
         return getattr(self, key)
 
 
+class LLMConfig(BaseModel):
+    llm_api_key: str | None
+    llm_name: str = "gpt-4-turbo-preview"
+    llm_api_base: str | None
+
+    @validator("llm_api_key", pre=True, always=True)
+    def encrypt(cls, value: str):
+        fernet_encrypt = FernetEncrypt()
+        try:
+            fernet_encrypt.decrypt(value)
+            return value
+        except Exception:
+            return fernet_encrypt.encrypt(value)
+
+
 class DatabaseConnection(BaseModel):
     id: str | None
     alias: str
     use_ssh: bool = False
     connection_uri: str | None
     path_to_credentials_file: str | None
-    llm_api_key: str | None = None
+    llm_config: LLMConfig | None
     ssh_settings: SSHSettings | None = None
     file_storage: FileStorage | None = None
     metadata: dict | None
     created_at: datetime = Field(default_factory=datetime.now)
 
-    @validator("connection_uri", "llm_api_key", pre=True, always=True)
+    @validator("connection_uri", pre=True, always=True)
     def encrypt(cls, value: str):
         fernet_encrypt = FernetEncrypt()
         try:
@@ -91,7 +106,7 @@ class DatabaseConnection(BaseModel):
             return fernet_encrypt.encrypt(value)
 
     def decrypt_api_key(self):
-        if self.llm_api_key is not None and self.llm_api_key != "":
+        if self.llm_config.llm_api_key is not None and self.llm_config.llm_api_key != "":
             fernet_encrypt = FernetEncrypt()
-            return fernet_encrypt.decrypt(self.llm_api_key)
+            return fernet_encrypt.decrypt(self.llm_config.llm_api_key)
         return os.environ.get("OPENAI_API_KEY")

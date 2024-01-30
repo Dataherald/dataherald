@@ -108,7 +108,7 @@ class BaseSQLDatabaseTool(BaseModel):
 class SystemTime(BaseSQLDatabaseTool, BaseTool):
     """Tool for finding the current data and time."""
 
-    name = "system_time"
+    name = "SystemTime"
     description = """
     Input: None.
     Output: Current date and time.
@@ -136,7 +136,7 @@ class SystemTime(BaseSQLDatabaseTool, BaseTool):
 class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool which takes in the given question and returns a list of tables with their relevance score to the question"""
 
-    name = "get_db_table_names"
+    name = "GetDbTableNames"
     description = """
     Input: None.
     Output: List of tables in the database.
@@ -167,7 +167,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
 class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for querying a SQL database."""
 
-    name = "execute_query"
+    name = "ExecuteQuery"
     description = """
     Input: SQL query.
     Output: Result from the database or an error message if the query is incorrect.
@@ -197,7 +197,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
 class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
     """Tool for generating SQL queries."""
 
-    name = "generate_sql"
+    name = "GenerateSql"
     description = """
     Input: user question.
     Output: SQL query.
@@ -242,7 +242,7 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
 class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for getting schema of relevant tables."""
 
-    name = "db_schema"
+    name = "DbSchema"
     description = """
     Input: Comma-separated list of tables.
     Output: Schema of the specified tables.
@@ -406,6 +406,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
             database_connection=database_connection,
             temperature=0,
             model_name=os.getenv("LLM_MODEL", "gpt-4-turbo-preview"),
+            api_base=database_connection.llm_config.llm_api_base,
         )
         repository = TableDescriptionRepository(storage)
         db_scan = repository.get_all_tables_by_db(

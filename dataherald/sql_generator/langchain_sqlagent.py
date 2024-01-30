@@ -39,6 +39,7 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
             database_connection=database_connection,
             temperature=0,
             model_name=os.getenv("LLM_MODEL", "gpt-4-turbo-preview"),
+            api_base=database_connection.llm_config.llm_api_base,
         )
         self.database = SQLDatabase.get_sql_engine(database_connection)
         tools = SQLDatabaseToolkit(db=self.database, llm=self.llm).get_tools()

@@ -18,6 +18,7 @@ class LLMModel(Component, ABC):
         database_connection: DatabaseConnection,
         model_family="openai",
         model_name="gpt-4",
+        api_base=None,
         **kwargs: Any
     ) -> Any:
         pass

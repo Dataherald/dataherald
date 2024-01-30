@@ -44,6 +44,7 @@ class LlamaIndexSQLGenerator(SQLGenerator):
             database_connection=database_connection,
             temperature=0,
             model_name=os.getenv("LLM_MODEL", "gpt-4-turbo-preview"),
+            api_base=database_connection.llm_config.llm_api_base,
         )
         token_counter = TokenCountingHandler(
             tokenizer=tiktoken.encoding_for_model(self.llm.model_name).encode,
