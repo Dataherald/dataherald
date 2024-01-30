@@ -116,12 +116,15 @@ class SQLDatabase(LangchainSQLDatabase):
         ssh = database_info.ssh_settings
 
         server = SSHTunnelForwarder(
-            (ssh.host, 22),
+            (ssh.host, 22 if not ssh.port else int(ssh.port)),
             ssh_username=ssh.username,
             ssh_password=fernet_encrypt.decrypt(ssh.password),
             ssh_pkey=file_path,
             ssh_private_key_password=fernet_encrypt.decrypt(ssh.private_key_password),
-            remote_bind_address=(db_uri_obj.hostname, 5432),
+            remote_bind_address=(
+                db_uri_obj.hostname,
+                5432 if not db_uri_obj.port else int(db_uri_obj.port),
+            ),
         )
         server.start()
         local_port = str(server.local_bind_port)
