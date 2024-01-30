@@ -51,6 +51,7 @@ class SSHSettings(BaseSettings):
     host: str | None
     username: str | None
     password: str | None
+    port: str | None = "22"
     private_key_password: str | None
 
     class Config:
