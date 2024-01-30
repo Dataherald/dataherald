@@ -5,9 +5,12 @@ import time
 import uuid
 from typing import Any, List
 
+import numpy as np
 import tiktoken
+from langchain.embeddings import OpenAIEmbeddings
 from openai import OpenAI
 from overrides import override
+from sql_metadata import Parser
 from tiktoken import Encoding
 
 from dataherald.db_scanner.models.types import TableDescription, TableDescriptionStatus
@@ -21,6 +24,8 @@ from dataherald.utils.agent_prompts import FINETUNING_SYSTEM_INFORMATION
 from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
 
 FILE_PROCESSING_ATTEMPTS = 20
+EMBEDDING_MODEL = "text-embedding-ada-002"
+CATEGORICAL_COLUMNS_THRESHOLD = 60
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +43,17 @@ class OpenAIFineTuning(FinetuningModel):
         db_connection = db_connection_repository.find_by_id(
             fine_tuning_model.db_connection_id
         )
+        self.embedding = OpenAIEmbeddings(
+            openai_api_key=db_connection.decrypt_api_key(),
+            model=EMBEDDING_MODEL,
+        )
         self.encoding = tiktoken.encoding_for_model(
             fine_tuning_model.base_llm.model_name
         )
         self.client = OpenAI(api_key=db_connection.decrypt_api_key())
+
+    def cosine_similarity(self, a: List[float], b: List[float]) -> float:
+        return round(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), 4)
 
     @staticmethod
     def map_finetuning_status(status: str) -> str:
@@ -57,8 +69,9 @@ class OpenAIFineTuning(FinetuningModel):
             return FineTuningStatus.QUEUED.value
         return mapped_statuses[status]
 
-    @classmethod
-    def format_columns(cls, table: TableDescription, top_k: int = 10) -> str:
+    def format_columns(
+        self, table: TableDescription, top_k: int = CATEGORICAL_COLUMNS_THRESHOLD
+    ) -> str:
         """
         format_columns formats the columns.
 
@@ -100,22 +113,64 @@ class OpenAIFineTuning(FinetuningModel):
                 )
         return columns_information
 
-    @classmethod
-    def format_dataset(cls, db_scan: List[TableDescription]) -> str:
+    def format_table(self, table: TableDescription) -> str:
+        table_representation = ""
+        tables_schema = table.table_schema
+        table_representation += f"{tables_schema}\n"
+        table_representation += "# Categorical Columns:\n"
+        columns_information = self.format_columns(table)
+        table_representation += columns_information
+        sample_rows = table.examples
+        table_representation += "# Sample rows:\n"
+        for item in sample_rows:
+            for key, value in item.items():
+                table_representation += f"{key}: {value}, "
+            table_representation += "\n"
+        table_representation += "\n\n"
+        return table_representation
+
+    def sort_tables(
+        self, tables: List[TableDescription], prompt: str
+    ) -> List[TableDescription]:
+        tables_with_similarity = []
+        table_representations = []
+        for table in tables:
+            table_representations.append(table.table_schema)
+        prompt_embedding = self.embedding.embed_query(prompt)
+        table_embeddings = self.embedding.embed_documents(table_representations)
+        similarities = np.dot(table_embeddings, prompt_embedding) / (
+            np.linalg.norm(table_embeddings) * np.linalg.norm(prompt_embedding)
+        )
+        for i in range(len(tables)):
+            tables_with_similarity.append((tables[i], similarities[i]))
+        tables_with_similarity.sort(key=lambda x: x[1], reverse=True)
+        return [table[0] for table in tables_with_similarity]
+
+    def format_dataset(
+        self,
+        db_scan: List[TableDescription],
+        prompt: str,
+        token_limit: int,
+        correct_tables: [str] = None,
+    ) -> str:
         schema_of_database = ""
+        indexes_to_remove = []
+        for i in range(len(db_scan)):
+            table = db_scan[i]
+            if correct_tables and table.table_name in correct_tables:
+                schema_of_database += self.format_table(table)
+                indexes_to_remove.append(i)
+        new_db_scan = []
+        for i in range(len(db_scan)):
+            if i not in indexes_to_remove:
+                new_db_scan.append(db_scan[i])
+        db_scan = self.sort_tables(new_db_scan, prompt)
         for table in db_scan:
-            tables_schema = table.table_schema
-            schema_of_database += f"{tables_schema}\n"
-            schema_of_database += "# Categorical Columns:\n"
-            columns_information = cls.format_columns(table)
-            schema_of_database += columns_information
-            sample_rows = table.examples
-            schema_of_database += "# Sample rows:\n"
-            for item in sample_rows:
-                for key, value in item.items():
-                    schema_of_database += f"{key}: {value}, "
-                schema_of_database += "\n"
-            schema_of_database += "\n\n"
+            next_table = self.format_table(table)
+            if len(schema_of_database) + len(next_table) < token_limit:
+                schema_of_database += next_table
+            else:
+                break
         return schema_of_database
 
     @override
@@ -136,15 +191,30 @@ class OpenAIFineTuning(FinetuningModel):
             }
         )
         golden_sqls_repository = GoldenSQLRepository(self.storage)
-        database_schema = self.format_dataset(db_scan)
         finetuning_dataset_path = f"tmp/{str(uuid.uuid4())}.jsonl"
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.find_by_id(self.fine_tuning_model.id)
-        total_number_of_tokens = 0
-        for golden_sql_id in self.fine_tuning_model.golden_sqls:
+        for index, golden_sql_id in enumerate(self.fine_tuning_model.golden_sqls):
+            logger.info(
+                f"Processing golden sql {index + 1} of {len(self.fine_tuning_model.golden_sqls)}"
+            )
             golden_sql = golden_sqls_repository.find_by_id(golden_sql_id)
             question = golden_sql.prompt_text
             query = golden_sql.sql
+            margin_tokens = len(self.encoding.encode(question + query)) + 100
+            correct_tables_unformatted = Parser(query).tables
+            correct_tables = []
+            for table in correct_tables_unformatted:
+                correct_tables.append(table.split(".")[-1])
+            database_schema = self.format_dataset(
+                db_scan=list(db_scan),
+                prompt=question,
+                token_limit=OPENAI_CONTEXT_WIDNOW_SIZES[
+                    self.fine_tuning_model.base_llm.model_name
+                ]
+                - margin_tokens,
+                correct_tables=correct_tables,
+            )
             system_prompt = FINETUNING_SYSTEM_INFORMATION + database_schema
             user_prompt = "User Question: " + question + "\n SQL: "
             assistant_prompt = query + "\n"
@@ -157,7 +227,6 @@ class OpenAIFineTuning(FinetuningModel):
                     ]
                 }
                 number_of_tokens = self.count_tokens(messages)
-                total_number_of_tokens += number_of_tokens
                 if (
                     number_of_tokens
                     > OPENAI_CONTEXT_WIDNOW_SIZES[
@@ -171,7 +240,6 @@ class OpenAIFineTuning(FinetuningModel):
                     return
                 json.dump(messages, outfile)
                 outfile.write("\n")
-        logger.info(f"Toral number of tokens: {total_number_of_tokens}")
         model.finetuning_file_id = self.client.files.create(
             file=open(finetuning_dataset_path, "rb"), purpose="fine-tune"
         ).id
