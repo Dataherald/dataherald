@@ -14,12 +14,16 @@ if __name__ == "__main__":
             {
                 "$set": {
                     "slack_config": {
-                        "slack_installation": org["slack_installation"]
-                        if "slack_installation" in org
-                        else None,
-                        "db_connection_id": org["db_connection_id"]
-                        if "db_connection_id" in org
-                        else None,
+                        "slack_installation": (
+                            org["slack_installation"]
+                            if "slack_installation" in org
+                            else None
+                        ),
+                        "db_connection_id": (
+                            org["db_connection_id"]
+                            if "db_connection_id" in org
+                            else None
+                        ),
                     }
                 }
             },

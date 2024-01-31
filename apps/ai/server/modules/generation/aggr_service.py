@@ -88,11 +88,11 @@ class AggrgationGenerationService:
                             organization_id=organization.id,
                             display_id=display_id,
                             created_by=created_by,
-                            slack_info=SlackInfo(
-                                **slack_generation_request.slack_info.dict()
-                            )
-                            if slack_generation_request.slack_info
-                            else None,
+                            slack_info=(
+                                SlackInfo(**slack_generation_request.slack_info.dict())
+                                if slack_generation_request.slack_info
+                                else None
+                            ),
                         )
                     ),
                 ),
@@ -124,16 +124,20 @@ class AggrgationGenerationService:
             self.repo.update_prompt_dh_metadata(
                 prompt.id,
                 DHPromptMetadata(
-                    generation_status=GenerationStatus.NOT_VERIFIED
-                    if sql_generation.status == SQLGenerationStatus.VALID
-                    else GenerationStatus.ERROR,
+                    generation_status=(
+                        GenerationStatus.NOT_VERIFIED
+                        if sql_generation.status == SQLGenerationStatus.VALID
+                        else GenerationStatus.ERROR
+                    ),
                 ),
             )
 
             self.analytics.track(
-                slack_generation_request.slack_info.user_id
-                if slack_generation_request.slack_info
-                else organization.id,
+                (
+                    slack_generation_request.slack_info.user_id
+                    if slack_generation_request.slack_info
+                    else organization.id
+                ),
                 "generation_asked",
                 {
                     "display_id": display_id,
@@ -159,9 +163,11 @@ class AggrgationGenerationService:
             else:
                 is_above_confidence_threshold = True
                 self.analytics.track(
-                    slack_generation_request.slack_info.user_id
-                    if slack_generation_request.slack_info
-                    else organization.id,
+                    (
+                        slack_generation_request.slack_info.user_id
+                        if slack_generation_request.slack_info
+                        else organization.id
+                    ),
                     "generation_correct_on_first_try",
                     {
                         "display_id": display_id,
@@ -240,9 +246,11 @@ class AggrgationGenerationService:
             self.repo.update_prompt_dh_metadata(
                 prompt.id,
                 DHPromptMetadata(
-                    generation_status=GenerationStatus.NOT_VERIFIED
-                    if sql_generation.status == SQLGenerationStatus.VALID
-                    else GenerationStatus.ERROR,
+                    generation_status=(
+                        GenerationStatus.NOT_VERIFIED
+                        if sql_generation.status == SQLGenerationStatus.VALID
+                        else GenerationStatus.ERROR
+                    ),
                 ),
             )
 
@@ -315,16 +323,16 @@ class AggrgationGenerationService:
                 GenerationListResponse(
                     id=prompt.id,
                     prompt_text=prompt.text,
-                    db_connection_alias=db_connection_dict[
-                        prompt.db_connection_id
-                    ].alias
-                    if prompt.db_connection_id in db_connection_dict
-                    else None,
+                    db_connection_alias=(
+                        db_connection_dict[prompt.db_connection_id].alias
+                        if prompt.db_connection_id in db_connection_dict
+                        else None
+                    ),
                     nl_generation_text=nl_generation.text if nl_generation else None,
                     sql=sql_generation.sql if sql_generation else None,
-                    confidence_score=sql_generation.confidence_score
-                    if sql_generation
-                    else None,
+                    confidence_score=(
+                        sql_generation.confidence_score if sql_generation else None
+                    ),
                     status=prompt.metadata.dh_internal.generation_status,
                     display_id=prompt.metadata.dh_internal.display_id,
                     created_at=prompt.created_at,
@@ -410,9 +418,9 @@ class AggrgationGenerationService:
             prompt_id,
             DHPromptMetadata(
                 **generation_request.dict(exclude_unset=True),
-                updated_by=self.user_service.get_user(user.id, org_id).name
-                if user
-                else None,
+                updated_by=(
+                    self.user_service.get_user(user.id, org_id).name if user else None
+                ),
             ),
         )
 
@@ -429,9 +437,9 @@ class AggrgationGenerationService:
                 ).alias,
                 "display_id": prompt.metadata.dh_internal.display_id,
                 "status": generation_request.generation_status,
-                "confidence_score": sql_generation.confidence_score
-                if sql_generation
-                else None,
+                "confidence_score": (
+                    sql_generation.confidence_score if sql_generation else None
+                ),
             },
         )
 
@@ -481,12 +489,16 @@ class AggrgationGenerationService:
                 prompt_id,
                 DHPromptMetadata(
                     message=nl_generation.text,
-                    updated_by=self.user_service.get_user(user.id, org_id).name
-                    if user
-                    else None,
-                    generation_status=GenerationStatus.NOT_VERIFIED
-                    if sql_generation.status == SQLGenerationStatus.VALID
-                    else GenerationStatus.ERROR,
+                    updated_by=(
+                        self.user_service.get_user(user.id, org_id).name
+                        if user
+                        else None
+                    ),
+                    generation_status=(
+                        GenerationStatus.NOT_VERIFIED
+                        if sql_generation.status == SQLGenerationStatus.VALID
+                        else GenerationStatus.ERROR
+                    ),
                 ),
             )
 
@@ -562,12 +574,16 @@ class AggrgationGenerationService:
             self.repo.update_prompt_dh_metadata(
                 prompt_id,
                 DHPromptMetadata(
-                    updated_by=self.user_service.get_user(user.id, org_id).name
-                    if user
-                    else None,
-                    generation_status=GenerationStatus.NOT_VERIFIED
-                    if sql_generation.status == SQLGenerationStatus.VALID
-                    else GenerationStatus.ERROR,
+                    updated_by=(
+                        self.user_service.get_user(user.id, org_id).name
+                        if user
+                        else None
+                    ),
+                    generation_status=(
+                        GenerationStatus.NOT_VERIFIED
+                        if sql_generation.status == SQLGenerationStatus.VALID
+                        else GenerationStatus.ERROR
+                    ),
                 ),
             )
             if sql_generation.status == SQLGenerationStatus.VALID:
@@ -754,9 +770,11 @@ class AggrgationGenerationService:
                 raise GenerationEngineError(
                     status_code=response.status_code,
                     prompt_id=prompt_id,
-                    display_id=display_id or prompt.metadata.dh_internal.display_id
-                    if prompt
-                    else None,
+                    display_id=(
+                        display_id or prompt.metadata.dh_internal.display_id
+                        if prompt
+                        else None
+                    ),
                     error_message=response_json["message"],
                 )
             raise_for_status(response.status_code, response.text)

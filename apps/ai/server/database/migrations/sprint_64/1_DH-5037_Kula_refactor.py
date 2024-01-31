@@ -90,13 +90,17 @@ if __name__ == "__main__":
                         "dh_internal": {
                             "organization_id": str(question_ref["organization_id"]),
                             "display_id": question_ref["display_id"],
-                            "generation_status": "ERROR"
-                            if question_ref["status"] == "SQL_ERROR"
-                            else question_ref["status"],
+                            "generation_status": (
+                                "ERROR"
+                                if question_ref["status"] == "SQL_ERROR"
+                                else question_ref["status"]
+                            ),
                             "slack_info": question_ref["slack_info"],
-                            "message": question_ref["message"]
-                            if "message" in question_ref
-                            else None,
+                            "message": (
+                                question_ref["message"]
+                                if "message" in question_ref
+                                else None
+                            ),
                             "created_by": created_by,
                             "updated_by": updated_by,
                         }

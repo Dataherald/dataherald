@@ -103,9 +103,9 @@ class TableDescriptionService:
                         name=td.table_name,
                         columns=[c.name for c in td.columns],
                         sync_status=td.status,
-                        last_sync=str(td.last_schema_sync)
-                        if td.last_schema_sync
-                        else None,
+                        last_sync=(
+                            str(td.last_schema_sync) if td.last_schema_sync else None
+                        ),
                     )
                     for td in table_descriptions
                 ]

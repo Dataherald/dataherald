@@ -56,11 +56,11 @@ class GoldenSQLService:
         return [
             AggrGoldenSQL(
                 **golden_sql.dict(),
-                db_connection_alias=db_connection_dict[
-                    golden_sql.db_connection_id
-                ].alias
-                if golden_sql.db_connection_id in db_connection_dict
-                else None,
+                db_connection_alias=(
+                    db_connection_dict[golden_sql.db_connection_id].alias
+                    if golden_sql.db_connection_id in db_connection_dict
+                    else None
+                ),
             )
             for golden_sql in golden_sqls
         ]
@@ -107,11 +107,11 @@ class GoldenSQLService:
             return [
                 AggrGoldenSQL(
                     **golden_sql.dict(),
-                    db_connection_alias=db_connection_dict[
-                        golden_sql.db_connection_id
-                    ].alias
-                    if golden_sql.db_connection_id in db_connection_dict
-                    else None,
+                    db_connection_alias=(
+                        db_connection_dict[golden_sql.db_connection_id].alias
+                        if golden_sql.db_connection_id in db_connection_dict
+                        else None
+                    ),
                 )
                 for golden_sql in golden_sqls
             ]

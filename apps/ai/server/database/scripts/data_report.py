@@ -76,26 +76,30 @@ if __name__ == "__main__":
                     "original_sql_query": original_response["sql"],
                     "original_sql_status": original_response["status"],
                     "latest_sql_status": final_response["status"],
-                    "final_confidence": None
-                    if len(sql_generations) == 1
-                    else final_response["confidence_score"],
-                    "final_sql_query": None
-                    if len(sql_generations) == 1
-                    else final_response["sql"],
-                    "final_sql_status": None
-                    if len(sql_generations) == 1
-                    else final_response["status"],
-                    "was_the_original_correct": True
-                    if prompt["metadata"]["dh_internal"]["generation_status"]
-                    == "VERIFIED"
-                    and (
-                        len(sql_generations) == 1
-                        or (
-                            len(sql_generations) > 1
-                            and original_response["sql"] == final_response["sql"]
+                    "final_confidence": (
+                        None
+                        if len(sql_generations) == 1
+                        else final_response["confidence_score"]
+                    ),
+                    "final_sql_query": (
+                        None if len(sql_generations) == 1 else final_response["sql"]
+                    ),
+                    "final_sql_status": (
+                        None if len(sql_generations) == 1 else final_response["status"]
+                    ),
+                    "was_the_original_correct": (
+                        True
+                        if prompt["metadata"]["dh_internal"]["generation_status"]
+                        == "VERIFIED"
+                        and (
+                            len(sql_generations) == 1
+                            or (
+                                len(sql_generations) > 1
+                                and original_response["sql"] == final_response["sql"]
+                            )
                         )
-                    )
-                    else False,
+                        else False
+                    ),
                     "question_asked_date": str(original_response["created_at"]),
                     "num_responses": len(sql_generations),
                 }
