@@ -1,7 +1,8 @@
 """SQL wrapper around SQLDatabase in langchain."""
 import logging
+import re
 from typing import Any, List
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote
 
 import sqlparse
 from langchain.sql_database import SQLDatabase as LangchainSQLDatabase
@@ -104,6 +105,34 @@ class SQLDatabase(LangchainSQLDatabase):
         return engine
 
     @classmethod
+    def extract_parameters(cls, input_string):
+        # Define a regex pattern to extract the required parameters
+        pattern = r"([^:/]+)://([^:]+):([^@]+)@([^:/]+)(?::(\d+))?/([^/]+)"
+
+        # Use the regex pattern to match and extract the parameters
+        match = re.match(pattern, input_string)
+
+        if match:
+            driver = match.group(1)
+            user = match.group(2)
+            password = match.group(3)
+            host = match.group(4)
+            port = match.group(5)
+            db = match.group(6) if match.group(6) else None
+
+            # Create a dictionary with the extracted parameters
+            return {
+                "driver": driver,
+                "user": user,
+                "password": password,
+                "host": host,
+                "port": port if port else None,
+                "db": db,
+            }
+
+        return None
+
+    @classmethod
     def from_uri_ssh(cls, database_info: DatabaseConnection):
         file_path = database_info.path_to_credentials_file
         if file_path.lower().startswith("s3"):
@@ -112,7 +141,7 @@ class SQLDatabase(LangchainSQLDatabase):
 
         fernet_encrypt = FernetEncrypt()
         db_uri = unquote(fernet_encrypt.decrypt(database_info.connection_uri))
-        db_uri_obj = urlparse(db_uri)
+        db_uri_obj = cls.extract_parameters(db_uri)
         ssh = database_info.ssh_settings
 
         server = SSHTunnelForwarder(
@@ -122,8 +151,8 @@ class SQLDatabase(LangchainSQLDatabase):
             ssh_pkey=file_path,
             ssh_private_key_password=fernet_encrypt.decrypt(ssh.private_key_password),
             remote_bind_address=(
-                db_uri_obj.hostname,
-                5432 if not db_uri_obj.port else int(db_uri_obj.port),
+                db_uri_obj["host"],
+                5432 if not db_uri_obj["port"] else int(db_uri_obj["port"]),
             ),
         )
         server.start()
@@ -131,7 +160,7 @@ class SQLDatabase(LangchainSQLDatabase):
         local_host = str(server.local_bind_host)
 
         return cls.from_uri(
-            f"{db_uri_obj.scheme}://{db_uri_obj.username}:{db_uri_obj.password}@{local_host}:{local_port}{db_uri_obj.path}"
+            f"{db_uri_obj['driver']}://{db_uri_obj['user']}:{db_uri_obj['password']}@{local_host}:{local_port}/{db_uri_obj['db']}"
         )
 
     @classmethod
