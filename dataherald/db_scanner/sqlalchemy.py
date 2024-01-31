@@ -57,13 +57,6 @@ class SqlAlchemyScanner(Scanner):
             )
         return rows
 
-    @override
-    def get_all_tables_and_views(self, database: SQLDatabase) -> list[str]:
-        inspector = inspect(database.engine)
-        meta = MetaData(bind=database.engine)
-        MetaData.reflect(meta, views=True)
-        return inspector.get_table_names() + inspector.get_view_names()
-
     def get_table_examples(
         self, meta: MetaData, db_engine: SQLDatabase, table: str, rows_number: int = 3
     ) -> List[Any]:

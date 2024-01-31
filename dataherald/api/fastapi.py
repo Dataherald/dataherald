@@ -142,9 +142,8 @@ class FastAPI(API):
                 status_code=400,
                 detail=f"Unable to connect to db: {scanner_request.db_connection_id}, {e}",
             )
+        all_tables = database.get_tables_and_views()
 
-        scanner = self.system.instance(Scanner)
-        all_tables = scanner.get_all_tables_and_views(database)
         if scanner_request.table_names:
             for table in scanner_request.table_names:
                 if table not in all_tables:
@@ -154,6 +153,7 @@ class FastAPI(API):
         else:
             scanner_request.table_names = all_tables
 
+        scanner = self.system.instance(Scanner)
         rows = scanner.synchronizing(
             scanner_request,
             TableDescriptionRepository(self.storage),
@@ -271,9 +271,8 @@ class FastAPI(API):
             db_connection_repository = DatabaseConnectionRepository(self.storage)
             db_connection = db_connection_repository.find_by_id(db_connection_id)
             database = SQLDatabase.get_sql_engine(db_connection)
+            all_tables = database.get_tables_and_views()
 
-            scanner = self.system.instance(Scanner)
-            all_tables = scanner.get_all_tables_and_views(database)
             if table_name:
                 all_tables = [table for table in all_tables if table == table_name]
 
