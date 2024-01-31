@@ -46,6 +46,7 @@ from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
 
 logger = logging.getLogger(__name__)
 
+
 TOP_K = SQLGenerator.get_upper_bound_limit()
 
 
