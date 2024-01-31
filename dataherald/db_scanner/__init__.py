@@ -28,7 +28,3 @@ class Scanner(Component, ABC):
         repository: TableDescriptionRepository,
     ) -> list[TableDescription]:
         """ "Update table_description status"""
-
-    @abstractmethod
-    def get_all_tables_and_views(self, database: SQLDatabase) -> list[str]:
-        """ "Retrieve all tables and views"""
