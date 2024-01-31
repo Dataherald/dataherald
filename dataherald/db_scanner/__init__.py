@@ -1,4 +1,5 @@
 """Base class that all scanner classes inherit from."""
+
 from abc import ABC, abstractmethod
 
 from dataherald.config import Component

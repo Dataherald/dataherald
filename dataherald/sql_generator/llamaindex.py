@@ -1,4 +1,5 @@
 """A wrapper for the SQL generation functions in langchain"""
+
 import datetime
 import logging
 import os
