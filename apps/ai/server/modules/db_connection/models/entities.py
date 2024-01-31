@@ -7,6 +7,7 @@ class SSHSettings(BaseModel):
     host: str | None
     username: str | None
     password: str | None
+    port: str | None
 
 
 # TODO: find a better way to do this for all metadata

@@ -204,6 +204,7 @@ export type Databases = Database[]
 
 export interface SshSettings {
   host: string
+  port: string
   username: string
   password: string
 }

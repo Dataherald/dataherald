@@ -49,6 +49,7 @@ const mapDatabaseConnectionFormValues = (
           formatDriver(formValues.data_warehouse) + formValues.connection_uri,
         ssh_settings: {
           host: formValues.ssh_settings.host as string,
+          port: formValues.ssh_settings.port as string,
           username: formValues.ssh_settings.username as string,
           password: formValues.ssh_settings.password as string,
         },
@@ -74,6 +75,7 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
       file: null,
       ssh_settings: {
         host: '',
+        port: '',
         username: '',
         password: '',
       },

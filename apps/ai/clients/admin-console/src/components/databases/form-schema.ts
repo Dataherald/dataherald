@@ -23,6 +23,7 @@ export const dbConnectionFormSchema = Yup.object({
   ssh_settings: Yup.object<SshSettings>()
     .shape({
       host: Yup.string(),
+      port: Yup.string(),
       username: Yup.string(),
       password: Yup.string(),
     })
@@ -31,6 +32,7 @@ export const dbConnectionFormSchema = Yup.object({
         ? schema
             .shape({
               host: Yup.string().required("The SSH host can't be empty"),
+              port: Yup.string(),
               username: Yup.string().required(
                 "The SSH username can't be empty",
               ),
@@ -40,6 +42,7 @@ export const dbConnectionFormSchema = Yup.object({
         : schema
             .shape({
               host: Yup.string().notRequired(),
+              port: Yup.string().notRequired(),
               username: Yup.string().notRequired(),
               password: Yup.string().notRequired(),
             })

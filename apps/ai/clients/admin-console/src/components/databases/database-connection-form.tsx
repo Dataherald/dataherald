@@ -33,11 +33,26 @@ const SSHForm: FC<{
       control={form.control}
       name="ssh_settings.host"
       render={({ field }) => (
-        <FormItem className="col-span-2">
+        <FormItem>
           <FormLabel>SSH host</FormLabel>
           <FormControl>
             <Input placeholder="SSH host" {...field} />
           </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name="ssh_settings.port"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>SSH port</FormLabel>
+          <div className="flex items-center gap-3">
+            <FormControl>
+              <Input placeholder="SSH port" {...field} />
+            </FormControl>
+          </div>
           <FormMessage />
         </FormItem>
       )}
