@@ -53,8 +53,7 @@ from dataherald.utils.agent_prompts import (
 logger = logging.getLogger(__name__)
 
 
-TOP_K = os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50")
-TOP_K = TOP_K if isinstance(TOP_K, int) else int(TOP_K)
+TOP_K = SQLGenerator.get_upper_bound_limit()
 EMBEDDING_MODEL = "text-embedding-3-large"
 
 

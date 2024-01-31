@@ -1,4 +1,5 @@
 """Base class that all sql generation classes inherit from."""
+import os
 import re
 from abc import ABC, abstractmethod
 from typing import Any, List, Tuple
@@ -43,6 +44,13 @@ class SQLGenerator(Component, ABC):
         if matches:
             return matches[0].strip()
         return ""
+
+    @classmethod
+    def get_upper_bound_limit(cls) -> int:
+        top_k = os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", None)
+        if top_k is None or top_k == "":
+            top_k = 50
+        return top_k if isinstance(top_k, int) else int(top_k)
 
     def create_sql_query_status(
         self, db: SQLDatabase, query: str, sql_generation: SQLGeneration

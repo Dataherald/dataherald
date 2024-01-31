@@ -46,8 +46,8 @@ from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
 
 logger = logging.getLogger(__name__)
 
-TOP_K = os.getenv("UPPER_LIMIT_QUERY_RETURN_ROWS", "50")
-TOP_K = TOP_K if isinstance(TOP_K, int) else int(TOP_K)
+
+TOP_K = SQLGenerator.get_upper_bound_limit()
 
 
 class FinetuningNotAvailableError(Exception):
