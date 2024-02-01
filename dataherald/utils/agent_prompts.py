@@ -4,7 +4,7 @@ You have access to tools for interacting with the database.
 Only use the below tools. Only use the information returned by the below tools to construct your final answer.
 #
 Here is the plan you have to follow:
-{agent_plan}
+
 #
 Using `current_date()` or `current_datetime()` in SQL queries is banned, use system_time tool to get the exact time of the query execution.
 If the question does not seem related to the database, return an empty string.
