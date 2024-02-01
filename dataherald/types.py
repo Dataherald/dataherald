@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from enum import Enum
 
@@ -161,7 +162,7 @@ class Prompt(BaseModel):
 
 
 class LLMConfig(BaseModel):
-    llm_name: str = "gpt-4-turbo-preview"
+    llm_name: str = os.getenv("LLM_NAME", "gpt-4-turbo-preview")
     api_base: str | None = None
 
 
@@ -170,7 +171,7 @@ class SQLGeneration(BaseModel):
     prompt_id: str
     finetuning_id: str | None
     low_latency_mode: bool = False
-    llm_config: LLMConfig
+    llm_config: LLMConfig | None
     evaluate: bool = False
     sql: str | None
     status: str = "INVALID"
@@ -185,7 +186,7 @@ class SQLGeneration(BaseModel):
 class NLGeneration(BaseModel):
     id: str | None = None
     sql_generation_id: str
-    llm_config: LLMConfig
+    llm_config: LLMConfig | None
     text: str | None
     created_at: datetime = Field(default_factory=datetime.now)
     metadata: dict | None

@@ -66,11 +66,14 @@ You can also self-host the engine locally using Docker. By default the engine us
 cp .env.example .env
 ```
 
-Specifically the following 3 fields must be manually set before the engine is started.
+Specifically the following 4 fields must be manually set before the engine is started.
+
+LLM_MODEL is employed by the engine to generate SQL from natural language. You can use the default model (gpt-4-turbo-preview) or use your own.
 
 ```
 #OpenAI credentials and model 
 OPENAI_API_KEY = 
+LLM_MODEL = 
 ORG_ID =
 
 #Encryption key for storing DB connection data in Mongo

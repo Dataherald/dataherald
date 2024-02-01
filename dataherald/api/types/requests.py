@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from dataherald.types import LLMConfig
+
 
 class PromptRequest(BaseModel):
     text: str
@@ -7,15 +9,10 @@ class PromptRequest(BaseModel):
     metadata: dict | None
 
 
-class LLMConfig(BaseModel):
-    llm_name: str = "gpt-4-turbo-preview"
-    api_base: str | None = None
-
-
 class SQLGenerationRequest(BaseModel):
     finetuning_id: str | None
     low_latency_mode: bool = False
-    llm_config: LLMConfig = LLMConfig()
+    llm_config: LLMConfig | None
     evaluate: bool = False
     sql: str | None
     metadata: dict | None
@@ -26,7 +23,7 @@ class PromptSQLGenerationRequest(SQLGenerationRequest):
 
 
 class NLGenerationRequest(BaseModel):
-    llm_config: LLMConfig = LLMConfig()
+    llm_config: LLMConfig | None
     max_rows: int = 100
     metadata: dict | None
 
