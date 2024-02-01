@@ -10,6 +10,7 @@ NL generation parameters
 The following parameters are used for NL generation:
 
 * max_rows: the maximum number of rows to return in the NL response
+* llm_config: is the configuration for the language model that will be used for NL generation. If you want to use open-source LLMs you should provide the api_base and llm_name. If you want to use OpenAI models don't specify api_base.
 
 SQL generation parameters
 -------------------------
@@ -19,6 +20,7 @@ The following parameters are used for SQL generation:
 * finetuning_id: the id of the finetuning model. If this is not provided we use a reasoning LLM with retrieval augmented generation. If specified we use the finetuning model for sql generation.
 * low_latency_mode: When this flag is set, some of the agent steps are removed, which can lead to faster responses but reduce the accuracy. This is only supported for our new agent. 
 * evaluate: whether to evaluate the generated SQL query.
+* llm_config: is the configuration for the language model that will be used for NL generation. If you want to use open-source LLMs you should provide the api_base and llm_name. If you want to use OpenAI models don't specify api_base.
 * sql: if you want to manually create the SQL query you can provide it here. If this is not provided we use the prompt to generate the SQL query.
 
 
@@ -41,14 +43,26 @@ Request this ``POST`` endpoint to create a SQL query and a NL response for a giv
 .. code-block:: rst
 
    {
+        "llm_config": {
+            "llm_name": "gpt-4-turbo-preview",
+            "api_base": "string"
+        },
         "max_rows": 100,
         "metadata": {},
         "sql_generation": {
             "finetuning_id": "string",
             "low_latency_mode": false,
+            "llm_config": {
+            "llm_name": "gpt-4-turbo-preview"
+            },
             "evaluate": false,
             "sql": "string",
+            "metadata": {},
+            "prompt": {
+            "text": "string",
+            "db_connection_id": "string",
             "metadata": {}
+            }
         }
     }
 
@@ -62,6 +76,10 @@ HTTP 201 code response
         "id": "string",
         "metadata": {},
         "created_at": "string",
+        "llm_config": {
+            "llm_name": "gpt-4-turbo-preview",
+            "api_base": "string"
+        },
         "sql_generation_id": "string",
         "text": "string"
     }
@@ -71,15 +89,27 @@ HTTP 201 code response
 .. code-block:: rst
 
     curl -X 'POST' \
-        'http://localhost/api/v1/prompts/6598246b55b78760ff3f205c/sql-generations/nl-generations' \
+        'http://localhost/api/v1/prompts/sql-generations/nl-generations' \
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
         -d '{
+        "llm_config": {
+            "llm_name": "gpt-4-turbo-preview"
+        },
         "max_rows": 100,
         "metadata": {},
         "sql_generation": {
+            "low_latency_mode": false,
+            "llm_config": {
+            "llm_name": "gpt-4-turbo-preview"
+            },
             "evaluate": false,
+            "metadata": {},
+            "prompt": {
+            "text": "What is the average rent price in LA?",
+            "db_connection_id": "65baac8c35db7cdd1094be2e",
             "metadata": {}
+            }
         }
     }'
 
@@ -89,9 +119,13 @@ HTTP 201 code response
 .. code-block:: rst
 
     {
-    "id": "659f141ffb38253f83458067",
-    "metadata": {},
-    "created_at": "2024-01-10 22:03:11.422172",
-    "sql_generation_id": "659f1396fb38253f83458066",
-    "text": "The average rent price in Los Angeles, California, as of the most recent data on November 30, 2023, is $3,367.66."
+        "id": "65bbb104142cc9bea23e2a03",
+        "metadata": {},
+        "created_at": "2024-02-01T14:56:04.884063+00:00",
+        "llm_config": {
+            "llm_name": "gpt-4-turbo-preview",
+            "api_base": null
+        },
+        "sql_generation_id": "65bbb09a142cc9bea23e2a02",
+        "text": "The average rent price in LA is approximately $2,757.48."
     }

@@ -12,7 +12,7 @@ from dataherald.model.chat_model import ChatModel
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator.create_sql_query_status import create_sql_query_status
-from dataherald.types import Prompt, SQLGeneration
+from dataherald.types import LLMConfig, Prompt, SQLGeneration
 from dataherald.utils.strings import contains_line_breaks
 
 
@@ -24,8 +24,9 @@ class SQLGenerator(Component, ABC):
     metadata: Any
     llm: ChatModel | None = None
 
-    def __init__(self, system: System):  # noqa: ARG002
+    def __init__(self, system: System, llm_config: LLMConfig):  # noqa: ARG002
         self.system = system
+        self.llm_config = llm_config
         self.model = ChatModel(self.system)
 
     def check_for_time_out_or_tool_limit(self, response: dict) -> dict:

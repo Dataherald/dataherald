@@ -19,7 +19,7 @@ from dataherald.sql_generator.dataherald_finetuning_agent import (
     DataheraldFinetuningAgent,
 )
 from dataherald.sql_generator.dataherald_sqlagent import DataheraldSQLAgent
-from dataherald.types import SQLGeneration
+from dataherald.types import LLMConfig, SQLGeneration
 
 
 class SQLGenerationError(Exception):
@@ -46,6 +46,9 @@ class SQLGenerationService:
         initial_sql_generation = SQLGeneration(
             prompt_id=prompt_id,
             created_at=datetime.now(),
+            llm_config=sql_generation_request.llm_config
+            if sql_generation_request.llm_config
+            else LLMConfig(),
             metadata=sql_generation_request.metadata,
         )
         self.sql_generation_repository.insert(initial_sql_generation)
@@ -82,9 +85,19 @@ class SQLGenerationService:
                         "Low latency mode is not supported for our old agent with no finetuning. Please specify a finetuning id.",
                         initial_sql_generation.id,
                     )
-                sql_generator = DataheraldSQLAgent(self.system)
+                sql_generator = DataheraldSQLAgent(
+                    self.system,
+                    sql_generation_request.llm_config
+                    if sql_generation_request.llm_config
+                    else LLMConfig(),
+                )
             else:
-                sql_generator = DataheraldFinetuningAgent(self.system)
+                sql_generator = DataheraldFinetuningAgent(
+                    self.system,
+                    sql_generation_request.llm_config
+                    if sql_generation_request.llm_config
+                    else LLMConfig(),
+                )
                 sql_generator.finetuning_id = sql_generation_request.finetuning_id
                 sql_generator.use_fintuned_model_only = (
                     sql_generation_request.low_latency_mode
@@ -104,6 +117,11 @@ class SQLGenerationService:
                 raise SQLGenerationError(str(e), initial_sql_generation.id) from e
         if sql_generation_request.evaluate:
             evaluator = self.system.instance(Evaluator)
+            evaluator.llm_config = (
+                sql_generation_request.llm_config
+                if sql_generation_request.llm_config
+                else LLMConfig()
+            )
             confidence_score = evaluator.get_confidence_score(
                 user_prompt=prompt,
                 sql_generation=sql_generation,

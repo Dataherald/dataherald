@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 import time
 from datetime import date, datetime
@@ -10,7 +9,6 @@ from langchain.chains import LLMChain
 from langchain.prompts.chat import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
 )
 from overrides import override
 from sql_metadata import Parser
@@ -27,7 +25,9 @@ from dataherald.types import Prompt, SQLGeneration
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_TEMPLATE = """You are a {dialect} expert.
+
+HUMAN_TEMPLATE = """
+You are a {dialect} expert.
 Given a question, a SQL query, and the database schema, analyze the correctness of the SQL query and provide a score.
 Score indicates how correctly and accurately SQL query answers the question.
 Note that the score should be between 0 and 100. Higher scores means the SQL Query is more accurate.
@@ -44,9 +44,6 @@ Double check the SQL query for the common mistakes, including:
 - columns in the SELECT clause should correspond to what exactly asked by user in the question
 - check for the improper use of the aggergation functions (SUM, AVG, MIN, MAX, ...)
 - robustness of the SQL query in handling cases where data values can be in different format (WHERE lower(column) = lower(entity))
-"""
-
-HUMAN_TEMPLATE = """
 Give me a score for the SQL query.
 Schema of the tables:
 {schema}
@@ -107,16 +104,12 @@ class SimpleEvaluator(Evaluator):
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            model_name=os.getenv("LLM_MODEL", "gpt-4"),
+            model_name=self.llm_config.llm_name,
+            api_base=self.llm_config.api_base,
         )
         start_time = time.time()
-        system_message_prompt = SystemMessagePromptTemplate.from_template(
-            SYSTEM_TEMPLATE
-        )
         human_message_prompt = HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE)
-        chat_prompt = ChatPromptTemplate.from_messages(
-            [system_message_prompt, human_message_prompt]
-        )
+        chat_prompt = ChatPromptTemplate.from_messages([human_message_prompt])
         user_question = user_prompt.text
         sql = sql_generation.sql
         dialect = database.dialect

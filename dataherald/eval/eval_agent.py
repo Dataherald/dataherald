@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 import time
 from difflib import SequenceMatcher
@@ -251,7 +250,8 @@ class EvaluationAgent(Evaluator):
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            model_name=os.getenv("LLM_MODEL", "gpt-4"),
+            model_name=self.llm_config.llm_name,
+            api_base=self.llm_config.api_base,
         )
         database = SQLDatabase.get_sql_engine(database_connection)
         user_question = user_prompt.text

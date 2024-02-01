@@ -8,7 +8,7 @@ provided in the .env.example file with the default values.
 
     OPENAI_API_KEY = 
     ORG_ID =
-    LLM_MODEL = 'gpt-4-32k' 
+    LLM_MODEL = 'gpt-4-turbo-preview'
 
 
     GOLDEN_RECORD_COLLECTION = 'my-golden-records'

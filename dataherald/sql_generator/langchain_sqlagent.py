@@ -2,7 +2,6 @@
 
 import datetime
 import logging
-import os
 import time
 from typing import Any, List
 
@@ -33,12 +32,15 @@ class LangChainSQLAgentSQLGenerator(SQLGenerator):
     ) -> SQLGeneration:  # type: ignore
         logger.info(f"Generating SQL response to question: {str(user_prompt.dict())}")
         response = SQLGeneration(
-            prompt_id=user_prompt.id, created_at=datetime.datetime.now()
+            prompt_id=user_prompt.id,
+            created_at=datetime.datetime.now(),
+            llm_config=self.llm_config,
         )
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            model_name=os.getenv("LLM_MODEL", "gpt-4-turbo-preview"),
+            model_name=self.llm_config.llm_name,
+            api_base=self.llm_config.api_base,
         )
         self.database = SQLDatabase.get_sql_engine(database_connection)
         tools = SQLDatabaseToolkit(db=self.database, llm=self.llm).get_tools()
