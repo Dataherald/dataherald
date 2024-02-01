@@ -35,6 +35,9 @@ Request this ``POST`` endpoint to create a SQL query for a given prompt::
    {
         "finetuning_id": "string",
         "low_latency_mode": false,
+        "llm_config": {
+            "llm_name": "gpt-4-turbo-preview"
+        },
         "evaluate": false,
         "sql": "string",
         "metadata": {}
@@ -54,6 +57,10 @@ HTTP 201 code response
         "finetuning_id": "string",
         "status": "string",
         "completed_at": "string",
+        "llm_config": {
+            "llm_name": "gpt-4-turbo-preview",
+            "api_base": "string"
+        },
         "sql": "string",
         "tokens_used": 0,
         "confidence_score": 0,
@@ -65,11 +72,17 @@ HTTP 201 code response
 .. code-block:: rst
 
     curl -X 'POST' \
-    'http://localhost/api/v1/prompts/659823133d20c828021c9516/sql-generations' \
+    'http://localhost/api/v1/prompts/65bbb224142cc9bea23e2a07/sql-generations' \
     -H 'accept: application/json' \
     -H 'Content-Type: application/json' \
     -d '{
-    "evaluate": false
+    "low_latency_mode": false,
+    "llm_config": {
+        "llm_name": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+        "api_base": "https://tt5h145hsc119q-8000.proxy.runpod.net/v1"
+    },
+    "evaluate": false,
+    "metadata": {}
     }'
 
 
@@ -78,15 +91,19 @@ HTTP 201 code response
 .. code-block:: rst
 
     {
-        "id": "659ffed5fb38253f83458070",
-        "metadata": null,
-        "created_at": "2024-01-11 14:44:37.629631",
-        "prompt_id": "659823133d20c828021c9516",
-        "finetuning_id": null,
-        "status": "VALID",
-        "completed_at": "2024-01-11 14:45:51.220709",
-        "sql": "-- Select the average rent price for 'Los Angeles' city in 'California'\nSELECT \n    dh_state_name, -- Include the state name as per admin instructions\n    AVG(metric_value) AS average_rent_price -- Calculate the average rent price\nFROM \n    renthub_average_rent\nWHERE \n    geo_type = 'city' -- Filter by city geo_type\n    AND location_name = 'Los Angeles' -- Filter by 'Los Angeles' location\n    AND dh_state_name = 'California' -- Filter by 'California' state\n    AND property_type = 'All Residential' -- Filter by 'All Residential' property type as per admin instructions\n    AND period_end = '2023-12-31' -- Filter by the last date of the most recent complete month\nGROUP BY \n    dh_state_name -- Group by state name to include it in the select",
-        "tokens_used": 14211,
-        "confidence_score": null,
-        "error": null
+    "id": "65bbb400142cc9bea23e2a0c",
+    "metadata": {},
+    "created_at": "2024-02-01T15:08:48.370228+00:00",
+    "prompt_id": "65bbb224142cc9bea23e2a07",
+    "finetuning_id": null,
+    "status": "VALID",
+    "completed_at": "2024-02-01T15:09:10.474942+00:00",
+    "llm_config": {
+        "llm_name": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+        "api_base": "https://tt5h145hsc119q-8000.proxy.runpod.net/v1"
+    },
+    "sql": "SELECT metric_value \nFROM renthub_median_rent \nWHERE period_type = 'monthly' \nAND geo_type = 'city' \nAND location_name = 'Miami' \nAND property_type = 'All Residential' \nAND period_end = (SELECT DATE_TRUNC('MONTH', CURRENT_DATE()) - INTERVAL '1 day')\nLIMIT 10",
+    "tokens_used": 18115,
+    "confidence_score": null,
+    "error": null
     }

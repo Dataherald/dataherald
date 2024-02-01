@@ -16,12 +16,18 @@ class ChatModel(LLMModel):
         self,
         database_connection: DatabaseConnection,
         model_family="openai",
-        model_name="gpt-4-32k",
+        model_name="gpt-4-turbo-preview",
+        api_base: str | None = None,
         **kwargs: Any
     ) -> Any:
         api_key = database_connection.decrypt_api_key()
         if model_family == "openai":
-            return ChatOpenAI(model_name=model_name, openai_api_key=api_key, **kwargs)
+            return ChatOpenAI(
+                model_name=model_name,
+                openai_api_key=api_key,
+                openai_api_base=api_base,
+                **kwargs
+            )
         if model_family == "anthropic":
             return ChatAnthropic(
                 model_name=model_name, anthropic_api_key=api_key, **kwargs

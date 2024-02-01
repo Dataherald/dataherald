@@ -17,7 +17,7 @@ The following environment variables must be set manually before the engine is st
 
     #OpenAI credentials and model 
     OPENAI_API_KEY = 
-    LLM_MODEL =      
+    LLM_MODEL =  
     ORG_ID =
 
     #Encryption key for storing DB connection data in Mongo

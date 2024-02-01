@@ -56,6 +56,12 @@ class FinetuningNotAvailableError(Exception):
     pass
 
 
+def replace_unprocessable_characters(text: str) -> str:
+    """Replace unprocessable characters with a space."""
+    text = text.strip()
+    return text.replace(r"\_", "_")
+
+
 def catch_exceptions():  # noqa: C901
     def decorator(fn: Callable[[str], str]) -> Callable[[str], str]:  # noqa: C901
         @wraps(fn)
@@ -110,7 +116,7 @@ class BaseSQLDatabaseTool(BaseModel):
 class SystemTime(BaseSQLDatabaseTool, BaseTool):
     """Tool for finding the current data and time."""
 
-    name = "system_time"
+    name = "SystemTime"
     description = """
     Input: None.
     Output: Current date and time.
@@ -138,7 +144,7 @@ class SystemTime(BaseSQLDatabaseTool, BaseTool):
 class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool which takes in the given question and returns a list of tables with their relevance score to the question"""
 
-    name = "get_db_table_names"
+    name = "GetDbTableNames"
     description = """
     Input: None.
     Output: List of tables in the database.
@@ -169,7 +175,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
 class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for querying a SQL database."""
 
-    name = "execute_query"
+    name = "ExecuteQuery"
     description = """
     Input: SQL query.
     Output: Result from the database or an error message if the query is incorrect.
@@ -184,6 +190,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Execute the query, return the results or an error message."""
+        query = replace_unprocessable_characters(query)
         if "```sql" in query:
             query = query.replace("```sql", "").replace("```", "")
         return self.db.run_sql(query, top_k=TOP_K)[0]
@@ -199,7 +206,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
 class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
     """Tool for generating SQL queries."""
 
-    name = "generate_sql"
+    name = "GenerateSQL"
     description = """
     Input: user question.
     Output: SQL query.
@@ -251,7 +258,7 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
 class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for getting schema of relevant tables."""
 
-    name = "db_schema"
+    name = "DbSchema"
     description = """
     Input: Comma-separated list of tables.
     Output: Schema of the specified tables.
@@ -268,6 +275,10 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     ) -> str:
         """Get the schema for tables in a comma-separated list."""
         table_names_list = table_names.split(", ")
+        table_names_list = [
+            replace_unprocessable_characters(table_name)
+            for table_name in table_names_list
+        ]
         tables_schema = ""
         for table in self.db_scan:
             if table.table_name in table_names_list:
@@ -413,12 +424,14 @@ class DataheraldFinetuningAgent(SQLGenerator):
         response = SQLGeneration(
             prompt_id=user_prompt.id,
             created_at=datetime.datetime.now(),
+            llm_config=self.llm_config,
             finetuning_id=self.finetuning_id,
         )
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            model_name=os.getenv("LLM_MODEL", "gpt-4-turbo-preview"),
+            model_name=self.llm_config.llm_name,
+            api_base=self.llm_config.api_base,
         )
         repository = TableDescriptionRepository(storage)
         db_scan = repository.get_all_tables_by_db(
@@ -483,12 +496,12 @@ class DataheraldFinetuningAgent(SQLGenerator):
         else:
             for step in result["intermediate_steps"]:
                 action = step[0]
-                if type(action) == AgentAction and action.tool == "execute_query":
+                if type(action) == AgentAction and action.tool == "ExecuteQuery":
                     sql_query = self.format_sql_query(action.tool_input)
                     if "```sql" in sql_query:
                         sql_query = self.remove_markdown(sql_query)
         logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
-        response.sql = sql_query
+        response.sql = replace_unprocessable_characters(sql_query)
         response.tokens_used = cb.total_tokens
         response.completed_at = datetime.datetime.now()
         return self.create_sql_query_status(

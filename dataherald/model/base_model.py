@@ -23,6 +23,7 @@ class BaseModel(LLMModel):
         database_connection: DatabaseConnection,
         model_family="openai",
         model_name="davinci-003",
+        api_base: str | None = None,  # noqa: ARG002
         **kwargs: Any
     ) -> Any:
         if database_connection.llm_api_key is not None:
