@@ -39,21 +39,21 @@ If you would like to learn more, you can join the <a href="https://discord.gg/A5
 
 ### Background
 
-The latest LLMs have gotten remarkably good at writing SQL. However we could not get existing frameworks to work with our structured data at a level which we could incorporate into our application. That is why we built and released this engine.
+The latest LLMs have gotten remarkably good at writing syntactically correct SQL. However since they lack business context, they often write inaccurate SQL. Our goal with Dataherald is to build the more performant and easy to use NL-to-SQL product for developers.
 
 ### Goals
 
 Dataherald is built to:
 
-- Be modular, allowing different implementations of core components to be plugged-in
-- Come batteries included: Have best-in-class implementations for components like text to SQL, evaluation   
+- Have the highest accuracy and lowest latency possible
 - Be easy to set-up and use with major data warehouses
-- Get better with usage
-- Be fast
+- Enable users to add business context from various sources
+- Give developers the tools to fine-tune NL-to-SQL models on their own schema and deploy them in production
+- Be LLM provider agnostic
 
 ## Get Started
 
-The simplest way to set up Dataherald is to use the hosted version. We are rolling this service to select customers. Sign up for the <a href="https://www.dataherald.com/contact" target="_blank">waitlist</a>.
+The simplest way to set up Dataherald is to use the hosted version, which includes usage based pricing. We are rolling this service to select customers. Sign up for the <a href="https://www.dataherald.com/contact" target="_blank">waitlist</a>.
 
 You can also self-host the engine locally using Docker. By default the engine uses Mongo to store application data.
 
