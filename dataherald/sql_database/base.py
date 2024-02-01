@@ -7,6 +7,7 @@ from urllib.parse import unquote
 import sqlparse
 from sqlalchemy import MetaData, create_engine, inspect, text
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import OperationalError
 from sshtunnel import SSHTunnelForwarder
 
 from dataherald.sql_database.models.types import DatabaseConnection
@@ -60,12 +61,17 @@ class SQLDatabase:
         cls, database_info: DatabaseConnection, refresh_connection=False
     ) -> "SQLDatabase":
         logger.info(f"Connecting db: {database_info.id}")
-        if (
-            database_info.id
-            and database_info.id in DBConnections.db_connections
-            and not refresh_connection
-        ):
-            return DBConnections.db_connections[database_info.id]
+        try:
+            if (
+                database_info.id
+                and database_info.id in DBConnections.db_connections
+                and not refresh_connection
+            ):
+                sql_database = DBConnections.db_connections[database_info.id]
+                sql_database.engine.connect()
+                return sql_database
+        except OperationalError:
+            pass
 
         fernet_encrypt = FernetEncrypt()
         try:
@@ -141,6 +147,7 @@ class SQLDatabase:
                 5432 if not db_uri_obj["port"] else int(db_uri_obj["port"]),
             ),
         )
+        server.stop(force=True)
         server.start()
         local_port = str(server.local_bind_port)
         local_host = str(server.local_bind_host)
