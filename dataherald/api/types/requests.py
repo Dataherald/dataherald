@@ -26,7 +26,7 @@ class PromptSQLGenerationRequest(SQLGenerationRequest):
 
 
 class NLGenerationRequest(BaseModel):
-    llm_config: LLMConfig
+    llm_config: LLMConfig = LLMConfig()
     max_rows: int = 100
     metadata: dict | None
 
