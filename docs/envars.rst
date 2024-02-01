@@ -8,7 +8,6 @@ provided in the .env.example file with the default values.
 
     OPENAI_API_KEY = 
     ORG_ID =
-    LLM_MODEL = 'gpt-4-32k' 
 
 
     GOLDEN_RECORD_COLLECTION = 'my-golden-records'
@@ -47,7 +46,6 @@ provided in the .env.example file with the default values.
 
    "OPENAI_API_KEY", "The OpenAI key used by the Dataherald Engine", "None", "Yes"
    "ORG_ID", "The OpenAI Organization ID used by the Dataherald Engine", "None", "Yes"
-   "LLM_MODEL", "The Language Model used by the Dataherald Engine. Supported values include gpt-4-32k, gpt-4, gpt-3.5-turbo, gpt-3.5-turbo-16k", "``gpt-4-32k``", "No"
    "GOLDEN_RECORD_COLLECTION", "The name of the collection in Mongo where golden records will be stored", "``my-golden-records``", "No"
    "PINECONE_API_KEY", "The Pinecone API key used", "None", "Yes if using the Pinecone vector store"
    "PINECONE_ENVIRONMENT", "The Pinecone environment", "None", "Yes if using the Pinecone vector store"

@@ -160,11 +160,17 @@ class Prompt(BaseModel):
     metadata: dict | None
 
 
+class LLMConfig(BaseModel):
+    llm_name: str = "gpt-4-turbo-preview"
+    api_base: str | None = None
+
+
 class SQLGeneration(BaseModel):
     id: str | None = None
     prompt_id: str
     finetuning_id: str | None
     low_latency_mode: bool = False
+    llm_config: LLMConfig
     evaluate: bool = False
     sql: str | None
     status: str = "INVALID"
@@ -179,6 +185,7 @@ class SQLGeneration(BaseModel):
 class NLGeneration(BaseModel):
     id: str | None = None
     sql_generation_id: str
+    llm_config: LLMConfig
     text: str | None
     created_at: datetime = Field(default_factory=datetime.now)
     metadata: dict | None

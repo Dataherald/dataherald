@@ -1,4 +1,3 @@
-import os
 from datetime import date, datetime
 from decimal import Decimal
 
@@ -6,7 +5,6 @@ from langchain.chains import LLMChain
 from langchain.prompts.chat import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
 )
 from sqlalchemy import text
 
@@ -14,13 +12,11 @@ from dataherald.model.chat_model import ChatModel
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.prompts import PromptRepository
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
-from dataherald.types import NLGeneration, SQLGeneration
+from dataherald.types import LLMConfig, NLGeneration, SQLGeneration
 
-SYSTEM_TEMPLATE = """ Given a Question, a Sql query and the sql query result try to answer the question
+HUMAN_TEMPLATE = """Given a Question, a Sql query and the sql query result try to answer the question
 If the sql query result doesn't answer the question just say 'I don't know'
-"""
-
-HUMAN_TEMPLATE = """ Answer the question given the sql query and the sql query result.
+Answer the question given the sql query and the sql query result.
 Question: {prompt}
 SQL query: {sql_query}
 SQL query result: {sql_query_result}
@@ -28,9 +24,10 @@ SQL query result: {sql_query_result}
 
 
 class GeneratesNlAnswer:
-    def __init__(self, system, storage):
+    def __init__(self, system, storage, llm_config: LLMConfig):
         self.system = system
         self.storage = storage
+        self.llm_config = llm_config
         self.model = ChatModel(self.system)
 
     def execute(
@@ -48,7 +45,8 @@ class GeneratesNlAnswer:
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            model_name=os.getenv("LLM_MODEL", "gpt-4"),
+            model_name=self.llm_config.llm_name,
+            api_base=self.llm_config.api_base,
         )
         database = SQLDatabase.get_sql_engine(database_connection)
 
@@ -86,13 +84,8 @@ class GeneratesNlAnswer:
                 "Sensitive SQL keyword detected in the query."
             ) from e
 
-        system_message_prompt = SystemMessagePromptTemplate.from_template(
-            SYSTEM_TEMPLATE
-        )
         human_message_prompt = HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE)
-        chat_prompt = ChatPromptTemplate.from_messages(
-            [system_message_prompt, human_message_prompt]
-        )
+        chat_prompt = ChatPromptTemplate.from_messages([human_message_prompt])
         chain = LLMChain(llm=self.llm, prompt=chat_prompt)
         nl_resp = chain.run(
             prompt=prompt.text,
@@ -102,6 +95,7 @@ class GeneratesNlAnswer:
 
         return NLGeneration(
             sql_generation_id=sql_generation.id,
+            llm_config=self.llm_config,
             text=nl_resp,
             created_at=datetime.now(),
         )

@@ -88,6 +88,12 @@ def catch_exceptions():  # noqa: C901
     return decorator
 
 
+def replace_unprocessable_characters(text: str) -> str:
+    """Replace unprocessable characters with a space."""
+    text = text.strip()
+    return text.replace(r"\_", "_")
+
+
 # Classes needed for tools
 class BaseSQLDatabaseTool(BaseModel):
     """Base tool for interacting with the SQL database and the context information."""
@@ -105,7 +111,7 @@ class BaseSQLDatabaseTool(BaseModel):
 class SystemTime(BaseSQLDatabaseTool, BaseTool):
     """Tool for finding the current data and time."""
 
-    name = "system_time"
+    name = "SystemTime"
     description = """
     Input is an empty string, output is the current data and time.
     Always use this tool before generating a query if there is any time or date in the given question.
@@ -132,7 +138,7 @@ class SystemTime(BaseSQLDatabaseTool, BaseTool):
 class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for querying a SQL database."""
 
-    name = "sql_db_query"
+    name = "SqlDbQuery"
     description = """
     Input: SQL query.
     Output: Result from the database or an error message if the query is incorrect.
@@ -148,6 +154,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Execute the query, return the results or an error message."""
+        query = replace_unprocessable_characters(query)
         if "```sql" in query:
             query = query.replace("```sql", "").replace("```", "")
         return self.db.run_sql(query, top_k=top_k)[0]
@@ -163,7 +170,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
 class GetUserInstructions(BaseSQLDatabaseTool, BaseTool):
     """Tool for retrieving the instructions from the user"""
 
-    name = "get_admin_instructions"
+    name = "GetAdminInstructions"
     description = """
     Input: is an empty string.
     Output: Database admin instructions before generating the SQL query.
@@ -193,7 +200,7 @@ class GetUserInstructions(BaseSQLDatabaseTool, BaseTool):
 class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool which takes in the given question and returns a list of tables with their relevance score to the question"""
 
-    name = "db_tables_with_relevance_scores"
+    name = "DbTablesWithRelevanceScores"
     description = """
     Input: Given question.
     Output: Comma-separated list of tables with their relevance scores, indicating their relevance to the question.
@@ -255,7 +262,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
 class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
     """Tool for checking the existance of an entity inside a column."""
 
-    name = "db_column_entity_checker"
+    name = "DbColumnEntityChecker"
     description = """
     Input: Column name and its corresponding table, and an entity.
     Output: cell-values found in the column similar to the given entity.
@@ -326,7 +333,7 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
 class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for getting schema of relevant tables."""
 
-    name = "db_relevant_tables_schema"
+    name = "DbRelevantTablesSchema"
     description = """
     Input: Comma-separated list of tables.
     Output: Schema of the specified tables.
@@ -344,6 +351,10 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     ) -> str:
         """Get the schema for tables in a comma-separated list."""
         table_names_list = table_names.split(", ")
+        table_names_list = [
+            replace_unprocessable_characters(table_name)
+            for table_name in table_names_list
+        ]
         tables_schema = ""
         for table in self.db_scan:
             if table.table_name in table_names_list:
@@ -365,7 +376,7 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
 class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
     """Tool for getting more information for potentially relevant columns"""
 
-    name = "db_relevant_columns_info"
+    name = "DbRelevantColumnsInfo"
     description = """
     Input: Comma-separated list of potentially relevant columns with their corresponding table.
     Output: Information about the values inside the columns and their descriptions.
@@ -376,7 +387,7 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
     db_scan: List[TableDescription]
 
     @catch_exceptions()
-    def _run(
+    def _run(  # noqa: C901
         self,
         column_names: str,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
@@ -385,23 +396,28 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
         items_list = column_names.split(", ")
         column_full_info = ""
         for item in items_list:
-            table_name, column_name = item.split(" -> ")
-            found = False
-            for table in self.db_scan:
-                if table_name == table.table_name:
-                    col_info = ""
-                    for column in table.columns:
-                        if column_name == column.name:
-                            found = True
-                            col_info += f"Description: {column.description},"
-                            if column.low_cardinality:
-                                col_info += f" categories = {column.categories},"
-                    col_info += " Sample rows: "
-                    if found:
-                        for row in table.examples:
-                            col_info += row[column_name] + ", "
-                        col_info = col_info[:-2]
-                        column_full_info += f"Table: {table_name}, column: {column_name}, additional info: {col_info}\n"
+            if " -> " in item:
+                table_name, column_name = item.split(" -> ")
+                table_name = replace_unprocessable_characters(table_name)
+                column_name = replace_unprocessable_characters(column_name)
+                found = False
+                for table in self.db_scan:
+                    if table_name == table.table_name:
+                        col_info = ""
+                        for column in table.columns:
+                            if column_name == column.name:
+                                found = True
+                                col_info += f"Description: {column.description},"
+                                if column.low_cardinality:
+                                    col_info += f" categories = {column.categories},"
+                        col_info += " Sample rows: "
+                        if found:
+                            for row in table.examples:
+                                col_info += row[column_name] + ", "
+                            col_info = col_info[:-2]
+                            column_full_info += f"Table: {table_name}, column: {column_name}, additional info: {col_info}\n"
+            else:
+                return "Malformed input, input should be in the following format Example Input: table1 -> column1, table1 -> column2, table2 -> column1"  # noqa: E501
             if not found:
                 column_full_info += f"Table: {table_name}, column: {column_name} not found in database\n"
         return column_full_info
@@ -417,7 +433,7 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
 class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
     """Tool to obtain few-shot examples from the pool of samples"""
 
-    name = "fewshot_examples_retriever"
+    name = "FewshotExamplesRetriever"
     description = """
     Input: Number of required Question/SQL pairs.
     Output: List of similar Question/SQL pairs related to the given question.
@@ -435,17 +451,15 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Get the schema for tables in a comma-separated list."""
-        if number_of_samples.isdigit():
-            number_of_samples = int(number_of_samples)
+        if number_of_samples.strip().isdigit():
+            number_of_samples = int(number_of_samples.strip())
         else:
             return "Action input for the fewshot_examples_retriever tool should be an integer"
         returned_output = ""
         for example in self.few_shot_examples[:number_of_samples]:
-            if "used" not in example:
-                returned_output += (
-                    f"Question: {example['prompt_text']} -> SQL: {example['sql']}\n"
-                )
-                example["used"] = True
+            returned_output += (
+                f"Question: {example['prompt_text']} -> SQL: {example['sql']}\n"
+            )
         if returned_output == "":
             returned_output = "No previously asked Question/SQL pairs are available"
         return returned_output
@@ -608,12 +622,14 @@ class DataheraldSQLAgent(SQLGenerator):
         storage = self.system.instance(DB)
         response = SQLGeneration(
             prompt_id=user_prompt.id,
+            llm_config=self.llm_config,
             created_at=datetime.datetime.now(),
         )
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
-            model_name=os.getenv("LLM_MODEL", "gpt-4-turbo-preview"),
+            model_name=self.llm_config.llm_name,
+            api_base=self.llm_config.api_base,
         )
         repository = TableDescriptionRepository(storage)
         db_scan = repository.get_all_tables_by_db(
@@ -678,12 +694,12 @@ class DataheraldSQLAgent(SQLGenerator):
         else:
             for step in result["intermediate_steps"]:
                 action = step[0]
-                if type(action) == AgentAction and action.tool == "sql_db_query":
+                if type(action) == AgentAction and action.tool == "SqlDbQuery":
                     sql_query = self.format_sql_query(action.tool_input)
                     if "```sql" in sql_query:
                         sql_query = self.remove_markdown(sql_query)
         logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
-        response.sql = sql_query
+        response.sql = replace_unprocessable_characters(sql_query)
         response.tokens_used = cb.total_tokens
         response.completed_at = datetime.datetime.now()
         return self.create_sql_query_status(

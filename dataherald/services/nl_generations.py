@@ -30,6 +30,7 @@ class NLGenerationService:
         initial_nl_generation = NLGeneration(
             sql_generation_id=sql_generation_id,
             created_at=datetime.now(),
+            llm_config=nl_generation_request.llm_config,
             metadata=nl_generation_request.metadata,
         )
         self.nl_generation_repository.insert(initial_nl_generation)
@@ -40,7 +41,9 @@ class NLGenerationService:
                 f"SQL Generation {sql_generation_id} not found",
                 initial_nl_generation.id,
             )
-        nl_generator = GeneratesNlAnswer(self.system, self.storage)
+        nl_generator = GeneratesNlAnswer(
+            self.system, self.storage, nl_generation_request.llm_config
+        )
         try:
             nl_generation = nl_generator.execute(
                 sql_generation=sql_generation,

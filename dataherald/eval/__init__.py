@@ -6,7 +6,7 @@ from dataherald.config import Component, System
 from dataherald.model.chat_model import ChatModel
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
-from dataherald.types import Prompt, SQLGeneration
+from dataherald.types import LLMConfig, Prompt, SQLGeneration
 
 
 class Evaluation(BaseModel):
@@ -19,6 +19,7 @@ class Evaluation(BaseModel):
 class Evaluator(Component, ABC):
     database: SQLDatabase
     acceptance_threshold: confloat(ge=0, le=1) = 0.8
+    llm_config: LLMConfig
     llm: ChatModel | None = None
 
     def __init__(self, system: System):

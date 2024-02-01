@@ -174,6 +174,10 @@ Related endpoints are:
         "prompt_id": "str"
         "finetuning_id": "str"
         "evaluate": "bool"
+        "llm_config": {
+            "llm_name": "str",
+            "api_base": "str"
+        },
         "sql": "str"
         "status": "str"
         "completed_at": "datetime"
@@ -206,6 +210,10 @@ Related endpoints are:
         {
             "id": "str"
             "sql_generation_id": "str"
+            "llm_config": {
+                "llm_name": "str",
+                "api_base": "str"
+            },
             "text": "str"
             "created_at": "datetime",
             "metadata": "dict | None"
