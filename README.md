@@ -166,7 +166,6 @@ We currently support connections to Postgres, DuckDB, BigQuery, Databricks, Snow
 
 You can define a DB connection through a call to the following API endpoint `POST /api/v1/database-connections`. For example:
 
-Example 1. Without a SSH connection
 ```
 curl -X 'POST' \
   '<host>/api/v1/database-connections' \
@@ -179,29 +178,7 @@ curl -X 'POST' \
 }'
 ```
 
-Example 2. With a SSH connection
-```
-curl -X 'POST' \
-  '<host>/api/v1/database-connections' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "alias": "my_db_alias",
-  "use_ssh": true,
-  "connection_uri": "postgresql+psycopg2://<user>:<password>@<host>/<db-name>",
-  "ssh_settings": {
-    "host": "string",
-    "username": "string",
-    "password": "string",
-    "private_key_password": "string"
-  }
-}'
-```
-If you need to set up an SSH connection to connect to your DB you need to fill out all the ssh_settings fields
-
-By default, DB credentials are stored in `database_connection` collection in MongoDB. Connection URI information is encrypted using the ENCRYPT_KEY you provided as an environment variable
-
-##### Connecting to supported Data warehouses
+##### Connecting to supported Data warehouses and using SSH
 You can find the details on how to connect to the supported data warehouses in the [docs](https://dataherald.readthedocs.io/en/latest/api.create_database_connection.html)
 
 ### Adding Context
