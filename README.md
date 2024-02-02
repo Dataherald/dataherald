@@ -39,17 +39,17 @@ If you would like to learn more, you can join the <a href="https://discord.gg/A5
 
 ### Background
 
-The latest LLMs have gotten remarkably good at writing SQL. However we could not get existing frameworks to work with our structured data at a level which we could incorporate into our application. That is why we built and released this engine.
+The latest LLMs have gotten remarkably good at writing syntactically correct SQL. However since they lack business context, they often write inaccurate SQL. Our goal with Dataherald is to build the more performant and easy to use NL-to-SQL product for developers.
 
 ### Goals
 
 Dataherald is built to:
 
-- Be modular, allowing different implementations of core components to be plugged-in
-- Come batteries included: Have best-in-class implementations for components like text to SQL, evaluation   
+- Have the highest accuracy and lowest latency possible
 - Be easy to set-up and use with major data warehouses
-- Get better with usage
-- Be fast
+- Enable users to add business context from various sources
+- Give developers the tools to fine-tune NL-to-SQL models on their own schema and deploy them in production
+- Be LLM provider agnostic
 
 ## Get Started
 
@@ -66,22 +66,25 @@ You can also self-host the engine locally using Docker. By default the engine us
 cp .env.example .env
 ```
 
-Specifically the following 4 fields must be manually set before the engine is started.
+Specifically the following fields must be manually set before the engine is started.
 
-LLM_MODEL is employed by the engine to generate SQL from natural language. You can use the default model (gpt-4-turbo-preview) or use your own.
+LLM_MODEL is employed by the engine to generate SQL from natural language. You can use the default model (gpt-4-turbo-preview) or use your own deployed model.
 
 ```
 #OpenAI credentials and model 
+# mainly used for embedding models and finetunung 
 OPENAI_API_KEY = 
+# Used for the reasoning LLM or the main LLM which chooses the tools to generate SQL
 LLM_MODEL = 
 ORG_ID =
 
 #Encryption key for storing DB connection data in Mongo
 ENCRYPT_KEY = 
 
-# All of our SQL generation agents are using different tools to generate SQL queries, in order to limit the number of times that agents can
-# use different tools you can set the "AGENT_MAX_ITERATIONS" env variable. By default it is set to 20 iterations.
-
+# the variable that determines how many rows should be returned from a query to the agents, set it to small values to avoid high costs and long response times, default is 50
+UPPER_LIMIT_QUERY_RETURN_ROWS = 
+# the variable that force the engine to quit if the sql geneation takes more than the time set in this variable, default is None.
+DH_ENGINE_TIMEOUT =
 ```
 
 While not strictly required, we also strongly suggest you change the MONGO username and password fields as well.
@@ -157,7 +160,7 @@ Once the engine is running, you will want to use it by:
 3. Querying the data in natural language
 
 ### Connecting to your data warehouses
-We currently support connections to Postgres, BigQuery, Databricks, Snowflake and AWS Athena. You can create connections to these warehouses through the API or at application start-up using the envars.
+We currently support connections to Postgres, DuckDB, BigQuery, Databricks, Snowflake and AWS Athena. You can create connections to these warehouses through the API or at application start-up using the envars.
 
 #### Connecting through the API
 
@@ -172,8 +175,7 @@ curl -X 'POST' \
   -d '{
   "alias": "my_db_alias",
   "use_ssh": false,
-  "connection_uri": "sqlite:///mydb.db",
-  "path_to_credentials_file": "my-folder/my-secret.json" # Required for bigquery
+  "connection_uri": snowflake://<user>:<password>@<organization>-<account-name>/<database>/<schema>"
 }'
 ```
 
@@ -200,67 +202,22 @@ If you need to set up an SSH connection to connect to your DB you need to fill o
 By default, DB credentials are stored in `database_connection` collection in MongoDB. Connection URI information is encrypted using the ENCRYPT_KEY you provided as an environment variable
 
 ##### Connecting to supported Data warehouses
-You can generate the `uri` parameter in the API call for each of the supported warehouses by using the steps outlined below.
-
-**Postgres**
-```
-"connection_uri": postgresql+psycopg2://<user>:<password>@<host>:<port>/<db-name>
-```
-
-**Databricks**
-```
-"connection_uri": databricks://token:<token>@<host>?http_path=<http-path>&catalog=<catalog>&schema=<schema-name>
-```
-
-**Snowflake**
-```
-"connection_uri": snowflake://<user>:<password>@<organization>-<account-name>/<database>/<schema>
-```
-
-**AWS Athena**
-```
-"connection_uri": awsathena+rest://<aws_access_key_id>:<aws_secret_access_key>@athena.<region_name>.amazonaws.com:443/<schema_name>?s3_staging_dir=<s3_staging_dir>&work_group=primary
-```
-
-**DuckDB**
-To connect to DuckDB you should first host your database in MotherDuck and fetch your authentication token.
-```
-"connection_uri": duckdb:///md:<database_name>?motherduck_token=<your_token>
-```
-
-**BigQuery**
-To connect to BigQuery you should create a json credential file. Please follow Steps 1-3 under "Configure 
-BigQuery Authentication in Google Cloud Platform" in 
-this [tutorial](https://www.privacydynamics.io/docs/connections/bigquery.html). 
-
-> IMPORTANT: Please ensure the service account only has **"Viewer"** permissions.
-
-Once you have your credential json file you can store it inside this project for example I created the folder 
-`private_credentials` and inside I stored my credential file `my-db-123456acbd.json`
-
-You should set in the endpoint param `path_to_credentials_file` the path, for example:
-```
-"path_to_credentials_file": "private_credentials/my-db-123456acbd.json"
-```
-
-```
-"connection_uri": bigquery://<project>/<database>
-```
-
-
+You can find the details on how to connect to the supported data warehouses in the [docs](https://dataherald.readthedocs.io/en/latest/api.create_database_connection.html)
 
 ### Adding Context
-Once you have connected to the data warehouse, you should add context to the engine to help improve the accuracy of the generated SQL. Context can currently be added in one of three ways:
+Once you have connected to the data warehouse, you can add context to the engine to help improve the accuracy of the generated SQL. Context can currently be added in one of three ways:
 
 1. Scanning the Database tables and columns
 2. Adding verified SQL (golden SQL)
 3. Adding string descriptions of the tables and columns
+4. Adding database level instructions
 
 While only the Database scan part is required to start generating SQL, adding verified SQL and string descriptions are also important for the tool to generate accurate SQL. 
 
 #### Scanning the Database
 The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM.
 In addition, it retrieves logs, which consist of historical queries associated with each database table. These records are then stored within the query_history collection. The historical queries retrieved encompass data from the past three months and are grouped based on query and user.
+db_connection_id is the id of the database connection you want to scan, which is returned when you create a database connection.
 You can trigger a scan of a database from the `POST /api/v1/table-descriptions/sync-schemas` endpoint. Example below
 
 
@@ -279,6 +236,7 @@ Since the endpoint identifies low cardinality columns (and their values) it can 
 
 #### Get logs per db connection
 Once a database was scanned you can use this endpoint to retrieve the tables logs
+Set the `db_connection_id` to the id of the database connection you want to retrieve the logs from
 
 ```
 curl -X 'GET' \
@@ -300,142 +258,53 @@ Response example:
 ]
 ```
 
-#### Get a scanned db
-Once a database was scanned you can use this endpoint to retrieve the tables names and columns
-
-
-```
-curl -X 'GET' \
-  '<host>/api/v1/table-descriptions?db_connection_id=64dfa0e103f5134086f7090c&table_name=foo' \
-  -H 'accept: application/json'
-```
-
 #### Adding verified SQL
-Sample NL<>SQL pairs (golden SQL) can be stored in the context store and used for few-shot in context learning. In the default context store and NL 2 SQL engine, these samples are stored in a vector store and the closest samples are retrieved for few shot learning. You can add golden SQL to the context store from the `POST /api/v1/golden-records` endpoint
 
-```
-curl -X 'POST' \
-  '<host>/api/v1/golden-records' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '[
-        {
-            "nl_question":"what was the most expensive zip code to rent in Los Angeles county in May 2022?", 
-            "sql": "SELECT location_name, metric_value FROM table_name WHERE dh_county_name = '\''Los Angeles'\'' AND dh_state_name = '\''California'\''   AND period_start='\''2022-05-01'\'' AND geo_type='\''zip'\'' ORDER BY metric_value DESC LIMIT 1;", 
-            "db":"db_name"
-        }
-  ]'
-```
+Adding ground truth Question/SQL pairs is a powerful way to improve the accuracy of the generated SQL. Golden records can be used either to fine-tune the LLM or to augment the prompts to the LLM.
+
+You can read more about this in the [docs](https://dataherald.readthedocs.io/en/latest/api.golden_sql.html)
 
 #### Adding string descriptions
 In addition to database table_info and golden_sql, you can set descriptions or update the columns per table and column. 
-All request body fields are optional, and only the fields that are explicitly set will be used to update the resource.
+Description are used by the agents to determine the relevant columns and tables to the user's question.
 
-```
-curl -X 'PATCH' \
-  '<host>/api/v1/table-descriptions/64dfa0e103f5134086f7090c' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "description": "Table description",
-  "columns": [
-    {
-      "name": "column1",
-      "description": "string",
-      "is_primary_key": false,
-      "data_type": "string",
-      "low_cardinality": true,
-      "categories": [
-        "string"
-      ],
-      "foreign_key": false
-    },
-    {
-      "name": "column2",
-      "description": "string",
-      "is_primary_key": false,
-      "data_type": "string",
-      "low_cardinality": true,
-      "categories": [
-        "string"
-      ],
-      "foreign_key": false
-    }
-  ]
-}'
-```
+Read more about this in the [docs](https://dataherald.readthedocs.io/en/latest/api.update_table_descriptions.html)
 
 #### Adding database level instructions
 
-You can add database level instructions to the context store manually from the `POST /api/v1/instructions` endpoint.
-These instructions are passed directly to the engine and can be used to steer the engine to generate SQL that is more in line with your business logic.
+Database level instructions are passed directly to the engine and can be used to steer the engine to generate SQL that is more in line with your business logic. This can include instructions such as "never use this column in a where clause" or "always use this column in a where clause".
 
-```
-curl -X 'POST' \
-  '<host>/api/v1/instructions' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "instruction": "This is a database level instruction"
-  "db_connection_id": "db_connection_id"
-}'
-```
-
-#### Getting database level instructions
-
-You can get database level instructions from the `GET /api/v1/instructions` endpoint
-
-```
-curl -X 'GET' \
-  '<host>/api/v1/instructions?page=1&limit=10&db_connection_id=12312312' \
-  -H 'accept: application/json'
-```
-
-#### Deleting database level instructions
-
-You can delete database level instructions from the `DELETE /api/v1/instructions/{instruction_id}` endpoint
-
-```
-curl -X 'DELETE' \
-  '<host>/api/v1/instructions/{instruction_id}' \
-  -H 'accept: application/json'
-```
-
-#### Updating database level instructions
-
-You can update database level instructions from the `PUT /api/v1/instructions/{instruction_id}` endpoint
-Try different instructions to see how the engine generates SQL
-
-```
-curl -X 'PUT' \
-  '<host>/api/v1/instructions/{instruction_id}' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "instruction": "This is a database level instruction"
-}'
-```
+You can read more about this in the [docs](https://dataherald.readthedocs.io/en/latest/api.add_instructions.html)
 
 
 ### Querying the Database in Natural Language
-Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse using the `POST /api/v1/questions` endpoint.
+Once you have connected the engine to your data warehouse (and preferably added some context to the store), you can query your data warehouse using the `POST /api/v1/prompts/sql-generations` endpoint.
 
 ```
 curl -X 'POST' \
-  '<host>/api/v1/questions' \
+  '<host>/api/v1/prompts/sql-generations' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-        "question": "Your question in natural language",
-        "db_connection_id": "db_connection_id"
+        "finetuning_id": "string", # specify the finetuning id if you want to use a finetuned model
+        "low_latency_mode": false, # low latency mode is used to generate SQL faster, but with lower accuracy
+        "llm_config": {
+          "llm_name": "gpt-4-turbo-preview", # specify the LLM model you want to use
+          "api_base": "string" # If you are using open-source LLMs, you can specify the API base. If you are using OpenAI, you can leave this field empty
+        },
+        "evaluate": false, # if you want our engine to evaluate the generated SQL
+        "sql": "string", # if you want to evaluate a specific SQL pass it here, else remove this field to generate SQL from a question
+        "metadata": {},
+        "prompt": {
+          "text": "string", # the question you want to ask
+          "db_connection_id": "string", # the id of the database connection you want to query
+          "metadata": {}
+        }
     }'
 ```
 
-### Create new response based on a previously created question
-After utilizing the `questions` endpoint, you have the option to generate a new response associated with a specific question_id. 
-You can modify the `sql_query` to produce an alternative `sql_query_result` and a distinct response. In the event that you do not 
-specify a `sql_query`, the system will reprocess the question to generate the `sql_query`, execute the `sql_query_result`, and subsequently 
-generate the response.
+### Create a natural language response and SQL generation for a question
+If you want to create a natural language response and a SQL generation for a question, you can use the `POST /api/v1/prompts/sql-generations/nl-generations` endpoint.
 
 ```
 curl -X 'POST' \
@@ -443,26 +312,37 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "question_id": "11fa1e419fe93d137536fe99",
-  "sql_query": "select * from sales order by created_at DESC limit 10"
+        "llm_config": {
+          "llm_name": "gpt-4-turbo-preview", # specify the LLM model you want to use to generate the NL response
+          "api_base": "string" # If you are using open-source LLMs, you can specify the API base. If you are using OpenAI, you can leave this field empty
+        },
+        "max_rows": 100, # the maximum number of rows you want to use for generating the NL response
+        "metadata": {},
+        "sql_generation": {
+          "finetuning_id": "string", # specify the finetuning id if you want to use a finetuned model
+          "low_latency_mode": false, # low latency mode is used to generate SQL faster, but with lower accuracy
+          "llm_config": {
+            "llm_name": "gpt-4-turbo-preview", # specify the LLM model you want to use to generate the SQL
+            "api_base": "string" # If you are using open-source LLMs, you can specify the API base. If you are using OpenAI, you can leave this field empty
+          },
+          "evaluate": false, # if you want our engine to evaluate the generated SQL
+          "sql": "string",  # if you want to evaluate a specific SQL pass it here, else remove this field to generate SQL from a question
+          "metadata": {}
+          "prompt": {
+            "text": "string", # the question you want to ask
+            "db_connection_id": "string", # the id of the database connection you want to query
+            "metadata": {}
+          }
+        },
 }'
 ```
 
 ### Run scripts
-Within the `scripts` folder located inside the `dataherald` directory, you have the ability to upgrade your versions. 
-For instance, if you are currently using version 0.0.3 and wish to switch to version 0.0.4, simply execute the following command:
+Our engine is under ongoing development and in order to support the latest features, we provide scripts to migrate the data from the previous version to the latest version. You can find all of the scripts in the `dataherald.scripts` module. To run the migration script, execute the following command:
 
 ```
-docker-compose exec app python3 -m dataherald.scripts.migrate_v003_to_v004
+docker-compose exec app python3 -m dataherald.scripts.migrate_v100_to_v101
 ```
-Additionally, we provide a script for managing the Vector Store data. You can delete the existing data and upload all 
-the Golden Records to the 'golden_records' collection in MongoDB. If you are utilizing `Chroma` in-memory storage, it's 
-important to note that data is lost upon container restart. To repopulate the data, execute the following command:
-
-```
-docker-compose exec app python3 -m dataherald.scripts.delete_and_populate_golden_records
-```
-
 
 ## Replacing core modules
 The Dataherald engine is made up of replaceable modules. Each of these can be replaced with a different implementation that extends the base class. Some of the main modules are:
@@ -478,9 +358,3 @@ In some instances we have already included multiple implementations for testing 
 As an open-source project in a rapidly developing field, we are open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.
 
 For detailed information on how to contribute, see [here](CONTRIBUTING.md).
-
-
-### Mongo errors
-
-The Mongo installation is configured to store application data in the `/dbdata` folder. In case you want to wipe the local DB, try completely deleting `/dbdata` before rebuilding the databases.
-
