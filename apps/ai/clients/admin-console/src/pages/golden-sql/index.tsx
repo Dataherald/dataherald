@@ -10,6 +10,7 @@ import { toast } from '@/components/ui/use-toast'
 import { useDeleteGoldenSql } from '@/hooks/api/useDeleteGoldenSql'
 import useGoldenSqlList from '@/hooks/api/useGoldenSqlList'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
+import Head from 'next/head'
 import { FC, useCallback, useMemo, useState } from 'react'
 
 const GoldenSQLPage: FC = () => {
@@ -94,6 +95,9 @@ const GoldenSQLPage: FC = () => {
 
   return (
     <PageLayout>
+      <Head>
+        <title>Golden SQL - Dataherald AI API</title>
+      </Head>
       <div className="grow flex flex-col gap-4 m-6">
         <div className="flex flex-col gap-3 max-w-5xl">
           <p>

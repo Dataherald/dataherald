@@ -27,7 +27,11 @@ const useApiFetcher = () => {
       })
 
       if (!response.ok) {
-        if (response.status === 401 && retry) {
+        if (response.status === 401) {
+          if (retry === false) {
+            console.error(`Authentication failed. Redirecting to login page...`)
+            router.push('api/auth/logout')
+          }
           try {
             await fetchToken()
             return apiFetcher<T>(url, { ...options }, false)
@@ -35,13 +39,13 @@ const useApiFetcher = () => {
             console.error(
               `Authentication failed: ${e}. Redirecting to login page...`,
             )
-            router.push('api/auth/login')
+            router.push('api/auth/logout')
           }
         } else {
-          const error = new Error(
-            `API Request failed\nURL: ${url}\nStatus: ${response.status} ${response.statusText}`,
-            { cause: response.status },
-          )
+          const serverError: { detail: string } = await response.json()
+          const error = new Error(serverError.detail, {
+            cause: response.status,
+          })
           throw error
         }
       }

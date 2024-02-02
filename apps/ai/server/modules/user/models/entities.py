@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Roles(str, Enum):
@@ -20,9 +20,9 @@ class BaseUser(BaseModel):
 
 class User(BaseUser):
     id: str | None
-    organization_id: str
+    organization_id: str | None
     role: Roles | None
-    created_at: datetime | None
+    created_at: datetime = Field(default=datetime.now())
 
 
 class SlackInfo(BaseModel):

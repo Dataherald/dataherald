@@ -42,8 +42,11 @@ async def get_organization(
 async def add_organization(
     org_request: OrganizationRequest, token: str = Depends(token_auth_scheme)
 ) -> OrganizationResponse:
-    authorize.is_admin_user(authorize.user(VerifyToken(token.credentials).verify()))
-    return org_service.add_organization(org_request)
+    session_user = authorize.user(VerifyToken(token.credentials).verify())
+    authorize.is_admin_user(session_user)
+    return org_service.add_organization(
+        OrganizationRequest(**org_request.dict()), owner=session_user.id
+    )
 
 
 @router.put("/{id}")

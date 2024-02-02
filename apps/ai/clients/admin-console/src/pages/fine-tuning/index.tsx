@@ -8,6 +8,7 @@ import { ContentBox } from '@/components/ui/content-box'
 import useFinetunings from '@/hooks/api/fine-tuning/useFinetunings'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { RefreshCcw, SlidersIcon } from 'lucide-react'
+import Head from 'next/head'
 import { FC, useMemo } from 'react'
 
 const FineTuningPage: FC = () => {
@@ -30,6 +31,9 @@ const FineTuningPage: FC = () => {
 
   return (
     <PageLayout>
+      <Head>
+        <title>Fine-tuning - Dataherald AI API</title>
+      </Head>
       <div className="gap-4 m-6">
         <ContentBox className="w-100 max-w-2xl min-h-[50vh]">
           <div className="w-full flex justify-between gap-2">

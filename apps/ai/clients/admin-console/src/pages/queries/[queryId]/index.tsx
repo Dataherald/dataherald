@@ -10,6 +10,7 @@ import useQueryResubmit from '@/hooks/api/query/useQueryResubmit'
 import { mapQuery } from '@/lib/domain/query'
 import { Query } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
+import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { FC, useEffect, useState } from 'react'
 
@@ -81,7 +82,16 @@ const QueryPage: FC = () => {
       />
     )
 
-  return <PageLayout disableBreadcrumb>{pageContent}</PageLayout>
+  return (
+    <PageLayout disableBreadcrumb>
+      <>
+        <Head>
+          <title>Query editor - Dataherald AI API</title>
+        </Head>
+        {pageContent}
+      </>
+    </PageLayout>
+  )
 }
 
 export default withPageAuthRequired(QueryPage)

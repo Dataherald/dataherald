@@ -43,16 +43,7 @@ class OrganizationService:
             org_request.llm_api_key = self._encrypt_llm_credentials(
                 org_request.llm_api_key
             )
-        organization = Organization(**org_request.dict(), created_at=datetime.now())
-        organization.slack_config.db_connection_id = (
-            organization.slack_config.db_connection_id
-        )
-
-        organization.confidence_threshold = (
-            1.0
-            if organization.confidence_threshold is None
-            else organization.confidence_threshold
-        )
+        organization = Organization(**org_request.dict())
 
         new_id = self.repo.add_organization(organization.dict(exclude_unset=True))
         if new_id:
@@ -64,6 +55,12 @@ class OrganizationService:
             detail="Organization exists or cannot add organization",
         )
 
+    def add_user_organization(self, user_id: str, user_email: str) -> str:
+        new_org = self.add_organization(
+            OrganizationRequest(name=user_email, owner=user_id)
+        )
+        return new_org.id
+
     def update_organization(
         self, org_id: str, org_request: OrganizationRequest
     ) -> OrganizationResponse:
@@ -73,9 +70,6 @@ class OrganizationService:
                 org_request.llm_api_key
             )
         organization = Organization(**org_request.dict(exclude_unset=True))
-        organization.slack_config.db_connection_id = (
-            organization.slack_config.db_connection_id
-        )
 
         if (
             self.repo.update_organization(org_id, organization.dict(exclude_unset=True))
@@ -128,6 +122,7 @@ class OrganizationService:
             ),
             confidence_threshold=1.0,
             created_at=datetime.now(),
+            owner=slack_installation_request.user.id,
         )
 
         new_id = self.repo.add_organization(organization.dict(exclude={"id"}))

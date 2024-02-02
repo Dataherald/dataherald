@@ -11,6 +11,9 @@ import {
 } from '@auth0/nextjs-auth0'
 import { NextApiRequest, NextApiResponse } from 'next'
 
+/**
+ * The signup and login will be handled by auth0. We would have to deal with both in the backend and do each flow depending on if the user exists or not.
+ */
 const afterCallback: AfterCallback = async (
   req: NextApiRequest,
   res: NextApiResponse,
@@ -31,15 +34,9 @@ const afterCallback: AfterCallback = async (
   } catch (e: unknown) {
     const error = e as Error
     console.error(error)
-    if (error.cause === 401) {
-      res.writeHead(302, {
-        Location: `/auth/not-signed-up`,
-      })
-    } else {
-      res.writeHead(302, {
-        Location: `/auth/error?message=${encodeURIComponent(e as string)}`,
-      })
-    }
+    res.writeHead(302, {
+      Location: `/auth/error?message=${encodeURIComponent(e as string)}`,
+    })
     res.end()
   }
   return session

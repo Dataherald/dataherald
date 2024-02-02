@@ -33,10 +33,10 @@ async def get_user(
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def add_user(
-    user_request: UserRequest, token: str = Depends(token_auth_scheme)
+    new_user_request: UserRequest, token: str = Depends(token_auth_scheme)
 ) -> UserResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
-    return user_service.add_user(user_request, user.organization_id)
+    authorize.is_admin_user(VerifyToken(token.credentials).verify())
+    return user_service.add_user(new_user_request)
 
 
 @router.put("/{id}")
@@ -45,8 +45,13 @@ async def update_user(
     user_request: UserRequest,
     token: str = Depends(token_auth_scheme),
 ) -> UserResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
-    return user_service.update_user(id, user_request, user.organization_id)
+    session_user = authorize.user(VerifyToken(token.credentials).verify())
+    authorize.user_in_organization(id, session_user.organization_id)
+    # TODO - check if the user is an admin or not -- currently we can't have several auth checks cause they're raising HTTP exceptions
+    return user_service.update_user(
+        id,
+        user_request,
+    )
 
 
 @router.patch("/{id}")
@@ -55,7 +60,8 @@ async def update_user_organization(
     user_organization_request: UserOrganizationRequest,
     token: str = Depends(token_auth_scheme),
 ) -> UserResponse:
-    authorize.is_admin_user(authorize.user(VerifyToken(token.credentials).verify()))
+    session_user = authorize.user(VerifyToken(token.credentials).verify())
+    authorize.is_admin_user(session_user)
     return user_service.update_user_organization(id, user_organization_request)
 
 
@@ -66,3 +72,15 @@ async def delete_user(
     user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_not_self(user.id, id)
     return user_service.delete_user(id, user.organization_id)
+
+
+@router.post("/invite")
+async def invite_user_to_org(
+    new_user_request: UserRequest,
+    token: str = Depends(token_auth_scheme),
+) -> UserResponse:
+    session_user = authorize.user(VerifyToken(token.credentials).verify())
+    authorize.user_in_organization(session_user.id, session_user.organization_id)
+    return user_service.invite_user_to_org(
+        new_user_request, session_user.organization_id
+    )

@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import { AUTH } from '@/config'
 import { MailWarning } from 'lucide-react'
 import { GetServerSideProps } from 'next'
+import Head from 'next/head'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { FC, useState } from 'react'
@@ -20,7 +21,7 @@ const getErrorCause = (errorDescription: string): string => {
   const error = (errorDescription.match(/---(.*?)\)/) || '')[1]
   switch (error) {
     case ERROR_CODES.EMAIL_NOT_VERIFIED:
-      return 'Please verify your email address'
+      return 'Verify your email address'
     default:
       return "Oops! We couldn't verify your identity"
   }
@@ -69,6 +70,9 @@ const AuthErrorPage: FC<{
 
   return (
     <div className="flex items-center justify-center min-h-screen relative">
+      <Head>
+        <title>auth error - Dataherald AI API</title>
+      </Head>
       <Image
         src="https://hi-george.s3.amazonaws.com/DataheraldAI/Dark+Background.png"
         alt="Background"
@@ -85,8 +89,8 @@ const AuthErrorPage: FC<{
           {isEmailNotVerified ? (
             <div className="flex flex-col gap-4">
               <p className="text-gray-800 break-words">
-                Your email address has not been verified. Please check your
-                inbox and follow the instructions in the verification email.
+                Check your inbox for the verification email and follow the
+                instructions to complete the process.
               </p>
               <p className="text-gray-800 break-words">
                 If you can&apos;t find the email,{' '}

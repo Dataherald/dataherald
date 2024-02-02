@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { ERole, Organization } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { Check, Loader } from 'lucide-react'
+import Head from 'next/head'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { FC, useCallback, useEffect, useState } from 'react'
@@ -56,6 +57,9 @@ const SelectOrganizationPage: FC = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen relative">
+      <Head>
+        <title>Change Organization - Dataherald AI API</title>
+      </Head>
       <Image
         src="https://hi-george.s3.amazonaws.com/DataheraldAI/Dark+Background.png"
         alt="Background"

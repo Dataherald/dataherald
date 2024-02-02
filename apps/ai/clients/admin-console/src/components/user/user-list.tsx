@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
-import AddUserDialog from '@/components/user/add-user-dialog'
+import InviteMemberDialog from '@/components/user/invite-member-dialog'
 import LoadingUserList from '@/components/user/loading-user-list'
 import { useAppContext } from '@/contexts/app-context'
 import { useDeleteUser } from '@/hooks/api/user/useDeleteUser'
@@ -22,14 +22,14 @@ import { Trash2, UserPlus2, UsersRound } from 'lucide-react'
 import { useState } from 'react'
 
 const UserList = () => {
-  const [openAddUserDialog, setOpenAddUserDialog] = useState(false)
+  const [openInviteMemberDialog, setOpenInviteMemberDialog] = useState(false)
   const { user: currentUser } = useAppContext()
   const { isLoading, users, mutate } = useUsers()
   const deleteUser = useDeleteUser()
 
-  const handleUserAdded = () => {
+  const handleMemberInvited = () => {
     mutate()
-    setOpenAddUserDialog(false)
+    setOpenInviteMemberDialog(false)
   }
 
   const handleDeleteUser = async (user: User) => {
@@ -37,7 +37,7 @@ const UserList = () => {
       await deleteUser(user.id)
       toast({
         variant: 'success',
-        title: 'User Removed',
+        title: 'Team member Removed',
         description: `The user ${
           user.name || user.email
         } was removed from the Organization.`,
@@ -49,7 +49,7 @@ const UserList = () => {
         variant: 'destructive',
         title: 'Oops! Something went wrong.',
         description:
-          'There was a problem deleting the user from the Organization.',
+          'There was a problem removing the user from the Organization.',
         action: (
           <ToastAction
             altText="Try again"
@@ -121,7 +121,7 @@ const UserList = () => {
                                 variant="destructive"
                                 onClick={() => handleDeleteUser(user)}
                               >
-                                Confirm Delete
+                                Remove Member
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -136,14 +136,14 @@ const UserList = () => {
         )}
       </div>
       <div className="self-end">
-        <Button onClick={() => setOpenAddUserDialog(true)}>
+        <Button onClick={() => setOpenInviteMemberDialog(true)}>
           <UserPlus2 className="mr-2" size={18} />
-          Add User
+          Invite
         </Button>
-        <AddUserDialog
-          open={openAddUserDialog}
-          onCancel={() => setOpenAddUserDialog(false)}
-          onAddUser={handleUserAdded}
+        <InviteMemberDialog
+          open={openInviteMemberDialog}
+          onCancel={() => setOpenInviteMemberDialog(false)}
+          onInviteMember={handleMemberInvited}
         />
       </div>
     </>

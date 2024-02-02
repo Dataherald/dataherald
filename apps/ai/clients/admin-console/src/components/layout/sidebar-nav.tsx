@@ -65,7 +65,7 @@ const FIRST_NAV_ITEMS: MenuItems = [
 ]
 const SECOND_NAV_ITEMS: MenuItems = [
   {
-    text: 'API Keys',
+    text: 'API keys',
     href: '/api-keys',
     icon: KeyRound,
   },
@@ -183,54 +183,49 @@ const SidebarNav = ({
           </Link>
         ))}
 
-        {user && organization && (
+        {user && (
           <Popover>
             <PopoverTrigger asChild>
               <div className="flex flex-col items-center  gap-3 p-3 m-3 border rounded-xl bg-white cursor-pointer">
                 <div className="w-full flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <UserPicture pictureUrl={user.picture} />
-                    <div className="flex flex-col">
+                    <div className="flex flex-col break-all">
                       <span className="text-xs">{organization?.name}</span>{' '}
                       <span className="font-semibold text-sm">{user.name}</span>
                     </div>
                   </div>
-                  <PopoverContent
-                    align="end"
-                    className="flex flex-col gap-3 ml-3 p-3"
-                  >
-                    <div className="flex items-center justify-center gap-3">
-                      <div className="flex flex-col items-center gap-2 mt-1.5">
-                        <span className="text-xs text-slate-500">
-                          {user.email}
-                        </span>
-                        <span className="text-sm text-slate-900">
-                          {organization.name}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-center justify-center gap-3 p-2">
-                      <h1>Hi, {user.name}!</h1>
-                      <UserPicture pictureUrl={user.picture} size={75} />
-                    </div>
-                    <Link href="/my-account">
-                      <Button variant="ghost" size="sm" className="w-full">
-                        <UserRound className="mr-2" size={18} /> My account
-                      </Button>
-                    </Link>
-                    <Separator />
-                    <Button
-                      variant="destructive-outline"
-                      size="sm"
-                      onClick={handleLogout}
-                    >
-                      <LogOut className="mr-2" size={18} />
-                      Sign out
-                    </Button>
-                  </PopoverContent>
                 </div>
               </div>
             </PopoverTrigger>
+            <PopoverContent className="flex flex-col gap-3 ml-3 p-3">
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex flex-col items-center gap-2 mt-1.5 break-all">
+                  <span className="text-xs text-slate-500">{user.email}</span>
+                  <span className="text-sm text-slate-900">
+                    {organization?.name}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-3 p-2">
+                <h1>Hi, {user.name}!</h1>
+                <UserPicture pictureUrl={user.picture} size={75} />
+              </div>
+              <Link href="/my-account">
+                <Button variant="ghost" size="sm" className="w-full">
+                  <UserRound className="mr-2" size={18} /> My account
+                </Button>
+              </Link>
+              <Separator />
+              <Button
+                variant="destructive-outline"
+                size="sm"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2" size={18} />
+                Sign out
+              </Button>
+            </PopoverContent>
           </Popover>
         )}
       </div>

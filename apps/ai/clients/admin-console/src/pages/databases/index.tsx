@@ -9,6 +9,7 @@ import { GlobalTreeSelectionProvider } from '@/components/ui/tree-view-global-co
 import useDatabases from '@/hooks/api/useDatabases'
 import { Databases } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
+import Head from 'next/head'
 import { FC, useEffect, useState } from 'react'
 
 const DatabasesPage: FC = () => {
@@ -89,7 +90,16 @@ const DatabasesPage: FC = () => {
       </GlobalTreeSelectionProvider>
     )
   }
-  return <PageLayout>{pageContent}</PageLayout>
+  return (
+    <PageLayout>
+      <>
+        <Head>
+          <title>Databases - Dataherald AI API</title>
+        </Head>
+        {pageContent}
+      </>
+    </PageLayout>
+  )
 }
 
 export default withPageAuthRequired(DatabasesPage)

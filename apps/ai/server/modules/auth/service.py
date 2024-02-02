@@ -1,5 +1,3 @@
-from fastapi import HTTPException, status
-
 from modules.organization.service import OrganizationService
 from modules.user.models.requests import UserRequest
 from modules.user.models.responses import UserResponse
@@ -15,34 +13,42 @@ class AuthService:
 
     def login(self, user_request: UserRequest) -> UserResponse:
         # check if user exists or not
+        user_org_id = None
         user = self.user_service.get_user_by_email(user_request.email)
-        if user:
-            self.user_service.update_user(
-                str(user.id),
-                UserRequest(**user_request.dict()),
-                str(user.organization_id),
-            )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized User"
-            )
 
-        # return updated user
-        new_user = self.user_service.get_user_by_email(user_request.email)
-        new_user_id = new_user.id
-        # the id does not get transformed into the new pydantic object
-        new_user = UserResponse(**new_user.dict())
-        new_user.id = new_user_id
+        if not user:  # create the user and a new organization for the user
+            user = self.user_service.add_user(user_request)
+            user_org_id = self.org_service.add_user_organization(user.id, user.email)
+        elif user.organization_id is None:
+            user_org_id = self.org_service.add_user_organization(user.id, user.email)
+        else:
+            user_org_id = user.organization_id
+
+        # update user data from the login request cause it could have updates
+        # TODO - when we add user data customization, we should stop doing this
+        session_user = self.user_service.update_user(
+            str(user.id),
+            UserRequest(
+                **{
+                    **user_request.dict(exclude={"organization_id"}),
+                    "organization_id": user_org_id,
+                }
+            ),
+        )
 
         self.analytics.identify(
-            str(new_user.email),
+            str(session_user.email),
             {
-                "email": new_user.email,
-                "name": new_user.name,
-                "organization_id": str(new_user.organization_id),
-                "organization_name": self.org_service.get_organization(
-                    str(new_user.organization_id)
-                ).name,
+                "email": session_user.email,
+                "name": session_user.name,
+                "organization_id": str(session_user.organization_id),
+                "organization_name": (
+                    self.org_service.get_organization(
+                        str(session_user.organization_id)
+                    ).name
+                    if session_user.organization_id
+                    else None
+                ),
             },
         )
-        return new_user
+        return session_user

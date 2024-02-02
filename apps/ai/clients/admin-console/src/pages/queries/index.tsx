@@ -7,6 +7,7 @@ import { ContentBox } from '@/components/ui/content-box'
 import useQueries from '@/hooks/api/query/useQueries'
 import { QueryListItem } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
+import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { FC, useMemo, useState } from 'react'
 
@@ -65,6 +66,9 @@ const QueriesPage: FC = () => {
 
   return (
     <PageLayout>
+      <Head>
+        <title>Queries - Dataherald AI API</title>
+      </Head>
       <div className="grow flex flex-col gap-4 m-6">
         <div className="flex flex-col gap-3 max-w-5xl">
           <p>

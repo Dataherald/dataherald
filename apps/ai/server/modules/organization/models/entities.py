@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, confloat
+from pydantic import BaseModel, Field, confloat
 
 
 class SlackTeam(BaseModel):
@@ -39,11 +39,12 @@ class SlackConfig(BaseModel):
 
 class BaseOrganization(BaseModel):
     name: str | None
-    confidence_threshold: confloat(ge=0, le=1) | None
+    confidence_threshold: confloat(ge=0, le=1) = Field(default=1.0)
     slack_config: SlackConfig | None
     llm_api_key: str | None
+    owner: str | None
 
 
 class Organization(BaseOrganization):
     id: str | None
-    created_at: datetime | None
+    created_at: datetime | None = Field(default=datetime.now())

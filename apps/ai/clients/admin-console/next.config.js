@@ -22,7 +22,7 @@ const nextConfig = {
     return [
       {
         source: '/',
-        destination: '/queries',
+        destination: '/playground',
         permanent: true,
       },
     ]

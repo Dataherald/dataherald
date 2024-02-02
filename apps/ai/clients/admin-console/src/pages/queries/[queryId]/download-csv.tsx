@@ -5,13 +5,15 @@ import { useQuery } from '@/hooks/api/query/useQuery'
 import useDownloadFile, { DownloadStatus } from '@/hooks/api/useDownloadFile'
 import { Query } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
-import { CheckCircle, Loader, XCircle } from 'lucide-react'
+import { CheckCircle, Download, Loader, XCircle } from 'lucide-react'
+import Head from 'next/head'
+import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { FC } from 'react'
 
 const DownloadCsvPage: FC = () => {
   const {
-    query: { promptId },
+    query: { queryId: promptId },
   } = useRouter()
   const { downloadFile, status: downloadStatus, error } = useDownloadFile()
   const { query, isLoading } = useQuery(promptId as string)
@@ -19,7 +21,12 @@ const DownloadCsvPage: FC = () => {
   let pageContent: JSX.Element = <></>
 
   if (isLoading && !query) {
-    pageContent = <div>Loading...</div>
+    pageContent = (
+      <div className="grow flex items-center justify-center">
+        <Loader className="animate-spin mr-2" />
+        Loading...
+      </div>
+    )
   }
 
   if (query) {
@@ -44,13 +51,9 @@ const DownloadCsvPage: FC = () => {
 
     if (query) {
       pageContent = (
-        <>
-          <div
-            id="header"
-            className="flex items-end justify-between gap-3 px-6"
-          >
+        <div className="grow flex flex-col items-center justify-between gap-10">
+          <div id="header" className="flex items-end justify-between gap-3">
             <QueryQuestion
-              className="max-w-2xl"
               {...{
                 created_by,
                 prompt_text,
@@ -67,16 +70,27 @@ const DownloadCsvPage: FC = () => {
             />
           </div>
           <div className="flex flex-col items-center gap-5">
-            <Button variant="outline" onClick={handleDownload}>
-              Download CSV File
-            </Button>
-            <div className="flex gap-2 items-center">
-              {downloadStatus === DownloadStatus.Pending && (
+            <Button
+              onClick={handleDownload}
+              disabled={downloadStatus === DownloadStatus.Pending}
+            >
+              {downloadStatus === DownloadStatus.Pending ? (
                 <>
-                  <Loader className="w-6 h-6 animate-spin" />
-                  <p>Downloading...</p>
+                  <Loader
+                    size={20}
+                    strokeWidth={2}
+                    className="animate-spin mr-2"
+                  />
+                  <p>Downloading file...</p>
+                </>
+              ) : (
+                <>
+                  <Download size={20} strokeWidth={2} className="mr-2" />
+                  <p>Download CSV File</p>
                 </>
               )}
+            </Button>
+            <div className="flex gap-2 items-center h-6">
               {downloadStatus === DownloadStatus.Error && (
                 <>
                   <XCircle className="w-6 h-6 text-destructive" />
@@ -93,13 +107,25 @@ const DownloadCsvPage: FC = () => {
               )}
             </div>
           </div>
-        </>
+        </div>
       )
     }
   }
   return (
-    <div className="flex flex-col gap-10 items-center justify-center w-100 h-screen">
-      {pageContent}
+    <div className="flex items-center justify-center min-h-screen relative">
+      <Head>
+        <title>Download CSV - Dataherald AI API</title>
+      </Head>
+      <Image
+        src="https://hi-george.s3.amazonaws.com/DataheraldAI/Dark+Background.png"
+        alt="Background"
+        fill
+        style={{ objectFit: 'cover', objectPosition: 'center' }}
+        quality={100}
+      />
+      <div className="absolute flex flex-col bg-white shadow-lg w-full min-h-[40vh] max-w-3xl p-14 rounded-2xl">
+        {pageContent}
+      </div>
     </div>
   )
 }

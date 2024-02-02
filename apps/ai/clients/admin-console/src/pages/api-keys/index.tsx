@@ -2,11 +2,15 @@ import ApiKeysList from '@/components/api-keys/api-keys-list'
 import PageLayout from '@/components/layout/page-layout'
 import { ContentBox } from '@/components/ui/content-box'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
+import Head from 'next/head'
 import { FC } from 'react'
 
 const ApiKeysPage: FC = () => {
   return (
     <PageLayout>
+      <Head>
+        <title>API keys - Dataherald AI API</title>
+      </Head>
       <div className="flex flex-col gap-4 m-6 max-w-2xl">
         <div className="flex flex-col gap-3">
           <p>

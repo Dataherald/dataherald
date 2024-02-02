@@ -41,6 +41,7 @@ import {
   Terminal,
   TerminalSquare,
 } from 'lucide-react'
+import Head from 'next/head'
 import Link from 'next/link'
 import { FC, useEffect, useState } from 'react'
 
@@ -277,6 +278,9 @@ const PlaygroundPage: FC = () => {
 
   return (
     <>
+      <Head>
+        <title>Playground - Dataherald AI API</title>
+      </Head>
       <PageLayout>
         {loadingDatabases ? (
           <div className="grow flex items-center justify-center gap-2">
