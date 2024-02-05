@@ -28,3 +28,23 @@ class Scanner(Component, ABC):
         repository: TableDescriptionRepository,
     ) -> list[TableDescription]:
         """ "Update table_description status"""
+
+    @abstractmethod
+    def create_tables(
+        self,
+        sql_database: SQLDatabase,
+        db_connection_id: str,
+        repository: TableDescriptionRepository,
+        metadata: dict = None,
+    ) -> None:
+        """ "Create tables"""
+
+    @abstractmethod
+    def refresh_tables(
+        self,
+        sql_database: SQLDatabase,
+        db_connection_id: str,
+        repository: TableDescriptionRepository,
+        metadata: dict = None,
+    ) -> list[TableDescription]:
+        """ "Refresh tables"""

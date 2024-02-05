@@ -37,8 +37,6 @@ from dataherald.db import DB
 from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.models.types import (
     QueryHistory,
-    TableDescription,
-    TableDescriptionStatus,
 )
 from dataherald.db_scanner.repository.base import (
     InvalidColumnNameError,
@@ -80,6 +78,7 @@ from dataherald.types import (
     GoldenSQLRequest,
     Instruction,
     InstructionRequest,
+    RefreshTableDescriptionRequest,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateInstruction,
@@ -180,7 +179,6 @@ class FastAPI(API):
                 metadata=database_connection_request.metadata,
             )
 
-            SQLDatabase.get_sql_engine(db_connection, True)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))  # noqa: B904
         except InvalidDBConnectionError as e:
@@ -191,7 +189,31 @@ class FastAPI(API):
 
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         db_connection = db_connection_repository.insert(db_connection)
+
+        # Get tables and views and create table-descriptions as NOT_SCANNED
+        sql_database = SQLDatabase.get_sql_engine(db_connection, True)
+        scanner_repository = TableDescriptionRepository(self.storage)
+        scanner = self.system.instance(Scanner)
+        scanner.create_tables(sql_database, str(db_connection.id), scanner_repository)
+
         return DatabaseConnectionResponse(**db_connection.dict())
+
+    @override
+    def refresh_table_description(
+        self, refresh_table_description: RefreshTableDescriptionRequest
+    ) -> list[TableDescriptionResponse]:
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        db_connection = db_connection_repository.find_by_id(
+            refresh_table_description.db_connection_id
+        )
+
+        sql_database = SQLDatabase.get_sql_engine(db_connection, True)
+        # Get tables and views and create missing table-descriptions as NOT_SCANNED and update DEPRECATED
+        scanner_repository = TableDescriptionRepository(self.storage)
+        scanner = self.system.instance(Scanner)
+        return scanner.refresh_tables(
+            sql_database, str(db_connection.id), scanner_repository
+        )
 
     @override
     def list_database_connections(self) -> list[DatabaseConnectionResponse]:
@@ -221,7 +243,7 @@ class FastAPI(API):
                 metadata=database_connection_request.metadata,
             )
 
-            SQLDatabase.get_sql_engine(db_connection, True)
+            sql_database = SQLDatabase.get_sql_engine(db_connection, True)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))  # noqa: B904
         except InvalidDBConnectionError as e:
@@ -231,6 +253,12 @@ class FastAPI(API):
             )
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         db_connection = db_connection_repository.update(db_connection)
+
+        # Get tables and views and create missing table-descriptions as NOT_SCANNED and update DEPRECATED
+        scanner_repository = TableDescriptionRepository(self.storage)
+        scanner = self.system.instance(Scanner)
+        scanner.refresh_tables(sql_database, str(db_connection.id), scanner_repository)
+
         return DatabaseConnectionResponse(**db_connection.dict())
 
     @override
@@ -266,30 +294,6 @@ class FastAPI(API):
         table_descriptions = scanner_repository.find_by(
             {"db_connection_id": str(db_connection_id), "table_name": table_name}
         )
-
-        if db_connection_id:
-            db_connection_repository = DatabaseConnectionRepository(self.storage)
-            db_connection = db_connection_repository.find_by_id(db_connection_id)
-            database = SQLDatabase.get_sql_engine(db_connection)
-            all_tables = database.get_tables_and_views()
-
-            if table_name:
-                all_tables = [table for table in all_tables if table == table_name]
-
-            for table_description in table_descriptions:
-                if table_description.table_name not in all_tables:
-                    table_description.status = TableDescriptionStatus.DEPRECATED.value
-                else:
-                    all_tables.remove(table_description.table_name)
-            for table in all_tables:
-                table_descriptions.append(
-                    TableDescription(
-                        table_name=table,
-                        status=TableDescriptionStatus.NOT_SCANNED.value,
-                        db_connection_id=db_connection_id,
-                        columns=[],
-                    )
-                )
 
         return [
             TableDescriptionResponse(**table_description.dict())

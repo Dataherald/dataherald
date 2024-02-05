@@ -37,6 +37,60 @@ class SqlAlchemyScanner(Scanner):
         self.scanner_service: AbstractScanner = None
 
     @override
+    def create_tables(
+        self,
+        sql_database: SQLDatabase,
+        db_connection_id: str,
+        repository: TableDescriptionRepository,
+        metadata: dict = None,
+    ) -> None:
+        tables = sql_database.get_tables_and_views()
+        for table in tables:
+            repository.save_table_info(
+                TableDescription(
+                    db_connection_id=db_connection_id,
+                    table_name=table,
+                    status=TableDescriptionStatus.NOT_SCANNED.value,
+                    metadata=metadata,
+                )
+            )
+
+    @override
+    def refresh_tables(
+        self,
+        sql_database: SQLDatabase,
+        db_connection_id: str,
+        repository: TableDescriptionRepository,
+        metadata: dict = None,
+    ) -> list[TableDescription]:
+        stored_tables = repository.find_by({"db_connection_id": str(db_connection_id)})
+        stored_tables_list = [table.table_name for table in stored_tables]
+
+        source_tables = sql_database.get_tables_and_views()
+
+        rows = []
+        for table_description in stored_tables:
+            if table_description.table_name not in source_tables:
+                table_description.status = TableDescriptionStatus.DEPRECATED.value
+                rows.append(repository.save_table_info(table_description))
+            else:
+                rows.append(TableDescription(**table_description.dict()))
+
+        for table in source_tables:
+            if table not in stored_tables_list:
+                rows.append(
+                    repository.save_table_info(
+                        TableDescription(
+                            db_connection_id=db_connection_id,
+                            table_name=table,
+                            status=TableDescriptionStatus.NOT_SCANNED.value,
+                            metadata=metadata,
+                        )
+                    )
+                )
+        return rows
+
+    @override
     def synchronizing(
         self,
         scanner_request: ScannerRequest,
