@@ -34,6 +34,7 @@ from dataherald.types import (
     GoldenSQL,
     GoldenSQLRequest,
     InstructionRequest,
+    RefreshTableDescriptionRequest,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateInstruction,
@@ -49,6 +50,12 @@ class API(Component, ABC):
     @abstractmethod
     def scan_db(
         self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
+    ) -> list[TableDescriptionResponse]:
+        pass
+
+    @abstractmethod
+    def refresh_table_description(
+        self, refresh_table_description: RefreshTableDescriptionRequest
     ) -> list[TableDescriptionResponse]:
         pass
 

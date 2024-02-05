@@ -36,6 +36,10 @@ class InstructionRequest(DBConnectionValidation):
     metadata: dict | None
 
 
+class RefreshTableDescriptionRequest(DBConnectionValidation):
+    pass
+
+
 class Instruction(BaseModel):
     id: str | None = None
     instruction: str

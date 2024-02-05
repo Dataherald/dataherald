@@ -38,6 +38,7 @@ from dataherald.types import (
     GoldenSQL,
     GoldenSQLRequest,
     InstructionRequest,
+    RefreshTableDescriptionRequest,
     ScannerRequest,
     TableDescriptionRequest,
     UpdateInstruction,
@@ -88,6 +89,14 @@ class FastAPI(dataherald.server.Server):
         self.router.add_api_route(
             "/api/v1/table-descriptions/sync-schemas",
             self.scan_db,
+            methods=["POST"],
+            status_code=201,
+            tags=["Table descriptions"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/table-descriptions/refresh",
+            self.refresh_table_description,
             methods=["POST"],
             status_code=201,
             tags=["Table descriptions"],
@@ -361,6 +370,11 @@ class FastAPI(dataherald.server.Server):
         self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
     ) -> list[TableDescriptionResponse]:
         return self._api.scan_db(scanner_request, background_tasks)
+
+    def refresh_table_description(
+        self, refresh_table_description: RefreshTableDescriptionRequest
+    ):
+        return self._api.refresh_table_description(refresh_table_description)
 
     def create_prompt(self, prompt_request: PromptRequest) -> PromptResponse:
         return self._api.create_prompt(prompt_request)
