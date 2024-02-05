@@ -114,6 +114,16 @@ async def ac_sync_table_descriptions_schemas(
     )
 
 
+@ac_router.post("/refresh-all", status_code=status.HTTP_201_CREATED)
+async def ac_refresh_table_descriptions(
+    token: str = Depends(token_auth_scheme),
+) -> list[DatabaseDescriptionResponse]:
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    return await table_description_service.refresh_table_description(
+        user.organization_id
+    )
+
+
 @ac_router.put("/{id}")
 async def ac_update_table_description(
     id: ObjectIdString,

@@ -9,12 +9,16 @@ interface DatabasesResponse {
   databases: Databases | undefined
   isLoading: boolean
   error: unknown
-  mutate: (optimisticData?: Databases) => Promise<Databases | void>
+  mutate: (
+    optimisticData?: Databases,
+    refresh?: boolean,
+  ) => Promise<Databases | void>
   updateDatabases: (data: Databases) => void
 }
 
 const useDatabases = (): DatabasesResponse => {
   const endpointUrl = `${API_URL}/table-descriptions/database/list`
+  const endpointUrlRefresh = `${API_URL}/table-descriptions/refresh-all`
   const { token } = useAuth()
   const { apiFetcher } = useApiFetcher()
   const {
@@ -29,9 +33,18 @@ const useDatabases = (): DatabasesResponse => {
 
   const [data, setData] = useState<Databases | undefined>(serverData)
 
-  const optimisticMutate = async (optimisticDatabases?: Databases) =>
+  const optimisticMutate = async (
+    optimisticDatabases?: Databases,
+    refresh = false,
+  ) =>
     new Promise<Databases | void>((resolve, reject) => {
-      return swrMutate(apiFetcher<Databases>(endpointUrl), {
+      let url = endpointUrl
+      let options = { method: 'GET' }
+      if (refresh) {
+        url = endpointUrlRefresh
+        options = { method: 'POST' }
+      }
+      return swrMutate(apiFetcher<Databases>(url, options), {
         optimisticData: optimisticDatabases || serverData,
         revalidate: false,
         rollbackOnError: true,
