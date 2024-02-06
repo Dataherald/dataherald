@@ -61,7 +61,7 @@ class SQLGenerationService:
             )
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         db_connection = db_connection_repository.find_by_id(prompt.db_connection_id)
-        database = SQLDatabase.get_sql_engine(db_connection)
+        database = SQLDatabase.get_sql_engine(db_connection, True)
         if sql_generation_request.sql is not None:
             sql_generation = SQLGeneration(
                 prompt_id=prompt_id,
@@ -149,7 +149,7 @@ class SQLGenerationService:
         prompt = prompt_repository.find_by_id(sql_generation.prompt_id)
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         db_connection = db_connection_repository.find_by_id(prompt.db_connection_id)
-        database = SQLDatabase.get_sql_engine(db_connection)
+        database = SQLDatabase.get_sql_engine(db_connection, True)
         return database.run_sql(sql_generation.sql, max_rows)
 
     def update_metadata(self, sql_generation_id, metadata_request) -> SQLGeneration:

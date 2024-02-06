@@ -48,7 +48,7 @@ class GeneratesNlAnswer:
             model_name=self.llm_config.llm_name,
             api_base=self.llm_config.api_base,
         )
-        database = SQLDatabase.get_sql_engine(database_connection)
+        database = SQLDatabase.get_sql_engine(database_connection, True)
 
         if sql_generation.status == "INVALID":
             return NLGeneration(
