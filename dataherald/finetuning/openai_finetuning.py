@@ -21,7 +21,7 @@ from dataherald.repositories.finetunings import FinetuningsRepository
 from dataherald.repositories.golden_sqls import GoldenSQLRepository
 from dataherald.types import Finetuning, FineTuningStatus
 from dataherald.utils.agent_prompts import FINETUNING_SYSTEM_INFORMATION
-from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
+from dataherald.utils.models_context_window import OPENAI_FINETUNING_MODELS_WINDOW_SIZES
 
 FILE_PROCESSING_ATTEMPTS = 20
 EMBEDDING_MODEL = "text-embedding-ada-002"
@@ -209,7 +209,7 @@ class OpenAIFineTuning(FinetuningModel):
             database_schema = self.format_dataset(
                 db_scan=list(db_scan),
                 prompt=question,
-                token_limit=OPENAI_CONTEXT_WIDNOW_SIZES[
+                token_limit=OPENAI_FINETUNING_MODELS_WINDOW_SIZES[
                     self.fine_tuning_model.base_llm.model_name
                 ]
                 - margin_tokens,
@@ -229,7 +229,7 @@ class OpenAIFineTuning(FinetuningModel):
                 number_of_tokens = self.count_tokens(messages)
                 if (
                     number_of_tokens
-                    > OPENAI_CONTEXT_WIDNOW_SIZES[
+                    > OPENAI_FINETUNING_MODELS_WINDOW_SIZES[
                         self.fine_tuning_model.base_llm.model_name
                     ]
                 ):
