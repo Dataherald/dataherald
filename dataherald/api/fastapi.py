@@ -211,9 +211,12 @@ class FastAPI(API):
         # Get tables and views and create missing table-descriptions as NOT_SCANNED and update DEPRECATED
         scanner_repository = TableDescriptionRepository(self.storage)
         scanner = self.system.instance(Scanner)
-        return scanner.refresh_tables(
-            sql_database, str(db_connection.id), scanner_repository
-        )
+        return [
+            TableDescriptionResponse(**record.dict())
+            for record in scanner.refresh_tables(
+                sql_database, str(db_connection.id), scanner_repository
+            )
+        ]
 
     @override
     def list_database_connections(self) -> list[DatabaseConnectionResponse]:

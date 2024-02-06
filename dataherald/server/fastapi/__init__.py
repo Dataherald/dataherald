@@ -373,7 +373,7 @@ class FastAPI(dataherald.server.Server):
 
     def refresh_table_description(
         self, refresh_table_description: RefreshTableDescriptionRequest
-    ):
+    ) -> list[TableDescriptionResponse]:
         return self._api.refresh_table_description(refresh_table_description)
 
     def create_prompt(self, prompt_request: PromptRequest) -> PromptResponse:
