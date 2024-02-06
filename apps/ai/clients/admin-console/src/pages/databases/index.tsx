@@ -20,10 +20,10 @@ const DatabasesPage: FC = () => {
     useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const handleRefresh = async (newDatabases?: Databases) => {
+  const handleRefresh = async (newDatabases?: Databases, refresh = true) => {
     setIsRefreshing(true)
     try {
-      await mutate(newDatabases, true)
+      await mutate(newDatabases, refresh)
       setIsRefreshing(false)
     } catch (e) {
       setIsRefreshing(false)

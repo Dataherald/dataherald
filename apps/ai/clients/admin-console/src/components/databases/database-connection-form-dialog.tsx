@@ -5,6 +5,7 @@ import {
 } from '@/components/databases/form-schema'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Databases } from '@/models/api'
 import {
   Dialog,
   DialogClose,
@@ -57,7 +58,7 @@ const mapDatabaseConnectionFormValues = (
 
 interface DatabaseConnectionFormDialogProps {
   isFirstConnection?: boolean
-  onConnected: () => void
+  onConnected: (newDatabases?: Databases, refresh?: boolean) => void
   onFinish?: () => void
 }
 
@@ -95,7 +96,7 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
         file as File | null | undefined,
       )
       setDatabaseConnected(true)
-      onConnected()
+      onConnected(undefined, false)
     } catch (e) {
       toast({
         variant: 'destructive',
