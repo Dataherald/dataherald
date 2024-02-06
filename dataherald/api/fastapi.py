@@ -135,7 +135,7 @@ class FastAPI(API):
             raise HTTPException(status_code=404, detail="Database connection not found")
 
         try:
-            database = SQLDatabase.get_sql_engine(db_connection)
+            database = SQLDatabase.get_sql_engine(db_connection, True)
         except Exception as e:
             raise HTTPException(  # noqa: B904
                 status_code=400,
