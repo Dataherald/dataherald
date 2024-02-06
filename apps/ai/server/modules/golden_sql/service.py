@@ -47,11 +47,11 @@ class GoldenSQLService:
         }
 
         golden_sqls = self.repo.get_golden_sqls(
-            page,
-            page_size,
-            order,
-            ascend,
-            org_id,
+            skip=page * page_size,
+            limit=page_size,
+            order=order,
+            ascend=ascend,
+            org_id=org_id,
         )
         return [
             AggrGoldenSQL(
