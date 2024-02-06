@@ -83,7 +83,7 @@ from dataherald.types import (
     TableDescriptionRequest,
     UpdateInstruction,
 )
-from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
+from dataherald.utils.models_context_window import OPENAI_FINETUNING_MODELS_WINDOW_SIZES
 
 logger = logging.getLogger(__name__)
 
@@ -546,7 +546,7 @@ class FastAPI(API):
             if fine_tuning_request.base_llm
             else default_base_llm
         )
-        if base_llm.model_name not in OPENAI_CONTEXT_WIDNOW_SIZES:
+        if base_llm.model_name not in OPENAI_FINETUNING_MODELS_WINDOW_SIZES:
             raise HTTPException(
                 status_code=400,
                 detail=f"Model {fine_tuning_request.base_llm.model_name} not supported",

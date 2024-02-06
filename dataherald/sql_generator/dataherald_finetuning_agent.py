@@ -42,7 +42,7 @@ from dataherald.utils.agent_prompts import (
     FINETUNING_SYSTEM_INFORMATION,
     FORMAT_INSTRUCTIONS,
 )
-from dataherald.utils.models_context_window import OPENAI_CONTEXT_WIDNOW_SIZES
+from dataherald.utils.models_context_window import OPENAI_FINETUNING_MODELS_WINDOW_SIZES
 
 logger = logging.getLogger(__name__)
 
@@ -232,7 +232,7 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
             + self.openai_fine_tuning.format_dataset(
                 self.db_scan,
                 question,
-                OPENAI_CONTEXT_WIDNOW_SIZES[self.model_name] - 500,
+                OPENAI_FINETUNING_MODELS_WINDOW_SIZES[self.model_name] - 500,
             )
         )
         user_prompt = "User Question: " + question + "\n SQL: "
