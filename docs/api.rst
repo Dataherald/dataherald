@@ -92,6 +92,7 @@ Related endpoints are:
 * :doc:`Update a table description <api.update_table_descriptions>` -- ``PATCH api/v1/table-descriptions/{table_description_id}``
 * :doc:`List table description <api.list_table_description>` -- ``GET api/v1/table-descriptions``
 * :doc:`Get a description <api.get_table_description>` -- ``GET api/v1/table-descriptions/{table_description_id}``
+* :doc:`Refresh table descriptions <api.refresh_table_description>` -- ``GET api/v1/table-descriptions/refresh``
 
 **Table description resource example:**
 
@@ -271,6 +272,7 @@ Related endpoints are:
     api.scan_table_description
     api.list_table_description
     api.get_table_description
+    api.refresh_table_description
     api.update_table_descriptions
     api.list_query_history
 
