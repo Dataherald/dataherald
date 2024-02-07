@@ -10,10 +10,12 @@ import { FC } from 'react'
 const UsagePage: FC = () => {
   const { organization } = useAppContext()
   const router = useRouter()
+  if (!organization) return <></>
 
   if (isEnterprise(organization)) {
     // Enterprise users should not access this page
     router.push('/organization')
+    return <></>
   }
 
   return (
