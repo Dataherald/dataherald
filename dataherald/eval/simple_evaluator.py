@@ -168,7 +168,7 @@ class SimpleEvaluator(Evaluator):
                 "SQL_result": "\n".join([str(row) for row in rows]),
                 "schema": schema,
             }
-        )['text']
+        )["text"]
         logger.info(f"(Simple evaluator) answer of the evaluator: {answer}")
         score = self.answer_parser(answer=answer) / 100
         logger.info(f"(Simple evaluator) score of the evaluator: {str(score)}")

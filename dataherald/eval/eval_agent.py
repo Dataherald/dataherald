@@ -264,7 +264,9 @@ class EvaluationAgent(Evaluator):
             verbose=True,
             input_variables=["question", "SQL"],
         )
-        answer = agent_executor.invoke({"question": user_question, "SQL": sql})["output"]
+        answer = agent_executor.invoke({"question": user_question, "SQL": sql})[
+            "output"
+        ]
         score = self.answer_parser(answer=answer) / 100
         end_time = time.time()
         logger.info(f"Evaluation time elapsed: {str(end_time - start_time)}")
