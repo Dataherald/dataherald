@@ -87,15 +87,16 @@ class GeneratesNlAnswer:
         human_message_prompt = HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE)
         chat_prompt = ChatPromptTemplate.from_messages([human_message_prompt])
         chain = LLMChain(llm=self.llm, prompt=chat_prompt)
-        nl_resp = chain.run(
-            prompt=prompt.text,
-            sql_query=sql_generation.sql,
-            sql_query_result="\n".join([str(row) for row in rows]),
+        nl_resp = chain.invoke(
+        {
+            "prompt": prompt.text,
+            "sql_query": sql_generation.sql,
+            "sql_query_result": "\n".join([str(row) for row in rows])
+        }
         )
-
         return NLGeneration(
             sql_generation_id=sql_generation.id,
             llm_config=self.llm_config,
-            text=nl_resp,
+            text=nl_resp['text'],
             created_at=datetime.now(),
         )

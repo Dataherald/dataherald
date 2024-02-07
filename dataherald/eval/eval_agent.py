@@ -4,7 +4,7 @@ import time
 from difflib import SequenceMatcher
 from typing import Any, Dict, List
 
-from langchain.agents.agent import AgentExecutor
+from langchain.agents import AgentExecutor
 from langchain.agents.agent_toolkits.base import BaseToolkit
 from langchain.agents.mrkl.base import ZeroShotAgent
 from langchain.callbacks.base import BaseCallbackManager
@@ -264,7 +264,7 @@ class EvaluationAgent(Evaluator):
             verbose=True,
             input_variables=["question", "SQL"],
         )
-        answer = agent_executor({"question": user_question, "SQL": sql})["output"]
+        answer = agent_executor.invoke({"question": user_question, "SQL": sql})["output"]
         score = self.answer_parser(answer=answer) / 100
         end_time = time.time()
         logger.info(f"Evaluation time elapsed: {str(end_time - start_time)}")

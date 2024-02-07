@@ -9,7 +9,6 @@ from google.api_core.exceptions import GoogleAPIError
 from langchain.agents.agent import AgentExecutor
 from langchain.agents.agent_toolkits.base import BaseToolkit
 from langchain.agents.mrkl.base import ZeroShotAgent
-from langchain.callbacks import get_openai_callback
 from langchain.callbacks.base import BaseCallbackManager
 from langchain.callbacks.manager import (
     AsyncCallbackManagerForToolRun,
@@ -18,6 +17,7 @@ from langchain.callbacks.manager import (
 from langchain.chains.llm import LLMChain
 from langchain.schema import AgentAction
 from langchain.tools.base import BaseTool
+from langchain_community.callbacks import get_openai_callback
 from openai import OpenAI
 from overrides import override
 from pydantic import BaseModel, Field
@@ -474,7 +474,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         agent_executor.handle_parsing_errors = True
         with get_openai_callback() as cb:
             try:
-                result = agent_executor({"input": user_prompt.text})
+                result = agent_executor.invoke({"input": user_prompt.text})
                 result = self.check_for_time_out_or_tool_limit(result)
             except SQLInjectionError as e:
                 raise SQLInjectionError(e) from e

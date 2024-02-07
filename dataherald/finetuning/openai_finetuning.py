@@ -7,7 +7,7 @@ from typing import Any, List
 
 import numpy as np
 import tiktoken
-from langchain.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from openai import OpenAI
 from overrides import override
 from sql_metadata import Parser
@@ -129,13 +129,19 @@ class OpenAIFineTuning(FinetuningModel):
         table_representation += "\n\n"
         return table_representation
 
+    def create_table_representation(self, table: TableDescription) -> str:
+        col_rep = ""
+        for column in table.columns:
+            col_rep += column.name + " "
+        return f"Table {table.table_name} contain columns: {col_rep}, this tables has: {table.description}"
+
     def sort_tables(
         self, tables: List[TableDescription], prompt: str
     ) -> List[TableDescription]:
         tables_with_similarity = []
         table_representations = []
         for table in tables:
-            table_representations.append(table.table_schema)
+            table_representations.append(self.create_table_representation(table))
         prompt_embedding = self.embedding.embed_query(prompt)
         table_embeddings = self.embedding.embed_documents(table_representations)
         similarities = np.dot(table_embeddings, prompt_embedding) / (

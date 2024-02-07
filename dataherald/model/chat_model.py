@@ -1,6 +1,7 @@
 from typing import Any
 
-from langchain.chat_models import ChatAnthropic, ChatCohere, ChatGooglePalm, ChatOpenAI
+from langchain_community.chat_models import ChatAnthropic, ChatCohere, ChatGooglePalm
+from langchain_openai import ChatOpenAI
 from overrides import override
 
 from dataherald.model import LLMModel
