@@ -2,7 +2,7 @@ import os
 from typing import Any, List
 
 import pinecone
-from langchain.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from overrides import override
 from sql_metadata import Parser
 
