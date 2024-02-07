@@ -1,6 +1,8 @@
 import WithAnalytics from '@/components/hoc/WithAnalytics'
+import WithSubscription from '@/components/hoc/WithSubscription'
 import { AppContextProvider } from '@/contexts/app-context'
 import { AuthProvider } from '@/contexts/auth-context'
+import { SubscriptionProvider } from '@/contexts/subscription-context'
 import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { cn } from '@/lib/utils'
 import '@/styles/globals.css'
@@ -38,17 +40,25 @@ const SWRConfigWithAuth: FC<{ children: ReactNode }> = ({ children }) => {
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
-      <AppContextProvider>
-        <WithAnalytics>
-          <SWRConfigWithAuth>
-            <div
-              className={cn(lato.variable, sourceCode.variable, 'font-lato')}
-            >
-              <Component {...pageProps} />
-            </div>
-          </SWRConfigWithAuth>
-        </WithAnalytics>
-      </AppContextProvider>
+      <SubscriptionProvider>
+        <WithSubscription>
+          <AppContextProvider>
+            <WithAnalytics>
+              <SWRConfigWithAuth>
+                <div
+                  className={cn(
+                    lato.variable,
+                    sourceCode.variable,
+                    'font-lato',
+                  )}
+                >
+                  <Component {...pageProps} />
+                </div>
+              </SWRConfigWithAuth>
+            </WithAnalytics>
+          </AppContextProvider>
+        </WithSubscription>
+      </SubscriptionProvider>
     </AuthProvider>
   )
 }

@@ -1,10 +1,11 @@
 import PageLayout from '@/components/layout/page-layout'
 import EditOrganizationDialog from '@/components/organization/edit-organization-dialog'
-import LlmCredentialsConfig from '@/components/organization/llm-api-key'
+import PaymentMethodsList from '@/components/organization/payment-methods-list'
 import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
 import UserList from '@/components/user/user-list'
 import { useAppContext } from '@/contexts/app-context'
+import { isEnterprise } from '@/lib/domain/billing'
 import { ERole } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { ArrowLeftRight, Building2 } from 'lucide-react'
@@ -13,7 +14,7 @@ import Link from 'next/link'
 import { FC } from 'react'
 
 const OrganizationSettingsPage: FC = () => {
-  const { user, organization, updateOrganization } = useAppContext()
+  const { user, organization } = useAppContext()
 
   if (!organization) return null
 
@@ -40,13 +41,17 @@ const OrganizationSettingsPage: FC = () => {
             </Link>
           )}
         </div>
-        <div className="flex items-start gap-4">
-          <ContentBox className="flex-1 min-h-[50vh] max-w-2xl">
+        <div className="flex flex-col gap-6">
+          <ContentBox className="min-h-[30vh] max-w-2xl">
             <UserList />
           </ContentBox>
-          {false && (
-            <ContentBox className="flex-1">
+          {/* // DISABLED FOR NOW
+           <ContentBox className="flex-1">
               <LlmCredentialsConfig onOrganizationUpdate={updateOrganization} />
+            </ContentBox>  */}
+          {!isEnterprise(organization) && (
+            <ContentBox className="w-100 max-w-2xl">
+              <PaymentMethodsList />
             </ContentBox>
           )}
         </div>

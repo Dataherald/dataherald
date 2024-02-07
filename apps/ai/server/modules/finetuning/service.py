@@ -114,3 +114,6 @@ class FinetuningService:
                 detail="Finetuning not found",
             )
         return finetuning_job
+
+    def is_gpt_4_model(self, model_name: str) -> bool:
+        return "gpt-4" in model_name

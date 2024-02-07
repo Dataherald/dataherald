@@ -96,7 +96,7 @@ const CustomMessageDialog: FC<CustomMessageDialogProps> = ({
               )}
             />
             <DialogFooter>
-              <Button variant="outline" type="button" onClick={handleCancel}>
+              <Button variant="ghost" type="button" onClick={handleCancel}>
                 Cancel
               </Button>
               <Button type="submit">Save</Button>

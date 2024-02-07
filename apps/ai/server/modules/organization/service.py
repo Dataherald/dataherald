@@ -1,8 +1,14 @@
-from datetime import datetime
-
 import openai
 from fastapi import HTTPException, status
 
+from config import invoice_settings
+from modules.organization.invoice.models.entities import (
+    Credit,
+    InvoiceDetails,
+    PaymentPlan,
+    RecordStatus,
+)
+from modules.organization.invoice.repository import InvoiceRepository
 from modules.organization.models.entities import (
     Organization,
     SlackConfig,
@@ -11,12 +17,15 @@ from modules.organization.models.entities import (
 from modules.organization.models.requests import OrganizationRequest
 from modules.organization.models.responses import OrganizationResponse
 from modules.organization.repository import OrganizationRepository
+from utils.billing import Billing
 from utils.encrypt import FernetEncrypt
 
 
 class OrganizationService:
     def __init__(self):
         self.repo = OrganizationRepository()
+        self.invoice_repo = InvoiceRepository()
+        self.billing = Billing()
 
     def get_organizations(self) -> list[OrganizationResponse]:
         return self.repo.get_organizations()
@@ -45,9 +54,32 @@ class OrganizationService:
             )
         organization = Organization(**org_request.dict())
 
+        customer = self.billing.create_customer(organization.name)
+        subscription = self.billing.create_subscription(customer.id)
+        # default organization plan is CREDIT_ONLY
+        organization.invoice_details = InvoiceDetails(
+            plan=PaymentPlan.CREDIT_ONLY,
+            stripe_customer_id=customer.id,
+            stripe_subscription_id=subscription.id,
+            stripe_subscription_status=subscription.status,
+            billing_cycle_anchor=subscription.billing_cycle_anchor,
+            spending_limit=invoice_settings.default_spending_limit,
+            hard_spending_limit=invoice_settings.default_hard_spending_limit,
+            available_credits=invoice_settings.signup_credits,
+        )
         new_id = self.repo.add_organization(organization.dict(exclude_unset=True))
         if new_id:
             new_organization = self.repo.get_organization(new_id)
+            # create signup credit, mark as recorded
+            credit_id = self.invoice_repo.create_credit(
+                Credit(
+                    organization_id=new_id,
+                    amount=invoice_settings.signup_credits,
+                    status=RecordStatus.RECORDED,
+                    description="Signup credits",
+                ).dict(exclude={"id"})
+            )
+            print(f"New credit created: {credit_id}")
             return OrganizationResponse(**new_organization.dict())
 
         raise HTTPException(
@@ -120,13 +152,34 @@ class OrganizationService:
             slack_config=SlackConfig(
                 slack_installation=slack_installation_request, db_connection_id=None
             ),
-            confidence_threshold=1.0,
-            created_at=datetime.now(),
             owner=slack_installation_request.user.id,
+        )
+
+        customer = self.billing.create_customer(organization.name)
+        subscription = self.billing.create_subscription(customer.id)
+        organization.invoice_details = InvoiceDetails(
+            plan=PaymentPlan.CREDIT_ONLY,
+            stripe_customer_id=customer.id,
+            stripe_subscription_id=subscription.id,
+            stripe_subscription_status=subscription.status,
+            billing_cycle_anchor=subscription.billing_cycle_anchor,
+            spending_limit=invoice_settings.default_spending_limit,
+            hard_spending_limit=invoice_settings.default_hard_spending_limit,
+            available_credits=invoice_settings.signup_credits,
         )
 
         new_id = self.repo.add_organization(organization.dict(exclude={"id"}))
         if new_id:
+            # create signup credit, mark as recorded
+            credit_id = self.invoice_repo.create_credit(
+                Credit(
+                    organization_id=new_id,
+                    amount=invoice_settings.signup_credits,
+                    status=RecordStatus.RECORDED,
+                    description="Signup credits",
+                ).dict(exclude={"id"})
+            )
+            print(f"New credit created: {credit_id}")
             return self.repo.get_organization(new_id)
 
         raise HTTPException(
@@ -146,6 +199,9 @@ class OrganizationService:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="slack installation not found"
         )
+
+    def get_organization_by_customer_id(self, customer_id: str) -> Organization:
+        return self.repo.get_organization_by_customer_id(customer_id)
 
     def _encrypt_llm_credentials(self, llm_api_key: str) -> str:
         fernet_encrypt = FernetEncrypt()

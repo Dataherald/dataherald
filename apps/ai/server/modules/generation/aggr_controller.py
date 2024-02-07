@@ -15,6 +15,8 @@ from modules.generation.models.responses import (
     GenerationSlackResponse,
     NLGenerationResponse,
 )
+from modules.organization.invoice.models.entities import UsageType
+from modules.organization.invoice.service import InvoiceService
 from modules.organization.service import OrganizationService
 from utils.auth import Authorize, VerifyToken, get_api_key
 
@@ -32,6 +34,7 @@ token_auth_scheme = HTTPBearer()
 authorize = Authorize()
 generation_service = AggrgationGenerationService()
 org_service = OrganizationService()
+invoice_service = InvoiceService()
 
 
 @router.get("")
@@ -93,7 +96,19 @@ async def ac_create_generation(
     organization = org_service.get_organization_by_slack_workspace_id(
         generation_request.slack_info.workspace_id
     )
-    return await generation_service.create_generation(generation_request, organization)
+    invoice_service.check_usage(
+        organization.id, type=UsageType.SQL_GENERATION, quantity=1
+    )
+    response = await generation_service.create_generation(
+        generation_request, organization
+    )
+    invoice_service.record_usage(
+        organization.id,
+        type=UsageType.SQL_GENERATION,
+        quantity=1,
+        description=f"from slackbot with prompt id {response.id}",
+    )
+    return response
 
 
 @ac_router.put("/{id}")
@@ -115,9 +130,19 @@ async def ac_create_prompt_sql_generation_result(
     token: str = Depends(token_auth_scheme),
 ) -> GenerationResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    return await generation_service.create_prompt_sql_generation_result(
+    invoice_service.check_usage(
+        user.organization_id, type=UsageType.SQL_GENERATION, quantity=1
+    )
+    response = await generation_service.create_prompt_sql_generation_result(
         request, user.organization_id, playground=True
     )
+    invoice_service.record_usage(
+        user.organization_id,
+        type=UsageType.SQL_GENERATION,
+        quantity=1,
+        description=f"from playground with prompt id {response.id}",
+    )
+    return response
 
 
 @ac_router.post("/{id}/sql-generations", status_code=status.HTTP_201_CREATED)
@@ -152,9 +177,19 @@ async def ac_create_sql_nl_generation(
     token: str = Depends(token_auth_scheme),
 ) -> GenerationResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    return await generation_service.create_sql_nl_generation(
+    invoice_service.check_usage(
+        user.organization_id, type=UsageType.SQL_GENERATION, quantity=1
+    )
+    response = await generation_service.create_sql_nl_generation(
         id, user.organization_id, user
     )
+    invoice_service.record_usage(
+        user.organization_id,
+        type=UsageType.SQL_GENERATION,
+        quantity=1,
+        description=f"from resubmit with prompt id {response.id}",
+    )
+    return response
 
 
 @ac_router.get("/{id}/csv-file")

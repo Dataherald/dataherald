@@ -31,12 +31,30 @@ export interface SlackConfig {
   db_connection_id: string
 }
 
+export enum EPaymentPlan {
+  CREDIT_ONLY = 'CREDIT_ONLY',
+  USAGE_BASED = 'USAGE_BASED',
+  ENTERPRISE = 'ENTERPRISE',
+}
+
+export type PaymentPlan = keyof typeof EPaymentPlan
+
+export interface InvoiceDetails {
+  plan: PaymentPlan
+  billing_cycle_anchor?: number
+  spending_limit?: number // in cents
+  available_credits?: number // in cents
+  stripe_customer_id?: string
+  stripe_subscription_id?: string
+}
+
 export interface Organization {
   id: string
   name: string
   confidence_threshold: number
   llm_api_key?: string
   slack_config?: SlackConfig
+  invoice_details: InvoiceDetails
 }
 
 export type Organizations = Organization[]
@@ -273,3 +291,44 @@ export interface ApiKey {
 }
 
 export type ApiKeys = ApiKey[]
+
+export type Usage = {
+  available_credits: number
+  total_credits: number
+  amount_due: number
+  spending_limit: number
+  sql_generation_cost: number
+  finetuning_gpt_35_cost: number
+  finetuning_gpt_4_cost: number
+  current_period_start?: string
+  current_period_end?: string
+}
+
+export type SpendingLimits = {
+  spending_limit: number
+  hard_spending_limit: number
+}
+
+export type CreditCardBrand =
+  | 'amex'
+  | 'diners'
+  | 'discover'
+  | 'eftpos_au'
+  | 'jcb'
+  | 'mastercard'
+  | 'unionpay'
+  | 'visa'
+  | 'unknown'
+
+export type PaymentMethod = {
+  id: string
+  funding: 'credit' | 'debit' | 'prepaid' | 'unknown'
+  brand: CreditCardBrand
+  last4: string
+  exp_month: number
+  exp_year: number
+  is_default: boolean
+  provider_name: string
+}
+
+export type PaymentMethods = PaymentMethod[]

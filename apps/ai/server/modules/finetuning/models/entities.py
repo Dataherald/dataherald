@@ -14,8 +14,8 @@ class FineTuningStatus(str, Enum):
 
 
 class BaseLLM(BaseModel):
-    model_provider: str | None
-    model_name: str | None
+    model_provider: str
+    model_name: str
     model_parameters: dict[str, str] | None
 
 

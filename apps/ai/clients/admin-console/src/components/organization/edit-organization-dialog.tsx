@@ -1,9 +1,11 @@
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   Form,
@@ -20,7 +22,6 @@ import { toast } from '@/components/ui/use-toast'
 import { useAppContext } from '@/contexts/app-context'
 import { usePutOrganization } from '@/hooks/api/organization/usePutOrganization'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { DialogClose, DialogTrigger } from '@radix-ui/react-dialog'
 import { Edit, Loader } from 'lucide-react'
 import { FC, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -121,11 +122,7 @@ const EditOrganizationDialog: FC = () => {
             />
             <DialogFooter>
               <DialogClose asChild>
-                <Button
-                  type="button"
-                  variant="secondary-outline"
-                  disabled={saving}
-                >
+                <Button type="button" variant="ghost" disabled={saving}>
                   Cancel
                 </Button>
               </DialogClose>

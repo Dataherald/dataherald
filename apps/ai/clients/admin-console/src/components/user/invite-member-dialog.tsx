@@ -171,7 +171,7 @@ const InviteMemberDialog: FC<InviteMemberDialogProps> = ({
             <DialogFooter>
               <Button
                 type="button"
-                variant="secondary-outline"
+                variant="ghost"
                 disabled={invitingMember}
                 onClick={handleCancel}
               >

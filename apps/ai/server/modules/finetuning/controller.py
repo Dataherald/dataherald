@@ -7,6 +7,8 @@ from modules.finetuning.models.responses import (
     FinetuningResponse,
 )
 from modules.finetuning.service import FinetuningService
+from modules.organization.invoice.models.entities import UsageType
+from modules.organization.invoice.service import InvoiceService
 from utils.auth import Authorize, VerifyToken, get_api_key
 from utils.validation import ObjectIdString
 
@@ -23,6 +25,7 @@ ac_router = APIRouter(
 token_auth_scheme = HTTPBearer()
 authorize = Authorize()
 finetuning_service = FinetuningService()
+invoice_service = InvoiceService()
 
 
 @router.get("")
@@ -48,9 +51,26 @@ async def create_finetuning_job(
     finetuning_request: FinetuningRequest,
     api_key: str = Security(get_api_key),
 ) -> FinetuningResponse:
-    return await finetuning_service.create_finetuning_job(
+    usage_type = (
+        UsageType.FINETUNING_GPT_4
+        if finetuning_service.is_gpt_4_model(finetuning_request.base_llm.model_name)
+        else UsageType.FINETUNING_GPT_35
+    )
+    invoice_service.check_usage(
+        api_key.organization_id,
+        usage_type,
+        len(finetuning_request.golden_records),
+    )
+    response = await finetuning_service.create_finetuning_job(
         finetuning_request, api_key.organization_id
     )
+    invoice_service.record_usage(
+        api_key.organization_id,
+        usage_type,
+        len(finetuning_request.golden_records),
+        description=f"finetuning: {response.id}",
+    )
+    return response
 
 
 @router.post("/{id}/cancel")
@@ -86,9 +106,26 @@ async def ac_create_finetuning_job(
     token: str = Depends(token_auth_scheme),
 ) -> ACFinetuningResponse:
     user = authorize.user(VerifyToken(token.credentials).verify())
-    return await finetuning_service.create_finetuning_job(
+    usage_type = (
+        UsageType.FINETUNING_GPT_4
+        if finetuning_service.is_gpt_4_model(finetuning_request.base_llm.model_name)
+        else UsageType.FINETUNING_GPT_35
+    )
+    invoice_service.check_usage(
+        user.organization_id,
+        usage_type,
+        len(finetuning_request.golden_records),
+    )
+    response = await finetuning_service.create_finetuning_job(
         finetuning_request, user.organization_id
     )
+    invoice_service.record_usage(
+        user.organization_id,
+        usage_type,
+        len(finetuning_request.golden_records),
+        description=f"finetuning: {response.id}",
+    )
+    return response
 
 
 @ac_router.post("/{id}/cancel")

@@ -17,6 +17,8 @@ FINETUNING_COL = "finetunings"
 USER_COL = "users"
 ORGANIZATION_COL = "organizations"
 KEY_COL = "keys"
+USAGE_COL = "usages"
+CREDIT_COL = "credits"
 
 
 class Settings(BaseSettings):
@@ -92,6 +94,34 @@ class AnalyticSettings(BaseSettings):
         return getattr(self, key)
 
 
+class InvoiceSettings(BaseSettings):
+    load_dotenv()
+
+    stripe_api_key: str = os.environ.get("STRIPE_API_KEY", None)
+    stripe_webhook_secret: str = os.environ.get("STRIPE_WEBHOOK_SECRET", None)
+
+    sql_generation_price_id: str = os.environ.get(
+        "SQL_GENERATION_PRICE_ID", "price_1OdyLiEohyIdoJ6Sl0teIo81"
+    )
+    finetuning_gpt_35_price_id: str = os.environ.get(
+        "FINETUNING_GPT_35_PRICE_ID", "price_1OegSUEohyIdoJ6SVSIhvjrX"
+    )
+    finetuning_gpt_4_price_id: str = os.environ.get(
+        "FINETUNING_GPT_4_PRICE_ID", "price_1OegR6EohyIdoJ6SLF0XT40D"
+    )
+    # in the future we can store the cost in the db and update it with webhooks
+    sql_generation_cost: int = os.environ.get("SQL_GENERATION_COST", 90)
+    finetuning_gpt_35_cost: int = os.environ.get("FINETUNING_GPT_35_COST", 50)
+    finetuning_gpt_4_cost: int = os.environ.get("FINETUNING_GPT_4_COST", 300)
+
+    default_hard_spending_limit: int = os.environ.get("HARD_SPENDING_LIMIT", 100000)
+    default_spending_limit: int = os.environ.get("DEFAULT_SPENDING_LIMIT", 80000)
+    signup_credits: int = os.environ.get("SIGNUP_CREDITS", 5000)
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
+
+
 settings = Settings()
 db_settings = DBSettings()
 auth_settings = AuthSettings()
@@ -99,3 +129,4 @@ slack_settings = SlackSettings()
 aws_s3_settings = AWSS3Settings()
 analytic_settings = AnalyticSettings()
 ssh_settings = SSHSettings()
+invoice_settings = InvoiceSettings()

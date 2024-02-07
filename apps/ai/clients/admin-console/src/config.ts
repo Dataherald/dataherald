@@ -10,3 +10,4 @@ export const POSTHOG_DISABLED =
   process.env.NEXT_PUBLIC_POSTHOG_DISABLED === 'true' || false
 export const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
 export const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST
+export const STRIPE_PUBLIC_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY

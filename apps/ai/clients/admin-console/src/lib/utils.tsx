@@ -8,7 +8,7 @@ export const cn = (...inputs: ClassValue[]): string => {
 
 export const formatUrl = (segment: string): string =>
   segment
-    .replace('-', ' ')
+    .replace(/-/g, ' ')
     .replace('sql', 'SQL')
     .replace('api', 'API')
     .replace('fine tuning', 'fine-tuning')
@@ -55,3 +55,9 @@ export const capitalizeFirstLetter = (value: string) =>
 
 export const formatStatus = (status?: string): string =>
   status ? capitalize(status?.replace('_', ' ').toLowerCase()) : ''
+
+// Convert values from cents to dollars
+export const toDollars = (value: number, withDecimals = true): string =>
+  (value / 100).toFixed(withDecimals ? 2 : 0)
+
+export const toCents = (value: number): number => value * 100

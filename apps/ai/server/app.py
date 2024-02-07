@@ -18,6 +18,7 @@ from modules.golden_sql import controller as golden_sql_controller
 from modules.instruction import controller as instruction_controller
 from modules.key import controller as key_controller
 from modules.organization import controller as organization_controller
+from modules.organization.invoice import controller as invoice_controller
 from modules.table_description import controller as table_description_controller
 from modules.user import controller as user_controller
 from utils.exception import GenerationEngineError, query_engine_exception_handler
@@ -72,6 +73,7 @@ app.include_router(aggr_generation_controller.ac_router, tags=["Aggregated Gener
 app.include_router(table_description_controller.ac_router, tags=["Table Description"])
 
 app.include_router(auth_controller.router, tags=["Authentication"])
+app.include_router(invoice_controller.router, tags=["Invoice"])
 app.include_router(organization_controller.router, tags=["Organization"])
 app.include_router(key_controller.router, tags=["Keys"])
 app.include_router(user_controller.router, tags=["User"])

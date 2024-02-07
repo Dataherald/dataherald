@@ -1,9 +1,19 @@
 import logging
+from enum import Enum
 
 from fastapi import HTTPException, Request, status
 from fastapi.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
+
+
+class ErrorCode(str, Enum):
+    no_payment_method = "no_payment_method"
+    spending_limit_exceeded = "spending_limit_exceeded"
+    hard_spending_limit_exceeded = "hard_spending_limit_exceeded"
+    subscription_past_due = "subscription_past_due"
+    subscription_canceled = "subscription_canceled"
+    unknown_subscription_status = "unknown_subscription_status"
 
 
 class GenerationEngineError(Exception):

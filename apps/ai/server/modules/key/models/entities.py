@@ -12,7 +12,7 @@ class BaseKey(BaseModel):
     id: str | None
     name: str | None
     organization_id: str
-    created_at: datetime | None
+    created_at: datetime = datetime.now()
     key_preview: str | None
 
 

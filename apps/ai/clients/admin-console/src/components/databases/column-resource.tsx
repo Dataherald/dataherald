@@ -134,7 +134,7 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
           )}
         </div>
         <SheetFooter className="w-full flex sm:justify-between">
-          <Button variant="outline" type="button" onClick={onCancel}>
+          <Button variant="ghost" type="button" onClick={onCancel}>
             Cancel
           </Button>
           <Button type="submit" disabled={isSaving}>

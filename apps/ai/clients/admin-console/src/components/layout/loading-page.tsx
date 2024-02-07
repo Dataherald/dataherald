@@ -13,6 +13,7 @@ const LoadingPage: FC = () => (
     <div className="absolute bg-white shadow-lg w-full max-w-none h-screen rounded-none sm:rounded-2xl sm:h-fit p-8 sm:max-w-lg">
       <div className="flex flex-col items-center gap-5">
         <Image
+          priority
           className="my-2"
           src="/images/dh_ai_logo.svg"
           alt="Background"

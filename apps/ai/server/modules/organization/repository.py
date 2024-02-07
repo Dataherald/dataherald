@@ -33,6 +33,17 @@ class OrganizationRepository:
             else None
         )
 
+    def get_organization_by_customer_id(self, customer_id: str) -> Organization:
+        organization = MongoDB.find_one(
+            ORGANIZATION_COL,
+            {"invoice_details.stripe_customer_id": customer_id},
+        )
+        return (
+            Organization(id=str(organization["_id"]), **organization)
+            if organization
+            else None
+        )
+
     def delete_organization(self, org_id: str) -> int:
         return MongoDB.delete_one(ORGANIZATION_COL, {"_id": ObjectId(org_id)})
 

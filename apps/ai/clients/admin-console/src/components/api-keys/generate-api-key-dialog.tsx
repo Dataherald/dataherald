@@ -167,7 +167,7 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({ onGeneratedKey }) => {
               <AlertDialogFooter className="pt-4">
                 <Button
                   type="button"
-                  variant="secondary-outline"
+                  variant="ghost"
                   disabled={generatingApiKey}
                   onClick={handleClose}
                 >

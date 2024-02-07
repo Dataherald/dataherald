@@ -26,7 +26,7 @@ const DeleteApiKeyDialog: FC<DeleteApiKeyDialogProps> = ({ deleteFnc }) => {
       await deleteFnc()
       toast({
         variant: 'success',
-        title: 'API Key removed',
+        title: 'API Key revoked',
       })
       setOpen(false)
     } catch (e) {
@@ -67,7 +67,7 @@ const DeleteApiKeyDialog: FC<DeleteApiKeyDialogProps> = ({ deleteFnc }) => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+          <Button variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
           <Button variant="destructive" onClick={handleDeleteConfirm}>

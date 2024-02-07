@@ -45,7 +45,9 @@ async def add_organization(
     session_user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_admin_user(session_user)
     return org_service.add_organization(
-        OrganizationRequest(**org_request.dict()), owner=session_user.id
+        OrganizationRequest(
+            **org_request.dict(exclude={"owner"}), owner=session_user.id
+        )
     )
 
 

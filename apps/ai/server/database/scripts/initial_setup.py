@@ -59,6 +59,9 @@ if __name__ == "__main__":
             "name": "Local Test",
             "confidence_threshold": 1,
             "db_connection_id": str(db_connection_id),
+            "invoice_details": {
+                "plan": "ENTERPRISE",
+            },
         },
     )
 

@@ -1,3 +1,4 @@
+import LoadingList from '@/components/layout/loading-list'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +14,6 @@ import { Button } from '@/components/ui/button'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import InviteMemberDialog from '@/components/user/invite-member-dialog'
-import LoadingUserList from '@/components/user/loading-user-list'
 import { useAppContext } from '@/contexts/app-context'
 import { useDeleteUser } from '@/hooks/api/user/useDeleteUser'
 import useUsers from '@/hooks/api/user/useUsers'
@@ -70,7 +70,7 @@ const UserList = () => {
       </div>
       <div className="grow overflow-auto">
         {isLoading ? (
-          <LoadingUserList />
+          <LoadingList />
         ) : (
           users && (
             <ul>

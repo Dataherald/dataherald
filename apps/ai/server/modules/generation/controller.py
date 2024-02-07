@@ -15,6 +15,8 @@ from modules.generation.models.responses import (
     SQLGenerationResponse,
 )
 from modules.generation.service import GenerationService
+from modules.organization.invoice.models.entities import UsageType
+from modules.organization.invoice.service import InvoiceService
 from utils.auth import get_api_key
 from utils.validation import ObjectIdString
 
@@ -24,6 +26,7 @@ router = APIRouter(
 )
 
 generation_service = GenerationService()
+invoice_service = InvoiceService()
 
 
 @router.post("/prompts", status_code=status.HTTP_201_CREATED)
@@ -41,9 +44,19 @@ async def create_prompt_sql_generation(
     question_request: PromptSQLGenerationRequest,
     api_key: str = Security(get_api_key),
 ) -> SQLGenerationResponse:
-    return await generation_service.create_prompt_sql_generation(
+    invoice_service.check_usage(
+        api_key.organization_id, type=UsageType.SQL_GENERATION, quantity=1
+    )
+    response = await generation_service.create_prompt_sql_generation(
         question_request, api_key.organization_id
     )
+    invoice_service.record_usage(
+        api_key.organization_id,
+        type=UsageType.SQL_GENERATION,
+        quantity=1,
+        description=f"from /api/prompts/sql-generation: {response.id}",
+    )
+    return response
 
 
 @router.post(
@@ -53,9 +66,19 @@ async def create_prompt_sql_nl_generation(
     prompt_sql_nl_generation_request: PromptSQLNLGenerationRequest,
     api_key: str = Security(get_api_key),
 ) -> NLGenerationResponse:
-    return await generation_service.create_prompt_sql_nl_generation(
+    invoice_service.check_usage(
+        api_key.organization_id, type=UsageType.SQL_GENERATION, quantity=1
+    )
+    response = await generation_service.create_prompt_sql_nl_generation(
         prompt_sql_nl_generation_request, api_key.organization_id
     )
+    invoice_service.record_usage(
+        api_key.organization_id,
+        type=UsageType.SQL_GENERATION,
+        quantity=1,
+        description=f"from /api/prompts/sql-generations/nl-generations: {response.id}",
+    )
+    return response
 
 
 @router.post("/prompts/{id}/sql-generations", status_code=status.HTTP_201_CREATED)
@@ -64,9 +87,19 @@ async def create_sql_generation(
     sql_generation_request: SQLGenerationRequest,
     api_key: str = Security(get_api_key),
 ) -> SQLGenerationResponse:
-    return await generation_service.create_sql_generation(
+    invoice_service.check_usage(
+        api_key.organization_id, type=UsageType.SQL_GENERATION, quantity=1
+    )
+    response = await generation_service.create_sql_generation(
         id, sql_generation_request, api_key.organization_id
     )
+    invoice_service.record_usage(
+        api_key.organization_id,
+        type=UsageType.SQL_GENERATION,
+        quantity=1,
+        description=f"from /api/prompts/{id}/sql-generations: {response.id}",
+    )
+    return response
 
 
 @router.post(
@@ -77,9 +110,19 @@ async def create_sql_nl_generation(
     sql_nl_generation_request: SQLNLGenerationRequest,
     api_key: str = Security(get_api_key),
 ) -> NLGenerationResponse:
-    return await generation_service.create_sql_nl_generation(
+    invoice_service.check_usage(
+        api_key.organization_id, type=UsageType.SQL_GENERATION, quantity=1
+    )
+    response = await generation_service.create_sql_nl_generation(
         id, sql_nl_generation_request, api_key.organization_id
     )
+    invoice_service.record_usage(
+        api_key.organization_id,
+        type=UsageType.SQL_GENERATION,
+        quantity=1,
+        description=f"from /api/prompts/{id}/sql-generations/nl-generations: {response.id}",
+    )
+    return response
 
 
 @router.post(

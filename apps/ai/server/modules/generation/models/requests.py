@@ -20,7 +20,7 @@ class GenerationUpdateRequest(BaseModel):
 
 
 class SQLRequest(BaseModel):
-    sql: str | None
+    sql: str
 
 
 class PromptRequest(BaseModel):

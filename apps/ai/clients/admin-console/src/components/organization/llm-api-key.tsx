@@ -157,7 +157,7 @@ const LlmApiKeyConfig: FC<LlmApiKeyConfigProps> = ({
           )}
           {editEnabled && (
             <div className="flex items-center justify-between gap-2">
-              <Button variant="outline" type="button" onClick={handleCancel}>
+              <Button variant="ghost" type="button" onClick={handleCancel}>
                 Cancel
               </Button>
               <Button type="submit" disabled={updating}>

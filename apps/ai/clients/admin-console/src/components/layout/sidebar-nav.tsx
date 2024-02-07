@@ -12,8 +12,10 @@ import {
 } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useAppContext } from '@/contexts/app-context'
+import { isEnterprise } from '@/lib/domain/billing'
 import { cn } from '@/lib/utils'
 import {
+  BarChart2,
   BookOpenText,
   Building2,
   Database,
@@ -36,65 +38,71 @@ export interface MenuItem {
 }
 export type MenuItems = MenuItem[]
 
-const FIRST_NAV_ITEMS: MenuItems = [
-  {
-    text: 'Playground',
-    href: '/playground',
-    icon: TerminalSquare,
-  },
-  {
-    text: 'Databases',
-    href: '/databases',
-    icon: Database,
-  },
-  {
-    text: 'Queries',
-    href: '/queries',
-    icon: ShieldQuestion,
-  },
-  {
-    text: 'Golden SQL',
-    href: '/golden-sql',
-    icon: ShieldCheck,
-  },
-  {
-    text: 'Fine-tuning',
-    href: '/fine-tuning',
-    icon: SlidersIcon,
-  },
-]
-const SECOND_NAV_ITEMS: MenuItems = [
-  {
-    text: 'API keys',
-    href: '/api-keys',
-    icon: KeyRound,
-  },
-  {
-    text: 'Organization',
-    href: '/organization',
-    icon: Building2,
-  },
-]
-
-const BOTTOM_NAV_ITEMS: MenuItems = [
-  {
-    text: 'Help',
-    href: 'https://www.dataherald.com/contact',
-    icon: HelpCircle,
-  },
-  {
-    text: 'Documentation',
-    href: 'https://docs.dataherald.com/',
-    icon: BookOpenText,
-  },
-]
-
 const SidebarNav = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLElement>) => {
   const pathname = usePathname()
   const { user, organization, logout } = useAppContext()
+
+  const FIRST_NAV_ITEMS: MenuItems = [
+    {
+      text: 'Playground',
+      href: '/playground',
+      icon: TerminalSquare,
+    },
+    {
+      text: 'Databases',
+      href: '/databases',
+      icon: Database,
+    },
+    {
+      text: 'Queries',
+      href: '/queries',
+      icon: ShieldQuestion,
+    },
+    {
+      text: 'Golden SQL',
+      href: '/golden-sql',
+      icon: ShieldCheck,
+    },
+    {
+      text: 'Fine-tuning',
+      href: '/fine-tuning',
+      icon: SlidersIcon,
+    },
+  ]
+  const SECOND_NAV_ITEMS: MenuItems = [
+    {
+      text: 'API keys',
+      href: '/api-keys',
+      icon: KeyRound,
+    },
+    {
+      text: 'Usage',
+      href: '/usage',
+      icon: BarChart2,
+      hidden: isEnterprise(organization),
+    },
+    {
+      text: 'Organization',
+      href: '/organization',
+      icon: Building2,
+    },
+  ]
+
+  const BOTTOM_NAV_ITEMS: MenuItems = [
+    {
+      text: 'Help',
+      href: 'https://www.dataherald.com/contact',
+      icon: HelpCircle,
+    },
+    {
+      text: 'Documentation',
+      href: 'https://docs.dataherald.com/',
+      icon: BookOpenText,
+    },
+  ]
 
   const handleLogout = logout
 

@@ -103,7 +103,7 @@ class Authorize:
         if id_a == id_b:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not authorized to self modify  user data",
+                detail="User not authorized to self modify user data",
             )
 
     def _item_in_organization(

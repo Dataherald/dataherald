@@ -190,10 +190,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
                       Scanning
                     </>
                   ) : (
-                    <>
-                      <ScanText size={18} className="mr-2" />
-                      Scan
-                    </>
+                    'Scan'
                   )}
                 </AlertDialogAction>
               </AlertDialogFooter>
