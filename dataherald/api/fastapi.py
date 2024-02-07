@@ -178,7 +178,7 @@ class FastAPI(API):
                 file_storage=database_connection_request.file_storage,
                 metadata=database_connection_request.metadata,
             )
-
+            sql_database = SQLDatabase.get_sql_engine(db_connection, True)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))  # noqa: B904
         except InvalidDBConnectionError as e:
@@ -187,11 +187,9 @@ class FastAPI(API):
                 detail=f"{e}",
             )
 
+        # Get tables and views and create table-descriptions as NOT_SCANNED
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         db_connection = db_connection_repository.insert(db_connection)
-
-        # Get tables and views and create table-descriptions as NOT_SCANNED
-        sql_database = SQLDatabase.get_sql_engine(db_connection, True)
         scanner_repository = TableDescriptionRepository(self.storage)
         scanner = self.system.instance(Scanner)
         scanner.create_tables(sql_database, str(db_connection.id), scanner_repository)
@@ -207,7 +205,13 @@ class FastAPI(API):
             refresh_table_description.db_connection_id
         )
 
-        sql_database = SQLDatabase.get_sql_engine(db_connection, True)
+        try:
+            sql_database = SQLDatabase.get_sql_engine(db_connection, True)
+        except InvalidDBConnectionError as e:
+            raise HTTPException(  # noqa: B904
+                status_code=400,
+                detail=f"{e}",
+            )
         # Get tables and views and create missing table-descriptions as NOT_SCANNED and update DEPRECATED
         scanner_repository = TableDescriptionRepository(self.storage)
         scanner = self.system.instance(Scanner)
