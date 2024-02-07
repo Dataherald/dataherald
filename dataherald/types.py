@@ -194,3 +194,17 @@ class NLGeneration(BaseModel):
     text: str | None
     created_at: datetime = Field(default_factory=datetime.now)
     metadata: dict | None
+
+
+class FileUploadStatus(Enum):
+    UPLOADED = "UPLOADED"
+    FAILED = "FAILED"
+
+
+class ContextFile(BaseModel):
+    id: str | None = None
+    db_connection_id: str
+    file_name: str
+    file_status: FileUploadStatus = "FAILED"
+    created_at: datetime = Field(default_factory=datetime.now)
+    metadata: dict | None

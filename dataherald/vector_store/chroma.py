@@ -81,6 +81,14 @@ class Chroma(VectorStore):
     def create_collection(self, collection: str):
         return super().create_collection(collection)
 
+    @override
+    def delete_record_by_metadata(self, collection: str, metadata: dict):
+        # first, get the ids of the records to delete
+        target_collection = self.chroma_client.get_collection(collection)
+        records_to_delete = target_collection.query(where=metadata, n_results=100000)
+        # then, delete the records
+        target_collection.delete(ids=records_to_delete["ids"][0])
+
     def convert_to_pinecone_object_model(self, chroma_results: dict) -> List:
         results = []
         for i in range(len(chroma_results["ids"][0])):

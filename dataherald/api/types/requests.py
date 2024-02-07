@@ -38,3 +38,8 @@ class PromptSQLGenerationNLGenerationRequest(NLGenerationRequest):
 
 class UpdateMetadataRequest(BaseModel):
     metadata: dict | None
+
+
+class ContextFileRequest(BaseModel):
+    db_connection_id: str
+    metadata: dict | None

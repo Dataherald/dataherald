@@ -6,13 +6,14 @@ import time
 from typing import List
 
 from bson.objectid import InvalidId, ObjectId
-from fastapi import BackgroundTasks, HTTPException
+from fastapi import BackgroundTasks, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from overrides import override
 from sqlalchemy.exc import SQLAlchemyError
 
 from dataherald.api import API
 from dataherald.api.types.requests import (
+    ContextFileRequest,
     NLGenerationRequest,
     NLGenerationsSQLGenerationRequest,
     PromptRequest,
@@ -22,6 +23,7 @@ from dataherald.api.types.requests import (
     UpdateMetadataRequest,
 )
 from dataherald.api.types.responses import (
+    ContextFileResponse,
     DatabaseConnectionResponse,
     GoldenSQLResponse,
     InstructionResponse,
@@ -54,6 +56,7 @@ from dataherald.repositories.instructions import InstructionRepository
 from dataherald.repositories.nl_generations import NLGenerationNotFoundError
 from dataherald.repositories.prompts import PromptNotFoundError
 from dataherald.repositories.sql_generations import SQLGenerationNotFoundError
+from dataherald.services.context_files import ContextFileService
 from dataherald.services.nl_generations import NLGenerationError, NLGenerationService
 from dataherald.services.prompts import PromptService
 from dataherald.services.sql_generations import (
@@ -959,3 +962,19 @@ class FastAPI(API):
                 detail=f"NL Generation {nl_generation_id} not found",
             )
         return NLGenerationResponse(**nl_generations[0].dict())
+
+    @override
+    async def upload_context_file(
+        self, file: UploadFile, context_file_request: ContextFileRequest
+    ) -> ContextFileResponse:
+        if not file.content_type == "application/pdf":
+            raise HTTPException(status_code=400, detail="Uploaded file must be a PDF")
+        context_file_service = ContextFileService(self.system, self.storage)
+        context_file = await context_file_service.create(file, context_file_request)
+        return ContextFileResponse(**context_file.dict())
+
+    @override
+    def delete_context_file(self, context_file_id: str) -> dict:
+        context_file_service = ContextFileService(self.system, self.storage)
+        context_file_service.delete(context_file_id)
+        return {"status": "success"}

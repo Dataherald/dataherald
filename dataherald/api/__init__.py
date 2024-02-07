@@ -2,10 +2,11 @@ import io
 from abc import ABC, abstractmethod
 from typing import List
 
-from fastapi import BackgroundTasks
+from fastapi import BackgroundTasks, UploadFile
 
 from dataherald.api.types.query import Query
 from dataherald.api.types.requests import (
+    ContextFileRequest,
     NLGenerationRequest,
     NLGenerationsSQLGenerationRequest,
     PromptRequest,
@@ -15,6 +16,7 @@ from dataherald.api.types.requests import (
     UpdateMetadataRequest,
 )
 from dataherald.api.types.responses import (
+    ContextFileResponse,
     DatabaseConnectionResponse,
     GoldenSQLResponse,
     InstructionResponse,
@@ -264,4 +266,14 @@ class API(Component, ABC):
     def update_nl_generation(
         self, nl_generation_id: str, update_metadata_request: UpdateMetadataRequest
     ) -> NLGenerationResponse:
+        pass
+
+    @abstractmethod
+    async def upload_context_file(
+        self, file: UploadFile, context_file_request: ContextFileRequest
+    ) -> ContextFileResponse:
+        pass
+
+    @abstractmethod
+    def delete_context_file(self, context_file_id: str) -> dict:
         pass

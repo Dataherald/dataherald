@@ -5,7 +5,7 @@ from pydantic import BaseModel, validator
 
 from dataherald.db_scanner.models.types import TableDescription
 from dataherald.sql_database.models.types import DatabaseConnection
-from dataherald.types import GoldenSQL, LLMConfig
+from dataherald.types import FileUploadStatus, GoldenSQL, LLMConfig
 
 
 class BaseResponse(BaseModel):
@@ -68,3 +68,9 @@ class TableDescriptionResponse(BaseResponse, TableDescription):
 
 class GoldenSQLResponse(BaseResponse, GoldenSQL):
     pass
+
+
+class ContextFileResponse(BaseResponse):
+    db_connection_id: str
+    file_name: str
+    file_status: FileUploadStatus

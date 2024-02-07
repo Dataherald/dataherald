@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 from dataherald.config import Component, System
 from dataherald.db import DB
-from dataherald.types import GoldenSQL, GoldenSQLRequest, Prompt
+from dataherald.types import ContextFile, GoldenSQL, GoldenSQLRequest, Prompt
 from dataherald.vector_store import VectorStore
 
 
@@ -20,6 +20,9 @@ class ContextStore(Component, ABC):
         self.golden_sql_collection = os.environ.get(
             "GOLDEN_SQL_COLLECTION", "dataherald-staging"
         )
+        self.context_files_collection = os.environ.get(
+            "CONTEXT_FILES_COLLECTION", "context_files-staging"
+        )
         self.vector_store = self.system.instance(VectorStore)
 
     @abstractmethod
@@ -34,4 +37,12 @@ class ContextStore(Component, ABC):
 
     @abstractmethod
     def remove_golden_sqls(self, ids: List) -> bool:
+        pass
+
+    @abstractmethod
+    def add_context_file(self, context_file: ContextFile, content: str) -> ContextFile:
+        pass
+
+    @abstractmethod
+    def delete_context_file(self, context_file: ContextFile) -> bool:
         pass

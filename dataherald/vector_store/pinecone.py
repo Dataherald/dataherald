@@ -129,3 +129,10 @@ class Pinecone(VectorStore):
     @override
     def create_collection(self, collection: str):
         pinecone.create_index(name=collection, dimension=1536, metric="cosine")
+
+    @override
+    def delete_record_by_metadata(self, collection: str, metadata: dict):
+        if collection not in pinecone.list_indexes():
+            self.create_collection(collection)
+        index = pinecone.Index(collection)
+        index.delete(filter=metadata)

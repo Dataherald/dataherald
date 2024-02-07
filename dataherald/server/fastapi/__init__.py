@@ -2,7 +2,7 @@ import os
 from typing import List
 
 import fastapi
-from fastapi import BackgroundTasks, status
+from fastapi import BackgroundTasks, UploadFile, status
 from fastapi import FastAPI as _FastAPI
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
@@ -10,6 +10,7 @@ from fastapi.routing import APIRoute
 import dataherald
 from dataherald.api.types.query import Query
 from dataherald.api.types.requests import (
+    ContextFileRequest,
     NLGenerationRequest,
     NLGenerationsSQLGenerationRequest,
     PromptRequest,
@@ -19,6 +20,7 @@ from dataherald.api.types.requests import (
     UpdateMetadataRequest,
 )
 from dataherald.api.types.responses import (
+    ContextFileResponse,
     DatabaseConnectionResponse,
     GoldenSQLResponse,
     InstructionResponse,
@@ -360,6 +362,20 @@ class FastAPI(dataherald.server.Server):
             "/api/v1/heartbeat", self.heartbeat, methods=["GET"], tags=["System"]
         )
 
+        self.router.add_api_route(
+            "/api/v1/context-files/upload-file",
+            self.upload_context_file,
+            methods=["POST"],
+            tags=["Context-files"],
+        )
+
+        self.router.add_api_route(
+            "/api/v1/context-files/{context_file_id}",
+            self.delete_context_file,
+            methods=["DELETE"],
+            tags=["Context-files"],
+        )
+
         self._app.include_router(self.router)
         use_route_names_as_operation_ids(self._app)
 
@@ -601,3 +617,13 @@ class FastAPI(dataherald.server.Server):
     ) -> Finetuning:
         """Gets fine tuning jobs"""
         return self._api.update_finetuning_job(finetuning_id, update_metadata_request)
+
+    async def upload_context_file(
+        self, file: UploadFile, context_file_request: ContextFileRequest
+    ) -> ContextFileResponse:
+        """Uploads a knowledge file"""
+        return await self._api.upload_context_file(file, context_file_request)
+
+    def delete_context_file(self, context_file_id: str) -> dict:
+        """Deletes a knowledge file"""
+        return self._api.delete_context_file(context_file_id)
