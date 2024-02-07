@@ -287,58 +287,59 @@ class InvoiceService:
                 detail="Organization does not have invoice details",
             )
         # skip check if enterprise
-        if organization.invoice_details.plan == PaymentPlan.ENTERPRISE:
-            return
-
-        self._check_subscription_status(
-            organization.invoice_details.stripe_subscription_status
-        )
-
-        # check for available credits if credit only
-        if organization.invoice_details.plan == PaymentPlan.CREDIT_ONLY:
-            usage = Usage(
-                type=type,
-                quantity=quantity,
-                status=RecordStatus.UNRECORDED,
-                organization_id=org_id,
+        if organization.invoice_details.plan != PaymentPlan.ENTERPRISE:
+            self._check_subscription_status(
+                organization.invoice_details.stripe_subscription_status
             )
-            if (
-                self._calculate_total_usage_cost(self._get_invoice_from_usages([usage]))
-                > organization.invoice_details.available_credits
-            ):
-                raise HTTPException(
-                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                    detail=ErrorCode.no_payment_method,
-                )
-        # check for spending limit if usage based
-        if organization.invoice_details.plan == PaymentPlan.USAGE_BASED:
             start_date, end_date = (
                 self.billing.get_current_subscription_period_with_anchor(
                     organization.invoice_details.billing_cycle_anchor
                 )
             )
             usages = self.repo.get_usages(org_id, start_date, end_date)
-            usages.append(
-                Usage(
-                    type=type,
-                    quantity=quantity,
-                    status=RecordStatus.UNRECORDED,
-                    organization_id=org_id,
-                )
+            usage = Usage(
+                type=type,
+                quantity=quantity,
+                status=RecordStatus.UNRECORDED,
+                organization_id=org_id,
             )
-            total_usage_cost = self._calculate_total_usage_cost(
-                self._get_invoice_from_usages(usages)
+            usages.append(usage)
+            # check for available credits if credit only
+            if organization.invoice_details.plan == PaymentPlan.CREDIT_ONLY:
+                if (
+                    self._calculate_total_usage_cost(
+                        self._get_invoice_from_usages([usage])
+                    )
+                    > organization.invoice_details.available_credits
+                ):
+                    raise HTTPException(
+                        status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                        detail=ErrorCode.no_payment_method,
+                    )
+
+            # for usage based and credit only
+            self._check_spending_limit_from_usage(
+                usages,
+                organization.invoice_details.spending_limit,
+                organization.invoice_details.hard_spending_limit,
             )
-            if total_usage_cost > organization.invoice_details.hard_spending_limit:
-                raise HTTPException(
-                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                    detail=ErrorCode.hard_spending_limit_exceeded,
-                )
-            if total_usage_cost > organization.invoice_details.spending_limit:
-                raise HTTPException(
-                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                    detail=ErrorCode.spending_limit_exceeded,
-                )
+
+    def _check_spending_limit_from_usage(
+        self, usages: list[Usage], spending_limit: int, hard_spending_limit: int
+    ):
+        total_usage_cost = self._calculate_total_usage_cost(
+            self._get_invoice_from_usages(usages)
+        )
+        if total_usage_cost > hard_spending_limit:
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail=ErrorCode.hard_spending_limit_exceeded,
+            )
+        if total_usage_cost > spending_limit:
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail=ErrorCode.spending_limit_exceeded,
+            )
 
     def _get_invoice_from_usages(self, usages: list[Usage]) -> UsageInvoice:
         usage_invoice = {
