@@ -2,11 +2,15 @@ name: Automated API tests using Postman CLI
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
     paths:
       - ".github/workflows/ai-server-api-test.yml"
       - "apps/ai/server/**"
       - "!apps/ai/server/.env.example"
       - "!apps/ai/server/README.md"
+      - "!apps/ai/server/database/migrations/**"
+      - "!apps/ai/server/database/scripts/**"
+      - "!apps/ai/server/scripts/**"
     branches:
       - main
       - production
