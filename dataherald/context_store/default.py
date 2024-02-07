@@ -1,6 +1,7 @@
 import logging
 from typing import List, Tuple
 
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from overrides import override
 from sql_metadata import Parser
 
@@ -8,7 +9,7 @@ from dataherald.config import System
 from dataherald.context_store import ContextStore
 from dataherald.repositories.golden_sqls import GoldenSQLRepository
 from dataherald.repositories.instructions import InstructionRepository
-from dataherald.types import GoldenSQL, GoldenSQLRequest, Prompt
+from dataherald.types import ContextFile, GoldenSQL, GoldenSQLRequest, Prompt
 
 logger = logging.getLogger(__name__)
 
@@ -97,4 +98,34 @@ class DefaultContextStore(ContextStore):
             deleted = golden_sqls_repository.delete_by_id(id)
             if deleted == 0:
                 logger.warning(f"Golden record with id {id} not found")
+        return True
+
+    @override
+    def add_context_file(self, context_file: ContextFile, content: str) -> bool:
+        """Adds the context file to the DB"""
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=100,
+            length_function=len,
+            is_separator_regex=False,
+        )
+        texts = text_splitter.create_documents([content])
+        for text in texts:
+            self.vector_store.add_record(
+                text,
+                context_file.db_connection_id,
+                self.context_files_collection,
+                metadata={
+                    "file_name": context_file.file_name,
+                    "text": text,
+                },
+            )
+        return True
+
+    @override
+    def delete_context_file(self, context_file: ContextFile) -> bool:
+        """Deletes the context file from the DB"""
+        self.vector_store.delete_record(
+            collection=self.context_files_collection, id=context_file.id
+        )
         return True
