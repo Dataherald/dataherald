@@ -82,7 +82,7 @@ const SidebarNav = ({
       text: 'Usage',
       href: '/usage',
       icon: BarChart2,
-      hidden: isEnterprise(organization),
+      hidden: !organization || isEnterprise(organization),
     },
     {
       text: 'Organization',
