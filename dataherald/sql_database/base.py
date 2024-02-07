@@ -89,6 +89,7 @@ class SQLDatabase:
                 db_uri = db_uri + f"?credentials_path={file_path}"
 
             engine = cls.from_uri(db_uri)
+            engine.engine.connect()
             DBConnections.add(database_info.id, engine)
         except Exception as e:
             raise InvalidDBConnectionError(  # noqa: B904
