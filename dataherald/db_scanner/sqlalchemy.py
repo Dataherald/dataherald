@@ -4,7 +4,7 @@ from typing import Any, List
 
 import sqlalchemy
 from overrides import override
-from sqlalchemy import Column, MetaData, Table, inspect
+from sqlalchemy import Column, ForeignKeyConstraint, MetaData, Table, inspect
 from sqlalchemy.schema import CreateTable
 from sqlalchemy.sql.sqltypes import NullType
 
@@ -189,8 +189,23 @@ class SqlAlchemyScanner(Scanner):
                 continue
             valid_columns.append(col)
 
-        new_columns = [Column(col.name, col.type) for col in valid_columns]
+        new_columns = [
+            Column(
+                col.name,
+                col.type,
+                primary_key=col.primary_key,
+                autoincrement=col.autoincrement,
+            )
+            for col in valid_columns
+        ]
+
         new_table = Table(original_table.name, MetaData(), *new_columns)
+
+        for fk in original_table.foreign_keys:
+            new_table.append_constraint(
+                ForeignKeyConstraint([fk.parent.name], [fk.column.name], name=fk.name)
+            )
+
         create_table_ddl = str(CreateTable(new_table).compile(db_engine.engine))
 
         return create_table_ddl.rstrip()
