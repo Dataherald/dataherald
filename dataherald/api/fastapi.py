@@ -189,11 +189,18 @@ class FastAPI(API):
 
         # Get tables and views and create table-descriptions as NOT_SCANNED
         db_connection_repository = DatabaseConnectionRepository(self.storage)
-        db_connection = db_connection_repository.insert(db_connection)
+
         scanner_repository = TableDescriptionRepository(self.storage)
         scanner = self.system.instance(Scanner)
-        scanner.create_tables(sql_database, str(db_connection.id), scanner_repository)
-
+        try:
+            tables = sql_database.get_tables_and_views()
+            db_connection = db_connection_repository.insert(db_connection)
+            scanner.create_tables(tables, str(db_connection.id), scanner_repository)
+        except Exception as e:
+            raise HTTPException(  # noqa: B904
+                status_code=400,
+                detail=f"{e}",
+            )
         return DatabaseConnectionResponse(**db_connection.dict())
 
     @override
@@ -207,7 +214,8 @@ class FastAPI(API):
 
         try:
             sql_database = SQLDatabase.get_sql_engine(db_connection, True)
-        except InvalidDBConnectionError as e:
+            tables = sql_database.get_tables_and_views()
+        except Exception as e:
             raise HTTPException(  # noqa: B904
                 status_code=400,
                 detail=f"{e}",
@@ -218,7 +226,7 @@ class FastAPI(API):
         return [
             TableDescriptionResponse(**record.dict())
             for record in scanner.refresh_tables(
-                sql_database, str(db_connection.id), scanner_repository
+                tables, str(db_connection.id), scanner_repository
             )
         ]
 
@@ -259,12 +267,19 @@ class FastAPI(API):
                 detail=f"{e}",
             )
         db_connection_repository = DatabaseConnectionRepository(self.storage)
-        db_connection = db_connection_repository.update(db_connection)
 
         # Get tables and views and create missing table-descriptions as NOT_SCANNED and update DEPRECATED
         scanner_repository = TableDescriptionRepository(self.storage)
         scanner = self.system.instance(Scanner)
-        scanner.refresh_tables(sql_database, str(db_connection.id), scanner_repository)
+        try:
+            tables = sql_database.get_tables_and_views()
+            db_connection = db_connection_repository.update(db_connection)
+            scanner.refresh_tables(tables, str(db_connection.id), scanner_repository)
+        except Exception as e:
+            raise HTTPException(  # noqa: B904
+                status_code=400,
+                detail=f"{e}",
+            )
 
         return DatabaseConnectionResponse(**db_connection.dict())
 
