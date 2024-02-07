@@ -32,7 +32,7 @@ class Scanner(Component, ABC):
     @abstractmethod
     def create_tables(
         self,
-        sql_database: SQLDatabase,
+        tables: list[str],
         db_connection_id: str,
         repository: TableDescriptionRepository,
         metadata: dict = None,
@@ -42,7 +42,7 @@ class Scanner(Component, ABC):
     @abstractmethod
     def refresh_tables(
         self,
-        sql_database: SQLDatabase,
+        tables: list[str],
         db_connection_id: str,
         repository: TableDescriptionRepository,
         metadata: dict = None,
