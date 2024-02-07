@@ -92,24 +92,31 @@ class TableDescriptionService:
                     json={"db_connection_id": db_connection.id},
                     timeout=settings.default_engine_timeout,
                 )
-                raise_for_status(response.status_code, response.text)
-                table_descriptions = [
-                    AggrTableDescription(**table_description)
-                    for table_description in response.json()
-                ]
 
-                tables = [
-                    BasicTableDescriptionResponse(
-                        id=td.id,
-                        name=td.table_name,
-                        columns=[c.name for c in td.columns],
-                        sync_status=td.status,
-                        last_sync=(
-                            str(td.last_schema_sync) if td.last_schema_sync else None
-                        ),
-                    )
-                    for td in table_descriptions
-                ]
+                try:
+                    raise_for_status(response.status_code, response.text)
+                    table_descriptions = [
+                        AggrTableDescription(**table_description)
+                        for table_description in response.json()
+                    ]
+
+                    tables = [
+                        BasicTableDescriptionResponse(
+                            id=td.id,
+                            name=td.table_name,
+                            columns=[c.name for c in td.columns],
+                            sync_status=td.status,
+                            last_sync=(
+                                str(td.last_schema_sync)
+                                if td.last_schema_sync
+                                else None
+                            ),
+                        )
+                        for td in table_descriptions
+                    ]
+                except Exception:
+                    tables = []
+
                 database_description_list.append(
                     DatabaseDescriptionResponse(
                         db_connection_id=db_connection.id,
@@ -117,6 +124,7 @@ class TableDescriptionService:
                         tables=tables,
                     )
                 )
+
         return database_description_list
 
     async def get_database_description_list(
