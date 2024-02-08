@@ -1,3 +1,5 @@
+import os
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from datetime import datetime
 
 import pandas as pd
@@ -39,6 +41,11 @@ class SQLGenerationService:
     def update_error(self, sql_generation: SQLGeneration, error: str) -> SQLGeneration:
         sql_generation.error = error
         return self.sql_generation_repository.update(sql_generation)
+
+    def generate_response_with_timeout(self, sql_generator, user_prompt, db_connection):
+        return sql_generator.generate_response(
+            user_prompt=user_prompt, database_connection=db_connection
+        )
 
     def create(
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest
@@ -109,9 +116,25 @@ class SQLGenerationService:
                     sql_generation_request.low_latency_mode
                 )
             try:
-                sql_generation = sql_generator.generate_response(
-                    user_prompt=prompt, database_connection=db_connection
-                )
+                with ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(
+                        self.generate_response_with_timeout,
+                        sql_generator,
+                        prompt,
+                        db_connection,
+                    )
+                    try:
+                        sql_generation = future.result(
+                            timeout=int(os.environ.get("DH_ENGINE_TIMEOUT", 150))
+                        )
+                    except TimeoutError as e:
+                        self.update_error(
+                            initial_sql_generation, "SQL generation request timed out"
+                        )
+                        raise SQLGenerationError(
+                            "SQL generation request timed out",
+                            initial_sql_generation.id,
+                        ) from e
             except Exception as e:
                 self.update_error(initial_sql_generation, str(e))
                 raise SQLGenerationError(str(e), initial_sql_generation.id) from e
