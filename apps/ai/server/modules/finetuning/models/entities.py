@@ -41,7 +41,7 @@ class BaseFinetuning(BaseModel):
     finetuning_job_id: str | None
     model_id: str | None
     created_at: datetime | None
-    golden_records: list[str] | None
+    golden_sqls: list[str] | None
     metadata: FinetuningMetadata | None
 
 

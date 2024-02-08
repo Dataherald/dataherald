@@ -2,7 +2,7 @@ name: Automated API tests using Postman CLI
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - ".github/workflows/ai-server-api-test.yml"
       - "apps/ai/server/**"
@@ -17,6 +17,7 @@ on:
 
 jobs:
   automated-api-tests:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
 
     defaults:

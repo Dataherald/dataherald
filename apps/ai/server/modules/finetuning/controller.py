@@ -59,7 +59,7 @@ async def create_finetuning_job(
     invoice_service.check_usage(
         api_key.organization_id,
         usage_type,
-        len(finetuning_request.golden_records),
+        len(finetuning_request.golden_sqls),
     )
     response = await finetuning_service.create_finetuning_job(
         finetuning_request, api_key.organization_id
@@ -67,7 +67,7 @@ async def create_finetuning_job(
     invoice_service.record_usage(
         api_key.organization_id,
         usage_type,
-        len(finetuning_request.golden_records),
+        len(finetuning_request.golden_sqls),
         description=f"finetuning: {response.id}",
     )
     return response
@@ -114,7 +114,7 @@ async def ac_create_finetuning_job(
     invoice_service.check_usage(
         user.organization_id,
         usage_type,
-        len(finetuning_request.golden_records),
+        len(finetuning_request.golden_sqls),
     )
     response = await finetuning_service.create_finetuning_job(
         finetuning_request, user.organization_id
@@ -122,7 +122,7 @@ async def ac_create_finetuning_job(
     invoice_service.record_usage(
         user.organization_id,
         usage_type,
-        len(finetuning_request.golden_records),
+        len(finetuning_request.golden_sqls),
         description=f"finetuning: {response.id}",
     )
     return response

@@ -9,5 +9,5 @@ class FinetuningRequest(BaseModel):
     db_connection_id: str
     alias: str
     base_llm: BaseLLM
-    golden_records: list[str] = []
+    golden_sqls: list[str] = []
     metadata: dict[str, Any] | None = {}
