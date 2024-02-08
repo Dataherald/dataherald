@@ -8,6 +8,7 @@ from modules.organization.invoice.models.entities import (
     Credit,
     PaymentPlan,
     RecordStatus,
+    StripeSubscriptionStatus,
     Usage,
     UsageInvoice,
     UsageType,
@@ -380,13 +381,13 @@ class InvoiceService:
         )
 
     def _check_subscription_status(self, subscription_status: str):
-        if subscription_status != "active":
-            if subscription_status == "past_due":
+        if subscription_status != StripeSubscriptionStatus.ACTIVE:
+            if subscription_status == StripeSubscriptionStatus.PAST_DUE:
                 raise HTTPException(
                     status_code=status.HTTP_402_PAYMENT_REQUIRED,
                     detail=ErrorCode.subscription_past_due,
                 )
-            if subscription_status == "canceled":
+            if subscription_status == StripeSubscriptionStatus.CANCELED:
                 raise HTTPException(
                     status_code=status.HTTP_402_PAYMENT_REQUIRED,
                     detail=ErrorCode.subscription_canceled,

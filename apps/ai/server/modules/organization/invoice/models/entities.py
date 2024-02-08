@@ -43,6 +43,16 @@ class PaymentPlan(str, Enum):
     ENTERPRISE = "ENTERPRISE"
 
 
+class StripeSubscriptionStatus(str, Enum):
+    ACTIVE = "active"
+    CANCELED = "canceled"
+    UNPAID = "unpaid"
+    INCOMPLETE = "incomplete"
+    INCOMPLETE_EXPIRED = "incomplete_expired"
+    TRIALING = "trialing"
+    PAST_DUE = "past_due"
+
+
 class InvoiceDetails(BaseModel):
     plan: PaymentPlan
     billing_cycle_anchor: int | None
@@ -51,7 +61,7 @@ class InvoiceDetails(BaseModel):
     available_credits: int | None  # in cents
     stripe_customer_id: str | None
     stripe_subscription_id: str | None
-    stripe_subscription_status: str | None
+    stripe_subscription_status: StripeSubscriptionStatus | None
 
 
 class UsageInvoice(BaseModel):

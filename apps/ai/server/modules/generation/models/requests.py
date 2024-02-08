@@ -31,7 +31,8 @@ class PromptRequest(BaseModel):
 
 class SQLGenerationRequest(BaseModel):
     finetuning_id: str | None
-    evaluate: bool | None
+    low_latency_mode: bool | None = False
+    evaluate: bool | None = False
     sql: str | None
     metadata: dict[str, Any] | None = {}
 

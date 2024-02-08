@@ -115,7 +115,7 @@ class InvoiceSettings(BaseSettings):
     finetuning_gpt_4_cost: int = os.environ.get("FINETUNING_GPT_4_COST", 300)
 
     default_hard_spending_limit: int = os.environ.get("HARD_SPENDING_LIMIT", 100000)
-    default_spending_limit: int = os.environ.get("DEFAULT_SPENDING_LIMIT", 80000)
+    default_spending_limit: int = os.environ.get("DEFAULT_SPENDING_LIMIT", 30000)
     signup_credits: int = os.environ.get("SIGNUP_CREDITS", 5000)
 
     def __getitem__(self, key: str) -> Any:

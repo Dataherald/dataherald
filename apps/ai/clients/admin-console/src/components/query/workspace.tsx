@@ -85,9 +85,8 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
 
   const created_by =
     query.created_by || query.slack_info?.username || 'Anonymous'
-
   const questionDate: Date = new Date(created_at)
-  const lastUpdatedDate: Date = new Date(updated_at)
+  const lastUpdatedDate: Date = updated_at ? new Date(updated_at) : questionDate
 
   const [currentSqlQuery, setCurrentSqlQuery] = useState(sql)
   const [currentQueryStatus, setCurrentQueryStatus] =
