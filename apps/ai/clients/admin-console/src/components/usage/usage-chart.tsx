@@ -13,13 +13,14 @@ Chart.register(ArcElement, Tooltip, Legend)
 const UsagePieChart: FC<UsagePieChartProps> = ({ usage }) => {
   const {
     spending_limit,
-    amount_due,
     sql_generation_cost,
     finetuning_gpt_35_cost,
     finetuning_gpt_4_cost,
   } = usage
+  const total_cost =
+    sql_generation_cost + finetuning_gpt_35_cost + finetuning_gpt_4_cost
 
-  const availableLimit = spending_limit - amount_due
+  const availableLimit = spending_limit - total_cost
 
   const chartData = {
     labels: [
