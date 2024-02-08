@@ -1,10 +1,10 @@
 import BreadcrumbHeader from '@/components/layout/breadcrum-header'
+import LoadingPage from '@/components/layout/loading-page'
 import SidebarNav from '@/components/layout/sidebar-nav'
 import { Separator } from '@/components/ui/separator'
 import { useAppContext } from '@/contexts/app-context'
 import { cn } from '@/lib/utils'
 import { FC, HTMLAttributes } from 'react'
-import LoadingPage from './loading-page'
 
 interface PageLayoutProps extends HTMLAttributes<HTMLDivElement> {
   disableBreadcrumb?: boolean

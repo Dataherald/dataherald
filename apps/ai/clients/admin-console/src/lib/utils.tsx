@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from 'clsx'
+import { format } from 'date-fns'
 import { LucideIcon } from 'lucide-react'
 import { twMerge } from 'tailwind-merge'
 
@@ -61,3 +62,6 @@ export const toDollars = (value: number, withDecimals = true): string =>
   (value / 100).toFixed(withDecimals ? 2 : 0)
 
 export const toCents = (value: number): number => value * 100
+
+export const toDateCycle = (start: string, end: string): string =>
+  format(new Date(start), 'MMM d') + ' - ' + format(new Date(end), 'MMM d')

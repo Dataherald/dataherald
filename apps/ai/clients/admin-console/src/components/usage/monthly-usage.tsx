@@ -12,9 +12,8 @@ import EditSpendingLimitDialog from '@/components/usage/edit-spending-limit-dial
 import UsageChart from '@/components/usage/usage-chart'
 import useSpendingLimits from '@/hooks/api/billing/useSpendingLimits'
 import useUsage from '@/hooks/api/billing/useUsage'
-import { cn, toDollars } from '@/lib/utils'
-import { format } from 'date-fns'
-import { BarChart2, RefreshCcw, Tag } from 'lucide-react'
+import { cn, toDateCycle, toDollars } from '@/lib/utils'
+import { BarChart2, RefreshCcw } from 'lucide-react'
 import { FC, HTMLAttributes } from 'react'
 
 const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
@@ -48,10 +47,10 @@ const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
     )
   } else if (usage) {
     if (usage.current_period_start && usage.current_period_end) {
-      billingCycle =
-        format(new Date(usage.current_period_start), 'MMM d') +
-        ' - ' +
-        format(new Date(usage.current_period_end), 'MMM d')
+      billingCycle = toDateCycle(
+        usage.current_period_start,
+        usage.current_period_end,
+      )
     }
     const {
       available_credits,
@@ -102,7 +101,7 @@ const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
               />
             </div>
             <TooltipProvider>
-              <Tooltip>
+              <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <div className="flex gap-2 pb-1">
                     ${toDollars(used_credits)} <span>/</span> $

@@ -21,6 +21,7 @@ import {
   Database,
   HelpCircle,
   KeyRound,
+  Landmark,
   LogOut,
   LucideIcon,
   ShieldCheck,
@@ -82,6 +83,12 @@ const SidebarNav = ({
       text: 'Usage',
       href: '/usage',
       icon: BarChart2,
+      hidden: isEnterprise(organization),
+    },
+    {
+      text: 'Billing',
+      href: '/billing',
+      icon: Landmark,
       hidden: isEnterprise(organization),
     },
     {
