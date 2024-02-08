@@ -178,7 +178,7 @@ const PaymentMethodsList = () => {
                   })}
               </ul>
             ) : (
-              <div>No payment methods saved</div>
+              <div>No payment methods saved.</div>
             )}
           </div>
           <div className="self-end">
