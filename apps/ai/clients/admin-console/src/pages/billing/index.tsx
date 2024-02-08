@@ -10,6 +10,7 @@ import {
 import { useAppContext } from '@/contexts/app-context'
 import useUsage from '@/hooks/api/billing/useUsage'
 import { isEnterprise } from '@/lib/domain/billing'
+import { toDateCycle, toDollars } from '@/lib/utils'
 import { Info } from 'lucide-react'
 import Head from 'next/head'
 import { useRouter } from 'next/navigation'
@@ -27,6 +28,11 @@ const BillingPage: FC = () => {
     return <></>
   }
 
+  const billingCycle =
+    usage?.current_period_start && usage?.current_period_end
+      ? toDateCycle(usage.current_period_start, usage.current_period_end)
+      : ''
+
   return (
     <PageLayout>
       <Head>
@@ -35,9 +41,9 @@ const BillingPage: FC = () => {
       <div className="flex flex-col gap-10 p-6">
         <div className="flex flex-col gap-5 max-w-2xl">
           <h1 className="text-xl font-bold">Pay as you go</h1>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <h2 className="font-bold text-lg">Pending invoice</h2>
+              <h2 className="pb-1 font-bold text-lg">Pending invoice</h2>
               <TooltipProvider>
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
@@ -45,17 +51,23 @@ const BillingPage: FC = () => {
                   </TooltipTrigger>
                   <TooltipContent className="bg-slate-600 border-slate-600">
                     <span className="text-white">
-                      This is your current month API usage, minus any credits
-                      granted to you.
+                      {`This is your current billing cycle's API usage, minus any
+                      credits granted to you.`}
                     </span>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
-            <div className="text-3xl">${usage?.amount_due}</div>
+            <div className="flex items-end gap-2">
+              <div className="text-3xl">
+                ${toDollars(usage?.amount_due || 0)}
+              </div>
+              <span className="pb-1 text-xs text-slate-500">
+                {billingCycle}
+              </span>
+            </div>
             <span className="text-slate-700">
-              {`You'll be billed at the end of each calendar month for usage
-              during that month.`}
+              {`You'll be billed at the end of your billing cycle for the usage during that cycle.`}
             </span>
           </div>
         </div>
