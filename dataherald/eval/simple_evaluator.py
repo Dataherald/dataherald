@@ -44,7 +44,7 @@ Double check the SQL query for the common mistakes, including:
 - columns in the SELECT clause should correspond to what exactly asked by user in the question
 - check for the improper use of the aggergation functions (SUM, AVG, MIN, MAX, ...)
 - robustness of the SQL query in handling cases where data values can be in different format (WHERE lower(column) = lower(entity))
-- all of the dbs are case insensitive, so do not decrease the score for case sensitivity
+- all of the dbs are case insensitive, so do not reduce the score based on case sensitivity.
 For each of the detected mistakes, decrease the score by 10 points.
 Give me a score for the SQL query.
 Schema of the tables:
