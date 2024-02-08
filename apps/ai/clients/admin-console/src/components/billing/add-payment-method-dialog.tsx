@@ -121,7 +121,10 @@ const AddPaymentMethodDialog: FC<AddPaymentMethodDialogProps> = ({
               onChange={(e) => setCardComplete(e.complete)}
             />
             <div className="text-destructive text-sm mt-3 h-5">
-              {submitted && !cardComplete && 'Please complete all the fields'}
+              {submitted &&
+                !cardComplete &&
+                !error &&
+                'Please complete all the fields'}
               {error}
             </div>
           </div>
