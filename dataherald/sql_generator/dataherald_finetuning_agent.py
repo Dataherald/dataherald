@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 
 
 TOP_K = SQLGenerator.get_upper_bound_limit()
+MAX_CONTEXT_CHUNK = 3
 
 
 class FinetuningNotAvailableError(Exception):
@@ -297,6 +298,36 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         raise NotImplementedError("SchemaSQLDatabaseTool does not support async")
 
 
+class GetContext(BaseSQLDatabaseTool, BaseTool):
+    """Tool for getting the context for the given question"""
+
+    name = "GetContextForQuestion"
+    description = """
+    Input: empty string.
+    Output: Context for the given question.
+    Always use this before any other tools to get more context and augment the question with the information from the context.
+    Use this tool first and before any other tool!
+    After using this tool, proceed with the given plan that is provided.
+    """
+    context_knowledge: str
+
+    @catch_exceptions()
+    def _run(
+        self,
+        tool_input: str,  # noqa: ARG002
+        run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
+    ) -> str:
+        """Get the context for the given question."""
+        return self.context_knowledge
+
+    async def _arun(
+        self,
+        tool_input: str,
+        run_manager: AsyncCallbackManagerForToolRun | None = None,
+    ) -> str:
+        raise NotImplementedError("GetContextTool does not support async")
+
+
 class SQLDatabaseToolkit(BaseToolkit):
     """Dataherald toolkit"""
 
@@ -308,6 +339,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     use_finetuned_model_only: bool = Field(exclude=True, default=None)
     model_name: str = Field(exclude=True)
     openai_fine_tuning: OpenAIFineTuning = Field(exclude=True)
+    context_knowledge: str = Field(exclude=True, default="")
 
     @property
     def dialect(self) -> str:
@@ -326,6 +358,10 @@ class SQLDatabaseToolkit(BaseToolkit):
             tools.append(SystemTime(db=self.db))
             tools.append(SchemaSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
             tools.append(TablesSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
+            if self.context_knowledge:
+                tools.append(
+                    GetContext(db=self.db, context_knowledge=self.context_knowledge)
+                )
         tools.append(QuerySQLDataBaseTool(db=self.db))
         tools.append(
             GenerateSQL(
@@ -420,6 +456,9 @@ class DataheraldFinetuningAgent(SQLGenerator):
             Response: The response to the user question.
         """
         context_store = self.system.instance(ContextStore)
+        context_knowledge = context_store.retrieve_context_files(
+            user_prompt, num_results=MAX_CONTEXT_CHUNK
+        )
         storage = self.system.instance(DB)
         response = SQLGeneration(
             prompt_id=user_prompt.id,
@@ -458,6 +497,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         toolkit = SQLDatabaseToolkit(
             db=self.database,
             instructions=instructions,
+            context_knowledge=context_knowledge,
             db_scan=db_scan,
             api_key=database_connection.decrypt_api_key(),
             finetuning_model_id=finetuning.model_id,

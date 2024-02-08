@@ -35,6 +35,7 @@ class Chroma(VectorStore):
             query_texts=query_texts,
             n_results=num_results,
             where={"db_connection_id": db_connection_id},
+            include=["documents", "distances", "metadatas"],
         )
         return self.convert_to_pinecone_object_model(query_results)
 
@@ -96,6 +97,7 @@ class Chroma(VectorStore):
                 {
                     "id": chroma_results["ids"][0][i],
                     "score": chroma_results["distances"][0][i],
+                    "metadata": chroma_results["metadatas"][0][i],
                 }
             )
         return results

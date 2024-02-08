@@ -277,3 +277,9 @@ class API(Component, ABC):
     @abstractmethod
     def delete_context_file(self, context_file_id: str) -> dict:
         pass
+
+    @abstractmethod
+    def update_context_file_metadata(
+        self, context_file_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> ContextFileResponse:
+        pass

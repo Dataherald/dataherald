@@ -55,6 +55,7 @@ logger = logging.getLogger(__name__)
 
 TOP_K = SQLGenerator.get_upper_bound_limit()
 EMBEDDING_MODEL = "text-embedding-3-large"
+MAX_CONTEXT_CHUNK = 3
 
 
 def catch_exceptions():  # noqa: C901
@@ -99,7 +100,6 @@ class BaseSQLDatabaseTool(BaseModel):
     """Base tool for interacting with the SQL database and the context information."""
 
     db: SQLDatabase = Field(exclude=True)
-    context: List[dict] | None = Field(exclude=True, default=None)
 
     class Config(BaseTool.Config):
         """Configuration for this pydantic object."""
@@ -472,15 +472,45 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
         raise NotImplementedError("GetFewShotExamplesTool does not support async")
 
 
+class GetContext(BaseSQLDatabaseTool, BaseTool):
+    """Tool for getting the context for the given question"""
+
+    name = "GetContextForQuestion"
+    description = """
+    Input: empty string.
+    Output: Context for the given question.
+    Always use this before any other tools to get more context and augment the question with the information from the context.
+    Use this tool first and before any other tool!
+    After using this tool, proceed with the given plan that is provided.
+    """
+    context_knowledge: str
+
+    @catch_exceptions()
+    def _run(
+        self,
+        tool_input: str,  # noqa: ARG002
+        run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
+    ) -> str:
+        """Get the context for the given question."""
+        return self.context_knowledge
+
+    async def _arun(
+        self,
+        tool_input: str,
+        run_manager: AsyncCallbackManagerForToolRun | None = None,
+    ) -> str:
+        raise NotImplementedError("GetContextTool does not support async")
+
+
 class SQLDatabaseToolkit(BaseToolkit):
     """Dataherald toolkit"""
 
     db: SQLDatabase = Field(exclude=True)
-    context: List[dict] | None = Field(exclude=True, default=None)
     few_shot_examples: List[dict] | None = Field(exclude=True, default=None)
     instructions: List[dict] | None = Field(exclude=True, default=None)
     db_scan: List[TableDescription] = Field(exclude=True)
     embedding: OpenAIEmbeddings = Field(exclude=True)
+    context_knowledge: str = Field(exclude=True, default="")
 
     @property
     def dialect(self) -> str:
@@ -495,37 +525,34 @@ class SQLDatabaseToolkit(BaseToolkit):
     def get_tools(self) -> List[BaseTool]:
         """Get the tools in the toolkit."""
         tools = []
-        query_sql_db_tool = QuerySQLDataBaseTool(db=self.db, context=self.context)
+        query_sql_db_tool = QuerySQLDataBaseTool(db=self.db)
         tools.append(query_sql_db_tool)
         if self.instructions is not None:
             tools.append(
-                GetUserInstructions(
-                    db=self.db, context=self.context, instructions=self.instructions
-                )
+                GetUserInstructions(db=self.db, instructions=self.instructions)
             )
-        get_current_datetime = SystemTime(db=self.db, context=self.context)
+        if self.context_knowledge is not None:
+            get_context_tool = GetContext(
+                db=self.db, context_knowledge=self.context_knowledge
+            )
+            tools.append(get_context_tool)
+        get_current_datetime = SystemTime(db=self.db)
         tools.append(get_current_datetime)
         tables_sql_db_tool = TablesSQLDatabaseTool(
             db=self.db,
-            context=self.context,
             db_scan=self.db_scan,
             embedding=self.embedding,
         )
         tools.append(tables_sql_db_tool)
-        schema_sql_db_tool = SchemaSQLDatabaseTool(
-            db=self.db, context=self.context, db_scan=self.db_scan
-        )
+        schema_sql_db_tool = SchemaSQLDatabaseTool(db=self.db, db_scan=self.db_scan)
         tools.append(schema_sql_db_tool)
-        info_relevant_tool = InfoRelevantColumns(
-            db=self.db, context=self.context, db_scan=self.db_scan
-        )
+        info_relevant_tool = InfoRelevantColumns(db=self.db, db_scan=self.db_scan)
         tools.append(info_relevant_tool)
-        column_sample_tool = ColumnEntityChecker(db=self.db, context=self.context)
+        column_sample_tool = ColumnEntityChecker(db=self.db)
         tools.append(column_sample_tool)
         if self.few_shot_examples is not None:
             get_fewshot_examples_tool = GetFewShotExamples(
                 db=self.db,
-                context=self.context,
                 few_shot_examples=self.few_shot_examples,
             )
             tools.append(get_fewshot_examples_tool)
@@ -616,9 +643,12 @@ class DataheraldSQLAgent(SQLGenerator):
         self,
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
-        context: List[dict] = None,
+        context: List[dict] = None,  # noqa: ARG002
     ) -> SQLGeneration:
         context_store = self.system.instance(ContextStore)
+        context_knowledge = context_store.retrieve_context_files(
+            user_prompt, num_results=MAX_CONTEXT_CHUNK
+        )
         storage = self.system.instance(DB)
         response = SQLGeneration(
             prompt_id=user_prompt.id,
@@ -653,7 +683,7 @@ class DataheraldSQLAgent(SQLGenerator):
         self.database = SQLDatabase.get_sql_engine(database_connection)
         toolkit = SQLDatabaseToolkit(
             db=self.database,
-            context=context,
+            context_knowledge=context_knowledge,
             few_shot_examples=new_fewshot_examples,
             instructions=instructions,
             db_scan=db_scan,

@@ -1,8 +1,9 @@
+import json
 import os
 from typing import List
 
 import fastapi
-from fastapi import BackgroundTasks, UploadFile, status
+from fastapi import BackgroundTasks, Depends, File, Form, UploadFile, status
 from fastapi import FastAPI as _FastAPI
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
@@ -376,6 +377,13 @@ class FastAPI(dataherald.server.Server):
             tags=["Context-files"],
         )
 
+        self.router.add_api_route(
+            "/api/v1/context-files/{context_file_id}",
+            self.update_context_file_metadata,
+            methods=["PUT"],
+            tags=["Context-files"],
+        )
+
         self._app.include_router(self.router)
         use_route_names_as_operation_ids(self._app)
 
@@ -619,11 +627,26 @@ class FastAPI(dataherald.server.Server):
         return self._api.update_finetuning_job(finetuning_id, update_metadata_request)
 
     async def upload_context_file(
-        self, file: UploadFile, context_file_request: ContextFileRequest
+        self,
+        file: UploadFile = File(...),  # noqa: B008
+        db_connection_id: str = Form(...),
+        metadata: str | None = Form(None),  # noqa: B008
     ) -> ContextFileResponse:
         """Uploads a knowledge file"""
-        return await self._api.upload_context_file(file, context_file_request)
+        if metadata:
+            metadata = json.loads(metadata)
+        return await self._api.upload_context_file(
+            file,
+            ContextFileRequest(db_connection_id=db_connection_id, metadata=metadata),
+        )
 
     def delete_context_file(self, context_file_id: str) -> dict:
         """Deletes a knowledge file"""
         return self._api.delete_context_file(context_file_id)
+
+    def update_context_file_metadata(
+        self, context_file_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> ContextFileResponse:
+        return self._api.update_context_file_metadata(
+            context_file_id, update_metadata_request
+        )

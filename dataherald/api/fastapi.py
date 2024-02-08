@@ -978,3 +978,13 @@ class FastAPI(API):
         context_file_service = ContextFileService(self.system, self.storage)
         context_file_service.delete(context_file_id)
         return {"status": "success"}
+
+    @override
+    def update_context_file_metadata(
+        self, context_file_id: str, update_metadata_request: UpdateMetadataRequest
+    ) -> ContextFileResponse:
+        context_file_service = ContextFileService(self.system, self.storage)
+        context_file = context_file_service.update_metadata(
+            context_file_id, update_metadata_request
+        )
+        return ContextFileResponse(**context_file.dict())

@@ -4,7 +4,7 @@ from datetime import datetime
 import PyPDF2
 from fastapi import UploadFile
 
-from dataherald.api.types.requests import ContextFileRequest
+from dataherald.api.types.requests import ContextFileRequest, UpdateMetadataRequest
 from dataherald.api.types.responses import ContextFileResponse
 from dataherald.config import System
 from dataherald.context_store import ContextStore
@@ -46,9 +46,10 @@ class ContextFileService:
         initial_context_file = ContextFile(
             db_connection_id=context_file_request.db_connection_id,
             file_name=file.filename,
-            created_at=datetime.now(),
             metadata=context_file_request.metadata,
+            created_at=datetime.now(),
         )
+        initial_context_file = self.context_file_repository.insert(initial_context_file)
         try:
             contents = await file.read()
             if len(contents) == 0:
@@ -59,7 +60,7 @@ class ContextFileService:
                 )
             pdf_file = io.BytesIO(contents)
             pdf_reader = PyPDF2.PdfReader(pdf_file)
-            if pdf_reader.isEncrypted:
+            if pdf_reader.is_encrypted:
                 raise ContextFileCreationError("File is encrypted")
             pdf_file.seek(0)
             pdf_text = ""
@@ -73,7 +74,7 @@ class ContextFileService:
         except Exception as e:
             raise ContextFileCreationError(str(e)) from e
 
-        initial_context_file.file_status = FileUploadStatus.UPLOADED
+        initial_context_file.file_status = FileUploadStatus.UPLOADED.value
         self.context_file_repository.update(initial_context_file)
         return ContextFileResponse(
             id=initial_context_file.id,
@@ -85,9 +86,18 @@ class ContextFileService:
         )
 
     def delete(self, context_file_id: str) -> dict:
-        context_file = self.nl_generation_repository.find_by_id(context_file_id)
+        context_file = self.context_file_repository.find_by_id(context_file_id)
         if not context_file:
             raise ContextFileNotFoundError(f"Context file {context_file_id} not found")
         self.context_store.delete_context_file(context_file)
         self.context_file_repository.delete_by_id(context_file_id)
         return {"status": "success"}
+
+    def update_metadata(
+        self, context_file_id: str, metadata_request: UpdateMetadataRequest
+    ) -> ContextFile:
+        context_file = self.context_file_repository.find_by_id(context_file_id)
+        if not context_file:
+            raise ContextFileNotFoundError(f"Context file {context_file_id} not found")
+        context_file.metadata = metadata_request.metadata
+        return self.context_file_repository.update(context_file)

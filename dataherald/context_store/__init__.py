@@ -40,9 +40,13 @@ class ContextStore(Component, ABC):
         pass
 
     @abstractmethod
-    def add_context_file(self, context_file: ContextFile, content: str) -> ContextFile:
+    def add_context_file(self, context_file: ContextFile, content: str) -> bool:
         pass
 
     @abstractmethod
     def delete_context_file(self, context_file: ContextFile) -> bool:
+        pass
+
+    @abstractmethod
+    def retrieve_context_files(self, prompt: Prompt, num_results: int = 3) -> str:
         pass

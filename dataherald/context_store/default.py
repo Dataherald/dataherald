@@ -103,29 +103,50 @@ class DefaultContextStore(ContextStore):
     @override
     def add_context_file(self, context_file: ContextFile, content: str) -> bool:
         """Adds the context file to the DB"""
+        logger.info(f"Adding context file {context_file.file_name}")
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
-            chunk_overlap=100,
+            chunk_overlap=50,
             length_function=len,
             is_separator_regex=False,
         )
         texts = text_splitter.create_documents([content])
-        for text in texts:
+        logger.info(f"Number of chunks: {len(texts)}")
+        for index, text in enumerate(texts):
             self.vector_store.add_record(
-                text,
+                text.page_content,
                 context_file.db_connection_id,
                 self.context_files_collection,
-                metadata={
-                    "file_name": context_file.file_name,
-                    "text": text,
-                },
+                metadata=[
+                    {
+                        "file_name": context_file.file_name,
+                        "db_connection_id": context_file.db_connection_id,
+                        "text": text.page_content,
+                    }
+                ],
+                ids=[context_file.id + str(index)],
             )
         return True
 
     @override
     def delete_context_file(self, context_file: ContextFile) -> bool:
         """Deletes the context file from the DB"""
-        self.vector_store.delete_record(
-            collection=self.context_files_collection, id=context_file.id
+        self.vector_store.delete_record_by_metadata(
+            collection=self.context_files_collection,
+            metadata={"file_name": context_file.file_name},
         )
         return True
+
+    @override
+    def retrieve_context_files(self, prompt: Prompt, num_results: int = 3) -> str:
+        """Retrieves the context files from the DB"""
+        context_files = self.vector_store.query(
+            query_texts=[prompt.text],
+            db_connection_id=prompt.db_connection_id,
+            collection=self.context_files_collection,
+            num_results=num_results,
+        )
+        text_content = ""
+        for context_file in context_files:
+            text_content += f"{context_file['metadata']['text']}\n"
+        return text_content
