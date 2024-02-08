@@ -37,10 +37,10 @@ const UsagePieChart: FC<UsagePieChartProps> = ({ usage }) => {
           toDollars(Math.max(0, availableLimit)),
         ],
         backgroundColor: [
-          'rgba(54, 162, 235, 0.6)', // Blue
-          'rgba(255, 206, 86, 0.6)', // Yellow
-          'rgba(75, 192, 192, 0.6)', // Teal
-          'rgba(211, 211, 211, 0.6)', // Light gray (for Unused limit)
+          'rgba(54, 162, 235, 0.6)', // blue
+          'rgba(255, 206, 86, 0.6)', // yellow
+          'rgba(75, 192, 192, 0.6)', // teal
+          'rgba(211, 211, 211, 0.6)', // light gray
         ],
         hoverOffset: 4,
       },
@@ -69,7 +69,7 @@ const UsagePieChart: FC<UsagePieChartProps> = ({ usage }) => {
       },
     },
     maintainAspectRatio: true,
-    aspectRatio: 1, // Keeps the chart as a perfect circle
+    aspectRatio: 1, // keeps the chart as a perfect circle
   }
 
   return <Doughnut data={chartData} options={chartOptions} />

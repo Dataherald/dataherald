@@ -31,13 +31,13 @@ const CreditsChart: FC<CreditsChartProps> = ({
       {
         label: 'Available',
         data: [availableCreditsDollars],
-        backgroundColor: 'rgba(75, 192, 144, 0.6)', // Light green color
+        backgroundColor: 'rgba(75, 192, 144, 0.6)', // light green color
         barThickness: 25,
       },
       {
         label: 'Used',
         data: [usedCreditsDollars],
-        backgroundColor: 'rgba(255, 159, 164, 0.6)', // Lighter red color
+        backgroundColor: 'rgba(255, 159, 164, 0.6)', // light red color
         barThickness: 25,
       },
     ],

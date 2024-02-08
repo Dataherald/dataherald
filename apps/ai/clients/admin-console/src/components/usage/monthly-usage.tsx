@@ -18,8 +18,20 @@ import { BarChart2, RefreshCcw, Tag } from 'lucide-react'
 import { FC, HTMLAttributes } from 'react'
 
 const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
-  const { isLoading, isValidating, error, usage, mutate } = useUsage()
+  const {
+    isLoading,
+    isValidating,
+    error,
+    usage,
+    mutate: mutateUsage,
+  } = useUsage()
   const { limits, mutate: mutateLimits } = useSpendingLimits()
+
+  const handleUpdateSpendingLimit = () => {
+    mutateLimits()
+    mutateUsage()
+  }
+
   let pageContent = <></>
   let billingCycle = ''
 
@@ -41,7 +53,15 @@ const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
         ' - ' +
         format(new Date(usage.current_period_end), 'MMM d')
     }
-    const { amount_due, available_credits, total_credits } = usage
+    const {
+      available_credits,
+      total_credits,
+      finetuning_gpt_35_cost,
+      finetuning_gpt_4_cost,
+      sql_generation_cost,
+    } = usage
+    const total_usage =
+      finetuning_gpt_35_cost + finetuning_gpt_4_cost + sql_generation_cost
     const used_credits = total_credits - available_credits
     pageContent = (
       <div className="flex flex-col gap-5">
@@ -51,7 +71,7 @@ const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
           </div>
           <div className="flex flex-col gap-3 pb-12">
             <div className="text-3xl font-bold">{`$${toDollars(
-              amount_due,
+              total_usage,
             )}`}</div>
             {limits ? (
               <>
@@ -60,7 +80,7 @@ const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
                 </div>
                 <EditSpendingLimitDialog
                   spendingLimits={limits}
-                  onUpdated={mutateLimits}
+                  onUpdated={handleUpdateSpendingLimit}
                 />
               </>
             ) : (
@@ -70,7 +90,6 @@ const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
         </div>
         <div className="flex flex-col gap-3">
           <div className="flex gap-2 items-center">
-            <Tag size={20} strokeWidth={2.5} />
             <h1 className="font-bold">Credit Usage</h1>
             <div className="text-slate-500 text-sm">USD</div>
           </div>
@@ -115,7 +134,7 @@ const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
         <Button
           variant="ghost"
           disabled={isLoading || isValidating}
-          onClick={() => mutate()}
+          onClick={() => mutateUsage()}
         >
           <RefreshCcw
             size={18}
