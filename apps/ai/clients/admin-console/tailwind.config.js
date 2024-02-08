@@ -71,7 +71,7 @@ module.exports = {
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
       fontFamily: {
-        lato: ['var(--font-lato)'],
+        main: ['var(--font-main)'],
         'source-code': ['var(--font-source-code)'],
       },
       backgroundImage: () => ({

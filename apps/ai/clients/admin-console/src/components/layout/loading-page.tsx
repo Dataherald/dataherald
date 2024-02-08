@@ -1,28 +1,9 @@
-import Image from 'next/image'
+import { Loader } from 'lucide-react'
 import { FC } from 'react'
 
 const LoadingPage: FC = () => (
-  <div className="flex items-center justify-center min-h-screen relative">
-    <Image
-      src="https://hi-george.s3.amazonaws.com/DataheraldAI/Dark+Background.png"
-      alt="Background"
-      fill
-      style={{ objectFit: 'cover', objectPosition: 'center' }}
-      quality={100}
-    />
-    <div className="absolute bg-white shadow-lg w-full max-w-none h-screen rounded-none sm:rounded-2xl sm:h-fit p-8 sm:max-w-lg">
-      <div className="flex flex-col items-center gap-5">
-        <Image
-          priority
-          className="my-2"
-          src="/images/dh_ai_logo.svg"
-          alt="Background"
-          width={250}
-          height={50}
-        />
-        <h1 className="text-xl text-secondary">Loading...</h1>
-      </div>
-    </div>
+  <div className="grow flex items-center justify-center">
+    <Loader className="animate-spin" size="30" />
   </div>
 )
 

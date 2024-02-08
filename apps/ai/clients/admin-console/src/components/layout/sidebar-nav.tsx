@@ -82,7 +82,7 @@ const SidebarNav = ({
       text: 'Usage',
       href: '/usage',
       icon: BarChart2,
-      hidden: !organization || isEnterprise(organization),
+      hidden: isEnterprise(organization),
     },
     {
       text: 'Organization',
@@ -129,14 +129,14 @@ const SidebarNav = ({
                 'border-none',
                 'font-normal',
                 pathname?.includes(item.href)
-                  ? 'bg-black/10 hover:bg-black/10 font-bold'
+                  ? 'bg-black/10 hover:bg-black/10 font-semibold'
                   : '',
                 'justify-start',
                 'gap-2',
                 'px-5',
               )}
             >
-              <item.icon />
+              <item.icon strokeWidth={1.5} />
               {item.text}
             </Link>
           ))}
@@ -152,14 +152,14 @@ const SidebarNav = ({
                 'border-none',
                 'font-normal',
                 pathname?.includes(item.href)
-                  ? 'bg-black/10 hover:bg-black/10 font-bold'
+                  ? 'bg-black/10 hover:bg-black/10 font-semibold'
                   : '',
                 'justify-start',
                 'gap-2',
                 'px-5',
               )}
             >
-              <item.icon />
+              <item.icon strokeWidth={1.5} />
               {item.text}
             </Link>
           ))}
@@ -179,14 +179,14 @@ const SidebarNav = ({
               'border-none',
               'font-normal',
               pathname?.includes(item.href)
-                ? 'bg-black/10 hover:bg-black/10 font-bold'
+                ? 'bg-black/10 hover:bg-black/10 font-semibold'
                 : '',
               'justify-start',
               'gap-2',
               'px-5',
             )}
           >
-            <item.icon />
+            <item.icon strokeWidth={1.5} />
             {item.text}
           </Link>
         ))}

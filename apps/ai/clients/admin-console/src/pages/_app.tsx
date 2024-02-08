@@ -17,10 +17,10 @@ const sourceCode = Source_Code_Pro({
   display: 'swap',
 })
 
-const lato = Lato({
+const mainFont = Lato({
   weight: ['100', '300', '400', '700', '900'],
   subsets: ['latin'],
-  variable: '--font-lato',
+  variable: '--font-main',
   display: 'swap',
 })
 
@@ -47,9 +47,9 @@ export default function App({ Component, pageProps }: AppProps) {
               <SWRConfigWithAuth>
                 <div
                   className={cn(
-                    lato.variable,
+                    mainFont.variable,
                     sourceCode.variable,
-                    'font-lato',
+                    'font-main',
                   )}
                 >
                   <Component {...pageProps} />
