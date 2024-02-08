@@ -85,55 +85,54 @@ class OpenAIFineTuning(FinetuningModel):
         columns_information = ""
         for column in table.columns:
             name = column.name
-            is_primary_key = column.is_primary_key
-            if is_primary_key:
-                primary_key_text = (
-                    f"this column is a primary key of the table {table.table_name},"
-                )
-            else:
-                primary_key_text = ""
-            foreign_key = column.foreign_key
-            if foreign_key:
-                foreign_key_text = (
-                    f"this column has a foreign key to the table {foreign_key},"
-                )
-            else:
-                foreign_key_text = ""
             categories = column.categories
+            categories_text = ""
             if categories:
                 if len(categories) <= top_k:
                     categories_text = f"Categories: {categories},"
-                else:
-                    categories_text = ""
-            else:
-                categories_text = ""
-            if primary_key_text or foreign_key_text or categories_text:
-                columns_information += (
-                    f"{name}: {primary_key_text}{foreign_key_text}{categories_text}\n"
-                )
+            if categories_text:
+                columns_information += f"{name}: {categories_text}\n"
         return columns_information
 
     def format_table(self, table: TableDescription) -> str:
         table_representation = ""
-        tables_schema = table.table_schema
-        table_representation += f"{tables_schema}\n"
-        table_representation += "# Categorical Columns:\n"
+        table_representation += table.table_schema + "\n"
+        descriptions = []
+        if table.description is not None:
+            descriptions.append(f"Table `{table.table_name}`: {table.description}\n")
+            for column in table.columns:
+                if column.description is not None:
+                    descriptions.append(
+                        f"Column `{column.name}`: {column.description}\n"
+                    )
+        if len(descriptions) > 0:
+            table_representation += f"/*\n{''.join(descriptions)}*/\n"
         columns_information = self.format_columns(table)
-        table_representation += columns_information
+        if columns_information:
+            table_representation += "/* Categorical Columns:\n"
+            table_representation += columns_information
+            table_representation += "*/\n"
         sample_rows = table.examples
-        table_representation += "# Sample rows:\n"
+        table_representation += "/* Sample rows:\n"
         for item in sample_rows:
             for key, value in item.items():
                 table_representation += f"{key}: {value}, "
-            table_representation += "\n"
+            table_representation += "*/\n"
         table_representation += "\n\n"
         return table_representation
 
     def create_table_representation(self, table: TableDescription) -> str:
         col_rep = ""
         for column in table.columns:
-            col_rep += column.name + " "
-        return f"Table {table.table_name} contain columns: {col_rep}, this tables has: {table.description}"
+            if column.description is not None:
+                col_rep += f"{column.name}: {column.description}, "
+            else:
+                col_rep += f"{column.name}, "
+        if table.description is not None:
+            table_rep = f"Table {table.table_name} contain columns: [{col_rep}], this tables has: {table.description}"
+        else:
+            table_rep = f"Table {table.table_name} contain columns: [{col_rep}]"
+        return table_rep
 
     def sort_tables(
         self, tables: List[TableDescription], prompt: str

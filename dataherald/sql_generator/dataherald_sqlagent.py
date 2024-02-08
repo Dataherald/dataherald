@@ -55,6 +55,7 @@ logger = logging.getLogger(__name__)
 
 TOP_K = SQLGenerator.get_upper_bound_limit()
 EMBEDDING_MODEL = "text-embedding-3-large"
+TOP_TABLES = 10
 
 
 def catch_exceptions():  # noqa: C901
@@ -216,6 +217,12 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         text = text.replace("\n", " ")
         return self.embedding.embed_query(text)
 
+    def get_docs_embedding(
+        self,
+        docs: List[str],
+    ) -> List[List[float]]:
+        return self.embedding.embed_documents(docs)
+
     def cosine_similarity(self, a: List[float], b: List[float]) -> float:
         return round(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), 4)
 
@@ -231,19 +238,24 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         for table in self.db_scan:
             col_rep = ""
             for column in table.columns:
-                col_rep += column.name + " "
-            table_rep = f"Table {table.table_name} contain columns: {col_rep}, this tables has: {table.description}"
+                if column.description is not None:
+                    col_rep += f"{column.name}: {column.description}, "
+                else:
+                    col_rep += f"{column.name}, "
+            if table.description is not None:
+                table_rep = f"Table {table.table_name} contain columns: [{col_rep}], this tables has: {table.description}"
+            else:
+                table_rep = f"Table {table.table_name} contain columns: [{col_rep}]"
             table_representations.append([table.table_name, table_rep])
         df = pd.DataFrame(
             table_representations, columns=["table_name", "table_representation"]
         )
-        df["table_embedding"] = df.table_representation.apply(
-            lambda x: self.get_embedding(x)
-        )
+        df["table_embedding"] = self.get_docs_embedding(df.table_representation)
         df["similarities"] = df.table_embedding.apply(
             lambda x: self.cosine_similarity(x, question_embedding)
         )
         df = df.sort_values(by="similarities", ascending=True)
+        df = df.tail(TOP_TABLES)
         table_relevance = ""
         for _, row in df.iterrows():
             table_relevance += (
@@ -359,8 +371,18 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         for table in self.db_scan:
             if table.table_name in table_names_list:
                 tables_schema += table.table_schema + "\n"
+                descriptions = []
                 if table.description is not None:
-                    tables_schema += "Table description: " + table.description + "\n"
+                    descriptions.append(
+                        f"Table `{table.table_name}`: {table.description}\n"
+                    )
+                    for column in table.columns:
+                        if column.description is not None:
+                            descriptions.append(
+                                f"Column `{column.name}`: {column.description}\n"
+                            )
+                if len(descriptions) > 0:
+                    tables_schema += f"/*\n{''.join(descriptions)}*/\n"
         if tables_schema == "":
             tables_schema += "Tables not found in the database"
         return tables_schema
