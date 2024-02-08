@@ -163,8 +163,7 @@ const InviteMemberDialog: FC<InviteMemberDialogProps> = ({
                 </div>
                 <AlertDescription>
                   {`We currently don't have a notification system in place. Once
-                  you invite a user, please notify them that they can
-                  complete the sign up process by signing in here.`}
+                  you invite a user, please notify them that they need to sign up to the console.`}
                 </AlertDescription>
               </Alert>
             )}
