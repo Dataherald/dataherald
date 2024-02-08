@@ -20,12 +20,19 @@ class GoldenSQLRepository:
         )
 
     def get_golden_sqls(
-        self, skip: int, limit: int, order: str, ascend: bool, org_id: str
+        self,
+        skip: int,
+        limit: int,
+        order: str,
+        ascend: bool,
+        org_id: str,
+        db_connection_id: str = None,
     ) -> list[GoldenSQL]:
+        query = {"metadata.dh_internal.organization_id": org_id}
+        if db_connection_id:
+            query["db_connection_id"] = db_connection_id
         golden_sqls = (
-            MongoDB.find(
-                GOLDEN_SQL_COL, {"metadata.dh_internal.organization_id": org_id}
-            )
+            MongoDB.find(GOLDEN_SQL_COL, query)
             .sort([(order, ASCENDING if ascend else DESCENDING)])
             .skip(skip)
             .limit(limit)

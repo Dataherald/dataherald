@@ -56,18 +56,17 @@ async def create_finetuning_job(
         if finetuning_service.is_gpt_4_model(finetuning_request.base_llm.model_name)
         else UsageType.FINETUNING_GPT_35
     )
-    invoice_service.check_usage(
-        api_key.organization_id,
-        usage_type,
-        len(finetuning_request.golden_sqls),
+    golden_sql_count = finetuning_service.get_finetuning_golden_sql_count(
+        finetuning_request, api_key.organization_id
     )
+    invoice_service.check_usage(api_key.organization_id, usage_type, golden_sql_count)
     response = await finetuning_service.create_finetuning_job(
         finetuning_request, api_key.organization_id
     )
     invoice_service.record_usage(
         api_key.organization_id,
         usage_type,
-        len(finetuning_request.golden_sqls),
+        golden_sql_count,
         description=f"finetuning: {response.id}",
     )
     return response
@@ -111,19 +110,15 @@ async def ac_create_finetuning_job(
         if finetuning_service.is_gpt_4_model(finetuning_request.base_llm.model_name)
         else UsageType.FINETUNING_GPT_35
     )
-    invoice_service.check_usage(
-        user.organization_id,
-        usage_type,
-        len(finetuning_request.golden_sqls),
+    golden_sql_count = finetuning_service.get_finetuning_golden_sql_count(
+        finetuning_request, user.organization_id
     )
+    invoice_service.check_usage(user.organization_id, usage_type, golden_sql_count)
     response = await finetuning_service.create_finetuning_job(
         finetuning_request, user.organization_id
     )
     invoice_service.record_usage(
-        user.organization_id,
-        usage_type,
-        len(finetuning_request.golden_sqls),
-        description=f"finetuning: {response.id}",
+        user.organization_id, golden_sql_count, description=f"finetuning: {response.id}"
     )
     return response
 

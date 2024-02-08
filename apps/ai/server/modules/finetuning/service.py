@@ -11,6 +11,7 @@ from modules.finetuning.models.entities import (
 from modules.finetuning.models.requests import FinetuningRequest
 from modules.finetuning.models.responses import AggrFinetuning
 from modules.finetuning.repository import FinetuningRepository
+from modules.golden_sql.service import GoldenSQLService
 from utils.exception import raise_for_status
 from utils.misc import reserved_key_in_metadata
 
@@ -19,6 +20,7 @@ class FinetuningService:
     def __init__(self):
         self.repo = FinetuningRepository()
         self.db_connection_service = DBConnectionService()
+        self.golden_sql_service = GoldenSQLService()
 
     async def get_finetuning_jobs(
         self, org_id: str, db_connection_id: str = None
@@ -117,3 +119,16 @@ class FinetuningService:
 
     def is_gpt_4_model(self, model_name: str) -> bool:
         return "gpt-4" in model_name
+
+    def get_finetuning_golden_sql_count(
+        self, finetuning_request: FinetuningRequest, org_id: str
+    ) -> int:
+        # if golden_sqls are provided, use the length of the list
+        if finetuning_request.golden_sqls:
+            return len(finetuning_request.golden_sqls)
+        # if not, get all golden_sqls from the db_connection
+        return len(
+            self.golden_sql_service.get_golden_sqls(
+                0, 0, "created_at", False, org_id, finetuning_request.db_connection_id
+            )
+        )
