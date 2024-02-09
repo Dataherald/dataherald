@@ -45,6 +45,7 @@ Double check the SQL query for the common mistakes, including:
 - check for the improper use of the aggergation functions (SUM, AVG, MIN, MAX, ...)
 - robustness of the SQL query in handling cases where data values can be in different format (WHERE lower(column) = lower(entity))
 - all of the dbs are case insensitive, so do not reduce the score based on case sensitivity.
+- Using `current_date()` or `current_datetime()` in SQL queries is banned, SQL queries should use exact time in order to return the same results when executed at different times.
 For each of the detected mistakes, decrease the score by 10 points.
 Give me a score for the SQL query.
 Schema of the tables:
@@ -55,7 +56,7 @@ Evaluate the following SQL query:
 SQL Query: {SQL}
 SQL Query Result: {SQL_result}
 give me a one or two lines explanation and the score after 'Score: '.
-"""
+"""  # noqa: E501
 TOP_K = 100
 
 
