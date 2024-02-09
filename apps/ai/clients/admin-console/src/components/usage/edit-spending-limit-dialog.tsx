@@ -92,7 +92,7 @@ const EditSpendingLimitDialog: FC<EditSpendingLimitDialogProps> = ({
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong.',
+        title: 'Oops! Something went wrong',
         description: 'The spending limit could not be updated.',
         action: (
           <ToastAction

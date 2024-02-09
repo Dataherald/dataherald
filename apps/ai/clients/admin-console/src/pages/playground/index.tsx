@@ -153,8 +153,8 @@ const PlaygroundPage: FC = () => {
         setQueryError((error as Error).message)
         toast({
           variant: 'destructive',
-          title: 'Oops! Something went wrong.',
-          description: 'There was a problem with the SQL generation',
+          title: 'Oops! Something went wrong',
+          description: 'There was a problem with the SQL generation.',
           action: (
             <ToastAction altText="Try again" onClick={handleSubmitQuery}>
               Try again

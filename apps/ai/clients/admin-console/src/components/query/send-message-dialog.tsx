@@ -42,7 +42,7 @@ const SendMessageDialog: FC<SendMessageDialogProps> = ({
       console.error(error)
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong.',
+        title: 'Oops! Something went wrong',
         description: 'There was a problem with sending the message.',
         action: (
           <ToastAction altText="Try again" onClick={handleSendMessage}>

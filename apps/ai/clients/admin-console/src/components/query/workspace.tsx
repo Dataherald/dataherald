@@ -144,14 +144,14 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
         variant: 'success',
         title: 'Query updated',
         description:
-          'The query was resubmitted to the platform for a new response',
+          'The query was resubmitted to the platform for a new response.',
       })
     } catch (error) {
       console.error(error)
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong.',
-        description: 'There was a problem with resubmitting the query',
+        title: 'Oops! Something went wrong',
+        description: 'There was a problem with resubmitting the query.',
         action: (
           <ToastAction altText="Try again" onClick={handleResubmit}>
             Try again
@@ -172,14 +172,14 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
         variant: 'success',
         title: 'Query updated',
         description:
-          'The query was executed successfully and the results were updated',
+          'The query was executed successfully and the results were updated.',
       })
     } catch (e) {
       console.error(e)
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong.',
-        description: 'There was a problem with running the query',
+        title: 'Oops! Something went wrong',
+        description: 'There was a problem with running the query.',
         action: (
           <ToastAction altText="Try again" onClick={handleRunQuery}>
             Try again
@@ -203,19 +203,19 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
           variant: 'success',
           title: 'Query Verified',
           description:
-            'Query added to the Golden SQL training set and used to further train the model for future queries',
+            'Query added to the Golden SQL training set and used to further train the model for future queries.',
         })
       } else if (isNotVerified(newStatus)) {
         toast({
           title: 'Query Unverified',
           description:
-            'The query is not part of the Golden SQL training set and not used to improve the platform accuracy',
+            'The query is not part of the Golden SQL training set and not used to improve the platform accuracy.',
         })
       } else if (isRejected(newStatus)) {
         toast({
           title: 'Query Rejected',
           description:
-            'The query is marked as rejected and will not be used to improve the platform accuracy',
+            'The query is marked as rejected and will not be used to improve the platform accuracy.',
         })
       }
     } catch (e) {
@@ -223,8 +223,8 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       setCurrentQueryStatus(getWorkspaceQueryStatus(status))
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong.',
-        description: 'There was a problem with updating the query status',
+        title: 'Oops! Something went wrong',
+        description: 'There was a problem with updating the query status.',
         action: (
           <ToastAction
             altText="Try again"

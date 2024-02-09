@@ -53,7 +53,7 @@ const PaymentMethodsList = () => {
       console.error(error)
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong.',
+        title: 'Oops! Something went wrong',
         description: 'There was a problem removing the payment method.',
         action: (
           <ToastAction

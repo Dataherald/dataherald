@@ -33,7 +33,7 @@ const DeleteApiKeyDialog: FC<DeleteApiKeyDialogProps> = ({ deleteFnc }) => {
       console.error(e)
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong.',
+        title: 'Oops! Something went wrong',
         description: 'There was a problem with revoking your API Key.',
         action: (
           <ToastAction altText="Try again" onClick={handleDeleteConfirm}>

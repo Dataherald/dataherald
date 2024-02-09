@@ -40,9 +40,9 @@ const GoldenSQLPage: FC = () => {
         console.error(e)
         toast({
           variant: 'destructive',
-          title: 'Oops! Something went wrong.',
+          title: 'Oops! Something went wrong',
           description:
-            'There was a problem with deleting your golden sql query',
+            'There was a problem with deleting your golden sql query.',
           action: (
             <ToastAction altText="Try again" onClick={() => handleDelete(id)}>
               Try again

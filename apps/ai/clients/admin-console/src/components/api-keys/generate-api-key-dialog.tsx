@@ -93,7 +93,7 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({ onGeneratedKey }) => {
       console.error(`Error generating the API key: ${error}`)
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong.',
+        title: 'Oops! Something went wrong',
         description: 'There was a problem generating your secret key.',
         action: (
           <ToastAction

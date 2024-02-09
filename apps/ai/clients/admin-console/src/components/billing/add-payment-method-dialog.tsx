@@ -62,7 +62,7 @@ const AddPaymentMethodDialog: FC<AddPaymentMethodDialogProps> = ({
           toast({
             variant: 'success',
             title: 'Payment method added',
-            description: 'Your payment method has been added successfully',
+            description: 'Your payment method has been added successfully.',
           })
           await onPaymentMethodAdded()
           reset()
@@ -71,7 +71,7 @@ const AddPaymentMethodDialog: FC<AddPaymentMethodDialogProps> = ({
           toast({
             variant: 'destructive',
             title: 'Oops! Something went wrong',
-            description: 'The payment method could not be added',
+            description: 'The payment method could not be added.',
           })
         }
       }
@@ -80,7 +80,7 @@ const AddPaymentMethodDialog: FC<AddPaymentMethodDialogProps> = ({
         variant: 'destructive',
         title: 'Oops! Something went wrong',
         description:
-          'The payment method could not be added due to service provider error',
+          'The payment method could not be added due to service provider error.',
       })
     } finally {
       setSaving(false)

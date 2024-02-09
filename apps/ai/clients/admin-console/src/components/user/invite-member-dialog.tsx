@@ -102,7 +102,7 @@ const InviteMemberDialog: FC<InviteMemberDialogProps> = ({
       setError(errorDescription)
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong.',
+        title: 'Oops! Something went wrong',
         description: errorDescription,
         action: toastAction,
       })

@@ -99,7 +99,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
         console.error(e)
         toast({
           variant: 'destructive',
-          title: 'Oops! Something went wrong.',
+          title: 'Oops! Something went wrong',
           description: 'There was a problem refreshing your Databases.',
           action: (
             <ToastAction
@@ -116,7 +116,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
       onUpdateDatabasesData(databases)
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong.',
+        title: 'Oops! Something went wrong',
         description:
           'There was a problem scanning your Databases table schemas.',
         action: (

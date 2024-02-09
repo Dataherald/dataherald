@@ -100,7 +100,7 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
     } catch (e) {
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong.',
+        title: 'Oops! Something went wrong',
         description: 'There was a problem connecting your Database.',
         action: (
           <ToastAction

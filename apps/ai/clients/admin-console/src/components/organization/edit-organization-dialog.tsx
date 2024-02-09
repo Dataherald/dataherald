@@ -73,7 +73,7 @@ const EditOrganizationDialog: FC = () => {
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong.',
+        title: 'Oops! Something went wrong',
         description: 'The organization name could not be updated.',
         action: (
           <ToastAction
