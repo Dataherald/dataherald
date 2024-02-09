@@ -37,9 +37,9 @@ export const QUERY_STATUS_COLORS: ResourceColors<QueryWorkspaceStatus> = {
     background: 'bg-red-100',
   },
   [EQueryStatus.NOT_VERIFIED]: {
-    text: 'text-gray-500',
-    border: 'border-gray-500',
-    background: 'bg-gray-100',
+    text: 'text-slate-500',
+    border: 'border-slate-500',
+    background: 'bg-slate-200',
   },
   [EQueryStatus.VERIFIED]: {
     text: 'text-green-700',
@@ -67,7 +67,7 @@ export const DOMAIN_QUERY_STATUS_COLORS: ResourceColors<DomainQueryStatus> = {
     text: 'text-red-500',
   },
   [EDomainQueryStatus.NOT_VERIFIED]: {
-    text: 'text-gray-500',
+    text: 'text-slate-500',
   },
   [EDomainQueryStatus.LOW_CONFIDENCE]: {
     text: 'text-orange-600',

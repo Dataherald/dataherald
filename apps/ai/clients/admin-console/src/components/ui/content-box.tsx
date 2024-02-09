@@ -7,7 +7,7 @@ function ContentBox({
   return (
     <div
       className={cn(
-        'grow flex flex-col gap-4 rounded-xl border bg-gray-50 p-6',
+        'grow flex flex-col gap-4 rounded-xl border bg-slate-50 p-6 shadow-sm',
         className,
       )}
       {...props}

@@ -37,6 +37,11 @@ export const getColumns: (actions: {
     header: 'Database',
     headerFilterDisplay: 'Database',
     accessorKey: 'db_connection_alias',
+    cell: ({ row }) => (
+      <div className="truncate max-w-[10rem] 2xl:max-w-[20rem]">
+        {row.getValue('db_connection_alias')}
+      </div>
+    ),
   },
   {
     id: 'prompt_text',
@@ -63,7 +68,7 @@ export const getColumns: (actions: {
   {
     id: 'created_at',
     header: ({ column }) => (
-      <div className="min-w-[140px]">
+      <div className="min-w-[150px]">
         <SortHeader text="Time added" column={column} />
       </div>
     ),
@@ -124,7 +129,7 @@ export const getColumns: (actions: {
         )
       return (
         <AlertDialog>
-          <AlertDialogTrigger className="rounded-xl p-2 hover:bg-gray-200 hover:text-black/90">
+          <AlertDialogTrigger className="rounded-xl p-2 hover:bg-slate-200 hover:text-black/90">
             <Trash2 strokeWidth={1.5} size={20} />
           </AlertDialogTrigger>
           <AlertDialogContent>

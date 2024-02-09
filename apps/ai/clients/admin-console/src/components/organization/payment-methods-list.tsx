@@ -82,11 +82,11 @@ const PaymentMethodsList = () => {
           <div className="text-slate-500">
             Your charges will be deducted from the default card shown below.
           </div>
-          <div className="grow overflow-auto">
+          <div className="grow overflow-auto min-h-[100px]">
             {isLoading ? (
-              <LoadingList length={2} height={10} />
+              <LoadingList length={2} />
             ) : paymentMethods?.length ? (
-              <ul className="space-y-3">
+              <ul className="py-2 space-y-3">
                 {paymentMethods
                   .sort(
                     (
@@ -132,7 +132,7 @@ const PaymentMethodsList = () => {
                                 setSelectedPaymentMethodForDeletion(pm)
                               }
                             >
-                              <Trash2 size={18} strokeWidth={1.5} />
+                              <Trash2 size={16} strokeWidth={1.5} />
                             </Button>
                             <AlertDialogContent>
                               <AlertDialogHeader>
@@ -160,7 +160,7 @@ const PaymentMethodsList = () => {
                                   {deletingCard ? (
                                     <>
                                       <Loader
-                                        size={18}
+                                        size={16}
                                         className="animate-spin mr-2"
                                       />
                                       Removing...

@@ -7,18 +7,18 @@ import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { cn } from '@/lib/utils'
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
-import { Lato, Source_Code_Pro } from 'next/font/google'
+import { Nunito_Sans, Source_Code_Pro } from 'next/font/google'
 import { FC, ReactNode } from 'react'
 import { SWRConfig } from 'swr'
 
-const sourceCode = Source_Code_Pro({
+export const sourceCode = Source_Code_Pro({
   subsets: ['latin'],
   variable: '--font-source-code',
   display: 'swap',
 })
 
-const mainFont = Lato({
-  weight: ['100', '300', '400', '700', '900'],
+export const mainFont = Nunito_Sans({
+  weight: ['300', '400', '700', '900'],
   subsets: ['latin'],
   variable: '--font-main',
   display: 'swap',
@@ -47,8 +47,8 @@ export default function App({ Component, pageProps }: AppProps) {
               <SWRConfigWithAuth>
                 <div
                   className={cn(
-                    mainFont.variable,
                     sourceCode.variable,
+                    mainFont.variable,
                     'font-main',
                   )}
                 >

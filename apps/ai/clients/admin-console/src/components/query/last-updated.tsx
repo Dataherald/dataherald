@@ -10,7 +10,7 @@ export interface LastUpdatedProps {
 const QueryLastUpdated: FC<LastUpdatedProps> = ({ responsible, date }) => (
   <div
     id="last_updated_date"
-    className="flex flex-row-reverse items-center gap-1 text-gray-400 text-sm"
+    className="flex flex-row-reverse items-center gap-1 text-slate-500 text-sm"
   >
     Last updated at {format(date, 'yyyy/dd/MM HH:mm a')}{' '}
     {responsible && `by ${responsible}`}

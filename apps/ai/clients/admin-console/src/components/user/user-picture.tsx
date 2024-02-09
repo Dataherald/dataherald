@@ -20,7 +20,7 @@ const UserPicture: FC<UserPictureProps> = ({
       height={size}
     />
   ) : (
-    <UserCircle2 size={size} strokeWidth={1} className="text-primary" />
+    <UserCircle2 size={size} strokeWidth={1.5} className="text-slate-500" />
   )
 
 export default UserPicture

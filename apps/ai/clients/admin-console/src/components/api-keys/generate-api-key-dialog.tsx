@@ -112,7 +112,7 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({ onGeneratedKey }) => {
   return (
     <AlertDialog open={open} onOpenChange={handleClose}>
       <Button onClick={() => setOpen(true)}>
-        <Plus className="mr-2" size={18} />
+        <Plus className="mr-2" size={16} />
         Generate new secret key
       </Button>
       <AlertDialogContent>

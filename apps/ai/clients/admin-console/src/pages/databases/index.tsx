@@ -90,6 +90,7 @@ const DatabasesPage: FC = () => {
       </GlobalTreeSelectionProvider>
     )
   }
+
   return (
     <PageLayout>
       <>

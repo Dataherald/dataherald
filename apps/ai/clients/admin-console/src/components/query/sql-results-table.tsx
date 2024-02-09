@@ -34,14 +34,14 @@ export function SqlResultsTable<TData, TValue>({
 
   return (
     <Table className="font-source-code">
-      <TableHeader className="bg-gray-100">
+      <TableHeader className="bg-slate-100">
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
             {headerGroup.headers.map((header) => {
               return (
                 <TableHead
                   key={header.id}
-                  className={cn(cellClasses, 'text-gray-500')}
+                  className={cn(cellClasses, 'text-slate-600')}
                 >
                   {header.isPlaceholder
                     ? null
@@ -61,12 +61,12 @@ export function SqlResultsTable<TData, TValue>({
             <TableRow
               key={row.id}
               data-state={row.getIsSelected() && 'selected'}
-              className="hover:bg-gray-50"
+              className="hover:bg-slate-50"
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell
                   key={cell.id}
-                  className={cn(cellClasses, 'text-gray-600')}
+                  className={cn(cellClasses, 'text-slate-600')}
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>

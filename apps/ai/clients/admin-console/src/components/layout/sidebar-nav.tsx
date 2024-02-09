@@ -111,10 +111,34 @@ const SidebarNav = ({
     },
   ]
 
+  const renderMenuItem = (item: MenuItem, newTab = false) => (
+    <Link
+      key={item.href}
+      href={item.href}
+      {...(newTab && { target: '_blank', rel: 'noopener noreferrer' })}
+      className={cn(
+        buttonVariants({ variant: 'ghost' }),
+        pathname?.includes(item.href)
+          ? 'bg-slate-300 hover:bg-slate-300 text-slate-900 font-semibold'
+          : 'hover:bg-slate-200',
+        'text-sm',
+        'justify-start',
+        'gap-2',
+        'px-3',
+      )}
+    >
+      <item.icon
+        size={18}
+        strokeWidth={pathname?.includes(item.href) ? 2.5 : 1.5}
+      />
+      {item.text}
+    </Link>
+  )
+
   const handleLogout = logout
 
   return (
-    <aside className="min-w-[220px] flex flex-col justify-between bg-gray-50 border-r">
+    <aside className="min-w-[200px] pt-1 flex flex-col justify-between bg-slate-50 border-r shadow-sm">
       <div className="flex flex-col gap-5">
         <Image
           priority
@@ -122,86 +146,27 @@ const SidebarNav = ({
           alt="Dataherald AI Logo"
           width={150}
           height={50}
-          className="w-full p-5"
+          className="w-full px-3 py-5"
         ></Image>
         <nav className={cn('flex flex-col', className)} {...props}>
-          {FIRST_NAV_ITEMS.filter((i) => !i.hidden).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                buttonVariants({ variant: 'secondary-outline' }),
-                'bg-gray-50',
-                'hover:bg-gray-200',
-                'border-none',
-                'font-normal',
-                pathname?.includes(item.href)
-                  ? 'bg-black/10 hover:bg-black/10 font-semibold'
-                  : '',
-                'justify-start',
-                'gap-2',
-                'px-5',
-              )}
-            >
-              <item.icon strokeWidth={1.5} />
-              {item.text}
-            </Link>
-          ))}
+          {FIRST_NAV_ITEMS.filter((i) => !i.hidden).map((item) =>
+            renderMenuItem(item),
+          )}
           <Separator className="my-3" />
-          {SECOND_NAV_ITEMS.filter((i) => !i.hidden).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                buttonVariants({ variant: 'secondary-outline' }),
-                'bg-gray-50',
-                'hover:bg-gray-200',
-                'border-none',
-                'font-normal',
-                pathname?.includes(item.href)
-                  ? 'bg-black/10 hover:bg-black/10 font-semibold'
-                  : '',
-                'justify-start',
-                'gap-2',
-                'px-5',
-              )}
-            >
-              <item.icon strokeWidth={1.5} />
-              {item.text}
-            </Link>
-          ))}
+          {SECOND_NAV_ITEMS.filter((i) => !i.hidden).map((item) =>
+            renderMenuItem(item),
+          )}
         </nav>
       </div>
       <div className="flex flex-col">
-        {BOTTOM_NAV_ITEMS.filter((i) => !i.hidden).map((item) => (
-          <Link
-            key={item.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            href={item.href}
-            className={cn(
-              buttonVariants({ variant: 'secondary-outline' }),
-              'bg-gray-50',
-              'hover:bg-gray-200',
-              'border-none',
-              'font-normal',
-              pathname?.includes(item.href)
-                ? 'bg-black/10 hover:bg-black/10 font-semibold'
-                : '',
-              'justify-start',
-              'gap-2',
-              'px-5',
-            )}
-          >
-            <item.icon strokeWidth={1.5} />
-            {item.text}
-          </Link>
-        ))}
+        {BOTTOM_NAV_ITEMS.filter((i) => !i.hidden).map((item) =>
+          renderMenuItem(item, true),
+        )}
 
         {user && (
           <Popover>
             <PopoverTrigger asChild>
-              <div className="flex flex-col items-center  gap-3 p-3 m-3 border rounded-xl bg-white cursor-pointer">
+              <div className="flex flex-col items-center  gap-3 p-3 m-2 border rounded-xl bg-white cursor-pointer">
                 <div className="w-full flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <UserPicture pictureUrl={user.picture} />
@@ -213,16 +178,16 @@ const SidebarNav = ({
                 </div>
               </div>
             </PopoverTrigger>
-            <PopoverContent className="flex flex-col gap-3 ml-3 p-3">
-              <div className="flex items-center justify-center gap-3">
-                <div className="flex flex-col items-center gap-2 mt-1.5 break-all">
+            <PopoverContent className="flex flex-col gap-2 ml-3 p-3 w-[250px] max-w-sm text-center">
+              <div className="flex items-center justify-center gap-2">
+                <div className="flex flex-col items-center mt-1.5 break-all">
                   <span className="text-xs text-slate-500">{user.email}</span>
                   <span className="text-sm text-slate-900">
                     {organization?.name}
                   </span>
                 </div>
               </div>
-              <div className="flex flex-col items-center justify-center gap-3 p-2">
+              <div className="flex flex-col items-center justify-center gap-2 p-1">
                 <h1>Hi, {user.name}!</h1>
                 <UserPicture pictureUrl={user.picture} size={75} />
               </div>

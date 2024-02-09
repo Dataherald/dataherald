@@ -88,12 +88,12 @@ const AuthErrorPage: FC<{
         <div className="mb-8">
           {isEmailNotVerified ? (
             <div className="flex flex-col gap-4">
-              <p className="text-gray-800 break-words">
+              <p className="text-slate-800 break-words">
                 Check your inbox for the verification email and follow the
                 instructions to complete the process.
               </p>
-              <p className="text-gray-800 break-words">
-                If you can&apos;t find the email,{' '}
+              <p className="text-slate-800 break-words">
+                {`If you can't find the email `}
                 <a
                   className="text-primary font-semibold hover:underline"
                   href="mailto:support@dataherald.com"
@@ -105,7 +105,7 @@ const AuthErrorPage: FC<{
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              <p className="text-gray-800 break-words">
+              <p className="text-slate-800 break-words">
                 Something went wrong. Please try to log in again by clicking the
                 button below or{' '}
                 <a
@@ -126,7 +126,7 @@ const AuthErrorPage: FC<{
                 </Button>
               )}
               {showDetails && (
-                <p className="text-gray-400 whitespace-pre-wrap">
+                <p className="text-slate-500 whitespace-pre-wrap">
                   {errorDescription}
                 </p>
               )}

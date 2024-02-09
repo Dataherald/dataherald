@@ -129,12 +129,12 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
           <Button size={isFirstConnection ? 'lg' : 'default'}>
             {isFirstConnection ? (
               <>
-                <DatabaseZap className="mr-2" size={18} />
+                <DatabaseZap className="mr-2" size={16} />
                 Connect your Database
               </>
             ) : (
               <>
-                <Plus className="mr-2" size={18} />
+                <Plus className="mr-2" size={16} />
                 Add Database
               </>
             )}

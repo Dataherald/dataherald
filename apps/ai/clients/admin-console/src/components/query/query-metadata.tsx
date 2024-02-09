@@ -59,7 +59,7 @@ const QueryMetadata: FC<QueryMetadataProps> = ({
                 disabled={updatingQuery}
                 className="flex items-center gap-2 h-9"
               >
-                <Bot size={18} strokeWidth={2} />
+                <Bot size={16} strokeWidth={2} />
                 Resubmit
               </Button>
             </AlertDialogTrigger>
@@ -79,7 +79,7 @@ const QueryMetadata: FC<QueryMetadataProps> = ({
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction onClick={onResubmit}>
-                    <Bot size={18} className="mr-2" />
+                    <Bot size={16} className="mr-2" />
                     Resubmit
                   </AlertDialogAction>
                 </AlertDialogFooter>{' '}

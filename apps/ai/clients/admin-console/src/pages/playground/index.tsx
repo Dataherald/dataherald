@@ -257,8 +257,8 @@ const PlaygroundPage: FC = () => {
             !sql_result ||
             !sql_result.columns ||
             !sql_result.rows ? (
-              <div className="w-full h-44 flex items-center justify-center bg-gray-100">
-                <div className="text-gray-600">No Results</div>
+              <div className="w-full h-44 flex items-center justify-center bg-slate-100">
+                <div className="text-slate-600">No Results</div>
               </div>
             ) : (
               <SqlResultsTable
@@ -371,7 +371,7 @@ const PlaygroundPage: FC = () => {
                   <Eraser size={14} className="mr-2" /> Clear
                 </Button>
               </div>
-              <div className="bg-white border-2 border-slate-200 rounded-xl p-3 flex flex-col items-end gap-2">
+              <div className="bg-white border border-slate-200 rounded-xl p-3 flex flex-col items-end gap-2">
                 <Textarea
                   className="border-none text-md resize-none shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent"
                   placeholder="Enter your natural language prompt..."
@@ -391,7 +391,7 @@ const PlaygroundPage: FC = () => {
                       variant="ghost"
                       onClick={handleStopGenerating}
                     >
-                      <StopCircle size={18} className="mr-2" />
+                      <StopCircle size={16} className="mr-2" />
                       Stop generating
                     </Button>
                   )}
@@ -404,10 +404,10 @@ const PlaygroundPage: FC = () => {
                     }
                   >
                     {submittingQuery ? (
-                      <Loader size={18} className="mr-2 animate-spin" />
+                      <Loader size={16} className="mr-2 animate-spin" />
                     ) : (
                       <PlayCircle
-                        size={18}
+                        size={16}
                         className={clsx(
                           'mr-2',
                           submittingQuery

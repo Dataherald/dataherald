@@ -43,8 +43,8 @@ const SelectOrganizationPage: FC = () => {
       try {
         setSigningIn(true)
         await setAdminOrganization(selectedOrganization.id)
+        await router.push('/')
         setSigningIn(false)
-        router.push('/')
       } catch (error) {
         console.error(`Error signing in: ${error}`)
       }
@@ -80,7 +80,7 @@ const SelectOrganizationPage: FC = () => {
           <h1 className="text-2xl font-bold text-secondary-dark">
             Change Organization
           </h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-slate-500">
             Select the organization you wish to manage
           </p>
           {isLoading ? (
@@ -95,9 +95,9 @@ const SelectOrganizationPage: FC = () => {
                     disabled={signingIn}
                     onClick={() => setSelectedOrganization(organization)}
                     className={cn(
-                      'w-full cursor-pointer hover:bg-gray-100 px-8 py-4 flex justify-between items-center',
+                      'text-slate-900 w-full cursor-pointer hover:bg-slate-100 px-8 py-4 flex justify-between items-center',
                       isSelected(organization.id)
-                        ? 'font-semibold bg-gray-200 hover:bg-gray-200 text-secondary'
+                        ? 'font-semibold bg-slate-200 hover:bg-slate-200 text-secondary'
                         : '',
                     )}
                   >

@@ -68,7 +68,7 @@ const ApiKeysList = () => {
           onClick={handleRefresh}
         >
           <RefreshCcw
-            size={18}
+            size={16}
             className={isLoading || isValidating ? 'animate-spin' : ''}
           />
         </Button>

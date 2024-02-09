@@ -76,7 +76,7 @@ const GoldenSQLPage: FC = () => {
   if (error) {
     pageContent = <QueriesError />
   } else if (isLoadingFirst) {
-    pageContent = <LoadingTable loadFilters columnLength={6} />
+    pageContent = <LoadingTable loadFilters rowLength={8} columnLength={6} />
   } else
     pageContent = (
       <DataTable

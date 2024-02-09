@@ -125,9 +125,9 @@ export function DataTable<TData, TValue>({
                     variant="outline"
                     className="h-10 border-input text-slate-600 hover:bg-white"
                   >
-                    <Columns3 size={18} className="mr-2" />
+                    <Columns3 size={16} className="mr-2" />
                     Select visible columns
-                    <ChevronDown size={18} className="ml-2" />
+                    <ChevronDown size={16} className="ml-2" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -166,7 +166,7 @@ export function DataTable<TData, TValue>({
               onClick={onRefresh}
             >
               <RefreshCcw
-                size={18}
+                size={16}
                 className={isRefreshing || isLoadingMore ? 'animate-spin' : ''}
               />
             </Button>
@@ -178,7 +178,7 @@ export function DataTable<TData, TValue>({
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
               key={headerGroup.id}
-              className="bg-gray-50 hover:bg-gray-50"
+              className="bg-slate-50 hover:bg-slate-50"
             >
               {headerGroup.headers.map((header) => {
                 return (
@@ -202,7 +202,7 @@ export function DataTable<TData, TValue>({
                 key={row.id}
                 data-state={row.getIsSelected() && 'selected'}
                 className={cn(
-                  'hover:bg-gray-100 border-b-0 first:border-t-0 border-t',
+                  'hover:bg-slate-100 border-b-0 first:border-t-0 border-t',
                   onRowClick ? 'cursor-pointer' : '',
                 )}
                 onClick={() => onRowClick && onRowClick(row.original)}
@@ -218,7 +218,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))
           ) : (
-            <TableRow className="border-none hover:bg-gray-50">
+            <TableRow className="border-none hover:bg-slate-50">
               <TableCell colSpan={columns.length} className="h-24 text-center">
                 No results.
               </TableCell>
@@ -235,7 +235,7 @@ export function DataTable<TData, TValue>({
           {!globalFilter &&
             table.getRowModel().rows?.length > 0 &&
             !isLoadingMore && (
-              <TableRow className="border-none hover:bg-gray-50">
+              <TableRow className="border-none hover:bg-slate-50">
                 <TableCell
                   colSpan={columns.length}
                   className="p-0 pt-2 text-center"

@@ -97,7 +97,7 @@ const AddPaymentMethodDialog: FC<AddPaymentMethodDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={(open) => !open && reset()}>
       <Button onClick={() => setOpen(true)}>
-        <Plus size={18} className="mr-2" />
+        <Plus size={16} className="mr-2" />
         Add new card
       </Button>
       <DialogContent

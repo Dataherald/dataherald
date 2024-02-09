@@ -29,13 +29,12 @@ const BreadcrumbHeader: FC<BreadcrumbHeaderProps> = ({ className }) => {
                 key={idx}
                 className={cn('first-letter:capitalize', 'font-bold')}
               >
-                {idx > 0 && <span className="mx-4 text-gray-400">/</span>}
+                {idx > 0 && <span className="mx-4 text-slate-400">/</span>}
                 {!isLastSegment ? (
                   <Link
                     href={`/${segment}`} // only supports one level for now
                     className={cn(
-                      'font-normal',
-                      'text-gray-400',
+                      'text-slate-500',
                       'hover:cursor-pointer',
                       'hover:text-primary',
                       'hover:underline',
@@ -44,7 +43,7 @@ const BreadcrumbHeader: FC<BreadcrumbHeaderProps> = ({ className }) => {
                     {segment}
                   </Link>
                 ) : (
-                  <span className="text-black text-xl">
+                  <span className="text-black text-2xl">
                     {formatUrl(segment)}
                   </span>
                 )}

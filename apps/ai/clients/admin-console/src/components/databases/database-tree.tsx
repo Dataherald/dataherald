@@ -42,7 +42,7 @@ const mapDatabaseToTreeData = (database: Database): TreeNode => ({
             )}
           >
             {table.last_sync && (
-              <span className="text-gray-400">
+              <span className="text-slate-500">
                 {formatDistanceStrict(new Date(table.last_sync), new Date(), {
                   addSuffix: true,
                 })}

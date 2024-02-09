@@ -93,7 +93,7 @@ const EditOrganizationDialog: FC = () => {
     <Dialog onOpenChange={handleCancel}>
       <DialogTrigger asChild>
         <Button variant="link" className="text-slate-900 p-0 h-fit">
-          <Edit size={18} />
+          <Edit size={16} />
         </Button>
       </DialogTrigger>
       <DialogContent onInteractOutside={(e) => e.preventDefault()}>

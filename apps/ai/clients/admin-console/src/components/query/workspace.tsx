@@ -330,7 +330,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                 >
                   <div className="h-full flex flex-col items-center justify-center gap-2">
                     <div className="flex items-center gap-2 text-green-700">
-                      <Verified size={18} strokeWidth={2} /> Verified Query
+                      <Verified size={16} strokeWidth={2} /> Verified Query
                     </div>
                     <div className="px-20 text-center">
                       {`The SQL query was verified and added to the Golden SQL training set. To modify the SQL query, please set the status to "Not Verified" first.`}
@@ -343,7 +343,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                   className="shrink-0 h-32 flex flex-col border bg-muted text-red-500"
                 >
                   <div className="h-full flex items-center justify-center gap-2 ">
-                    <Ban size={18} strokeWidth={2} /> Rejected query
+                    <Ban size={16} strokeWidth={2} /> Rejected query
                   </div>
                 </div>
               ) : sql_generation_error ? (

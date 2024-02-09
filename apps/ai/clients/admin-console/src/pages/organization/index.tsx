@@ -32,7 +32,7 @@ const OrganizationSettingsPage: FC = () => {
           </div>
           {isAdmin && (
             <Link href="/change-organization">
-              <Button size="sm" className="h-fit px-4 py-1.5">
+              <Button size="sm" className="h-fit px-3 py-1">
                 <ArrowLeftRight className="mr-2" size={14} />
                 Change Organization
               </Button>

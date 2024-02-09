@@ -8,7 +8,7 @@ const LoadingBox: FC<LoadingBoxProps> = ({ className }) => {
   return (
     <div
       className={cn(
-        'w-full h-full bg-gray-50 rounded-lg flex flex-col gap-3',
+        'w-full h-full bg-slate-50 rounded-lg flex flex-col gap-3',
         className,
       )}
     >

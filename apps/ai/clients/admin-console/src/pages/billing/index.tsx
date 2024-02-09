@@ -1,6 +1,7 @@
 import PageLayout from '@/components/layout/page-layout'
 import PaymentMethodsList from '@/components/organization/payment-methods-list'
 import { ContentBox } from '@/components/ui/content-box'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Tooltip,
   TooltipContent,
@@ -59,12 +60,18 @@ const BillingPage: FC = () => {
               </TooltipProvider>
             </div>
             <div className="flex items-end gap-2">
-              <div className="text-3xl">
-                ${toDollars(usage?.amount_due || 0)}
-              </div>
-              <span className="pb-1 text-xs text-slate-500">
-                {billingCycle}
-              </span>
+              {usage ? (
+                <>
+                  <div className="text-3xl">
+                    ${toDollars(usage?.amount_due)}
+                  </div>
+                  <span className="pb-1 text-xs text-slate-500">
+                    {billingCycle}
+                  </span>
+                </>
+              ) : (
+                <Skeleton className="w-40 h-9" />
+              )}
             </div>
             <span className="text-slate-700">
               {`You'll be billed at the end of your billing cycle for the usage during that cycle.`}

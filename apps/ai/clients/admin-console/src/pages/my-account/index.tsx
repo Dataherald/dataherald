@@ -34,7 +34,7 @@ const MyAccountPage: FC = () => {
             ]
               .filter((v) => !v.hide)
               .map(({ label, value }, idx) => (
-                <div key={idx} className="grid grid-cols-3 text-gray-700">
+                <div key={idx} className="grid grid-cols-3 text-slate-800">
                   <span>{label}</span>
                   <span className="font-semibold">{value || '-'}</span>
                 </div>

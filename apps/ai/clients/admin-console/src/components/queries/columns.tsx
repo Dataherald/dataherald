@@ -24,6 +24,11 @@ export const columns: CustomColumnDef<QueryListItem>[] = [
     header: 'Database',
     headerFilterDisplay: 'Database',
     accessorKey: 'db_connection_alias',
+    cell: ({ row }) => (
+      <div className="truncate max-w-[10rem] 2xl:max-w-[20rem]">
+        {row.getValue('db_connection_alias')}
+      </div>
+    ),
   },
   {
     id: 'prompt_text',
@@ -50,7 +55,7 @@ export const columns: CustomColumnDef<QueryListItem>[] = [
   {
     id: 'time',
     header: ({ column }) => (
-      <div className="min-w-[140px]">
+      <div className="min-w-[150px]">
         <SortHeader text="Time" column={column} />
       </div>
     ),

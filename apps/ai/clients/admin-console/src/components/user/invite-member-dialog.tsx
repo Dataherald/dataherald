@@ -141,7 +141,7 @@ const InviteMemberDialog: FC<InviteMemberDialogProps> = ({
             {error ? (
               <Alert variant="destructive" className="flex items-start gap-2">
                 <div>
-                  <ShieldAlert size={18} />
+                  <ShieldAlert size={16} />
                 </div>
                 <AlertDescription>
                   {error} Please{' '}
@@ -159,7 +159,7 @@ const InviteMemberDialog: FC<InviteMemberDialogProps> = ({
             ) : (
               <Alert variant="info" className="flex items-start gap-2">
                 <div>
-                  <AlertCircle size={18} />
+                  <AlertCircle size={16} />
                 </div>
                 <AlertDescription>
                   {`We currently don't have a notification system in place. Once

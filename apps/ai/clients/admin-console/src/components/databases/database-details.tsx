@@ -132,7 +132,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
 
   return (
     <>
-      <div className="flex items-center justify-between bg-gray-50 py-0">
+      <div className="flex items-center justify-between bg-slate-50 py-0">
         <h1 className="font-bold">Connected Databases</h1>
         <div className="flex gap-3">
           <AlertDialog>
@@ -144,12 +144,12 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
               >
                 {isSynchronizing ? (
                   <>
-                    <Loader size={18} className="mr-2 animate-spin" />
+                    <Loader size={16} className="mr-2 animate-spin" />
                     Preparing scan queue
                   </>
                 ) : (
                   <>
-                    <ScanText size={18} className="mr-2" />
+                    <ScanText size={16} className="mr-2" />
                     {`Scan ${
                       globalSelectionSize === 0
                         ? 'table schemas'
@@ -164,7 +164,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle className="flex items-center gap-2">
-                  <ScanText size={18} />
+                  <ScanText size={16} />
                   Scan Databases
                 </AlertDialogTitle>
                 <AlertDialogDescription>
@@ -186,7 +186,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
                 <AlertDialogAction onClick={handleSynchronization}>
                   {isSynchronizing ? (
                     <>
-                      <Loader size={18} className="mr-2 animate-spin" />
+                      <Loader size={16} className="mr-2 animate-spin" />
                       Scanning
                     </>
                   ) : (
@@ -202,7 +202,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
             onClick={() => onRefresh()}
           >
             <RefreshCw
-              size={18}
+              size={14}
               className={cn('mr-2', isRefreshing ? 'animate-spin' : '')}
             />
             {isRefreshing ? 'Refreshing' : 'Refresh'}

@@ -84,9 +84,9 @@ const TreeNodeComponent: FC<TreeProps> = ({
     <div className={isRoot ? 'pl-0' : 'pl-7'}>
       <div
         className={cn(
-          checkboxState === true && 'bg-blue-100',
+          checkboxState === true && 'bg-sky-100',
           node.clickable && 'cursor-pointer',
-          'w-full flex items-center justify-between gap-2 rounded-lg hover:bg-gray-200 my-1',
+          'w-full flex items-center justify-between gap-2 rounded-lg hover:bg-slate-200 my-1 text-sm',
         )}
         onClick={handleRowClick}
       >
@@ -96,7 +96,7 @@ const TreeNodeComponent: FC<TreeProps> = ({
         >
           {selectionNode ? (
             <Checkbox
-              className="mr-2"
+              className="mr-2 h-4 w-4"
               checked={checkboxState}
               onCheckedChange={toggleNode}
               onClick={(e) => e.stopPropagation()}
@@ -116,12 +116,12 @@ const TreeNodeComponent: FC<TreeProps> = ({
           >
             {nodeHasChildren &&
               (isOpen ? (
-                <ChevronDown size={20} strokeWidth={1.5} />
+                <ChevronDown size={16} strokeWidth={1.5} />
               ) : (
-                <ChevronRight size={20} strokeWidth={1.5} />
+                <ChevronRight size={16} strokeWidth={1.5} />
               ))}
           </div>
-          <node.icon size={22} strokeWidth={1.5} className="mx-2" />
+          <node.icon size={16} strokeWidth={1.5} className="mx-2" />
           <span className="break-all">{node.name}</span>
         </div>
         <div className="min-w-fit">{node.slot}</div>

@@ -49,10 +49,10 @@ const DeleteApiKeyDialog: FC<DeleteApiKeyDialogProps> = ({ deleteFnc }) => {
     <AlertDialog open={open}>
       <Button
         variant="ghost"
-        className="rounded-xl hover:bg-gray-200 hover:text-black/90"
+        className="rounded-xl hover:bg-slate-200 hover:text-black/90"
         onClick={() => setOpen(true)}
       >
-        <Trash2 strokeWidth={1.5} size={18} />
+        <Trash2 strokeWidth={1.5} size={16} />
       </Button>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -73,7 +73,7 @@ const DeleteApiKeyDialog: FC<DeleteApiKeyDialogProps> = ({ deleteFnc }) => {
           <Button variant="destructive" onClick={handleDeleteConfirm}>
             {deleting ? (
               <>
-                <Loader className="mr-2 animate-spin" size={18} />
+                <Loader className="mr-2 animate-spin" size={16} />
                 Revoking
               </>
             ) : (

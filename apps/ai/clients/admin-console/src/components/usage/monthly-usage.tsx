@@ -136,7 +136,7 @@ const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
           onClick={() => mutateUsage()}
         >
           <RefreshCcw
-            size={18}
+            size={16}
             className={isLoading || isValidating ? 'animate-spin' : ''}
           />
         </Button>

@@ -12,7 +12,7 @@ const LoadingList: FC<LoadingListProps & HTMLAttributes<HTMLDivElement>> = ({
   height,
   className,
 }) => {
-  const skeletonHeight = height ? `h-${height}` : 'h-6'
+  const skeletonHeight = height ? `h-${height}` : 'h-8'
   return (
     <div className={cn('flex flex-col gap-3', className)}>
       {[...Array(length)].map((_, index) => (
