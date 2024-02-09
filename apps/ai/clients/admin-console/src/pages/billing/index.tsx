@@ -2,6 +2,7 @@ import PageLayout from '@/components/layout/page-layout'
 import PaymentMethodsList from '@/components/organization/payment-methods-list'
 import { ContentBox } from '@/components/ui/content-box'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Toaster } from '@/components/ui/toaster'
 import {
   Tooltip,
   TooltipContent,
@@ -82,6 +83,7 @@ const BillingPage: FC = () => {
           <PaymentMethodsList />
         </ContentBox>
       </div>
+      <Toaster />
     </PageLayout>
   )
 }
