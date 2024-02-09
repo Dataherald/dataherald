@@ -168,6 +168,7 @@ class InvoiceService:
                 organization.invoice_details.stripe_customer_id,
                 payment_method_request.payment_method_id,
             )
+            self.repo.update_payment_plan(org_id, PaymentPlan.USAGE_BASED)
         return self._get_mapped_payment_method_response(payment_method, is_default)
 
     def set_default_payment_method(

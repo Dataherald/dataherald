@@ -25,6 +25,7 @@ def lambda_handler(event, context):  # noqa: ARG001
             subscription = stripe.Subscription.retrieve(
                 org["invoice_details"]["stripe_subscription_id"]
             )
+            print(f"Subscription: {subscription.id}")
 
             # this is a safe guard in case webhook listener doesn't update the status
             data_store["organizations"].update_one(

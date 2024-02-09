@@ -69,18 +69,17 @@ class InvoiceWebhook:
                 organization.id, subscription_status
             )
 
-    # When customer is updated, check if default payment method changes, if so, update plan to usage based
+    # When customer is updated, check if default payment method changes
     # Charge past due invoices and charge it to the default payment method
     def handle_customer_updated_event(self, event: stripe.Event):
         customer_id = event.data.object["id"]
         previous_attributes = event.data.previous_attributes
         organization = self.org_repo.get_organization_by_customer_id(customer_id)
-        # if payment method is attached, update plan to usage based
         if organization and previous_attributes:
-            if (
-                "default_source" in previous_attributes
-                or "default_payment_method" in previous_attributes
-            ):
+            if "default_source" in previous_attributes or previous_attributes.get(
+                "invoice_settings", {}
+            ).get("default_payment_method"):
+                # if default payment method is added, change plan to usage based
                 self.repo.update_payment_plan(organization.id, PaymentPlan.USAGE_BASED)
                 # if payment intent fails, event is triggered and plan is updated back to credit only
                 if not self.billing.pay_past_due_subscription_invoices(customer_id):
