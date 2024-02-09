@@ -25,8 +25,8 @@ const ERROR_CODE_MESSAGES: Record<
     header: 'No Payment Method',
     body: <p>Please add a payment method to continue using the service.</p>,
     callToAction: (
-      <Link href="/organization">
-        <Button>Go to Settings</Button>
+      <Link href="/billing">
+        <Button>Go to Billing Settings</Button>
       </Link>
     ),
   },
@@ -74,8 +74,8 @@ const ERROR_CODE_MESSAGES: Record<
       </p>
     ),
     callToAction: (
-      <Link href="/organization">
-        <Button>Go to Settings</Button>
+      <Link href="/billing">
+        <Button>Go to Billing Settings</Button>
       </Link>
     ),
   },
