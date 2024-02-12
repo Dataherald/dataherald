@@ -18,8 +18,13 @@ export const finetunningsColumns: ColumnDef<FineTuningModel>[] = [
     accessorKey: 'db_connection_alias',
   },
   {
+    id: 'model_name',
+    header: () => <div className="min-w-[8rem]">Model</div>,
+    accessorKey: 'base_llm.model_name',
+  },
+  {
     id: 'created_at',
-    header: () => <div className="min-w-[5rem]">Created at</div>,
+    header: () => <div className="min-w-[6rem]">Created at</div>,
     accessorKey: 'created_at',
     cell: ({ row }) => {
       const date: string = row.getValue('created_at')

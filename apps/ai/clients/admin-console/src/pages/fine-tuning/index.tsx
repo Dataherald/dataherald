@@ -35,7 +35,7 @@ const FineTuningPage: FC = () => {
         <title>Fine-tuning - Dataherald AI API</title>
       </Head>
       <div className="gap-4 m-6">
-        <ContentBox className="w-100 max-w-2xl min-h-[50vh]">
+        <ContentBox className="w-100 max-w-3xl min-h-[50vh]">
           <div className="w-full flex justify-between gap-2">
             <div className="flex items-center gap-2">
               <SlidersIcon size={20} strokeWidth={2.5} />
