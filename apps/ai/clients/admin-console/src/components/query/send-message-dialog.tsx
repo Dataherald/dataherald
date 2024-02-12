@@ -21,11 +21,13 @@ import { FC, useState } from 'react'
 interface SendMessageDialogProps {
   promptId: string
   disabled: boolean
+  onMessageSent: () => Promise<void>
 }
 
 const SendMessageDialog: FC<SendMessageDialogProps> = ({
   promptId,
   disabled = false,
+  onMessageSent,
 }) => {
   const sendMessage = useQuerySendMessage()
   const [sendingMessage, setSendingMessage] = useState(false)
@@ -38,6 +40,7 @@ const SendMessageDialog: FC<SendMessageDialogProps> = ({
         title: 'Message sent',
         description: 'The query message was sent to the Slack thread.',
       })
+      await onMessageSent()
     } catch (error) {
       console.error(error)
       toast({

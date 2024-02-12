@@ -57,10 +57,15 @@ const QueryPage: FC = () => {
     return handleQueryMutation()
   }
 
-  const handlePutQuery = async (puts: QueryPutRequest) => {
-    const newQuery = await putQuery(promptId as string, puts)
+  const handlePutQuery = async (updates: QueryPutRequest) => {
+    const newQuery = await putQuery(promptId as string, updates)
     setQuery(newQuery)
     return handleQueryMutation()
+  }
+
+  const handleQueryUpdate = async () => {
+    const newQuery = await handleQueryMutation()
+    setQuery(newQuery)
   }
 
   let pageContent: JSX.Element = <></>
@@ -79,6 +84,7 @@ const QueryPage: FC = () => {
         onResubmitQuery={handleResubmitQuery}
         onExecuteQuery={handleExecuteQuery}
         onPutQuery={handlePutQuery}
+        onMessageSent={handleQueryUpdate}
       />
     )
 

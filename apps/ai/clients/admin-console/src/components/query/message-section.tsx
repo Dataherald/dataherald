@@ -37,6 +37,7 @@ interface MessageSectionProps {
   initialMessage: string
   slack_message_last_sent_at?: string | null
   onPutQuery: (data: { message: string }) => Promise<Query | undefined>
+  onMessageSent: () => Promise<void>
 }
 
 const MessageSection: FC<MessageSectionProps> = ({
@@ -44,6 +45,7 @@ const MessageSection: FC<MessageSectionProps> = ({
   initialMessage,
   slack_message_last_sent_at = null,
   onPutQuery,
+  onMessageSent,
 }) => {
   const generateMessage = useQueryGenerateMessage()
 
@@ -203,7 +205,11 @@ const MessageSection: FC<MessageSectionProps> = ({
               </AlertDialogContent>
             </AlertDialog>
             <SendMessageDialog
-              {...{ promptId, disabled: disabledActions || !currentMessage }}
+              {...{
+                promptId,
+                disabled: disabledActions || !currentMessage,
+                onMessageSent,
+              }}
             />
           </div>
         </div>

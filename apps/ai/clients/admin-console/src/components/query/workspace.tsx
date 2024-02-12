@@ -56,6 +56,7 @@ export interface QueryWorkspaceProps {
   onResubmitQuery: () => Promise<Query | undefined>
   onExecuteQuery: (sql: string) => Promise<Query | undefined>
   onPutQuery: (puts: QueryPutRequest) => Promise<Query | undefined>
+  onMessageSent: () => Promise<void>
 }
 
 const QueryWorkspace: FC<QueryWorkspaceProps> = ({
@@ -63,6 +64,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
   onResubmitQuery,
   onExecuteQuery,
   onPutQuery,
+  onMessageSent,
 }) => {
   const router = useRouter()
   const {
@@ -395,6 +397,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                   initialMessage: message || nl_generation_text,
                   slack_message_last_sent_at,
                   onPutQuery,
+                  onMessageSent,
                 }}
               />
             )}

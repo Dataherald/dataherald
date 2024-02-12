@@ -7,7 +7,7 @@ import {
 import { cn } from '@/lib/utils'
 import { QueryListItem } from '@/models/api'
 import { format } from 'date-fns'
-import { CheckCircle, Minus } from 'lucide-react'
+import { Check, Minus } from 'lucide-react'
 
 export const getColumns: (config: {
   hiddenColumns: { [id: string]: boolean }
@@ -112,10 +112,10 @@ export const getColumns: (config: {
         accessorKey: 'slack_message_last_sent_at',
         cell: ({ row }) => (
           <div className="flex items-center justify-center">
-            {row.getValue('slack_message_last_sent_at') ? (
-              <CheckCircle className="text-green-500" size={20} />
+            {row.getValue('slack_message_sent') ? (
+              <Check className="text-green-700" size={20} strokeWidth={4} />
             ) : (
-              <Minus className="text-slate-500" size={20} strokeWidth={2} />
+              <Minus className="text-slate-500 w-3" size={20} strokeWidth={4} />
             )}
           </div>
         ),
