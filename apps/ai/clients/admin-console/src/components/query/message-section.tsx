@@ -27,6 +27,7 @@ import { toast } from '@/components/ui/use-toast'
 import useQueryGenerateMessage from '@/hooks/api/query/useQueryGenerateMessage'
 import { cn } from '@/lib/utils'
 import { Query } from '@/models/api'
+import { formatDistance } from 'date-fns'
 import { Bot, Edit, Info, Loader } from 'lucide-react'
 import Image from 'next/image'
 import { FC, useState } from 'react'
@@ -34,12 +35,14 @@ import { FC, useState } from 'react'
 interface MessageSectionProps {
   promptId: string
   initialMessage: string
+  slack_message_last_sent_at?: string | null
   onPutQuery: (data: { message: string }) => Promise<Query | undefined>
 }
 
 const MessageSection: FC<MessageSectionProps> = ({
   promptId,
   initialMessage,
+  slack_message_last_sent_at = null,
   onPutQuery,
 }) => {
   const generateMessage = useQueryGenerateMessage()
@@ -209,7 +212,30 @@ const MessageSection: FC<MessageSectionProps> = ({
         {editingMessage || generatingMessage ? (
           <LoadingBox className="h-24" />
         ) : (
-          currentMessage || (
+          (
+            <>
+              {currentMessage}
+              <div
+                id="last_message_sent"
+                className="pt-3 flex flex-row-reverse items-center gap-1 text-sm"
+              >
+                {slack_message_last_sent_at === null ? (
+                  <span className="text-slate-500">No message sent yet</span>
+                ) : (
+                  <span className="text-green-600">
+                    Last message sent{' '}
+                    {formatDistance(
+                      new Date(slack_message_last_sent_at),
+                      new Date(),
+                      {
+                        addSuffix: true,
+                      },
+                    )}
+                  </span>
+                )}
+              </div>
+            </>
+          ) || (
             <>
               <Alert variant="info">
                 <AlertTitle className="flex items-center gap-2 font-bold">

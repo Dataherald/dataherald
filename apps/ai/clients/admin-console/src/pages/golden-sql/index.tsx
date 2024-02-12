@@ -80,6 +80,7 @@ const GoldenSQLPage: FC = () => {
   } else
     pageContent = (
       <DataTable
+        id="golden-sql"
         columns={columns}
         data={items}
         enableFiltering

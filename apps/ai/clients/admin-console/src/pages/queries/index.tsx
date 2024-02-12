@@ -1,9 +1,10 @@
 import { DataTable } from '@/components/data-table'
 import { LoadingTable } from '@/components/data-table/loading-table'
 import PageLayout from '@/components/layout/page-layout'
-import { columns as cols } from '@/components/queries/columns'
+import { getColumns } from '@/components/queries/columns'
 import QueriesError from '@/components/queries/error'
 import { ContentBox } from '@/components/ui/content-box'
+import { useAppContext } from '@/contexts/app-context'
 import useQueries from '@/hooks/api/query/useQueries'
 import { QueryListItem } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
@@ -22,7 +23,14 @@ const QueriesPage: FC = () => {
     setPage,
     mutate,
   } = useQueries()
-  const columns = useMemo(() => cols, [])
+  const { organization } = useAppContext()
+  const columns = useMemo(
+    () =>
+      getColumns({
+        hiddenColumns: { slack_message_sent: !organization?.slack_config },
+      }),
+    [organization?.slack_config],
+  )
   const router = useRouter()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -50,6 +58,7 @@ const QueriesPage: FC = () => {
   } else
     pageContent = (
       <DataTable
+        id="queries"
         columns={columns}
         data={items}
         enableFiltering

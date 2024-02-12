@@ -81,6 +81,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
     updated_by,
     status,
     slack_info,
+    slack_message_last_sent_at,
   } = query
 
   const created_by =
@@ -392,6 +393,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                 {...{
                   promptId,
                   initialMessage: message || nl_generation_text,
+                  slack_message_last_sent_at,
                   onPutQuery,
                 }}
               />

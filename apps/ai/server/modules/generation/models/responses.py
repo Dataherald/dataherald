@@ -31,6 +31,7 @@ class GenerationListResponse(BaseModel):
     confidence_score: float | None
     display_id: str | None
     created_at: datetime | None
+    slack_message_last_sent_at: datetime | None
 
 
 class GenerationResponse(Generation):

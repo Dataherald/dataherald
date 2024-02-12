@@ -37,7 +37,7 @@ import {
   LucideIcon,
   RefreshCcw,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export type CustomColumnDef<
   TData extends RowData,
@@ -47,6 +47,7 @@ export type CustomColumnDef<
 }
 
 interface DataTableProps<TData, TValue> {
+  id: string
   columns: CustomColumnDef<TData, TValue>[] | CustomColumnDef<TData, TValue>[]
   data: TData[]
   isRefreshing?: boolean
@@ -61,6 +62,7 @@ interface DataTableProps<TData, TValue> {
 }
 
 export function DataTable<TData, TValue>({
+  id,
   columns,
   data,
   isRefreshing = false,
@@ -73,15 +75,24 @@ export function DataTable<TData, TValue>({
   onLoadMore,
   onRefresh,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
+  const LOCAL_STORAGE_KEY = `data-table-${id}`
+  const tableConfig = localStorage.getItem(LOCAL_STORAGE_KEY)
+  const [sorting, setSorting] = useState<SortingState>(() => {
+    return tableConfig ? JSON.parse(tableConfig).sorting : []
+  })
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    Object.fromEntries(
-      columns
-        .filter((c) => c.enableHiding !== false)
-        .map(({ id }) => [id, true]),
-    ),
+    () => {
+      const defaultVisibility = Object.fromEntries(
+        columns
+          .filter((c) => c.enableHiding !== false)
+          .map(({ id }) => [id, true]),
+      )
+      return tableConfig
+        ? JSON.parse(tableConfig).columnVisibility
+        : defaultVisibility
+    },
   )
+  const [globalFilter, setGlobalFilter] = useState('')
 
   const table = useReactTable({
     data,
@@ -98,6 +109,11 @@ export function DataTable<TData, TValue>({
       columnVisibility,
     },
   })
+
+  useEffect(() => {
+    const stateToSave = { sorting, columnVisibility }
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave))
+  }, [sorting, columnVisibility, LOCAL_STORAGE_KEY])
 
   return (
     <div className="flex flex-col">

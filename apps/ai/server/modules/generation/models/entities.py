@@ -3,8 +3,6 @@ from enum import Enum
 
 from pydantic import BaseModel, Extra, confloat
 
-from modules.user.models.entities import SlackInfo
-
 
 class GenerationStatus(str, Enum):
     INITIALIZED = "INITIALIZED"
@@ -15,15 +13,22 @@ class GenerationStatus(str, Enum):
     REJECTED = "REJECTED"
 
 
+class SlackInfo(BaseModel):
+    user_id: str | None
+    channel_id: str | None
+    thread_ts: str | None
+
+
 class DHPromptMetadata(BaseModel):
     generation_status: GenerationStatus | None
     created_by: str | None
     updated_by: str | None
     organization_id: str | None
     display_id: str | None
-    slack_info: SlackInfo | None
     message: str | None
     playground: bool | None
+    slack_info: SlackInfo | None
+    slack_message_last_sent_at: datetime | None
 
 
 class PromptMetadata(BaseModel):
@@ -125,3 +130,4 @@ class Generation(BaseModel):
     created_at: datetime | None
     status: GenerationStatus | None  # inferred from SQLGeneration and NLGeneration
     sql_result: dict | None
+    slack_message_last_sent_at: datetime | None

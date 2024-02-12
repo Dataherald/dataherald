@@ -23,9 +23,3 @@ class User(BaseUser):
     organization_id: str | None
     role: Roles | None
     created_at: datetime | None = datetime.now()
-
-
-class SlackInfo(BaseModel):
-    user_id: str | None
-    channel_id: str | None
-    thread_ts: str | None

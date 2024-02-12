@@ -101,6 +101,7 @@ export interface QueryListItem {
   created_at: string
   db_connection_id: string
   db_connection_alias: string
+  slack_message_last_sent_at: string | null
 }
 
 export type QueryList = QueryListItem[]
@@ -137,6 +138,7 @@ export interface Query {
   status: QueryStatus
   updated_at: string
   created_at: string
+  slack_message_last_sent_at: string | null
 }
 
 export type Queries = Query[]

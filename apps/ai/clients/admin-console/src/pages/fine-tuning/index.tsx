@@ -26,7 +26,11 @@ const FineTuningPage: FC = () => {
   } else if (models?.length === 0) {
     pageContent = <div className="text-slate-500">No models created yet.</div>
   } else {
-    pageContent = models ? <DataTable columns={columns} data={models} /> : <></>
+    pageContent = models ? (
+      <DataTable id="fine-tuning" columns={columns} data={models} />
+    ) : (
+      <></>
+    )
   }
 
   return (

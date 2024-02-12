@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import httpx
 from fastapi import HTTPException, status
 from fastapi.responses import StreamingResponse
@@ -13,6 +15,7 @@ from modules.generation.models.entities import (
     NLGenerationMetadata,
     Prompt,
     PromptMetadata,
+    SlackInfo,
     SQLGeneration,
     SQLGenerationMetadata,
     SQLGenerationStatus,
@@ -40,7 +43,6 @@ from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.service import GoldenSQLService
 from modules.organization.models.responses import OrganizationResponse
 from modules.organization.service import OrganizationService
-from modules.user.models.entities import SlackInfo
 from modules.user.models.responses import UserResponse
 from modules.user.service import UserService
 from utils.analytics import Analytics
@@ -337,6 +339,7 @@ class AggrgationGenerationService:
                     display_id=prompt.metadata.dh_internal.display_id,
                     created_at=prompt.created_at,
                     created_by=prompt.metadata.dh_internal.created_by or "Unknown",
+                    slack_message_last_sent_at=prompt.metadata.dh_internal.slack_message_last_sent_at,
                 )
             )
 
@@ -655,7 +658,7 @@ class AggrgationGenerationService:
         organization = self.org_service.get_organization(org_id)
         prompt = self.repo.get_prompt(prompt_id, org_id)
         if not prompt:
-            return
+            return {"success": False}
 
         sql_generation = self.repo.get_latest_sql_generation(prompt_id, org_id)
 
@@ -679,6 +682,15 @@ class AggrgationGenerationService:
             prompt.metadata.dh_internal.slack_info.thread_ts,
             message,
         )
+
+        self.repo.update_prompt_dh_metadata(
+            prompt_id,
+            DHPromptMetadata(
+                slack_message_last_sent_at=datetime.now(),
+            ),
+        )
+
+        return {"success": True}
 
     async def export_csv_file(self, prompt_id: str, org_id: str) -> StreamingResponse:
         if not self.repo.get_prompt(prompt_id, org_id):

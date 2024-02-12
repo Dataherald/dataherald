@@ -49,7 +49,7 @@ const ApiKeysList = () => {
     )
   } else {
     pageContent = apiKeys ? (
-      <DataTable columns={columns} data={apiKeys} />
+      <DataTable id="api-keys" columns={columns} data={apiKeys} />
     ) : (
       <></>
     )
