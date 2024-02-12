@@ -184,7 +184,7 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({ onGeneratedKey }) => {
                       Generating key
                     </>
                   ) : (
-                    'Generate secrete key'
+                    'Generate secret key'
                   )}
                 </Button>
               </AlertDialogFooter>
