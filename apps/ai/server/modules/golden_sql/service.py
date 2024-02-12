@@ -151,7 +151,7 @@ class GoldenSQLService:
         golden_sql = self.repo.get_verified_golden_sql(prompt_id)
         # if already exist, call delete /golden-sqls
         if golden_sql:
-            await self.delete_golden_sql(golden_sql.id)
+            await self.delete_golden_sql(golden_sql.id, org_id)
 
         display_id = self.repo.get_next_display_id(org_id)
 
