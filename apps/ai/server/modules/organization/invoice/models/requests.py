@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, conint
 
 
 class SpendingLimitRequest(BaseModel):
@@ -7,3 +7,8 @@ class SpendingLimitRequest(BaseModel):
 
 class PaymentMethodRequest(BaseModel):
     payment_method_id: str
+
+
+class CreditRequest(BaseModel):
+    amount: conint(gt=0)
+    description: str

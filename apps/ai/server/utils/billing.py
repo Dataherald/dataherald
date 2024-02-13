@@ -157,3 +157,13 @@ class Billing:
             return False
 
         return True
+
+    def create_balance_transaction(
+        self, customer_id: str, amount: int, description: str
+    ) -> stripe.BalanceTransaction:
+        return stripe.Customer.create_balance_transaction(
+            customer_id,
+            amount=amount,
+            currency="usd",
+            description=description,
+        )

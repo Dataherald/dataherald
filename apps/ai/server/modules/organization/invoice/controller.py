@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi.security import HTTPBearer
 from starlette.requests import Request
 
 from modules.organization.invoice.models.requests import (
+    CreditRequest,
     PaymentMethodRequest,
     SpendingLimitRequest,
 )
 from modules.organization.invoice.models.responses import (
+    CreditResponse,
     InvoiceResponse,
     PaymentMethodResponse,
     SpendingLimitResponse,
@@ -41,7 +43,7 @@ def get_payment_methods(
     return invoice_service.get_payment_methods(id)
 
 
-@router.post("/{id}/invoices/payment-methods")
+@router.post("/{id}/invoices/payment-methods", status_code=status.HTTP_201_CREATED)
 def attach_payment_method(
     id: str,
     payment_method_request: PaymentMethodRequest,
@@ -93,6 +95,17 @@ def update_spending_limit(
     user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_self(user.organization_id, id)
     return invoice_service.update_spending_limit(id, spending_limit_request)
+
+
+@router.post("/{id}/invoices/credits", status_code=status.HTTP_201_CREATED)
+def add_credits(
+    id: str,
+    credit_request: CreditRequest,
+    token: str = Depends(HTTPBearer()),
+) -> CreditResponse:
+    user = authorize.user(VerifyToken(token.credentials).verify())
+    authorize.is_admin_user(user)
+    return invoice_service.add_credits(id, user.id, credit_request)
 
 
 @router.post("/invoices/webhook")

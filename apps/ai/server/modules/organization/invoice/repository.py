@@ -72,7 +72,11 @@ class InvoiceRepository:
             )
         ]
 
-    def get_total_credits(self, org_id: str) -> list[Credit]:
+    def get_credit(self, credit_id: str) -> Credit:
+        credit = MongoDB.find_one(CREDIT_COL, {"_id": ObjectId(credit_id)})
+        return Credit(id=str(credit["_id"]), **credit) if credit else None
+
+    def get_positive_credits(self, org_id: str) -> list[Credit]:
         return [
             Credit(id=str(credit["_id"]), **credit)
             for credit in MongoDB.find(

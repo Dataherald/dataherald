@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from modules.organization.invoice.models.entities import UsageInvoice
+from modules.organization.invoice.models.entities import Credit, UsageInvoice
 
 
 class InvoiceResponse(UsageInvoice):
@@ -27,3 +27,7 @@ class PaymentMethodResponse(BaseModel):
 class SpendingLimitResponse(BaseModel):
     spending_limit: int
     hard_spending_limit: int
+
+
+class CreditResponse(Credit):
+    pass

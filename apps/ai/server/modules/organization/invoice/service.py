@@ -14,10 +14,12 @@ from modules.organization.invoice.models.entities import (
     UsageType,
 )
 from modules.organization.invoice.models.requests import (
+    CreditRequest,
     PaymentMethodRequest,
     SpendingLimitRequest,
 )
 from modules.organization.invoice.models.responses import (
+    CreditResponse,
     InvoiceResponse,
     PaymentMethodResponse,
     SpendingLimitResponse,
@@ -95,7 +97,9 @@ class InvoiceService:
         unrecorded_usage_invoice = self._get_invoice_from_usages(
             self.repo.get_usages(
                 org_id,
-                current_period_start,
+                datetime.fromtimestamp(
+                    organization.invoice_details.billing_cycle_anchor
+                ),
                 datetime.now(),
                 record_status=RecordStatus.UNRECORDED,
             )
@@ -121,7 +125,7 @@ class InvoiceService:
             **usage_invoice.dict(),
             available_credits=organization.invoice_details.available_credits,
             total_credits=sum(
-                credit.amount for credit in self.repo.get_total_credits(org_id)
+                credit.amount for credit in self.repo.get_positive_credits(org_id)
             ),
             amount_due=upcoming_invoice.amount_due  # recorded usage - recorded credits
             + unrecorded_usage_cost
@@ -253,27 +257,12 @@ class InvoiceService:
         usage_id = self.repo.create_usage(usage.dict(exclude={"id"}))
         print(f"New usage created: {usage_id}")
         available_credits = organization.invoice_details.available_credits
-        if available_credits > 0:
-            usage_cost = self.cost_dict[type] * quantity
-            credit = Credit(
-                organization_id=org_id,
-                status=RecordStatus.UNRECORDED,
-                description=f"credit used from usage {usage_id}",
-            )
-            # use up available credits for usage cost
-            if available_credits >= usage_cost:
-                credit.amount = -usage_cost
-                credit_id = self.repo.create_credit(credit.dict(exclude={"id"}))
-                self.repo.update_available_credits(
-                    org_id, available_credits - usage_cost
-                )
-                print(f"New credit created: {credit_id}")
-            # use up all available credits
-            else:
-                credit.amount = -available_credits
-                credit_id = self.repo.create_credit(credit.dict(exclude={"id"}))
-                self.repo.update_available_credits(org_id, 0)
-                print(f"New credit created: {credit_id}")
+        self._apply_unrecorded_credits(
+            org_id,
+            available_credits,
+            self.cost_dict[type] * quantity,
+            f"negative credit from usage {usage_id}",
+        )
 
     def check_usage(
         self,
@@ -325,6 +314,59 @@ class InvoiceService:
                 organization.invoice_details.spending_limit,
                 organization.invoice_details.hard_spending_limit,
             )
+
+    def add_credits(
+        self, org_id: str, user_id: str, credit_request: CreditRequest
+    ) -> CreditResponse:
+        organization = self.org_repo.get_organization(org_id)
+        if organization.invoice_details.plan == PaymentPlan.ENTERPRISE:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot add credits to enterprise plan",
+            )
+
+        credit_id = self.repo.create_credit(
+            Credit(
+                organization_id=org_id,
+                amount=credit_request.amount,
+                status=RecordStatus.RECORDED,
+                description=f"added by {user_id}: {credit_request.description}",
+            ).dict(exclude={"id"})
+        )
+        print(f"New credit created: {credit_id}")
+        # apply credits to recorded usage
+        recorded_amount_due = self.billing.get_upcoming_invoice(
+            organization.invoice_details.stripe_customer_id
+        ).amount_due
+        credits_due = min(max(recorded_amount_due, 0), credit_request.amount)
+        if credits_due > 0:
+            self.repo.create_credit(
+                Credit(
+                    organization_id=org_id,
+                    amount=-credits_due,
+                    status=RecordStatus.RECORDED,
+                    description=f"negative credits for stripe pending invoice; used from new credit {credit_id}",
+                ).dict(exclude={"id"})
+            )
+            self.billing.create_balance_transaction(
+                organization.invoice_details.stripe_customer_id,
+                -credits_due,
+                "add credit balance",
+            )
+        # apply credits to unrecorded usage
+        new_amount_due = self.get_pending_invoice(org_id).amount_due
+        available_credits = (
+            organization.invoice_details.available_credits
+            + credit_request.amount
+            - credits_due
+        )
+        self._apply_unrecorded_credits(
+            org_id,
+            available_credits,
+            new_amount_due,
+            f"negative credits for pending invoice; used from new credit {credit_id}",
+        )
+        return self.repo.get_credit(credit_id)
 
     def _check_spending_limit_from_usage(
         self, usages: list[Usage], spending_limit: int, hard_spending_limit: int
@@ -397,3 +439,24 @@ class InvoiceService:
                 status_code=status.HTTP_402_PAYMENT_REQUIRED,
                 detail=ErrorCode.unknown_subscription_status,
             )
+
+    def _apply_unrecorded_credits(
+        self,
+        org_id: str,
+        available_credits: int,
+        amount_due: int,
+        description: str = None,
+    ):
+        credits_due = 0
+        if available_credits > 0 and amount_due > 0:
+            credits_due = min(available_credits, amount_due)
+            neg_credit_id = self.repo.create_credit(
+                Credit(
+                    organization_id=org_id,
+                    amount=-credits_due,
+                    status=RecordStatus.UNRECORDED,
+                    description=description,
+                ).dict(exclude={"id"})
+            )
+            print(f"New negative credit created: {neg_credit_id}")
+        self.repo.update_available_credits(org_id, available_credits - credits_due)
