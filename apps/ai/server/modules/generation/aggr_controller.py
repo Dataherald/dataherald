@@ -44,6 +44,7 @@ async def get_generations(
     order: str = "created_at",
     ascend: bool = True,
     api_key: str = Security(get_api_key),
+    db_connection_id: str = None,
 ) -> list[GenerationListResponse]:
     return generation_service.get_generation_list(
         page=page,
@@ -51,6 +52,7 @@ async def get_generations(
         order=order,
         ascend=ascend,
         org_id=api_key.organization_id,
+        db_connection_id=db_connection_id,
     )
 
 
@@ -67,6 +69,7 @@ async def ac_get_generations(
     page_size: int = 20,
     order: str = "created_at",
     ascend: bool = False,
+    db_connection_id: str = None,
     token: str = Depends(token_auth_scheme),
 ) -> list[GenerationListResponse]:
     org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
@@ -76,6 +79,7 @@ async def ac_get_generations(
         order=order,
         ascend=ascend,
         org_id=org_id,
+        db_connection_id=db_connection_id,
     )
 
 

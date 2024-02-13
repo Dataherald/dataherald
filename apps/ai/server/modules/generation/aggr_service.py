@@ -299,6 +299,7 @@ class AggrgationGenerationService:
         page_size: int,
         ascend: bool,  # noqa: ARG002
         org_id: str,
+        db_connection_id: str = None,
     ) -> list[GenerationListResponse]:
         prompts = self.repo.get_prompts(
             skip=page * page_size,
@@ -306,6 +307,7 @@ class AggrgationGenerationService:
             order=order,
             ascend=ascend,
             org_id=org_id,
+            db_connection_id=db_connection_id,
         )
         db_connection_dict = {
             db_connection.id: db_connection

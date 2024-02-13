@@ -5,6 +5,7 @@ from pydantic import BaseModel, Extra, confloat
 
 from utils.validation import ObjectIdString
 
+
 class GenerationStatus(str, Enum):
     INITIALIZED = "INITIALIZED"
     IN_PROGRESS = "IN_PROGRESS"

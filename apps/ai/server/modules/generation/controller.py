@@ -144,10 +144,16 @@ async def get_prompts(
     page_size: int = 20,
     order: str = "created_at",
     ascend: bool = False,
+    db_connection_id: str = None,
     api_key: str = Security(get_api_key),
 ) -> list[PromptResponse]:
     return generation_service.get_prompts(
-        page, page_size, order, ascend, api_key.organization_id
+        page,
+        page_size,
+        order,
+        ascend,
+        api_key.organization_id,
+        db_connection_id=db_connection_id,
     )
 
 

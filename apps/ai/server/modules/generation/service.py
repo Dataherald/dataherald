@@ -44,7 +44,13 @@ class GenerationService:
         return self.get_prompt_in_org(prompt_id, org_id)
 
     def get_prompts(
-        self, page: int, page_size: int, order: str, ascend: bool, org_id: str
+        self,
+        page: int,
+        page_size: int,
+        order: str,
+        ascend: bool,
+        org_id: str,
+        db_connection_id: str = None,
     ) -> list[PromptResponse]:
         return self.repo.get_prompts(
             skip=page * page_size,
@@ -52,6 +58,7 @@ class GenerationService:
             order=order,
             ascend=ascend,
             org_id=org_id,
+            db_connection_id=db_connection_id,
         )
 
     def get_sql_generation(

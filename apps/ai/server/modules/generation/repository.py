@@ -27,22 +27,31 @@ class GenerationRepository:
         return Prompt(id=str(prompt["_id"]), **prompt) if prompt else None
 
     def get_prompts(
-        self, skip: int, limit: int, order: str, ascend: bool, org_id: str
+        self,
+        skip: int,
+        limit: int,
+        order: str,
+        ascend: bool,
+        org_id: str,
+        db_connection_id: str = None,
     ) -> list[Prompt]:
         mddh_prefix = "metadata.dh_internal"
+        query = {
+            f"{mddh_prefix}.organization_id": org_id,
+            "$or": [
+                {f"{mddh_prefix}.playground": False},
+                {f"{mddh_prefix}.playground": {"$exists": False}},
+            ],
+        }
+        if db_connection_id:
+            query["db_connection_id"] = db_connection_id
         prompts = self._get_items(
+            PROMPT_COL,
+            query,
             skip,
             limit,
             order,
             ascend,
-            PROMPT_COL,
-            {
-                f"{mddh_prefix}.organization_id": org_id,
-                "$or": [
-                    {f"{mddh_prefix}.playground": False},
-                    {f"{mddh_prefix}.playground": {"$exists": False}},
-                ],
-            },
         )
         return [Prompt(id=str(prompt["_id"]), **prompt) for prompt in prompts]
 
@@ -89,7 +98,12 @@ class GenerationRepository:
         if prompt_id:
             query["prompt_id"] = prompt_id
         sql_generations = self._get_items(
-            skip, limit, order, ascend, SQL_GENERATION_COL, query
+            SQL_GENERATION_COL,
+            query,
+            skip,
+            limit,
+            order,
+            ascend,
         )
         return [
             SQLGeneration(id=str(sql_generation["_id"]), **sql_generation)
@@ -139,7 +153,7 @@ class GenerationRepository:
         if sql_generation_id:
             query["sql_generation_id"] = sql_generation_id
         nl_generations = self._get_items(
-            skip, limit, order, ascend, NL_GENERATION_COL, query
+            NL_GENERATION_COL, query, skip, limit, order, ascend
         )
         return [
             NLGeneration(id=str(nl_generation["_id"]), **nl_generation)
@@ -164,12 +178,12 @@ class GenerationRepository:
 
     def _get_items(
         self,
+        item_col: str,
+        query: dict,
         skip: int,
         limit: int,
         order: str,
         ascend: bool,
-        item_col: str,
-        query: dict,
     ):
         return (
             MongoDB.find(item_col, query)
