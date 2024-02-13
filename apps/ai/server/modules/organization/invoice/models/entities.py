@@ -3,6 +3,8 @@ from enum import Enum
 
 from pydantic import BaseModel
 
+from utils.validation import ObjectIdString
+
 
 class UsageType(str, Enum):
     SQL_GENERATION = "SQL_GENERATION"
@@ -22,15 +24,15 @@ class RecordStatus(str, Enum):
 
 
 class Usage(BaseUsage):
-    id: str | None
-    organization_id: str
+    id: ObjectIdString | None
+    organization_id: ObjectIdString
     status: RecordStatus
     created_at: datetime = datetime.now()
 
 
 class Credit(BaseModel):
-    id: str | None
-    organization_id: str
+    id: ObjectIdString | None
+    organization_id: ObjectIdString
     status: RecordStatus
     amount: int = 0
     description: str | None

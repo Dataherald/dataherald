@@ -3,12 +3,15 @@ from enum import Enum
 
 from pydantic import BaseModel
 
+from utils.validation import ObjectIdString
+
 
 class Roles(str, Enum):
     admin = "ADMIN"
 
 
 class BaseUser(BaseModel):
+    organization_id: ObjectIdString | None
     email: str | None
     email_verified: bool | None
     name: str | None
@@ -19,7 +22,6 @@ class BaseUser(BaseModel):
 
 
 class User(BaseUser):
-    id: str | None
-    organization_id: str | None
+    id: ObjectIdString | None
     role: Roles | None
     created_at: datetime | None = datetime.now()

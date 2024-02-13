@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Extra
 
+from utils.validation import ObjectIdString
+
 
 class SSHSettings(BaseModel):
     host: str | None
@@ -12,7 +14,7 @@ class SSHSettings(BaseModel):
 
 # TODO: find a better way to do this for all metadata
 class DHDBConnectionMetadata(BaseModel):
-    organization_id: str | None
+    organization_id: ObjectIdString | None
 
 
 class DBConnectionMetadata(BaseModel):
@@ -35,7 +37,7 @@ class InternalSSHSettings(SSHSettings):
 
 
 class DBConnection(BaseDBConnection):
-    id: str | None
+    id: ObjectIdString | None
     created_at: datetime | None
     path_to_credentials_file: str | None
     ssh_settings: InternalSSHSettings | None

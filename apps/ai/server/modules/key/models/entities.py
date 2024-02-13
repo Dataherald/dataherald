@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from utils.validation import ObjectIdString
+
 
 class UnknownKeyError(Exception):
     def __init__(self, key_hash: str):
@@ -9,9 +11,9 @@ class UnknownKeyError(Exception):
 
 
 class BaseKey(BaseModel):
-    id: str | None
+    id: ObjectIdString | None
     name: str | None
-    organization_id: str
+    organization_id: ObjectIdString
     created_at: datetime = datetime.now()
     key_preview: str | None
 

@@ -5,6 +5,7 @@ from modules.table_description.models.entities import (
     SchemaStatus,
     TableDescription,
 )
+from utils.validation import ObjectIdString
 
 
 class TableDescriptionResponse(TableDescription):
@@ -20,7 +21,7 @@ class ACTableDescriptionResponse(AggrTableDescription):
 
 
 class BasicTableDescriptionResponse(BaseModel):
-    id: str | None
+    id: ObjectIdString | None
     name: str | None
     columns: list[str] | None
     sync_status: SchemaStatus | None
@@ -28,6 +29,6 @@ class BasicTableDescriptionResponse(BaseModel):
 
 
 class DatabaseDescriptionResponse(BaseModel):
-    db_connection_id: str
+    db_connection_id: ObjectIdString
     db_connection_alias: str | None
     tables: list[BasicTableDescriptionResponse]

@@ -2,14 +2,16 @@ from datetime import datetime
 
 from pydantic import BaseModel, Extra
 
+from utils.validation import ObjectIdString
+
 
 class BaseInstruction(BaseModel):
     instruction: str
-    db_connection_id: str | None
+    db_connection_id: ObjectIdString | None
 
 
 class DHInstructionMetadata(BaseModel):
-    organization_id: str | None
+    organization_id: ObjectIdString | None
 
 
 class InstructionMetadata(BaseModel):
@@ -20,7 +22,7 @@ class InstructionMetadata(BaseModel):
 
 
 class Instruction(BaseInstruction):
-    id: str
+    id: ObjectIdString
     created_at: datetime | None
     metadata: InstructionMetadata | None
 

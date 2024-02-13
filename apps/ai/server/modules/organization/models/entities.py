@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field, confloat
 
 from modules.organization.invoice.models.entities import InvoiceDetails
+from utils.validation import ObjectIdString
 
 
 class SlackTeam(BaseModel):
@@ -36,7 +37,7 @@ class SlackInstallation(BaseModel):
 
 class SlackConfig(BaseModel):
     slack_installation: SlackInstallation | None
-    db_connection_id: str | None
+    db_connection_id: ObjectIdString | None
 
 
 class BaseOrganization(BaseModel):
@@ -48,6 +49,6 @@ class BaseOrganization(BaseModel):
 
 
 class Organization(BaseOrganization):
-    id: str | None
+    id: ObjectIdString | None
     created_at: datetime | None = datetime.now()
     invoice_details: InvoiceDetails | None

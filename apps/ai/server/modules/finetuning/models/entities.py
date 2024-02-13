@@ -3,6 +3,8 @@ from enum import Enum
 
 from pydantic import BaseModel, Extra
 
+from utils.validation import ObjectIdString
+
 
 class FineTuningStatus(str, Enum):
     QUEUED = "queued"
@@ -20,7 +22,7 @@ class BaseLLM(BaseModel):
 
 
 class DHFinetuningMetadata(BaseModel):
-    organization_id: str | None
+    organization_id: ObjectIdString | None
 
 
 class FinetuningMetadata(BaseModel):
@@ -31,7 +33,7 @@ class FinetuningMetadata(BaseModel):
 
 
 class BaseFinetuning(BaseModel):
-    id: str
+    id: ObjectIdString
     alias: str
     db_connection_id: str
     status: str = FineTuningStatus.QUEUED

@@ -3,6 +3,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from modules.generation.models.entities import GenerationStatus, SlackInfo
+from utils.validation import ObjectIdString
 
 
 class SlackInfoRequest(SlackInfo):
@@ -25,12 +26,12 @@ class SQLRequest(BaseModel):
 
 class PromptRequest(BaseModel):
     text: str
-    db_connection_id: str
+    db_connection_id: ObjectIdString
     metadata: dict[str, Any] | None = {}
 
 
 class SQLGenerationRequest(BaseModel):
-    finetuning_id: str | None
+    finetuning_id: ObjectIdString | None
     low_latency_mode: bool | None = False
     evaluate: bool | None = False
     sql: str | None
@@ -56,5 +57,5 @@ class PromptSQLNLGenerationRequest(NLGenerationRequest):
 
 class SQLGenerationExecuteRequest(BaseModel):
     prompt: str
-    db_connection_id: str
-    finetuning_id: str | None = None
+    db_connection_id: ObjectIdString
+    finetuning_id: ObjectIdString | None = None

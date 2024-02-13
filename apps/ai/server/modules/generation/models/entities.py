@@ -3,6 +3,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Extra, confloat
 
+from utils.validation import ObjectIdString
 
 class GenerationStatus(str, Enum):
     INITIALIZED = "INITIALIZED"
@@ -23,7 +24,7 @@ class DHPromptMetadata(BaseModel):
     generation_status: GenerationStatus | None
     created_by: str | None
     updated_by: str | None
-    organization_id: str | None
+    organization_id: ObjectIdString | None
     display_id: str | None
     message: str | None
     playground: bool | None
@@ -44,9 +45,9 @@ class SQLGenerationStatus(str, Enum):
 
 
 class BasePrompt(BaseModel):
-    id: str
+    id: ObjectIdString
     text: str
-    db_connection_id: str
+    db_connection_id: ObjectIdString
     metadata: PromptMetadata | None
     created_at: datetime | None
 
@@ -56,7 +57,7 @@ class Prompt(BasePrompt):
 
 
 class DHSQLGenerationMetadata(BaseModel):
-    organization_id: str | None
+    organization_id: ObjectIdString | None
 
 
 class SQLGenerationMetadata(BaseModel):
@@ -67,9 +68,9 @@ class SQLGenerationMetadata(BaseModel):
 
 
 class BaseSQLGeneration(BaseModel):
-    id: str | None
+    id: ObjectIdString | None
     prompt_id: str | None
-    finetuning_id: str | None
+    finetuning_id: ObjectIdString | None
     sql: str | None
     status: SQLGenerationStatus = SQLGenerationStatus.INVALID
     confidence_score: confloat(ge=0, le=1) | None
@@ -84,7 +85,7 @@ class SQLGeneration(BaseSQLGeneration):
 
 
 class DHNLGenerationMetadata(BaseModel):
-    organization_id: str | None
+    organization_id: ObjectIdString | None
 
 
 class NLGenerationMetadata(BaseModel):
@@ -95,9 +96,9 @@ class NLGenerationMetadata(BaseModel):
 
 
 class BaseNLGeneration(BaseModel):
-    id: str | None
+    id: ObjectIdString | None
     text: str | None
-    sql_generation_id: str | None
+    sql_generation_id: ObjectIdString | None
     metadata: NLGenerationMetadata | None
     created_at: datetime | None
 
@@ -108,14 +109,14 @@ class NLGeneration(BaseNLGeneration):
 
 class Generation(BaseModel):
     # db connection
-    db_connection_id: str
+    db_connection_id: ObjectIdString
     db_connection_alias: str | None
     # Prompt
-    id: str
+    id: ObjectIdString
     prompt_text: str
     created_by: str | None
     updated_by: str | None
-    organization_id: str | None
+    organization_id: ObjectIdString | None
     display_id: str | None
     slack_info: SlackInfo | None
     message: str | None

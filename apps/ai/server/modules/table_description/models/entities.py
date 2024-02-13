@@ -3,6 +3,8 @@ from enum import Enum
 
 from pydantic import BaseModel, Extra
 
+from utils.validation import ObjectIdString
+
 
 class SchemaStatus(Enum):
     NOT_SCANNED = "NOT_SCANNED"
@@ -23,7 +25,7 @@ class ColumnDescription(BaseModel):
 
 
 class DHTableDescriptionMetadata(BaseModel):
-    organization_id: str | None
+    organization_id: ObjectIdString | None
 
 
 class TableDescriptionMetadata(BaseModel):
@@ -34,9 +36,9 @@ class TableDescriptionMetadata(BaseModel):
 
 
 class BaseTableDescription(BaseModel):
-    id: str | None
+    id: ObjectIdString | None
     table_name: str | None
-    db_connection_id: str
+    db_connection_id: ObjectIdString
     description: str | None
     columns: list[ColumnDescription] | None
     examples: list | None

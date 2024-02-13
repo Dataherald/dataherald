@@ -3,6 +3,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from modules.table_description.models.entities import ColumnDescription
+from utils.validation import ObjectIdString
 
 
 class TableDescriptionRequest(BaseModel):
@@ -13,6 +14,6 @@ class TableDescriptionRequest(BaseModel):
 
 
 class ScanRequest(BaseModel):
-    db_connection_id: str
+    db_connection_id: ObjectIdString
     table_names: list[str] | None
     metadata: dict[str, Any] | None = {}

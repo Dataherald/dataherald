@@ -9,10 +9,11 @@ from modules.generation.models.entities import (
     Generation,
     GenerationStatus,
 )
+from utils.validation import ObjectIdString
 
 
 class GenerationSlackResponse(BaseModel):
-    id: str
+    id: ObjectIdString
     display_id: str
     nl_generation_text: str | None
     sql: str
@@ -21,7 +22,7 @@ class GenerationSlackResponse(BaseModel):
 
 
 class GenerationListResponse(BaseModel):
-    id: str
+    id: ObjectIdString
     created_by: str
     prompt_text: str
     db_connection_alias: str | None
