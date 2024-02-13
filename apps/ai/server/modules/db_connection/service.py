@@ -39,6 +39,8 @@ class DBConnectionService:
             )
         if file:
             return s3.upload(file)
+        if db_connection_request.sqlite_file_path:
+            return db_connection_request.sqlite_file_path
         return None
 
     async def add_db_connection(
