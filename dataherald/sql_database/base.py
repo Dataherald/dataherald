@@ -80,12 +80,13 @@ class SQLDatabase:
                 DBConnections.add(database_info.id, engine)
                 return engine
             db_uri = unquote(fernet_encrypt.decrypt(database_info.connection_uri))
-            if db_uri.lower().startswith("bigquery"):
-                file_path = database_info.path_to_credentials_file
-                if file_path.lower().startswith("s3"):
-                    s3 = S3()
-                    file_path = s3.download(file_path)
 
+            file_path = database_info.path_to_credentials_file
+            if file_path and file_path.lower().startswith("s3"):
+                s3 = S3()
+                file_path = s3.download(file_path)
+
+            if db_uri.lower().startswith("bigquery"):
                 db_uri = db_uri + f"?credentials_path={file_path}"
 
             engine = cls.from_uri(db_uri)
