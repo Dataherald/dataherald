@@ -468,7 +468,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         agent_executor = self.create_sql_agent(
             toolkit=toolkit,
             verbose=True,
-            max_execution_time=os.getenv("DH_ENGINE_TIMEOUT", None),
+            max_execution_time=int(os.environ.get("DH_ENGINE_TIMEOUT", 150)),
         )
         agent_executor.return_intermediate_steps = True
         agent_executor.handle_parsing_errors = True
