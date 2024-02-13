@@ -1,3 +1,4 @@
+import BackgroundPageLayout from '@/components/layout/background-page-layout'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppContext } from '@/contexts/app-context'
@@ -56,18 +57,11 @@ const SelectOrganizationPage: FC = () => {
   }, [router])
 
   return (
-    <div className="flex items-center justify-center min-h-screen relative">
+    <BackgroundPageLayout>
       <Head>
         <title>Change Organization - Dataherald AI API</title>
       </Head>
-      <Image
-        src="https://hi-george.s3.amazonaws.com/DataheraldAI/Dark+Background.png"
-        alt="Background"
-        fill
-        style={{ objectFit: 'cover', objectPosition: 'center' }}
-        quality={100}
-      />
-      <div className="absolute bg-white shadow-lg w-full max-w-none h-screen rounded-none sm:rounded-2xl sm:h-fit p-8 sm:max-w-lg">
+      <div className="bg-white shadow-lg w-full max-w-none h-screen rounded-none sm:rounded-2xl sm:h-fit p-8 sm:max-w-lg">
         <div className="flex flex-col items-center gap-5 h-[60vh] sm:max-h-[60vh]">
           <Image
             priority
@@ -133,7 +127,7 @@ const SelectOrganizationPage: FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </BackgroundPageLayout>
   )
 }
 

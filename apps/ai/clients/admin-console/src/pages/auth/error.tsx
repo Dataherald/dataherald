@@ -1,9 +1,9 @@
+import BackgroundPageLayout from '@/components/layout/background-page-layout'
 import { Button } from '@/components/ui/button'
 import { AUTH } from '@/config'
 import { MailWarning } from 'lucide-react'
 import { GetServerSideProps } from 'next'
 import Head from 'next/head'
-import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { FC, useState } from 'react'
 
@@ -69,18 +69,11 @@ const AuthErrorPage: FC<{
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen relative">
+    <BackgroundPageLayout>
       <Head>
-        <title>auth error - Dataherald AI API</title>
+        <title>Authentication error - Dataherald AI API</title>
       </Head>
-      <Image
-        src="https://hi-george.s3.amazonaws.com/DataheraldAI/Dark+Background.png"
-        alt="Background"
-        fill
-        style={{ objectFit: 'cover', objectPosition: 'center' }}
-        quality={100}
-      />
-      <div className="absolute bg-white shadow-lg w-full max-w-none h-screen rounded-none sm:rounded-2xl sm:h-fit p-8 sm:max-w-lg">
+      <div className="bg-white shadow-lg w-full max-w-none h-screen rounded-none sm:rounded-2xl sm:h-fit p-8 sm:max-w-lg">
         <h1 className="text-xl font-bold mb-4 text-secondary-dark flex items-center gap-3">
           {isEmailNotVerified && <MailWarning size={50} />}
           {errorCause}
@@ -159,7 +152,7 @@ const AuthErrorPage: FC<{
           )}
         </div>
       </div>
-    </div>
+    </BackgroundPageLayout>
   )
 }
 

@@ -251,7 +251,7 @@ export enum EFineTuningStatus {
 export type FineTuningStatus = keyof typeof EFineTuningStatus
 
 export interface BaseLLM {
-  model_provider: string | null
+  model_provider?: string | null
   model_name: string | null
   model_parameters: Record<string, string> | null
 }

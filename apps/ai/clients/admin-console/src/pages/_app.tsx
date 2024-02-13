@@ -1,4 +1,5 @@
 import WithAnalytics from '@/components/hoc/WithAnalytics'
+import WithMobileRedirect from '@/components/hoc/WithMobileRedirect'
 import WithSubscription from '@/components/hoc/WithSubscription'
 import { AppContextProvider } from '@/contexts/app-context'
 import { AuthProvider } from '@/contexts/auth-context'
@@ -40,25 +41,27 @@ const SWRConfigWithAuth: FC<{ children: ReactNode }> = ({ children }) => {
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
-      <SubscriptionProvider>
-        <WithSubscription>
-          <AppContextProvider>
-            <WithAnalytics>
-              <SWRConfigWithAuth>
-                <div
-                  className={cn(
-                    sourceCode.variable,
-                    mainFont.variable,
-                    'font-main',
-                  )}
-                >
-                  <Component {...pageProps} />
-                </div>
-              </SWRConfigWithAuth>
-            </WithAnalytics>
-          </AppContextProvider>
-        </WithSubscription>
-      </SubscriptionProvider>
+      <WithMobileRedirect>
+        <SubscriptionProvider>
+          <WithSubscription>
+            <AppContextProvider>
+              <WithAnalytics>
+                <SWRConfigWithAuth>
+                  <div
+                    className={cn(
+                      sourceCode.variable,
+                      mainFont.variable,
+                      'font-main',
+                    )}
+                  >
+                    <Component {...pageProps} />
+                  </div>
+                </SWRConfigWithAuth>
+              </WithAnalytics>
+            </AppContextProvider>
+          </WithSubscription>
+        </SubscriptionProvider>
+      </WithMobileRedirect>
     </AuthProvider>
   )
 }

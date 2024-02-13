@@ -13,6 +13,7 @@ import { useAppContext } from '@/contexts/app-context'
 import useUsage from '@/hooks/api/billing/useUsage'
 import { isEnterprise } from '@/lib/domain/billing'
 import { toDateCycle, toDollars } from '@/lib/utils'
+import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { Info } from 'lucide-react'
 import Head from 'next/head'
 import { useRouter } from 'next/navigation'
@@ -88,4 +89,4 @@ const BillingPage: FC = () => {
   )
 }
 
-export default BillingPage
+export default withPageAuthRequired(BillingPage)

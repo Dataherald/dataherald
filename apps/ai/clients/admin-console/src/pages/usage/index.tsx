@@ -3,6 +3,7 @@ import { ContentBox } from '@/components/ui/content-box'
 import MonthlyUsage from '@/components/usage/monthly-usage'
 import { useAppContext } from '@/contexts/app-context'
 import { isEnterprise } from '@/lib/domain/billing'
+import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import Head from 'next/head'
 import { useRouter } from 'next/navigation'
 import { FC } from 'react'
@@ -32,4 +33,4 @@ const UsagePage: FC = () => {
   )
 }
 
-export default UsagePage
+export default withPageAuthRequired(UsagePage)
