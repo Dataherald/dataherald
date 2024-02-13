@@ -121,7 +121,9 @@ const TreeNodeComponent: FC<TreeProps> = ({
                 <ChevronRight size={16} strokeWidth={1.5} />
               ))}
           </div>
-          <node.icon size={16} strokeWidth={1.5} className="mx-2" />
+          <div className="mx-2">
+            <node.icon size={16} strokeWidth={1.5} />
+          </div>
           <span className="break-all">{node.name}</span>
         </div>
         <div className="min-w-fit">{node.slot}</div>

@@ -54,7 +54,7 @@ const QueriesPage: FC = () => {
   if (!isLoadingFirst && error) {
     pageContent = <QueriesError />
   } else if (isLoadingFirst) {
-    pageContent = <LoadingTable loadFilters columnLength={7} />
+    pageContent = <LoadingTable loadFilters columnLength={6} />
   } else
     pageContent = (
       <DataTable

@@ -19,7 +19,7 @@ export const finetunningsColumns: ColumnDef<FineTuningModel>[] = [
   },
   {
     id: 'model_name',
-    header: () => <div className="min-w-[8rem]">Model</div>,
+    header: 'Model',
     accessorKey: 'base_llm.model_name',
   },
   {
