@@ -113,7 +113,7 @@ export const getColumns: (config: {
         cell: ({ row }) => (
           <div className="flex items-center justify-center">
             {row.getValue('slack_message_sent') ? (
-              <Check className="text-green-700" size={20} strokeWidth={4} />
+              <Check className="text-green-700" size={20} strokeWidth={3} />
             ) : (
               <Minus className="text-slate-500 w-3" size={20} strokeWidth={4} />
             )}

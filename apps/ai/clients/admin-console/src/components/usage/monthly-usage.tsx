@@ -93,7 +93,7 @@ const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
             <div className="text-slate-500 text-sm">USD</div>
           </div>
 
-          <div className="flex gap-3 items-end">
+          <div className="w-100 flex gap-3 items-end">
             <div className="h-16 grow">
               <CreditsChart
                 availableCredits={available_credits}
