@@ -1,7 +1,7 @@
 .. api.scan_database:
 
 Refresh a table description
-=======================
+==============================
 
 This endpoint establishes a database connection, retrieves the table names, and merges these records with the existing
 table-descriptions. It updates the status accordingly: if the table no longer exists, it changes the status to

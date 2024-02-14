@@ -219,6 +219,17 @@ Example::
 
 "connection_uri": snowflake://jon:123456@foo-bar/my-database/public
 
+ClickHouse
+^^^^^^^^^^^^
+
+Uri structure::
+
+"connection_uri": clickhouse+http://<user>:<password>@<host>:<port>/<db_name>?protocol=https
+
+Example::
+
+"connection_uri": clickhouse+http://jon:123456@foo-bar:8443/my-database?protocol=https
+
 AWS Athena
 ^^^^^^^^^^^^
 
