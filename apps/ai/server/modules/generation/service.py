@@ -8,6 +8,7 @@ from modules.generation.models.entities import (
     DHNLGenerationMetadata,
     DHPromptMetadata,
     DHSQLGenerationMetadata,
+    GenerationSource,
     GenerationStatus,
     NLGeneration,
     NLGenerationMetadata,
@@ -31,6 +32,7 @@ from modules.generation.models.responses import (
     SQLGenerationResponse,
 )
 from modules.generation.repository import GenerationRepository
+from utils.analytics import Analytics, EventName, EventType
 from utils.exception import GenerationEngineError, raise_for_status
 from utils.misc import reserved_key_in_metadata
 
@@ -39,6 +41,7 @@ class GenerationService:
     def __init__(self):
         self.repo = GenerationRepository()
         self.db_connection_service = DBConnectionService()
+        self.analytics = Analytics()
 
     def get_prompt(self, prompt_id: str, org_id: str) -> PromptResponse:
         return self.get_prompt_in_org(prompt_id, org_id)
@@ -172,6 +175,9 @@ class GenerationService:
                     )
                 ),
             )
+
+            self._track_sql_generation_created_event(org_id, sql_generation)
+
             return sql_generation
 
     async def create_prompt_sql_nl_generation(
@@ -222,6 +228,9 @@ class GenerationService:
                     )
                 ),
             )
+
+            self._track_sql_generation_created_event(org_id, sql_generation)
+
             return nl_generation
 
     async def create_sql_generation(
@@ -264,6 +273,9 @@ class GenerationService:
                     )
                 ),
             )
+
+            self._track_sql_generation_created_event(org_id, sql_generation)
+
             return sql_generation
 
     async def create_nl_generation(
@@ -337,6 +349,9 @@ class GenerationService:
                     )
                 ),
             )
+
+            self._track_sql_generation_created_event(org_id, sql_generation)
+
             return nl_generation
 
     async def execute_sql_generation(
@@ -432,3 +447,21 @@ class GenerationService:
                     error_message=response_json["message"],
                 )
             raise_for_status(response.status_code, response.text)
+
+    def _track_sql_generation_created_event(
+        self, org_id: str, sql_generation: SQLGeneration
+    ):
+        self.analytics.track(
+            org_id,
+            EventName.sql_generation_created,
+            EventType.sql_generation_event(
+                id=sql_generation.id,
+                organization_id=org_id,
+                status=sql_generation.status,
+                source=GenerationSource.API,
+                confidence_score=sql_generation.confidence_score,
+                execution_time=(
+                    sql_generation.completed_at - sql_generation.created_at
+                ).total_seconds(),
+            ),
+        )

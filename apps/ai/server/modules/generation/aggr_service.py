@@ -10,6 +10,7 @@ from modules.generation.models.entities import (
     DHNLGenerationMetadata,
     DHPromptMetadata,
     DHSQLGenerationMetadata,
+    GenerationSource,
     GenerationStatus,
     NLGeneration,
     NLGenerationMetadata,
@@ -45,7 +46,7 @@ from modules.organization.models.responses import OrganizationResponse
 from modules.organization.service import OrganizationService
 from modules.user.models.responses import UserResponse
 from modules.user.service import UserService
-from utils.analytics import Analytics
+from utils.analytics import Analytics, EventName, EventType
 from utils.exception import GenerationEngineError, raise_for_status
 from utils.slack import SlackWebClient, remove_slack_mentions
 
@@ -62,216 +63,6 @@ class AggrgationGenerationService:
         self.user_service = UserService()
         self.db_connection_service = DBConnectionService()
         self.analytics = Analytics()
-
-    async def create_generation(
-        self,
-        slack_generation_request: SlackGenerationRequest,
-        organization: OrganizationResponse,
-    ) -> GenerationSlackResponse:
-        question_string = remove_slack_mentions(slack_generation_request.prompt)
-
-        created_by = (
-            SlackWebClient(
-                organization.slack_config.slack_installation.bot.token
-            ).get_user_real_name(slack_generation_request.slack_info.user_id)
-            if slack_generation_request.slack_info
-            else None
-        )
-
-        display_id = self.repo.get_next_display_id(organization.id)
-        generation_request = PromptSQLNLGenerationRequest(
-            sql_generation=PromptSQLGenerationRequest(
-                prompt=PromptRequest(
-                    text=question_string,
-                    db_connection_id=organization.slack_config.db_connection_id,
-                    metadata=PromptMetadata(
-                        dh_internal=DHPromptMetadata(
-                            generation_status=GenerationStatus.INITIALIZED,
-                            organization_id=organization.id,
-                            display_id=display_id,
-                            created_by=created_by,
-                            slack_info=(
-                                SlackInfo(**slack_generation_request.slack_info.dict())
-                                if slack_generation_request.slack_info
-                                else None
-                            ),
-                        )
-                    ),
-                ),
-                evaluate=True,
-                metadata=SQLGenerationMetadata(
-                    dh_internal=DHSQLGenerationMetadata(organization_id=organization.id)
-                ),
-            ),
-            metadata=NLGenerationMetadata(
-                dh_internal=DHNLGenerationMetadata(organization_id=organization.id)
-            ),
-        )
-
-        # ask Prompt to k2 engine
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                settings.engine_url + "/prompts/sql-generations/nl-generations",
-                json=generation_request.dict(exclude_unset=True),
-                timeout=settings.default_engine_timeout,
-            )
-            self._raise_for_generation_status(response, display_id=display_id)
-
-            nl_generation = NLGeneration(**response.json())
-            sql_generation = self.repo.get_sql_generation(
-                nl_generation.sql_generation_id, organization.id
-            )
-            prompt = self.repo.get_prompt(sql_generation.prompt_id, organization.id)
-
-            self.repo.update_prompt_dh_metadata(
-                prompt.id,
-                DHPromptMetadata(
-                    generation_status=(
-                        GenerationStatus.NOT_VERIFIED
-                        if sql_generation.status == SQLGenerationStatus.VALID
-                        else GenerationStatus.ERROR
-                    ),
-                ),
-            )
-
-            self.analytics.track(
-                (
-                    slack_generation_request.slack_info.user_id
-                    if slack_generation_request.slack_info
-                    else organization.id
-                ),
-                "generation_asked",
-                {
-                    "display_id": display_id,
-                    "prompt_id": prompt.id,
-                    "sql_generation_id": sql_generation.id,
-                    "nl_generation_id": nl_generation.id,
-                    "organization_id": organization.id,
-                    "organization_name": organization.name,
-                    "database_name": self.db_connection_service.get_db_connection(
-                        organization.slack_config.db_connection_id, organization.id
-                    ).alias,
-                    "confidence_score": sql_generation.confidence_score,
-                    "status": sql_generation.status,
-                    "asker": created_by,
-                },
-            )
-
-            if (
-                organization.confidence_threshold == 1
-                or sql_generation.confidence_score < organization.confidence_threshold
-            ):
-                is_above_confidence_threshold = False
-            else:
-                is_above_confidence_threshold = True
-                self.analytics.track(
-                    (
-                        slack_generation_request.slack_info.user_id
-                        if slack_generation_request.slack_info
-                        else organization.id
-                    ),
-                    "generation_correct_on_first_try",
-                    {
-                        "display_id": display_id,
-                        "prompt_id": prompt.id,
-                        "sql_generation_id": sql_generation.id,
-                        "nl_generation_id": nl_generation.id,
-                        "organization_id": organization.id,
-                        "organization_name": organization.name,
-                        "database_name": self.db_connection_service.get_db_connection(
-                            organization.slack_config.db_connection_id, organization.id
-                        ).alias,
-                        "confidence_score": sql_generation.confidence_score,
-                        "status": sql_generation.status,
-                        "asker": created_by,
-                    },
-                )
-
-            # error handling for response longer than character limit
-            if len(nl_generation.text + sql_generation.sql) >= SLACK_CHARACTER_LIMIT:
-                nl_generation.text = (
-                    ":warning: The generated response has been truncated due to exceeding character limit. "
-                    + "A full response will be returned once reviewed by the data-team admins: \n\n"
-                    + nl_generation.text[
-                        : max(SLACK_CHARACTER_LIMIT - len(sql_generation.sql), 0)
-                    ]
-                    + "..."
-                )
-
-            return GenerationSlackResponse(
-                id=prompt.id,
-                sql=sql_generation.sql,
-                display_id=display_id,
-                is_above_confidence_threshold=is_above_confidence_threshold,
-                nl_generation_text=nl_generation.text,
-                exec_time=(
-                    sql_generation.completed_at - sql_generation.created_at
-                ).total_seconds(),
-            )
-
-    async def create_prompt_sql_generation_result(
-        self,
-        request: SQLGenerationExecuteRequest,
-        org_id: str,
-        playground: bool,
-    ):
-        organization = self.org_service.get_organization(org_id)
-        generation_request = PromptSQLGenerationRequest(
-            prompt=PromptRequest(
-                text=request.prompt,
-                db_connection_id=request.db_connection_id,
-                metadata=PromptMetadata(
-                    dh_internal=DHPromptMetadata(
-                        generation_status=GenerationStatus.INITIALIZED,
-                        organization_id=organization.id,
-                        playground=playground,
-                    )
-                ),
-            ),
-            evaluate=True,
-            finetuning_id=request.finetuning_id,
-            metadata=SQLGenerationMetadata(
-                dh_internal=DHSQLGenerationMetadata(organization_id=organization.id)
-            ),
-        )
-        # ask Prompt to k2 engine
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                settings.engine_url + "/prompts/sql-generations",
-                json=generation_request.dict(exclude_unset=True),
-                timeout=settings.default_engine_timeout,
-            )
-            self._raise_for_generation_status(response)
-
-            sql_generation = SQLGeneration(**response.json())
-            prompt = self.repo.get_prompt(sql_generation.prompt_id, organization.id)
-            self.repo.update_prompt_dh_metadata(
-                prompt.id,
-                DHPromptMetadata(
-                    generation_status=(
-                        GenerationStatus.NOT_VERIFIED
-                        if sql_generation.status == SQLGenerationStatus.VALID
-                        else GenerationStatus.ERROR
-                    ),
-                ),
-            )
-
-            if sql_generation.status == SQLGenerationStatus.VALID:
-                sql_result_response = await client.get(
-                    settings.engine_url
-                    + f"/sql-generations/{sql_generation.id}/execute",
-                    timeout=settings.default_engine_timeout,
-                )
-                raise_for_status(
-                    sql_result_response.status_code, sql_result_response.text
-                )
-                sql_result = sql_result_response.json()
-            else:
-                sql_result = None
-
-        return self._get_mapped_generation_response(
-            prompt, sql_generation, None, sql_result=sql_result
-        )
 
     async def get_generation(self, prompt_id: str, org_id: str) -> GenerationResponse:
         prompt, sql_generation, nl_generation = None, None, None
@@ -347,6 +138,180 @@ class AggrgationGenerationService:
 
         return generation_list
 
+    async def create_generation(
+        self,
+        slack_generation_request: SlackGenerationRequest,
+        organization: OrganizationResponse,
+    ) -> GenerationSlackResponse:
+        question_string = remove_slack_mentions(slack_generation_request.prompt)
+
+        created_by = (
+            SlackWebClient(
+                organization.slack_config.slack_installation.bot.token
+            ).get_user_real_name(slack_generation_request.slack_info.user_id)
+            if slack_generation_request.slack_info
+            else None
+        )
+
+        display_id = self.repo.get_next_display_id(organization.id)
+        generation_request = PromptSQLNLGenerationRequest(
+            sql_generation=PromptSQLGenerationRequest(
+                prompt=PromptRequest(
+                    text=question_string,
+                    db_connection_id=organization.slack_config.db_connection_id,
+                    metadata=PromptMetadata(
+                        dh_internal=DHPromptMetadata(
+                            generation_status=GenerationStatus.INITIALIZED,
+                            organization_id=organization.id,
+                            display_id=display_id,
+                            created_by=created_by,
+                            slack_info=(
+                                SlackInfo(**slack_generation_request.slack_info.dict())
+                                if slack_generation_request.slack_info
+                                else None
+                            ),
+                        )
+                    ),
+                ),
+                evaluate=True,
+                metadata=SQLGenerationMetadata(
+                    dh_internal=DHSQLGenerationMetadata(organization_id=organization.id)
+                ),
+            ),
+            metadata=NLGenerationMetadata(
+                dh_internal=DHNLGenerationMetadata(organization_id=organization.id)
+            ),
+        )
+
+        # ask Prompt to k2 engine
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                settings.engine_url + "/prompts/sql-generations/nl-generations",
+                json=generation_request.dict(exclude_unset=True),
+                timeout=settings.default_engine_timeout,
+            )
+            self._raise_for_generation_status(response, display_id=display_id)
+
+            nl_generation = NLGeneration(**response.json())
+            sql_generation = self.repo.get_sql_generation(
+                nl_generation.sql_generation_id, organization.id
+            )
+            prompt = self.repo.get_prompt(sql_generation.prompt_id, organization.id)
+
+            self.repo.update_prompt_dh_metadata(
+                prompt.id,
+                DHPromptMetadata(
+                    generation_status=(
+                        GenerationStatus.NOT_VERIFIED
+                        if sql_generation.status == SQLGenerationStatus.VALID
+                        else GenerationStatus.ERROR
+                    ),
+                ),
+            )
+
+            self._track_sql_generation_created_event(
+                organization.id, sql_generation, GenerationSource.SLACK
+            )
+
+            if (
+                organization.confidence_threshold == 1
+                or sql_generation.confidence_score < organization.confidence_threshold
+            ):
+                is_above_confidence_threshold = False
+            else:
+                is_above_confidence_threshold = True
+
+            # error handling for response longer than character limit
+            if len(nl_generation.text + sql_generation.sql) >= SLACK_CHARACTER_LIMIT:
+                nl_generation.text = (
+                    ":warning: The generated response has been truncated due to exceeding character limit. "
+                    + "A full response will be returned once reviewed by the data-team admins: \n\n"
+                    + nl_generation.text[
+                        : max(SLACK_CHARACTER_LIMIT - len(sql_generation.sql), 0)
+                    ]
+                    + "..."
+                )
+
+            return GenerationSlackResponse(
+                id=prompt.id,
+                sql=sql_generation.sql,
+                display_id=display_id,
+                is_above_confidence_threshold=is_above_confidence_threshold,
+                nl_generation_text=nl_generation.text,
+                exec_time=(
+                    sql_generation.completed_at - sql_generation.created_at
+                ).total_seconds(),
+            )
+
+    # playground endpoint
+    async def create_prompt_sql_generation_result(
+        self,
+        request: SQLGenerationExecuteRequest,
+        org_id: str,
+        playground: bool,
+    ):
+        organization = self.org_service.get_organization(org_id)
+        generation_request = PromptSQLGenerationRequest(
+            prompt=PromptRequest(
+                text=request.prompt,
+                db_connection_id=request.db_connection_id,
+                metadata=PromptMetadata(
+                    dh_internal=DHPromptMetadata(
+                        generation_status=GenerationStatus.INITIALIZED,
+                        organization_id=organization.id,
+                        playground=playground,
+                    )
+                ),
+            ),
+            evaluate=True,
+            finetuning_id=request.finetuning_id,
+            metadata=SQLGenerationMetadata(
+                dh_internal=DHSQLGenerationMetadata(organization_id=organization.id)
+            ),
+        )
+        # ask Prompt to k2 engine
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                settings.engine_url + "/prompts/sql-generations",
+                json=generation_request.dict(exclude_unset=True),
+                timeout=settings.default_engine_timeout,
+            )
+            self._raise_for_generation_status(response)
+
+            sql_generation = SQLGeneration(**response.json())
+            prompt = self.repo.get_prompt(sql_generation.prompt_id, organization.id)
+            self.repo.update_prompt_dh_metadata(
+                prompt.id,
+                DHPromptMetadata(
+                    generation_status=(
+                        GenerationStatus.NOT_VERIFIED
+                        if sql_generation.status == SQLGenerationStatus.VALID
+                        else GenerationStatus.ERROR
+                    ),
+                ),
+            )
+
+            if sql_generation.status == SQLGenerationStatus.VALID:
+                sql_result_response = await client.get(
+                    settings.engine_url
+                    + f"/sql-generations/{sql_generation.id}/execute",
+                    timeout=settings.default_engine_timeout,
+                )
+                raise_for_status(
+                    sql_result_response.status_code, sql_result_response.text
+                )
+                sql_result = sql_result_response.json()
+            else:
+                sql_result = None
+
+            self._track_sql_generation_created_event(
+                org_id, sql_generation, GenerationSource.PLAYGROUND
+            )
+
+        return self._get_mapped_generation_response(
+            prompt, sql_generation, None, sql_result=sql_result
+        )
+
     async def update_generation(
         self,
         prompt_id: str,
@@ -366,7 +331,6 @@ class AggrgationGenerationService:
             if sql_generation
             else None
         )
-
         if generation_request.generation_status:
             # verified
             if (
@@ -383,34 +347,6 @@ class AggrgationGenerationService:
                     prompt_id,
                 )
 
-                # logic to track 1st time correct response generated by engine
-                all_sql_generations = self.repo.get_sql_generations(
-                    skip=0,
-                    limit=100,
-                    order="created_id",
-                    ascend=True,
-                    org_id=org_id,
-                    prompt_id=prompt_id,
-                )
-                if all(
-                    sql_gen.sql == sql_generation.sql for sql_gen in all_sql_generations
-                ):
-                    self.analytics.track(
-                        user.email if user else org_id,
-                        "verified_generation_correct_on_first_try",
-                        {
-                            "prompt_id": prompt_id,
-                            "sql_generation_id": sql_generation.id,
-                            "organization_id": org_id,
-                            "display_id": prompt.metadata.dh_internal.display_id,
-                            "status": generation_request.generation_status,
-                            "confidence_score": sql_generation.confidence_score,
-                            "database_name": self.db_connection_service.get_db_connection(
-                                prompt.db_connection_id, org_id
-                            ).alias,
-                        },
-                    )
-
             # rejected or not verified
             else:
                 golden_sql = self.golden_sql_service.get_verified_golden_sql(prompt_id)
@@ -418,6 +354,34 @@ class AggrgationGenerationService:
                     await self.golden_sql_service.delete_golden_sql(
                         golden_sql.id, org_id, generation_request.generation_status
                     )
+
+                # logic to track 1st time correct response generated by engine
+                all_sql_generations = self.repo.get_sql_generations(
+                    skip=0,
+                    limit=100,
+                    order="created_at",
+                    ascend=True,
+                    org_id=org_id,
+                    prompt_id=prompt_id,
+                )
+                self.analytics.track(
+                    org_id,
+                    EventName.sql_generation_updated,
+                    EventType.sql_generation_updated_event(
+                        id=sql_generation.id,
+                        organization_id=org_id,
+                        generation_status=generation_request.generation_status,
+                        confidence_score=sql_generation.confidence_score,
+                        sql_modified=(
+                            False
+                            if all(
+                                sql_gen.sql == sql_generation.sql
+                                for sql_gen in all_sql_generations
+                            )
+                            else True
+                        ),
+                    ),
+                )
 
         self.repo.update_prompt_dh_metadata(
             prompt_id,
@@ -431,27 +395,11 @@ class AggrgationGenerationService:
 
         new_prompt = self.repo.get_prompt(prompt_id, org_id)
 
-        self.analytics.track(
-            user.email if user else org_id,
-            "generation_saved",
-            {
-                "prompt_id": prompt_id,
-                "sql_generation_id": sql_generation.id if sql_generation else None,
-                "database_name": self.db_connection_service.get_db_connection(
-                    prompt.db_connection_id, org_id
-                ).alias,
-                "display_id": prompt.metadata.dh_internal.display_id,
-                "status": generation_request.generation_status,
-                "confidence_score": (
-                    sql_generation.confidence_score if sql_generation else None
-                ),
-            },
-        )
-
         return self._get_mapped_generation_response(
             new_prompt, sql_generation, nl_generation
         )
 
+    # resubmit generation
     async def create_sql_nl_generation(
         self, prompt_id: str, org_id: str, user: UserResponse = None
     ) -> GenerationResponse:
@@ -520,23 +468,15 @@ class AggrgationGenerationService:
             else:
                 sql_result = None
 
-            self.analytics.track(
-                user.email if user else org_id,
-                "generation_resubmitted",
-                {
-                    "prompt_id": prompt.id,
-                    "sql_generation_id": sql_generation.id,
-                    "sql_generation_status": sql_generation.status,
-                    "confidence_score": sql_generation.confidence_score,
-                    "database_name": self.db_connection_service.get_db_connection(
-                        str(prompt.db_connection_id), org_id
-                    ).alias,
-                },
+            self._track_sql_generation_created_event(
+                org_id, sql_generation, GenerationSource.QUERY_EDITOR_RESUBMIT
             )
+
             return self._get_mapped_generation_response(
                 prompt, sql_generation, nl_generation, sql_result=sql_result
             )
 
+    # run generation
     async def create_sql_generation_result(
         self,
         prompt_id: str,
@@ -604,19 +544,10 @@ class AggrgationGenerationService:
             else:
                 sql_result = None
 
-            self.analytics.track(
-                user.email if user else org_id,
-                "generation_executed",
-                {
-                    "prompt_id": prompt.id,
-                    "sql_generation_id": sql_generation.id,
-                    "sql_generation_status": sql_generation.status,
-                    "confidence_score": sql_generation.confidence_score,
-                    "database_name": self.db_connection_service.get_db_connection(
-                        prompt.db_connection_id, org_id
-                    ).alias,
-                },
+            self._track_sql_generation_created_event(
+                org_id, sql_generation, source=GenerationSource.QUERY_EDITOR_RUN
             )
+
             return self._get_mapped_generation_response(
                 prompt, sql_generation, None, sql_result=sql_result
             )
@@ -723,6 +654,24 @@ class AggrgationGenerationService:
                 status_code=response.status_code,
                 media_type=response.headers.get("content-type", "text/csv"),
             )
+
+    def _track_sql_generation_created_event(
+        self, org_id: str, sql_generation: SQLGeneration, source: GenerationSource
+    ):
+        self.analytics.track(
+            org_id,
+            EventName.sql_generation_created,
+            EventType.sql_generation_event(
+                id=sql_generation.id,
+                organization_id=org_id,
+                source=source,
+                status=sql_generation.status,
+                confidence_score=sql_generation.confidence_score,
+                execution_time=(
+                    sql_generation.completed_at - sql_generation.created_at
+                ).total_seconds(),
+            ),
+        )
 
     def _get_mapped_generation_response(
         self,

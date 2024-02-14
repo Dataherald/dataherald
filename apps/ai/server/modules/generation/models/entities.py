@@ -15,6 +15,14 @@ class GenerationStatus(str, Enum):
     REJECTED = "REJECTED"
 
 
+class GenerationSource(str, Enum):
+    API = "API"
+    SLACK = "slack"
+    PLAYGROUND = "playground"
+    QUERY_EDITOR_RUN = "query_editor_run"
+    QUERY_EDITOR_RESUBMIT = "query_editor_resubmit"
+
+
 class SlackInfo(BaseModel):
     user_id: str | None
     channel_id: str | None

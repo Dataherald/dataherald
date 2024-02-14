@@ -15,6 +15,7 @@ from modules.golden_sql.models.entities import (
 from modules.golden_sql.models.requests import GoldenSQLRequest
 from modules.golden_sql.models.responses import AggrGoldenSQL
 from modules.golden_sql.repository import GoldenSQLRepository
+from utils.analytics import Analytics, EventName, EventType
 from utils.exception import raise_for_status
 from utils.misc import reserved_key_in_metadata
 
@@ -23,6 +24,7 @@ class GoldenSQLService:
     def __init__(self):
         self.repo = GoldenSQLRepository()
         self.db_connection_service = DBConnectionService()
+        self.analytics = Analytics()
 
     def get_golden_sql(self, golden_id: str, org_id: str) -> AggrGoldenSQL:
         golden_sql = self.get_golden_sql_in_org(golden_id, org_id)
@@ -106,6 +108,15 @@ class GoldenSQLService:
             golden_sqls = [
                 GoldenSQL(**response_json) for response_json in response_jsons
             ]
+
+            self.analytics.track(
+                org_id,
+                EventName.golden_sql_created,
+                EventType.golden_sql_event(
+                    quantity=len(golden_sqls), organization_id=org_id
+                ),
+            )
+
             return [
                 AggrGoldenSQL(
                     **golden_sql.dict(),
@@ -173,6 +184,13 @@ class GoldenSQLService:
             )
             raise_for_status(response.status_code, response.text)
             response_json = response.json()[0]
+
+            self.analytics.track(
+                org_id,
+                EventName.golden_sql_created,
+                EventType.golden_sql_event(quantity=1, organization_id=org_id),
+            )
+
             return GoldenSQL(**response_json)
 
     def get_golden_sql_in_org(self, golden_id: str, org_id: str) -> GoldenSQL:

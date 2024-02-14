@@ -1,8 +1,9 @@
+from modules.organization.models.entities import Organization
 from modules.organization.service import OrganizationService
 from modules.user.models.requests import UserRequest
 from modules.user.models.responses import UserResponse
 from modules.user.service import UserService
-from utils.analytics import Analytics
+from utils.analytics import Analytics, OrganizationProperties, UserProperties
 
 
 class AuthService:
@@ -36,19 +37,29 @@ class AuthService:
             ),
         )
 
+        organization = (
+            self.org_service.get_organization(str(session_user.organization_id))
+            if session_user.organization_id
+            else Organization(name=None, id=None, owner=None)
+        )
+
         self.analytics.identify(
             str(session_user.email),
-            {
-                "email": session_user.email,
-                "name": session_user.name,
-                "organization_id": str(session_user.organization_id),
-                "organization_name": (
-                    self.org_service.get_organization(
-                        str(session_user.organization_id)
-                    ).name
-                    if session_user.organization_id
-                    else None
-                ),
-            },
+            UserProperties(
+                email=session_user.email,
+                name=session_user.name,
+                organization_id=organization.id,
+                organization_name=organization.name,
+            ),
         )
+
+        self.analytics.identify(
+            user_org_id,
+            OrganizationProperties(
+                id=user_org_id,
+                name=organization.name,
+                owner=organization.owner,
+            ),
+        )
+
         return session_user

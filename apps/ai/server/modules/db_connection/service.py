@@ -12,6 +12,7 @@ from modules.db_connection.models.entities import (
 from modules.db_connection.models.requests import DBConnectionRequest
 from modules.db_connection.models.responses import DBConnectionResponse
 from modules.db_connection.repository import DBConnectionRepository
+from utils.analytics import Analytics, EventName, EventType
 from utils.exception import raise_for_status
 from utils.misc import reserved_key_in_metadata
 from utils.s3 import S3
@@ -20,6 +21,7 @@ from utils.s3 import S3
 class DBConnectionService:
     def __init__(self):
         self.repo = DBConnectionRepository()
+        self.analytics = Analytics()
 
     def get_db_connections(self, org_id: str) -> list[DBConnectionResponse]:
         return sorted(self.repo.get_db_connections(org_id), key=lambda x: x.alias)
@@ -78,8 +80,20 @@ class DBConnectionService:
             )
 
             raise_for_status(response.status_code, response.text)
+            db_connection = DBConnectionResponse(**response.json())
+            self.analytics.track(
+                org_id,
+                EventName.db_connection_created,
+                EventType.db_connection_event(
+                    id=db_connection.id,
+                    organization_id=org_id,
+                    database_type=self.get_database_type(
+                        db_connection_request.connection_uri
+                    ),
+                ),
+            )
 
-            return DBConnectionResponse(**response.json())
+            return db_connection
 
     async def update_db_connection(
         self,
@@ -129,3 +143,6 @@ class DBConnectionService:
                 detail="Database connection not found",
             )
         return db_connection
+
+    def get_database_type(self, connection_uri: str) -> str:
+        return connection_uri.split(":")[0]

@@ -17,6 +17,7 @@ from modules.organization.models.entities import (
 from modules.organization.models.requests import OrganizationRequest
 from modules.organization.models.responses import OrganizationResponse
 from modules.organization.repository import OrganizationRepository
+from utils.analytics import Analytics, EventName, EventType
 from utils.billing import Billing
 from utils.encrypt import FernetEncrypt
 
@@ -26,6 +27,7 @@ class OrganizationService:
         self.repo = OrganizationRepository()
         self.invoice_repo = InvoiceRepository()
         self.billing = Billing()
+        self.analytics = Analytics()
 
     def get_organizations(self) -> list[OrganizationResponse]:
         return self.repo.get_organizations()
@@ -80,6 +82,15 @@ class OrganizationService:
                 ).dict(exclude={"id"})
             )
             print(f"New credit created: {credit_id}")
+            self.analytics.track(
+                new_organization.id,
+                EventName.organization_created,
+                EventType.organization_event(
+                    id=new_organization.id,
+                    name=new_organization.name,
+                    owner=new_organization.owner,
+                ),
+            )
             return OrganizationResponse(**new_organization.dict())
 
         raise HTTPException(
@@ -88,10 +99,10 @@ class OrganizationService:
         )
 
     def add_user_organization(self, user_id: str, user_email: str) -> str:
-        new_org = self.add_organization(
+        new_organization = self.add_organization(
             OrganizationRequest(name=user_email, owner=user_id)
         )
-        return new_org.id
+        return new_organization.id
 
     def update_organization(
         self, org_id: str, org_request: OrganizationRequest

@@ -5,11 +5,13 @@ from modules.user.models.entities import User
 from modules.user.models.requests import UserOrganizationRequest, UserRequest
 from modules.user.models.responses import UserResponse
 from modules.user.repository import UserRepository
+from utils.analytics import Analytics, EventName, EventType
 
 
 class UserService:
     def __init__(self):
         self.repo = UserRepository()
+        self.analytics = Analytics()
 
     def get_users(self, org_id: str) -> list[UserResponse]:
         users = self.repo.get_users({"organization_id": org_id})
@@ -63,6 +65,18 @@ class UserService:
             )
 
         new_user = self.repo.get_user({"_id": ObjectId(new_user_id)})
+
+        self.analytics.track(
+            org_id,
+            EventName.user_invited,
+            EventType.user_event(
+                id=new_user.id,
+                email=new_user.email,
+                name=new_user.name,
+                organization_id=new_user.organization_id,
+            ),
+        )
+
         return UserResponse(**new_user.dict())
 
     def update_user(self, user_id: str, user_request: UserRequest) -> UserResponse:

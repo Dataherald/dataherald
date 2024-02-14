@@ -12,6 +12,7 @@ from modules.finetuning.models.requests import FinetuningRequest
 from modules.finetuning.models.responses import AggrFinetuning
 from modules.finetuning.repository import FinetuningRepository
 from modules.golden_sql.service import GoldenSQLService
+from utils.analytics import Analytics, EventName, EventType
 from utils.exception import raise_for_status
 from utils.misc import reserved_key_in_metadata
 
@@ -21,6 +22,7 @@ class FinetuningService:
         self.repo = FinetuningRepository()
         self.db_connection_service = DBConnectionService()
         self.golden_sql_service = GoldenSQLService()
+        self.analytics = Analytics()
 
     async def get_finetuning_jobs(
         self, org_id: str, db_connection_id: str = None
@@ -88,9 +90,28 @@ class FinetuningService:
                 json=finetuning_request.dict(exclude_unset=True),
             )
             raise_for_status(response.status_code, response.text)
-            return AggrFinetuning(
+
+            aggr_finetuning = AggrFinetuning(
                 **response.json(), db_connection_alias=db_connection.alias
             )
+
+            self.analytics.track(
+                org_id,
+                EventName.finetuning_created,
+                EventType.finetuning_event(
+                    id=aggr_finetuning.id,
+                    organization_id=org_id,
+                    db_connection_id=aggr_finetuning.db_connection_id,
+                    db_connection_alias=aggr_finetuning.db_connection_alias,
+                    model_provider=aggr_finetuning.base_llm.model_provider,
+                    model_name=aggr_finetuning.base_llm.model_name,
+                    golden_sql_quantity=self.get_finetuning_golden_sql_count(
+                        finetuning_request, org_id
+                    ),
+                ),
+            )
+
+            return aggr_finetuning
 
     async def cancel_finetuning_job(
         self, finetuning_id: str, org_id: str
