@@ -22,7 +22,7 @@ const buttonVariants = cva(
           'bg-white text-destructive border-destructive hover:bg-destructive/10',
         ghost: 'hover:bg-slate-200 text-slate-900',
         link: 'text-primary underline-offset-4 hover:underline',
-        icon: 'border rounded-full bg-white text-dark hover:bg-gray-100',
+        icon: 'text-slate-900 p-0 h-fit',
       },
       size: {
         default: 'h-8 px-4 py-2',

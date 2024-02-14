@@ -18,6 +18,7 @@ import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
 import { usePostApiKey } from '@/hooks/api/api-keys/usePostApiKey'
+import { copyToClipboard } from '@/lib/utils'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Copy, Loader, Plus } from 'lucide-react'
 import { FC, useState } from 'react'
@@ -60,9 +61,8 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({ onGeneratedKey }) => {
   }
 
   const handleCopyClick = async () => {
-    if (!apiKey) return
     try {
-      await navigator.clipboard.writeText(apiKey)
+      await copyToClipboard(apiKey)
       toast({
         variant: 'success',
         title: 'API Key copied!',

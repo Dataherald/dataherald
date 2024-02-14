@@ -19,7 +19,7 @@ import { useAppContext } from '@/contexts/app-context'
 import { useDeleteUser } from '@/hooks/api/user/useDeleteUser'
 import useUsers from '@/hooks/api/user/useUsers'
 import { User } from '@/models/api'
-import { Trash2, UserPlus2, UsersRound } from 'lucide-react'
+import { Trash2, UserPlus2 } from 'lucide-react'
 import { useState } from 'react'
 import UserPicture from './user-picture'
 
@@ -66,13 +66,9 @@ const UserList = () => {
 
   return (
     <>
-      <div className="flex items-center gap-2">
-        <UsersRound size={20} strokeWidth={2.5} />
-        <h1 className="font-semibold">Team</h1>
-      </div>
       <div className="grow overflow-auto py-5">
         {isLoading ? (
-          <LoadingList />
+          <LoadingList length={3} />
         ) : (
           users && (
             <ul className="flex flex-col gap-3">

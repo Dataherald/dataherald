@@ -38,6 +38,11 @@ export const renderIcon = (
   return null
 }
 
+export const copyToClipboard = async (value?: string): Promise<void> => {
+  if (!value) return
+  return navigator.clipboard.writeText(value)
+}
+
 export const capitalize = (value: string) =>
   value
     .split(' ')
