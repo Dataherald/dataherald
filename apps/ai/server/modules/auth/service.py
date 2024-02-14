@@ -53,13 +53,14 @@ class AuthService:
             ),
         )
 
-        self.analytics.identify(
-            user_org_id,
-            OrganizationProperties(
-                id=user_org_id,
-                name=organization.name,
-                owner=organization.owner,
-            ),
-        )
+        if organization.id:
+            self.analytics.identify(
+                user_org_id,
+                OrganizationProperties(
+                    id=user_org_id,
+                    name=organization.name,
+                    owner=organization.owner,
+                ),
+            )
 
         return session_user

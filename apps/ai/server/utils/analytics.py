@@ -70,16 +70,18 @@ class EventType(BaseModel):
     user_event = UserEvent
 
 
-class UserProperties(BaseModel):
+class Properties(BaseModel):
     id: str | None
+
+
+class UserProperties(Properties):
     email: str | None
     name: str | None
     organization_id: str | None
     organization_name: str | None
 
 
-class OrganizationProperties(BaseModel):
-    id: str | None
+class OrganizationProperties(Properties):
     name: str | None
     owner: str | None
 
@@ -99,10 +101,10 @@ class Analytics:
             properties=properties.dict(),
         )
 
-    def identify(self, user_id: str, properties: dict):
+    def identify(self, user_id: str, properties: Properties):
         self.posthog.identify(
             user_id,
-            properties=properties,
+            properties=properties.dict(),
         )
 
     def track_error(
