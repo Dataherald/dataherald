@@ -200,7 +200,9 @@ class SqlAlchemyScanner(Scanner):
         if "clickhouse" not in str(db_engine.engine.url).split(":")[0]:
             new_table = Table(original_table.name, MetaData(), *new_columns)
         else:
-            new_table = Table(original_table.name, MetaData(), *new_columns, engines.MergeTree())
+            new_table = Table(
+                original_table.name, MetaData(), *new_columns, engines.MergeTree()
+            )
 
         for fk in original_table.foreign_keys:
             new_table.append_constraint(
