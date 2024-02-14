@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Any, List
 
 import sqlalchemy
+from clickhouse_sqlalchemy import engines
 from overrides import override
 from sqlalchemy import Column, ForeignKeyConstraint, MetaData, Table, inspect
 from sqlalchemy.schema import CreateTable
@@ -196,7 +197,10 @@ class SqlAlchemyScanner(Scanner):
             for col in valid_columns
         ]
 
-        new_table = Table(original_table.name, MetaData(), *new_columns)
+        if "clickhouse" not in str(db_engine.engine.url).split(":")[0]:
+            new_table = Table(original_table.name, MetaData(), *new_columns)
+        else:
+            new_table = Table(original_table.name, MetaData(), *new_columns, engines.MergeTree())
 
         for fk in original_table.foreign_keys:
             new_table.append_constraint(
