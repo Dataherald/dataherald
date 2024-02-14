@@ -201,7 +201,7 @@ Once the engine is running, you will want to use it by:
 3. Querying the data in natural language
 
 ### Connecting to your data warehouses
-We currently support connections to Postgres, DuckDB, BigQuery, Databricks, Snowflake and AWS Athena. You can create connections to these warehouses through the API or at application start-up using the envars.
+We currently support connections to Postgres, DuckDB, BigQuery, ClickHouse, Databricks, Snowflake and AWS Athena. You can create connections to these warehouses through the API or at application start-up using the envars.
 
 #### Connecting through the API
 
