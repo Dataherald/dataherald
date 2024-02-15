@@ -15,13 +15,13 @@ import { Button } from '@/components/ui/button'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import InviteMemberDialog from '@/components/user/invite-member-dialog'
+import UserPicture from '@/components/user/user-picture'
 import { useAppContext } from '@/contexts/app-context'
 import { useDeleteUser } from '@/hooks/api/user/useDeleteUser'
 import useUsers from '@/hooks/api/user/useUsers'
 import { User } from '@/models/api'
 import { Trash2, UserPlus2 } from 'lucide-react'
 import { useState } from 'react'
-import UserPicture from './user-picture'
 
 const UserList = () => {
   const [openInviteMemberDialog, setOpenInviteMemberDialog] = useState(false)

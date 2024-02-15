@@ -1,5 +1,6 @@
 import { DatabaseConnectionFormValues } from '@/components/databases/form-schema'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
@@ -17,16 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import DATABASE_PROVIDERS from '@/constants/database-providers'
 import { formatDriver } from '@/lib/domain/database'
 import { AlertCircle, FileKey2 } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { FC, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
-import { Separator } from '../ui/separator'
-import Link from 'next/link'
-import { Button } from '../ui/button'
 
 const SSHForm: FC<{
   form: UseFormReturn<DatabaseConnectionFormValues>
@@ -43,10 +43,18 @@ const SSHForm: FC<{
           <FileKey2 size={22} className="text-slate-700" />
         </div>
         <AlertDescription>
-          Download our public key from{' '}
-          <Link href="https://k2-public-resources.s3.amazonaws.com/prod_pem_key.pub">
-            <Button variant="external-link" size="sm" className="p-0">
-              here
+          Download our{' '}
+          <Link
+            href="https://k2-public-resources.s3.amazonaws.com/prod_pem_key.pub"
+            download
+          >
+            <Button
+              type="button"
+              variant="external-link"
+              size="sm"
+              className="p-0"
+            >
+              public SSH key
             </Button>
           </Link>{' '}
           and add it to the{' '}
