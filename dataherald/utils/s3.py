@@ -60,8 +60,12 @@ class S3:
                 aws_secret_access_key=self.settings.s3_aws_secret_access_key,
             )
         file_location = f"tmp/{path[-1]}"
+        s3_path = path[-1]
+        if len(s3_path[3:]) > 1:
+            s3_path = "/".join(path[3:])
+
         s3_client.download_file(
-            Bucket=path[2], Key=f"{path[-1]}", Filename=file_location
+            Bucket=path[2], Key=f"{s3_path}", Filename=file_location
         )
         # Decrypt file content if it is encrypted
         try:
