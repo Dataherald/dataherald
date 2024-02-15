@@ -15,6 +15,7 @@ services:
       - mongodb
     networks:
       - backendnetwork
+    env_file: .env
   mongodb:
     image: mongo:latest
     restart: always
