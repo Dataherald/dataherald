@@ -426,6 +426,10 @@ const PlaygroundPage: FC = () => {
                   </Button>
                 </div>
               </div>
+              <p className="text-xs text-slate-500 text-center">
+                Playground prompts can be viewed from the Queries page and be
+                verified as Golden SQL
+              </p>
             </div>
           </div>
         )}

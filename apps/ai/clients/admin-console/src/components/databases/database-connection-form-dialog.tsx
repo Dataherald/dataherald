@@ -5,7 +5,6 @@ import {
 } from '@/components/databases/form-schema'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Databases } from '@/models/api'
 import {
   Dialog,
   DialogClose,
@@ -21,15 +20,17 @@ import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
 import usePostDatabaseConnection from '@/hooks/api/usePostDatabaseConnection'
 import { formatDriver } from '@/lib/domain/database'
-import { DatabaseConnection } from '@/models/api'
+import { DatabaseConnection, Databases } from '@/models/api'
 import { yupResolver } from '@hookform/resolvers/yup'
 import {
   AlertCircle,
+  ArrowUpRight,
   CheckCircle,
   DatabaseZap,
   Loader,
   Plus,
 } from 'lucide-react'
+import Link from 'next/link'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -141,7 +142,7 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
           </Button>
         </DialogTrigger>
         <DialogContent
-          className="max-w-[70vw] lg:max-w-[700px] h-[75vh] flex flex-col"
+          className="max-w-[70vw] lg:max-w-[750px] h-[90vh] flex flex-col"
           onInteractOutside={(e) => e.preventDefault()}
         >
           {databaseConnected ? (
@@ -194,7 +195,17 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
                 <div className="grow">
                   <DatabaseConnectionForm form={form} />
                 </div>
-                <DialogFooter className="mt-5">
+                <DialogFooter className="mt-5 w-full flex items-center sm:justify-between gap-3">
+                  <Link
+                    href="https://docs.dataherald.com/database-connection/add-database-connection"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    <Button variant="external-link" size="sm" className="p-0">
+                      Learn more about adding a database
+                      <ArrowUpRight size={14} className="mr-2" />
+                    </Button>
+                  </Link>
                   <Button
                     onClick={form.handleSubmit(onSubmit)}
                     type="button"

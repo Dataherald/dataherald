@@ -20,72 +20,100 @@ import {
 import { Switch } from '@/components/ui/switch'
 import DATABASE_PROVIDERS from '@/constants/database-providers'
 import { formatDriver } from '@/lib/domain/database'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, FileKey2 } from 'lucide-react'
 import Image from 'next/image'
 import { FC, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
+import { Separator } from '../ui/separator'
+import Link from 'next/link'
+import { Button } from '../ui/button'
 
 const SSHForm: FC<{
   form: UseFormReturn<DatabaseConnectionFormValues>
 }> = ({ form }) => (
-  <div className="grid grid-cols-2 gap-4">
-    <FormField
-      control={form.control}
-      name="ssh_settings.host"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>SSH host</FormLabel>
-          <FormControl>
-            <Input placeholder="SSH host" {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <FormField
-      control={form.control}
-      name="ssh_settings.port"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>SSH port</FormLabel>
-          <div className="flex items-center gap-3">
+  <>
+    <div className="grid grid-cols-2 gap-4">
+      <div className="col-span-2 pt-3 flex items-center justify-evenly gap-2">
+        <Separator className="grow" />
+        <div className="min-w-fit font-semibold">SSH settings</div>
+        <Separator className="grow" />
+      </div>
+      <Alert variant="info" className="col-span-2 flex items-center gap-2">
+        <div>
+          <FileKey2 size={22} className="text-slate-700" />
+        </div>
+        <AlertDescription>
+          Download our public key from{' '}
+          <Link href="https://k2-public-resources.s3.amazonaws.com/prod_pem_key.pub">
+            <Button variant="external-link" size="sm" className="p-0">
+              here
+            </Button>
+          </Link>{' '}
+          and add it to the{' '}
+          <span className="font-source-code text-xs bg-gray-100 border border-gray-400 text-gray-900 rounded py-0 px-1">
+            autorized_keys
+          </span>{' '}
+          file from your server.
+        </AlertDescription>
+      </Alert>
+      <FormField
+        control={form.control}
+        name="ssh_settings.host"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>SSH host</FormLabel>
             <FormControl>
-              <Input placeholder="SSH port" {...field} />
+              <Input placeholder="SSH host" {...field} />
             </FormControl>
-          </div>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <FormField
-      control={form.control}
-      name="ssh_settings.username"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>SSH username</FormLabel>
-          <FormControl>
-            <Input placeholder="SSH username" {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <FormField
-      control={form.control}
-      name="ssh_settings.password"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>SSH password</FormLabel>
-          <div className="flex items-center gap-3">
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="ssh_settings.port"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>SSH port</FormLabel>
+            <div className="flex items-center gap-3">
+              <FormControl>
+                <Input placeholder="SSH port" {...field} />
+              </FormControl>
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="ssh_settings.username"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>SSH username</FormLabel>
             <FormControl>
-              <Input placeholder="SSH password" {...field} />
+              <Input placeholder="SSH username" {...field} />
             </FormControl>
-          </div>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="ssh_settings.password"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>SSH password</FormLabel>
+            <div className="flex items-center gap-3">
+              <FormControl>
+                <Input placeholder="SSH password" {...field} />
+              </FormControl>
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
+  </>
 )
 
 const DatabaseConnectionForm: FC<{

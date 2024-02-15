@@ -22,6 +22,8 @@ const buttonVariants = cva(
           'bg-white text-destructive border-destructive hover:bg-destructive/10',
         ghost: 'hover:bg-slate-200 text-slate-900',
         link: 'text-primary underline-offset-4 hover:underline',
+        ['external-link']:
+          'font-semibold text-blue-700 hover:text-blue-900 text-sm hover:no-underline p-0',
         icon: 'text-slate-900 p-0 h-fit',
       },
       size: {
