@@ -57,7 +57,7 @@ const OrganizationSettingsPage: FC = () => {
       value: organization.id,
       action: (
         <Button variant="icon" onClick={handleCopyOrgId}>
-          <Copy size={20} />
+          <Copy size={14} />
         </Button>
       ),
     },
@@ -67,17 +67,13 @@ const OrganizationSettingsPage: FC = () => {
     details,
   ) =>
     details.map(({ label, description, value, action }, index) => (
-      <div key={index} className="flex flex-col gap-1">
+      <div key={index} className="flex flex-col gap-0.5">
         <div className="flex flex-col">
-          <strong>{label}</strong>
-          <p className="text-slate-500 text-sm">{description}</p>
+          <strong className="text-sm">{label}</strong>
+          <p className="text-slate-500 text-xs">{description}</p>
         </div>
-        <div className="flex items-center gap-1">
-          <Input
-            className="w-2/3 border border-slate-300 focus-visible:ring-0"
-            readOnly
-            value={value}
-          />
+        <div className="flex items-center gap-3">
+          <p className="text-slate-900">{value}</p>
           {action}
         </div>
       </div>
