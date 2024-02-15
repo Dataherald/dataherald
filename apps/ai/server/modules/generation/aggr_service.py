@@ -132,6 +132,7 @@ class AggrgationGenerationService:
                     display_id=prompt.metadata.dh_internal.display_id,
                     created_at=prompt.created_at,
                     created_by=prompt.metadata.dh_internal.created_by or "Unknown",
+                    source=prompt.metadata.dh_internal.source,
                     slack_message_last_sent_at=prompt.metadata.dh_internal.slack_message_last_sent_at,
                 )
             )
@@ -165,6 +166,7 @@ class AggrgationGenerationService:
                             organization_id=organization.id,
                             display_id=display_id,
                             created_by=created_by,
+                            source=GenerationSource.SLACK,
                             slack_info=(
                                 SlackInfo(**slack_generation_request.slack_info.dict())
                                 if slack_generation_request.slack_info
@@ -196,10 +198,9 @@ class AggrgationGenerationService:
             sql_generation = self.repo.get_sql_generation(
                 nl_generation.sql_generation_id, organization.id
             )
-            prompt = self.repo.get_prompt(sql_generation.prompt_id, organization.id)
 
             self.repo.update_prompt_dh_metadata(
-                prompt.id,
+                sql_generation.prompt_id,
                 DHPromptMetadata(
                     generation_status=(
                         GenerationStatus.NOT_VERIFIED
@@ -208,18 +209,11 @@ class AggrgationGenerationService:
                     ),
                 ),
             )
+            prompt = self.repo.get_prompt(sql_generation.prompt_id, organization.id)
 
             self._track_sql_generation_created_event(
                 organization.id, sql_generation, GenerationSource.SLACK
             )
-
-            if (
-                organization.confidence_threshold == 1
-                or sql_generation.confidence_score < organization.confidence_threshold
-            ):
-                is_above_confidence_threshold = False
-            else:
-                is_above_confidence_threshold = True
 
             # error handling for response longer than character limit
             if len(nl_generation.text + sql_generation.sql) >= SLACK_CHARACTER_LIMIT:
@@ -236,7 +230,15 @@ class AggrgationGenerationService:
                 id=prompt.id,
                 sql=sql_generation.sql,
                 display_id=display_id,
-                is_above_confidence_threshold=is_above_confidence_threshold,
+                is_above_confidence_threshold=(
+                    False
+                    if (
+                        organization.confidence_threshold == 1
+                        or sql_generation.confidence_score
+                        < organization.confidence_threshold
+                    )
+                    else True
+                ),
                 nl_generation_text=nl_generation.text,
                 exec_time=(
                     sql_generation.completed_at - sql_generation.created_at
@@ -245,12 +247,10 @@ class AggrgationGenerationService:
 
     # playground endpoint
     async def create_prompt_sql_generation_result(
-        self,
-        request: SQLGenerationExecuteRequest,
-        org_id: str,
-        playground: bool,
+        self, request: SQLGenerationExecuteRequest, org_id: str, username: str
     ):
         organization = self.org_service.get_organization(org_id)
+        display_id = self.repo.get_next_display_id(organization.id)
         generation_request = PromptSQLGenerationRequest(
             prompt=PromptRequest(
                 text=request.prompt,
@@ -259,7 +259,9 @@ class AggrgationGenerationService:
                     dh_internal=DHPromptMetadata(
                         generation_status=GenerationStatus.INITIALIZED,
                         organization_id=organization.id,
-                        playground=playground,
+                        display_id=display_id,
+                        created_by=username,
+                        source=GenerationSource.PLAYGROUND,
                     )
                 ),
             ),
@@ -279,9 +281,8 @@ class AggrgationGenerationService:
             self._raise_for_generation_status(response)
 
             sql_generation = SQLGeneration(**response.json())
-            prompt = self.repo.get_prompt(sql_generation.prompt_id, organization.id)
             self.repo.update_prompt_dh_metadata(
-                prompt.id,
+                sql_generation.prompt_id,
                 DHPromptMetadata(
                     generation_status=(
                         GenerationStatus.NOT_VERIFIED
@@ -290,6 +291,7 @@ class AggrgationGenerationService:
                     ),
                 ),
             )
+            prompt = self.repo.get_prompt(sql_generation.prompt_id, organization.id)
 
             if sql_generation.status == SQLGenerationStatus.VALID:
                 sql_result_response = await client.get(
@@ -393,10 +395,10 @@ class AggrgationGenerationService:
             ),
         )
 
-        new_prompt = self.repo.get_prompt(prompt_id, org_id)
+        prompt = self.repo.get_prompt(prompt_id, org_id)
 
         return self._get_mapped_generation_response(
-            new_prompt, sql_generation, nl_generation
+            prompt, sql_generation, nl_generation
         )
 
     # resubmit generation
@@ -454,6 +456,7 @@ class AggrgationGenerationService:
                     ),
                 ),
             )
+            prompt = self.repo.get_prompt(prompt_id, org_id)
 
             if sql_generation.status == SQLGenerationStatus.VALID:
                 sql_result_response = await client.get(
@@ -531,6 +534,8 @@ class AggrgationGenerationService:
                     ),
                 ),
             )
+            prompt = self.repo.get_prompt(prompt_id, org_id)
+
             if sql_generation.status == SQLGenerationStatus.VALID:
                 sql_result_response = await client.get(
                     settings.engine_url

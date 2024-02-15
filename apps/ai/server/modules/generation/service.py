@@ -120,11 +120,7 @@ class GenerationService:
 
         create_request.metadata = PromptMetadata(
             **create_request.metadata,
-            dh_internal=DHPromptMetadata(
-                organization_id=org_id,
-                display_id=self.repo.get_next_display_id(org_id),
-                generation_status=GenerationStatus.INITIALIZED,
-            ),
+            dh_internal=self._initialize_prompt_dh_metadata(org_id),
         )
 
         async with httpx.AsyncClient() as client:
@@ -150,11 +146,7 @@ class GenerationService:
         )
         create_request.prompt.metadata = PromptMetadata(
             **create_request.prompt.metadata,
-            dh_internal=DHPromptMetadata(
-                generation_status=GenerationStatus.INITIALIZED,
-                organization_id=org_id,
-                display_id=self.repo.get_next_display_id(org_id),
-            ),
+            dh_internal=self._initialize_prompt_dh_metadata(org_id),
         )
 
         async with httpx.AsyncClient() as client:
@@ -165,15 +157,9 @@ class GenerationService:
             )
             self._raise_for_generation_status(response, org_id)
             sql_generation = SQLGenerationResponse(**response.json())
-            self.repo.update_prompt_dh_metadata(
-                sql_generation.prompt_id,
-                DHPromptMetadata(
-                    generation_status=(
-                        GenerationStatus.NOT_VERIFIED
-                        if sql_generation.status == SQLGenerationStatus.VALID
-                        else GenerationStatus.ERROR
-                    )
-                ),
+
+            self._update_generation_status(
+                sql_generation.prompt_id, sql_generation.status
             )
 
             self._track_sql_generation_created_event(org_id, sql_generation)
@@ -192,11 +178,7 @@ class GenerationService:
 
         create_request.sql_generation.prompt.metadata = PromptMetadata(
             **create_request.sql_generation.prompt.metadata,
-            dh_internal=DHPromptMetadata(
-                generation_status=GenerationStatus.INITIALIZED,
-                organization_id=org_id,
-                display_id=self.repo.get_next_display_id(org_id),
-            ),
+            dh_internal=self._initialize_prompt_dh_metadata(org_id),
         )
         create_request.sql_generation.metadata = SQLGenerationMetadata(
             **create_request.sql_generation.metadata,
@@ -218,15 +200,9 @@ class GenerationService:
             sql_generation = self.repo.get_sql_generation(
                 nl_generation.sql_generation_id, org_id
             )
-            self.repo.update_prompt_dh_metadata(
-                sql_generation.prompt_id,
-                DHPromptMetadata(
-                    generation_status=(
-                        GenerationStatus.NOT_VERIFIED
-                        if sql_generation.status == SQLGenerationStatus.VALID
-                        else GenerationStatus.ERROR
-                    )
-                ),
+
+            self._update_generation_status(
+                sql_generation.prompt_id, sql_generation.status
             )
 
             self._track_sql_generation_created_event(org_id, sql_generation)
@@ -263,41 +239,12 @@ class GenerationService:
             )
             self._raise_for_generation_status(response, org_id, prompt)
             sql_generation = SQLGenerationResponse(**response.json())
-            self.repo.update_prompt_dh_metadata(
-                prompt_id,
-                DHPromptMetadata(
-                    generation_status=(
-                        GenerationStatus.NOT_VERIFIED
-                        if sql_generation.status == SQLGenerationStatus.VALID
-                        else GenerationStatus.ERROR
-                    )
-                ),
-            )
+
+            self._update_generation_status(prompt_id, sql_generation.status)
 
             self._track_sql_generation_created_event(org_id, sql_generation)
 
             return sql_generation
-
-    async def create_nl_generation(
-        self, sql_generation_id: str, create_request: NLGenerationRequest, org_id: str
-    ) -> NLGenerationResponse:
-        reserved_key_in_metadata(create_request.metadata)
-        self.get_sql_generation_in_org(sql_generation_id, org_id)
-
-        create_request.metadata = NLGenerationMetadata(
-            **create_request.metadata,
-            dh_internal=DHNLGenerationMetadata(organization_id=org_id),
-        )
-
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                settings.engine_url
-                + f"/sql-generations/{sql_generation_id}/nl-generations",
-                json=create_request.dict(exclude_unset=True),
-                timeout=settings.default_engine_timeout,
-            )
-            raise_for_status(response.status_code, response.text)
-            return NLGenerationResponse(**response.json())
 
     async def create_sql_nl_generation(
         self, prompt_id: str, create_request: SQLNLGenerationRequest, org_id: str
@@ -339,20 +286,33 @@ class GenerationService:
             sql_generation = self.repo.get_sql_generation(
                 nl_generation.sql_generation_id, org_id
             )
-            self.repo.update_prompt_dh_metadata(
-                prompt_id,
-                DHPromptMetadata(
-                    generation_status=(
-                        GenerationStatus.NOT_VERIFIED
-                        if sql_generation.status == SQLGenerationStatus.VALID
-                        else GenerationStatus.ERROR
-                    )
-                ),
-            )
+
+            self._update_generation_status(prompt_id, sql_generation.status)
 
             self._track_sql_generation_created_event(org_id, sql_generation)
 
             return nl_generation
+
+    async def create_nl_generation(
+        self, sql_generation_id: str, create_request: NLGenerationRequest, org_id: str
+    ) -> NLGenerationResponse:
+        reserved_key_in_metadata(create_request.metadata)
+        self.get_sql_generation_in_org(sql_generation_id, org_id)
+
+        create_request.metadata = NLGenerationMetadata(
+            **create_request.metadata,
+            dh_internal=DHNLGenerationMetadata(organization_id=org_id),
+        )
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                settings.engine_url
+                + f"/sql-generations/{sql_generation_id}/nl-generations",
+                json=create_request.dict(exclude_unset=True),
+                timeout=settings.default_engine_timeout,
+            )
+            raise_for_status(response.status_code, response.text)
+            return NLGenerationResponse(**response.json())
 
     async def execute_sql_generation(
         self,
@@ -447,6 +407,26 @@ class GenerationService:
                     error_message=response_json["message"],
                 )
             raise_for_status(response.status_code, response.text)
+
+    def _update_generation_status(self, prompt_id: str, status: SQLGenerationStatus):
+        self.repo.update_prompt_dh_metadata(
+            prompt_id,
+            DHPromptMetadata(
+                generation_status=(
+                    GenerationStatus.NOT_VERIFIED
+                    if status == SQLGenerationStatus.VALID
+                    else GenerationStatus.ERROR
+                )
+            ),
+        )
+
+    def _initialize_prompt_dh_metadata(self, org_id: str) -> DHPromptMetadata:
+        return DHPromptMetadata(
+            organization_id=org_id,
+            display_id=self.repo.get_next_display_id(org_id),
+            generation_status=GenerationStatus.INITIALIZED,
+            source=GenerationSource.API,
+        )
 
     def _track_sql_generation_created_event(
         self, org_id: str, sql_generation: SQLGeneration

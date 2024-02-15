@@ -17,10 +17,10 @@ class GenerationStatus(str, Enum):
 
 class GenerationSource(str, Enum):
     API = "API"
-    SLACK = "slack"
-    PLAYGROUND = "playground"
-    QUERY_EDITOR_RUN = "query_editor_run"
-    QUERY_EDITOR_RESUBMIT = "query_editor_resubmit"
+    SLACK = "SLACK"
+    PLAYGROUND = "PLAYGROUND"
+    QUERY_EDITOR_RUN = "QUERY_EDITOR_RUN"
+    QUERY_EDITOR_RESUBMIT = "QUERY_EDITOR_RESUBMIT"
 
 
 class SlackInfo(BaseModel):
@@ -36,7 +36,7 @@ class DHPromptMetadata(BaseModel):
     organization_id: ObjectIdString | None
     display_id: str | None
     message: str | None
-    playground: bool | None
+    source: GenerationSource | None
     slack_info: SlackInfo | None
     slack_message_last_sent_at: datetime | None
 
@@ -138,6 +138,7 @@ class Generation(BaseModel):
 
     updated_at: datetime | None
     created_at: datetime | None
-    status: GenerationStatus | None  # inferred from SQLGeneration and NLGeneration
+    status: GenerationStatus | None
+    source: GenerationSource | None
     sql_result: dict | None
     slack_message_last_sent_at: datetime | None

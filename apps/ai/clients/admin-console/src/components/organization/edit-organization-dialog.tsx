@@ -103,7 +103,7 @@ const EditOrganizationDialog: FC = () => {
             className="space-y-6 grow flex flex-col"
           >
             <DialogHeader>
-              <h1 className="font-semibold">Organization Name</h1>
+              <h1 className="font-semibold">Organization name</h1>
               <FormDescription>
                 This is the name of your organization.
               </FormDescription>

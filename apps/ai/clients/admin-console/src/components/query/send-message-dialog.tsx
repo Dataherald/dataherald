@@ -71,14 +71,14 @@ const SendMessageDialog: FC<SendMessageDialogProps> = ({
             <>
               <Loader
                 className="mr-2 animate-spin"
-                size={16}
+                size={14}
                 strokeWidth={2.5}
               />{' '}
               Sending
             </>
           ) : (
             <>
-              <Send className="mr-2" size={16} strokeWidth={2.5} />
+              <Send className="mr-2" size={14} strokeWidth={2.5} />
               Send
             </>
           )}

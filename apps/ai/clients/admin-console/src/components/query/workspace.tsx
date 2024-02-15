@@ -43,7 +43,7 @@ import {
 import { useRouter } from 'next/router'
 import { FC, useEffect, useState } from 'react'
 
-export const MAIN_ACTION_BTN_CLASSES = 'h-8 py-0 px-4 w-28'
+export const MAIN_ACTION_BTN_CLASSES = 'h-fit py-0.5 px-3 w-28'
 export const SECONDARY_ACTION_BTN_CLASSES =
   'w-fit px-4 text-sm hover:bg-slate-300 hover:text-black/80 flex items-center gap-1'
 
@@ -280,7 +280,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
           <div className="grow flex flex-col overflow-auto">
             <SectionHeader>
               <SectionHeaderTitle>
-                <Code2 strokeWidth={2}></Code2>
+                <Code2 size={20} strokeWidth={2.5} />
                 {isNotVerified(currentQueryStatus) ? 'Verify SQL' : 'SQL'}
               </SectionHeaderTitle>
               {isNotVerified(currentQueryStatus) && (
@@ -293,14 +293,14 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
                     <>
                       <Loader
                         className="mr-2 animate-spin"
-                        size={16}
+                        size={14}
                         strokeWidth={2.5}
                       />{' '}
                       Running
                     </>
                   ) : (
                     <>
-                      <Play className="mr-2" size={16} strokeWidth={2.5} />
+                      <Play className="mr-2" size={14} strokeWidth={2.5} />
                       Run
                     </>
                   )}
@@ -403,7 +403,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
             )}
             <SectionHeader>
               <SectionHeaderTitle>
-                <ShieldQuestion strokeWidth={2} />
+                <ShieldQuestion size={20} strokeWidth={2.5} />
                 Status
               </SectionHeaderTitle>
             </SectionHeader>

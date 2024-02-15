@@ -15,7 +15,7 @@ export const formatUrl = (segment: string): string =>
     .replace('fine tuning', 'fine-tuning')
 
 export const formatKey = (key: string): string =>
-  key.replace('_', ' ').toLowerCase()
+  key.replace('_', ' ').toLowerCase().replace('api', 'API')
 
 export const renderIcon = (
   IconComponent: LucideIcon | null,

@@ -206,7 +206,7 @@ const PlaygroundPage: FC = () => {
     content = (
       <div className="grow flex flex-col items-center justify-center gap-3">
         <div className="flex items-center gap-1 font-source-code">
-          <Terminal size={22} strokeWidth={2} />
+          <Terminal size={16} strokeWidth={2} className="animate-bounce" />
           Generating SQL from natural language prompt...
         </div>
         <div className="w-2/3 xl:w-2/5 h-2 relative rounded overflow-hidden">
@@ -223,19 +223,19 @@ const PlaygroundPage: FC = () => {
         <span>{sql_generation_error}</span>
       </div>
     ) : (
-      <div className="grow flex flex-col">
-        <SectionHeader>
+      <div className="grow flex flex-col overflow-auto">
+        <SectionHeader className="border-t-0">
           <SectionHeaderTitle>
-            <CaseSensitive size={28} strokeWidth={2} />
+            <CaseSensitive size={24} strokeWidth={2} />
             Natural Language Prompt
           </SectionHeaderTitle>
         </SectionHeader>
-        <p className="px-6 py-4 break-words whitespace-break-spaces">
+        <p className="px-6 py-5 break-words whitespace-break-spaces text-sm">
           {currentQueryPrompt}
         </p>
         <SectionHeader>
           <SectionHeaderTitle>
-            <Code2 size={24} strokeWidth={2}></Code2>
+            <Code2 size={20} strokeWidth={2.5} />
             Generated SQL
           </SectionHeaderTitle>
           {confidence_score && (
@@ -257,7 +257,7 @@ const PlaygroundPage: FC = () => {
             !sql_result ||
             !sql_result.columns ||
             !sql_result.rows ? (
-              <div className="w-full h-44 flex items-center justify-center bg-slate-100">
+              <div className="w-full h-20 flex items-center justify-center bg-slate-100">
                 <div className="text-slate-600">No Results</div>
               </div>
             ) : (
@@ -294,13 +294,13 @@ const PlaygroundPage: FC = () => {
             </span>
           </div>
         ) : (
-          <div className="grow flex flex-col">
+          <div className="grow flex flex-col overflow-auto">
             {content}
-            <div className="bg-slate-50 p-5 flex flex-col gap-3 grow-0 rounded-none border-b-0 border-s-0 border-e-0 border-t">
-              <div className="px-2 flex items-center justify-between gap-3">
+            <div className="bg-slate-50 px-5 py-3 flex flex-col gap-2 grow-0 rounded-none border-b-0 border-s-0 border-e-0 border-t border-slate-200">
+              <div className="px-2 flex items-center justify-between gap-2">
                 <div className="w-3/4 grid grid-cols-2 gap-3">
                   <div className="flex items-center gap-2">
-                    <strong className="w-fit">Database:</strong>
+                    <strong className="w-fit">Database</strong>
                     <Select
                       value={selectedDbConnectionId}
                       onValueChange={handleDatabaseSelect}
@@ -310,7 +310,10 @@ const PlaygroundPage: FC = () => {
                         submittingQuery
                       }
                     >
-                      <SelectTrigger aria-label="Database" className="bg-white">
+                      <SelectTrigger
+                        aria-label="Database"
+                        className="bg-white border-slate-300"
+                      >
                         <SelectValue
                           placeholder={
                             loadingDatabases
@@ -331,7 +334,7 @@ const PlaygroundPage: FC = () => {
                     </Select>
                   </div>
                   <div className="flex items-center gap-2">
-                    <strong>Model:</strong>
+                    <strong>Model</strong>
                     <Select
                       value={selectedModelId}
                       onValueChange={handleModelSelect}
@@ -341,7 +344,10 @@ const PlaygroundPage: FC = () => {
                         submittingQuery
                       }
                     >
-                      <SelectTrigger aria-label="Model" className="bg-white">
+                      <SelectTrigger
+                        aria-label="Model"
+                        className="bg-white border-slate-300"
+                      >
                         <SelectValue placeholder="Select model" />
                       </SelectTrigger>
                       <SelectContent>
@@ -371,16 +377,16 @@ const PlaygroundPage: FC = () => {
                   <Eraser size={14} className="mr-2" /> Clear
                 </Button>
               </div>
-              <div className="bg-white border border-slate-200 rounded-xl p-3 flex flex-col items-end gap-2">
+              <div className="bg-white border border-slate-300 rounded-xl p-2 flex flex-col items-end gap-1">
                 <Textarea
-                  className="border-none text-md resize-none shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent"
+                  className="text-base border-none resize-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent"
                   placeholder="Enter your natural language prompt..."
                   disabled={
                     loadingDatabases ||
                     !dbConnectionOptions?.length ||
                     submittingQuery
                   }
-                  rows={2}
+                  rows={3}
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                 />

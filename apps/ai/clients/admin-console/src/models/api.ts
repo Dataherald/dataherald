@@ -83,6 +83,24 @@ export enum EQueryStatus {
 
 export type QueryStatus = keyof typeof EQueryStatus
 
+export enum EGenerationSource {
+  API = 'API',
+  SLACK = 'SLACK',
+  PLAYGROUND = 'PLAYGROUND',
+  QUERY_EDITOR_RUN = 'QUERY_EDITOR_RUN',
+  QUERY_EDITOR_RESUBMIT = 'QUERY_EDITOR_RESUBMIT',
+}
+
+export type GenerationSource = keyof typeof EGenerationSource
+
+export enum EQuerySource {
+  API = 'API',
+  SLACK = 'SLACK',
+  PLAYGROUND = 'PLAYGROUND',
+}
+
+export type QuerySource = keyof typeof EQuerySource
+
 export type QuerySqlResult = {
   columns?: string[]
   rows?: QuerySqlResultData[]
@@ -102,6 +120,7 @@ export interface QueryListItem {
   db_connection_id: string
   db_connection_alias: string
   slack_message_last_sent_at: string | null
+  source: QuerySource
 }
 
 export type QueryList = QueryListItem[]
@@ -139,6 +158,7 @@ export interface Query {
   updated_at: string
   created_at: string
   slack_message_last_sent_at: string | null
+  source: QuerySource
 }
 
 export type Queries = Query[]

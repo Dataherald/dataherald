@@ -129,7 +129,7 @@ const SidebarNav = ({
     >
       <item.icon
         size={18}
-        strokeWidth={pathname?.includes(item.href) ? 2.5 : 1.5}
+        strokeWidth={pathname?.includes(item.href) ? 2.5 : 1.8}
       />
       {item.text}
     </Link>

@@ -6,7 +6,6 @@ import {
   EDomainQueryConfidence,
   EDomainQueryStatus,
   QueryWorkspaceStatus,
-  ResourceButtonClasses,
   ResourceColors,
 } from '@/models/domain'
 
@@ -18,17 +17,6 @@ export const mapQuery = <T extends Query | QueryListItem>({
     ...props,
     confidence_score: confidence_score !== null ? confidence_score * 100 : null,
   } as T)
-
-export const QUERY_STATUS_BUTTONS_CLASSES: ResourceButtonClasses<
-  Exclude<EQueryStatus.INITIALIZED, QueryStatus>
-> = {
-  [EQueryStatus.REJECTED]: 'bg-primary hover:bg-blue-600',
-  [EQueryStatus.ERROR]:
-    'border border-primary bg-white text-primary hover:bg-blue-50',
-  [EQueryStatus.NOT_VERIFIED]:
-    'border border-primary bg-white text-primary hover:bg-blue-50',
-  [EQueryStatus.VERIFIED]: 'bg-green-700 hover:bg-green-600',
-}
 
 export const QUERY_STATUS_COLORS: ResourceColors<QueryWorkspaceStatus> = {
   [EQueryStatus.REJECTED]: {

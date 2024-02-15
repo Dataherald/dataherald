@@ -67,7 +67,7 @@ const OrganizationSettingsPage: FC = () => {
     details,
   ) =>
     details.map(({ label, description, value, action }, index) => (
-      <div key={index} className="flex flex-col gap-3">
+      <div key={index} className="flex flex-col gap-1">
         <div className="flex flex-col">
           <strong>{label}</strong>
           <p className="text-slate-500 text-sm">{description}</p>
@@ -102,7 +102,7 @@ const OrganizationSettingsPage: FC = () => {
             <Building2 size={20} strokeWidth={2.5} />
             <h1 className="font-semibold">Details</h1>
           </div>
-          <div className="flex flex-col gap-6 pt-3">
+          <div className="flex flex-col gap-4 pt-3">
             {renderDetails(ORGANIZATION_DETAILS_DISPLAY)}
           </div>
         </ContentBox>

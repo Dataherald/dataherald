@@ -114,9 +114,8 @@ const MessageSection: FC<MessageSectionProps> = ({
         <SectionHeaderTitle>
           <Image
             src="/images/slack-black.png"
-            width={24}
-            height={24}
-            className="p-0.5"
+            width={18}
+            height={18}
             alt="Slack icon"
           />{' '}
           Slack message
@@ -214,7 +213,7 @@ const MessageSection: FC<MessageSectionProps> = ({
           </div>
         </div>
       </SectionHeader>
-      <div className="h-fit p-6 whitespace-pre-wrap">
+      <div className="h-fit p-6 whitespace-pre-wrap text-sm">
         {editingMessage || generatingMessage ? (
           <LoadingBox className="h-24" />
         ) : (

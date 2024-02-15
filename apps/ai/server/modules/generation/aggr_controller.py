@@ -138,7 +138,7 @@ async def ac_create_prompt_sql_generation_result(
         user.organization_id, type=UsageType.SQL_GENERATION, quantity=1
     )
     response = await generation_service.create_prompt_sql_generation_result(
-        request, user.organization_id, playground=True
+        request, user.organization_id, user.name
     )
     invoice_service.record_usage(
         user.organization_id,

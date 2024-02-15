@@ -7,6 +7,7 @@ from modules.generation.models.entities import (
     BasePrompt,
     BaseSQLGeneration,
     Generation,
+    GenerationSource,
     GenerationStatus,
 )
 from utils.validation import ObjectIdString
@@ -30,6 +31,7 @@ class GenerationListResponse(BaseModel):
     sql: str | None
     status: GenerationStatus | None
     confidence_score: float | None
+    source: GenerationSource | None
     display_id: str | None
     created_at: datetime | None
     slack_message_last_sent_at: datetime | None

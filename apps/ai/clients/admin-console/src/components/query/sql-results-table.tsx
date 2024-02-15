@@ -41,7 +41,7 @@ export function SqlResultsTable<TData, TValue>({
               return (
                 <TableHead
                   key={header.id}
-                  className={cn(cellClasses, 'text-slate-600')}
+                  className={cn(cellClasses, 'text-slate-600 text-xs')}
                 >
                   {header.isPlaceholder
                     ? null
@@ -66,7 +66,7 @@ export function SqlResultsTable<TData, TValue>({
               {row.getVisibleCells().map((cell) => (
                 <TableCell
                   key={cell.id}
-                  className={cn(cellClasses, 'text-slate-600')}
+                  className={cn(cellClasses, 'text-slate-600 text-xs')}
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>

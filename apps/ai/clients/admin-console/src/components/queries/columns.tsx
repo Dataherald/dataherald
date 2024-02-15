@@ -4,7 +4,7 @@ import {
   getDomainStatus,
   getDomainStatusColors,
 } from '@/lib/domain/query'
-import { cn } from '@/lib/utils'
+import { capitalizeFirstLetter, cn, formatKey } from '@/lib/utils'
 import { QueryListItem } from '@/models/api'
 import { format } from 'date-fns'
 import { Check, Minus } from 'lucide-react'
@@ -104,6 +104,13 @@ export const getColumns: (config: {
             </div>
           )
         },
+      },
+      {
+        id: 'source',
+        header: 'Source',
+        headerFilterDisplay: 'Source',
+        accessorKey: 'source',
+        accessorFn: ({ source }) => capitalizeFirstLetter(formatKey(source)),
       },
       {
         id: 'slack_message_sent',
