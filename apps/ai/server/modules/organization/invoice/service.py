@@ -26,6 +26,7 @@ from modules.organization.invoice.models.responses import (
 )
 from modules.organization.invoice.repository import InvoiceRepository
 from modules.organization.repository import OrganizationRepository
+from utils.analytics import Analytics, EventName, EventType
 from utils.billing import Billing
 from utils.exception import ErrorCode
 
@@ -35,6 +36,7 @@ class InvoiceService:
         self.billing = Billing()
         self.repo = InvoiceRepository()
         self.org_repo = OrganizationRepository()
+        self.analytics = Analytics()
         self.cost_dict = {
             UsageType.SQL_GENERATION: invoice_settings.sql_generation_cost,
             UsageType.FINETUNING_GPT_35: invoice_settings.finetuning_gpt_35_cost,
@@ -262,6 +264,17 @@ class InvoiceService:
             available_credits,
             self.cost_dict[type] * quantity,
             f"negative credit from usage {usage_id}",
+        )
+
+        self.analytics.track(
+            org_id,
+            EventName.usage_recorded,
+            EventType.usage_event(
+                id=usage_id,
+                organization_id=org_id,
+                type=type,
+                cost=round(self.cost_dict[type] * quantity / 100, 2),
+            ),
         )
 
     def check_usage(

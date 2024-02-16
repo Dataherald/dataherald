@@ -14,6 +14,7 @@ class EventName(str, Enum):
     finetuning_created = "finetuning_created"
     sql_generation_created = "sql_generation_created"
     sql_generation_updated = "sql_generation_updated"
+    usage_recorded = "usage_recorded"
 
 
 class Event(BaseModel):
@@ -60,6 +61,11 @@ class UserEvent(Event):
     name: str | None
 
 
+class UsageEvent(Event):
+    type: str | None
+    cost: float | None
+
+
 class EventType(BaseModel):
     db_connection_event = DBConnectionEvent
     finetuning_event = FinetuningEvent
@@ -68,6 +74,7 @@ class EventType(BaseModel):
     sql_generation_event = SQLGenerationEvent
     sql_generation_updated_event = SQLGenerationUpdatedEvent
     user_event = UserEvent
+    usage_event = UsageEvent
 
 
 class Properties(BaseModel):
