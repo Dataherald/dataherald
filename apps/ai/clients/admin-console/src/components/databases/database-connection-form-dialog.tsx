@@ -26,8 +26,8 @@ import {
   AlertCircle,
   ArrowUpRight,
   CheckCircle,
-  DatabaseZap,
   Loader,
+  Plug,
   Plus,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -127,10 +127,10 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
     <>
       <Dialog onOpenChange={handleDialogOpenChange}>
         <DialogTrigger asChild>
-          <Button size={isFirstConnection ? 'lg' : 'default'}>
+          <Button className={isFirstConnection ? 'px-6 py-2 h-fit' : ''}>
             {isFirstConnection ? (
               <>
-                <DatabaseZap className="mr-2" size={16} />
+                <Plug className="mr-2" size={18} />
                 Connect your Database
               </>
             ) : (

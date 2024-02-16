@@ -24,6 +24,16 @@ const DATABASE_PROVIDERS = [
     driver: 'awsathena+rest',
     logoUrl: '/images/databases/aws-athena.svg',
   },
+  {
+    name: 'MariaDB',
+    driver: 'mysql+pymysql',
+    logoUrl: '/images/databases/mariadb.svg',
+  },
+  {
+    name: 'ClickHouse',
+    driver: 'clickhouse+http',
+    logoUrl: '/images/databases/clickhouse.svg',
+  },
 ]
 
 export default DATABASE_PROVIDERS

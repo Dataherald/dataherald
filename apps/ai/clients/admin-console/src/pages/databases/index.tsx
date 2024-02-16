@@ -1,7 +1,7 @@
-import DatabaseConnection from '@/components/databases/database-connection'
 import DatabaseConnectionFormDialog from '@/components/databases/database-connection-form-dialog'
 import DatabaseDetails from '@/components/databases/database-details'
 import DatabasesError from '@/components/databases/error'
+import FirstDatabaseConnection from '@/components/databases/first-database-connection'
 import LoadingDatabases from '@/components/databases/loading'
 import PageLayout from '@/components/layout/page-layout'
 import { ContentBox } from '@/components/ui/content-box'
@@ -66,7 +66,7 @@ const DatabasesPage: FC = () => {
     pageContent = <LoadingDatabases />
   } else if (isConnectingFirstDB) {
     pageContent = (
-      <DatabaseConnection
+      <FirstDatabaseConnection
         onConnected={handleFirstDBConnected}
         onFinish={handleFirstConnectionFinish}
       />
