@@ -30,7 +30,7 @@ sqlalchemy-bigquery==1.6.1
 chromadb==0.4.12
 pytest-dotenv==0.5.2
 pinecone-client==2.2.2
-cryptography==40.0.2
+cryptography==42.0.2
 sphinx==6.2.1
 sphinx-book-theme==1.0.1
 boto3==1.28.38
