@@ -22,7 +22,7 @@ Request this ``POST`` endpoint::
 .. code-block:: rst
 
    [
-    {"question": "question", "sql_query": "sql_query", "db_connection_id":"db_connection_id"},
+    {"prompt_text": "prompt_text", "sql": "sql", "db_connection_id":"db_connection_id"},
    ]
 
 **Responses**
@@ -32,7 +32,7 @@ HTTP 201 code response
 .. code-block:: rst
 
    [
-    {"id": "id", "question": "question", "sql_query":"sql", db_connection_id: "db_connection_id"},
+    {"id": "id", "prompt_text": "prompt_text", "sql":"sql", db_connection_id: "db_connection_id"},
    ]
 
 **Example**
@@ -46,8 +46,8 @@ HTTP 201 code response
   -H 'Content-Type: application/json' \
   -d '[
   {
-    "question": "what was the median home sale price in Califronia in Q1 2021?",
-    "sql_query": "SELECT location_name, period_end, metric_value FROM redfin_median_sale_price rmsp WHERE geo_type = '\''state'\'' AND location_name='\''California'\'' AND property_type = '\''All Residential'\''   AND period_start BETWEEN '\''2021-01-01'\'' AND '\''2021-03-31'\'' ORDER BY period_end;",
+    "prompt_text": "what was the median home sale price in Califronia in Q1 2021?",
+    "sql": "SELECT location_name, period_end, metric_value FROM redfin_median_sale_price rmsp WHERE geo_type = '\''state'\'' AND location_name='\''California'\'' AND property_type = '\''All Residential'\''   AND period_start BETWEEN '\''2021-01-01'\'' AND '\''2021-03-31'\'' ORDER BY period_end;",
     "db_connection_id": "64dfa0e103f5134086f7090c",
   }]'
 
@@ -110,7 +110,7 @@ HTTP 200 code response
 .. code-block:: rst
 
    [
-   {"id": "id", "question": "question", "sql_query":"sql", db_connection_id: "db_connection_id"},
+   {"id": "id", "prompt_text": "prompt_text", "sql":"sql", db_connection_id: "db_connection_id"},
    ]
 
 **Example**
