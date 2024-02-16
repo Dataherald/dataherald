@@ -197,6 +197,17 @@ Specify a schema (If it isn't specified by default it uses `public`)::
 
 "connection_uri": postgresql+psycopg2://<user>:<password>@<host>:<port>/<db-name>?options=-csearch_path=<my-schema>
 
+MySQL/MariaDB
+^^^^^^^^^^^^
+
+Uri structure::
+
+"connection_uri": mysql+pymysql://<user>:<password>@<host>:<port>/<db-name>
+
+Example::
+
+"connection_uri": mysql+pymysql://admin:123456@foo.rds.amazonaws.com:3306/my-database
+
 Databricks
 ^^^^^^^^^^^^
 

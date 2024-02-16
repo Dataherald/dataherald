@@ -44,43 +44,6 @@ Related endpoints are:
         }
     }
 
-.. Responses
-.. ------------------
-.. The ``responses`` object is created from the answering natural language questions from the relational data.
-
-.. The related endpoints are:
-
-.. * :doc:`add_question <api.question>` -- ``POST api/v1/questions``
-.. * :doc:`add_responses <api.add_responses>` -- ``POST api/v1/responses``
-.. * :doc:`list_responses <api.list_responses>` -- ``GET api/v1/responses``
-.. * :doc:`get_response <api.get_response>` -- ``GET api/v1/responses/{response_id}``
-.. * :doc:`get_response_file <api.get_response_file>` -- ``GET api/v1/responses/{response_id}/file``
-
-.. **Response resource example:**
-
-.. .. code-block:: json
-
-..     {
-..       "question_id": "string",
-..       "response": "string",
-..       "sql_query": "string",
-..       "sql_query_result": {
-..         "columns": [
-..           "string"
-..         ],
-..         "rows": [
-..           {}
-..         ]
-..       },
-..       "sql_generation_status": "INVALID",
-..       "error_message": "string",
-..       "exec_time": 0,
-..       "total_tokens": 0,
-..       "total_cost": 0,
-..       "confidence_score": 0,
-..       "created_at": "2023-10-12T16:26:40.951158"
-..     }
-
 Table Descriptions
 ---------------------
 The ``table-descriptions`` object is used to add context about the tables and columns in the relational database.
@@ -258,7 +221,7 @@ Related endpoints are:
         "finetuning_job_id": "Finetuning job ID",
         "model_id": "Model ID after finetuning",
         "created_at": "datetime",
-        "golden_records": "array[ids]", // Default is None, meaning use all golden records
+        "golden_sqls": "array[ids]", // Default is None, meaning use all golden records
         "metadata": "dict | None" // Optional, default None
     }
 
