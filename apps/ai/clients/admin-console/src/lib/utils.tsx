@@ -17,21 +17,22 @@ export const formatUrl = (segment: string): string =>
 export const formatKey = (key: string): string =>
   key.replace('_', ' ').toLowerCase().replace('api', 'API')
 
-export const renderIcon = (
+export const renderIcon: (
   IconComponent: LucideIcon | null,
-  config: { className?: string; size?: number; strokeWidth?: number } = {
-    className: '',
-    size: 16,
-    strokeWidth: 2,
-  },
+  config: { className?: string; size?: number; strokeWidth?: number },
+) => JSX.Element | null = (
+  IconComponent,
+  { className = '', size = 16, strokeWidth = 2 },
 ) => {
   if (IconComponent) {
     return (
       <IconComponent
-        {...config}
-        className={
-          IconComponent?.displayName === 'Loader' ? 'animate-spin' : ''
-        }
+        size={size}
+        strokeWidth={strokeWidth}
+        className={cn(
+          IconComponent?.displayName === 'Loader' ? 'animate-spin' : '',
+          className,
+        )}
       />
     )
   }

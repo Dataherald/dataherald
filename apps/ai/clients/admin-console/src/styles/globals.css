@@ -95,3 +95,8 @@ body,
 .animate-slide {
   animation: slide 4s infinite ease-in-out;
 }
+
+.text-2xs {
+  font-size: 0.625rem;
+  line-height: 1rem;
+}

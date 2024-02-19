@@ -19,6 +19,7 @@ const mapDatabaseToTreeData = (database: Database): TreeNode => ({
   clickable: true,
   selectable: database.tables.some((table) => isSyncEnabled(table.sync_status)),
   defaultOpen: true,
+  showId: true,
   children: [
     {
       id: 'tables-root',

@@ -2,22 +2,25 @@ import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import {
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
+import { SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
-import { renderIcon } from '@/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { toast } from '@/components/ui/use-toast'
+import { cn, copyToClipboard, renderIcon } from '@/lib/utils'
 import { ColumnResource } from '@/models/domain'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Brackets, Edit, Loader } from 'lucide-react'
+import { Brackets, Copy, Loader, Lock, LucideIcon, Unlock } from 'lucide-react'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as Yup from 'yup'
@@ -41,7 +44,7 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
   onCancel,
   onSave,
 }) => {
-  const { icon, name, categories } = resource
+  const { id, icon, name, categories } = resource
 
   const [isSaving, setIsSaving] = useState(false)
   const [editEnabled, setEditEnabled] = useState(!resource.description)
@@ -59,74 +62,114 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
     setIsSaving(false)
   }
 
+  const handleCopyId = async () => {
+    try {
+      await copyToClipboard(id)
+      toast({
+        variant: 'success',
+        title: 'Column ID copied!',
+      })
+    } catch (error) {
+      console.error('Could not copy text: ', error)
+      toast({
+        variant: 'destructive',
+        title: 'Could not copy the Column ID',
+      })
+    }
+  }
+
+  const EditIcon: LucideIcon = editEnabled ? Unlock : Lock
+
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSave)}
-        className="space-y-3 grow flex flex-col overflow-auto"
+        className="space-y-6 grow flex flex-col overflow-auto px-1"
       >
         <SheetHeader>
-          <SheetTitle>Add Text Description</SheetTitle>
-        </SheetHeader>
-        <div className="grow flex flex-col pl-1 pr-4 overflow-auto">
-          <div className="flex items-center gap-3 py-2">
+          <SheetTitle className="flex items-center gap-1">
             {renderIcon(icon, {
-              size: 20,
+              size: 45,
+              strokeWidth: 1,
             })}
-            <span className="font-medium">{name}</span>
+            <div className="flex flex-col">
+              <span>{name}</span>
+              <div className="flex items-center gap-2 text-slate-500 text-xs">
+                ID {id}{' '}
+                <Button
+                  type="button"
+                  variant="icon"
+                  onClick={handleCopyId}
+                  className="p-0 h-fit text-slate-500"
+                >
+                  <Copy size={12} strokeWidth={2.5} />
+                </Button>
+              </div>
+            </div>
+          </SheetTitle>
+        </SheetHeader>
+        <div className="grow flex flex-col gap-1">
+          <div className="flex items-center justify-between gap-2">
+            <FormLabel>Column description</FormLabel>
+            <TooltipProvider>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="icon"
+                    type="button"
+                    className="p-0 h-fit"
+                    onClick={() => setEditEnabled(!editEnabled)}
+                  >
+                    <EditIcon size={16} strokeWidth={2.5} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <strong>Enable</strong> or <strong>disable</strong> editing
+                  the column description.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
-          <SheetDescription>
+          <FormDescription className="mb-1">
             Text descriptions help instruct the AI on how to use a specific
             column.
-          </SheetDescription>
-          <div className="flex flex-col">
-            <div className="flex items-center justify-between gap-2">
-              <FormLabel>Column description</FormLabel>
-              <Button
-                variant="link"
-                type="button"
-                className="text-sm text-black flex items-center gap-1 px-0"
-                onClick={() => setEditEnabled(true)}
-              >
-                <Edit size={14} strokeWidth={2}></Edit>
-                Edit
-              </Button>
-            </div>
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Textarea
-                      className="resize-none"
-                      rows={10}
-                      {...field}
-                      disabled={!editEnabled}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          </FormDescription>
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Textarea
+                    className={cn(
+                      'resize-none',
+                      editEnabled ? 'bg-inherit' : 'bg-gray-100',
+                    )}
+                    rows={10}
+                    {...field}
+                    disabled={!editEnabled}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           {categories?.length && (
-            <div className="py-3 flex flex-col gap-3">
+            <div className="grow py-3 flex flex-col gap-3 text-sm overflow-auto">
               <h1 className="font-semibold flex items-center gap-2">
-                <Brackets size={20} strokeWidth={2} />
+                <Brackets size={16} strokeWidth={2.5} />
                 Categorical Column detected
               </h1>
-              <p className="text-sm">
+              <p className="text-xs text-slate-500">
                 The AI has identified this as a categorical column with the
                 following categories:
               </p>
-              <ul className="grow list-disc list-inside space-y-2">
+              <ul className="grow list-disc list-inside text-slate-700 overflow-auto">
                 {categories.map((category) => (
-                  <li
-                    key={category}
-                    className="pl-3 text-sm font-source-code font-semibold"
-                  >
-                    {category}
+                  <li key={category} className="pl-4 py-2">
+                    <span className="px-4 py-1 rounded bg-slate-100 border border-slate-500 text-xs font-semibold">
+                      {category}
+                    </span>
                   </li>
                 ))}
               </ul>

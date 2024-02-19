@@ -2,22 +2,25 @@ import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import {
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
+import { SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
-import { renderIcon } from '@/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { toast } from '@/components/ui/use-toast'
+import { cn, copyToClipboard, renderIcon } from '@/lib/utils'
 import { TableResource } from '@/models/domain'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Edit, Loader } from 'lucide-react'
+import { Copy, Loader, Lock, LucideIcon, Unlock } from 'lucide-react'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as Yup from 'yup'
@@ -41,7 +44,7 @@ const TableResourceComponent: FC<TableResourceComponentProps> = ({
   onCancel,
   onSave,
 }) => {
-  const { icon, name } = resource
+  const { id, icon, name } = resource
 
   const [isSaving, setIsSaving] = useState(false)
   const [editEnabled, setEditEnabled] = useState(!resource.description)
@@ -59,39 +62,78 @@ const TableResourceComponent: FC<TableResourceComponentProps> = ({
     setIsSaving(false)
   }
 
+  const handleCopyId = async () => {
+    try {
+      await copyToClipboard(id)
+      toast({
+        variant: 'success',
+        title: 'Database ID copied!',
+      })
+    } catch (error) {
+      console.error('Could not copy text: ', error)
+      toast({
+        variant: 'destructive',
+        title: 'Could not copy the Database ID',
+      })
+    }
+  }
+
+  const EditIcon: LucideIcon = editEnabled ? Unlock : Lock
+
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSave)}
-        className="space-y-3 grow flex flex-col"
+        className="space-y-6 grow flex flex-col"
       >
-        <div className="grow flex flex-col">
-          <SheetHeader>
-            <SheetTitle>Add Text Description</SheetTitle>
-            <div className="flex items-center gap-3 py-2">
-              {renderIcon(icon, {
-                size: 20,
-              })}
-              <span className="font-medium">{name}</span>
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-1">
+            {renderIcon(icon, {
+              size: 45,
+              strokeWidth: 1,
+            })}
+            <div className="flex flex-col">
+              <span>{name}</span>
+              <div className="flex items-center gap-2 text-slate-500 text-xs">
+                ID {id}{' '}
+                <Button
+                  type="button"
+                  variant="icon"
+                  onClick={handleCopyId}
+                  className="p-0 h-fit text-slate-500"
+                >
+                  <Copy size={12} strokeWidth={2.5} />
+                </Button>
+              </div>
             </div>
-          </SheetHeader>
-          <SheetDescription>
+          </SheetTitle>
+        </SheetHeader>
+        <div className="grow flex flex-col gap-1">
+          <div className="flex items-center justify-between gap-2">
+            <FormLabel>Table description</FormLabel>
+            <TooltipProvider>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="icon"
+                    type="button"
+                    className="p-0 h-fit"
+                    onClick={() => setEditEnabled(!editEnabled)}
+                  >
+                    <EditIcon size={16} strokeWidth={2.5} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <strong>Enable</strong> or <strong>disable</strong> editing
+                  the table description.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <FormDescription className="mb-1">
             Text descriptions help instruct the AI on how to use a specific
             table.
-          </SheetDescription>
-
-          <div className="mt-2 flex items-center justify-between gap-2">
-            <FormLabel>Table description</FormLabel>
-            <Button
-              variant="link"
-              type="button"
-              className="text-sm text-black flex items-center gap-1 px-0"
-              onClick={() => setEditEnabled(true)}
-            >
-              <Edit size={14} strokeWidth={2}></Edit>
-              Edit
-            </Button>
-          </div>
+          </FormDescription>
           <FormField
             control={form.control}
             name="description"
@@ -99,7 +141,10 @@ const TableResourceComponent: FC<TableResourceComponentProps> = ({
               <FormItem className="grow">
                 <FormControl>
                   <Textarea
-                    className="resize-none"
+                    className={cn(
+                      'resize-none',
+                      editEnabled ? 'bg-inherit' : 'bg-gray-100',
+                    )}
                     rows={10}
                     {...field}
                     disabled={!editEnabled}

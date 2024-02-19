@@ -14,6 +14,7 @@ export interface TreeNode {
   selectable?: boolean
   clickable?: boolean
   slot?: JSX.Element
+  showId?: boolean
 }
 
 interface TreeProps {
@@ -124,7 +125,14 @@ const TreeNodeComponent: FC<TreeProps> = ({
           <div className="mx-2">
             <node.icon size={16} strokeWidth={1.5} />
           </div>
-          <span className="break-all">{node.name}</span>
+          <div className="flex items-end gap-2">
+            <span className="break-all">{node.name}</span>
+            {node.showId && (
+              <span className="break-all text-2xs text-slate-500">
+                {node.id}
+              </span>
+            )}
+          </div>
         </div>
         <div className="min-w-fit">{node.slot}</div>
       </div>

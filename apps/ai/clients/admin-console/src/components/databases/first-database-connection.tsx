@@ -1,8 +1,8 @@
 import DatabaseConnectionFormDialog from '@/components/databases/database-connection-form-dialog'
+import { ContentBox } from '@/components/ui/content-box'
 import DATABASE_PROVIDERS from '@/constants/database-providers'
 import Image from 'next/image'
 import { FC } from 'react'
-import { ContentBox } from '../ui/content-box'
 
 const DB_LOGO_SIZE = 45
 
