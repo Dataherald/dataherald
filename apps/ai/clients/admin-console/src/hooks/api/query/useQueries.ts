@@ -6,6 +6,7 @@ const useQueries = (): PageResponse<QueryListItem> =>
   usePagination<QueryListItem>({
     resourceUrl: '/generations',
     itemMapper: mapQuery,
+    pageSize: 100,
   })
 
 export default useQueries
