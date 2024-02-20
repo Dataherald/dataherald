@@ -211,7 +211,12 @@ class SqlAlchemyScanner(Scanner):
             )
 
         create_table_ddl = str(CreateTable(new_table).compile(db_engine.engine))
-        create_table_ddl = create_table_ddl.rstrip()[:-1].rstrip() + ",\n\t" + ",\n\t".join(foreign_key_constraints) + ");"
+        create_table_ddl = (
+            create_table_ddl.rstrip()[:-1].rstrip()
+            + ",\n\t"
+            + ",\n\t".join(foreign_key_constraints)
+            + ");"
+        )
 
         return create_table_ddl.rstrip()
 
