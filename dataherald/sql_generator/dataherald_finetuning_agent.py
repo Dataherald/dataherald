@@ -373,7 +373,11 @@ class SQLDatabaseToolkit(BaseToolkit):
         if not self.use_finetuned_model_only:
             tools.append(SystemTime(db=self.db))
             tools.append(SchemaSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
-            tools.append(TablesSQLDatabaseTool(db=self.db, db_scan=self.db_scan, embedding=self.embedding))
+            tools.append(
+                TablesSQLDatabaseTool(
+                    db=self.db, db_scan=self.db_scan, embedding=self.embedding
+                )
+            )
         tools.append(QuerySQLDataBaseTool(db=self.db))
         tools.append(
             GenerateSQL(
