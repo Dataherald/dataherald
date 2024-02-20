@@ -17,9 +17,8 @@ MAX_LOGS = 5_000
 class SnowflakeScanner(AbstractScanner):
     @override
     def cardinality_values(self, column: Column, db_engine: SQLDatabase) -> list | None:
-        rs = db_engine.engine.execute(
-            f"select HLL({column.name}) from {column.table.name}"  # noqa: S608 E501
-        ).fetchall()
+        query = sqlalchemy.select([func.HLL(column)])
+        rs = db_engine.engine.execute(query).fetchall()
 
         if (
             len(rs) > 0
