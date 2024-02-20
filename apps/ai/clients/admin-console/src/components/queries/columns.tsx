@@ -110,7 +110,8 @@ export const getColumns: (config: {
         header: 'Source',
         headerFilterDisplay: 'Source',
         accessorKey: 'source',
-        accessorFn: ({ source }) => capitalizeFirstLetter(formatKey(source)),
+        accessorFn: ({ source }) =>
+          source ? capitalizeFirstLetter(formatKey(source)) : 'unknown',
       },
       {
         id: 'slack_message_sent',
