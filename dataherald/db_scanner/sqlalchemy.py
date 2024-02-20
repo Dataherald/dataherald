@@ -5,7 +5,7 @@ from typing import Any, List
 import sqlalchemy
 from clickhouse_sqlalchemy import engines
 from overrides import override
-from sqlalchemy import Column, ForeignKeyConstraint, MetaData, Table, inspect
+from sqlalchemy import Column, MetaData, Table, inspect
 from sqlalchemy.schema import CreateTable
 from sqlalchemy.sql.sqltypes import NullType
 
@@ -204,12 +204,19 @@ class SqlAlchemyScanner(Scanner):
                 original_table.name, MetaData(), *new_columns, engines.MergeTree()
             )
 
+        foreign_key_constraints = []
         for fk in original_table.foreign_keys:
-            new_table.append_constraint(
-                ForeignKeyConstraint([fk.parent.name], [fk.column.name], name=fk.name)
+            foreign_key_constraints.append(
+                f"FOREIGN KEY (`{fk.parent.name}`) REFERENCES `{fk.column.table.name}` (`{fk.column.name}`)"
             )
 
         create_table_ddl = str(CreateTable(new_table).compile(db_engine.engine))
+        create_table_ddl = (
+            create_table_ddl.rstrip()[:-1].rstrip()
+            + ",\n\t"
+            + ",\n\t".join(foreign_key_constraints)
+            + ");"
+        )
 
         return create_table_ddl.rstrip()
 
