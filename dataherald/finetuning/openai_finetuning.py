@@ -156,7 +156,7 @@ class OpenAIFineTuning(FinetuningModel):
         db_scan: List[TableDescription],
         prompt: str,
         token_limit: int,
-        correct_tables: [str] = None,
+        correct_tables: [str] = None,  # type: ignore
     ) -> str:
         schema_of_database = ""
         indexes_to_remove = []
