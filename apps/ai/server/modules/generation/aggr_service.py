@@ -93,14 +93,16 @@ class AggrgationGenerationService:
         page_size: int,
         ascend: bool,  # noqa: ARG002
         org_id: str,
+        search_term: str = "",
         db_connection_id: str = None,
     ) -> list[GenerationListResponse]:
-        prompts = self.repo.get_prompts(
+        aggregations = self.repo.get_generation_aggregations(
             skip=page * page_size,
             limit=page_size,
             order=order,
             ascend=ascend,
             org_id=org_id,
+            search_term=search_term,
             db_connection_id=db_connection_id,
         )
         db_connection_dict = {
@@ -108,39 +110,35 @@ class AggrgationGenerationService:
             for db_connection in self.db_connection_service.get_db_connections(org_id)
         }
 
-        generation_list = []
-
-        for prompt in prompts:
-            sql_generation = self.repo.get_latest_sql_generation(prompt.id, org_id)
-            nl_generation = None
-            if sql_generation:
-                nl_generation = self.repo.get_latest_nl_generation(
-                    sql_generation.id, org_id
-                )
-            generation_list.append(
-                GenerationListResponse(
-                    id=prompt.id,
-                    prompt_text=prompt.text,
-                    db_connection_alias=(
-                        db_connection_dict[prompt.db_connection_id].alias
-                        if prompt.db_connection_id in db_connection_dict
-                        else None
-                    ),
-                    nl_generation_text=nl_generation.text if nl_generation else None,
-                    sql=sql_generation.sql if sql_generation else None,
-                    confidence_score=(
-                        sql_generation.confidence_score if sql_generation else None
-                    ),
-                    status=prompt.metadata.dh_internal.generation_status,
-                    display_id=prompt.metadata.dh_internal.display_id,
-                    created_at=prompt.created_at,
-                    created_by=prompt.metadata.dh_internal.created_by or "Unknown",
-                    source=prompt.metadata.dh_internal.source,
-                    slack_message_last_sent_at=prompt.metadata.dh_internal.slack_message_last_sent_at,
-                )
+        return [
+            GenerationListResponse(
+                id=aggr.id,
+                created_by=aggr.metadata.dh_internal.created_by or "Unknown",
+                prompt_text=aggr.text,
+                db_connection_alias=(
+                    db_connection_dict[aggr.db_connection_id].alias
+                    if aggr.db_connection_id in db_connection_dict
+                    else None
+                ),
+                sql=aggr.sql_generation.sql if aggr.sql_generation else None,
+                nl_generation_text=(
+                    aggr.sql_generation.nl_generation.text
+                    if aggr.sql_generation and aggr.sql_generation.nl_generation
+                    else None
+                ),
+                status=aggr.metadata.dh_internal.generation_status,
+                confidence_score=(
+                    aggr.sql_generation.confidence_score
+                    if aggr.sql_generation
+                    else None
+                ),
+                source=aggr.metadata.dh_internal.source,
+                display_id=aggr.metadata.dh_internal.display_id,
+                created_at=aggr.created_at,
+                slack_message_last_sent_at=aggr.metadata.dh_internal.slack_message_last_sent_at,
             )
-
-        return generation_list
+            for aggr in aggregations
+        ]
 
     async def create_generation(
         self,

@@ -45,6 +45,7 @@ class GoldenSQLService:
         order: str,
         ascend: bool,  # noqa: ARG002
         org_id: str,
+        search_term: str = "",
         db_connection_id: str = None,
     ) -> list[AggrGoldenSQL]:
         db_connection_dict = {
@@ -58,6 +59,7 @@ class GoldenSQLService:
             order=order,
             ascend=ascend,
             org_id=org_id,
+            search_term=search_term,
             db_connection_id=db_connection_id,
         )
         return [

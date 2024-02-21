@@ -1,3 +1,5 @@
+import re
+
 from bson import ObjectId
 
 from config import (
@@ -10,6 +12,7 @@ from modules.generation.models.entities import (
     DHPromptMetadata,
     NLGeneration,
     Prompt,
+    PromptAggregation,
     SQLGeneration,
 )
 from utils.misc import get_next_display_id
@@ -159,6 +162,98 @@ class GenerationRepository:
             NLGeneration(id=str(nl_generation["_id"]), **nl_generation)
             for nl_generation in nl_generations
         ]
+
+    def get_generation_aggregations(
+        self,
+        skip: int,
+        limit: int,
+        order: str,
+        ascend: bool,
+        org_id: str,
+        search_term: str = "",
+        db_connection_id: str = None,
+    ) -> list[PromptAggregation]:
+        search_term = re.escape(search_term)
+        pipeline = [
+            {
+                "$match": {
+                    "metadata.dh_internal.organization_id": org_id,
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "sql_generations",
+                    "let": {"promptId": {"$toString": "$_id"}},
+                    "pipeline": [
+                        {
+                            "$match": {
+                                "$expr": {"$eq": ["$prompt_id", "$$promptId"]},
+                            }
+                        },
+                        {"$sort": {"created_at": -1}},
+                        {"$limit": 1},
+                        {
+                            "$lookup": {
+                                "from": "nl_generations",
+                                "let": {"sqlGenId": {"$toString": "$_id"}},
+                                "pipeline": [
+                                    {
+                                        "$match": {
+                                            "$expr": {
+                                                "$eq": [
+                                                    "$sql_generation_id",
+                                                    "$$sqlGenId",
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {"$sort": {"created_at": -1}},
+                                    {"$limit": 1},
+                                ],
+                                "as": "nl_generation",
+                            }
+                        },
+                    ],
+                    "as": "sql_generation",
+                }
+            },
+            {
+                "$unwind": {
+                    "path": "$sql_generation",
+                    "preserveNullAndEmptyArrays": True,  # Keep prompts even if no matching sql_generations
+                }
+            },
+            {
+                "$unwind": {
+                    "path": "$sql_generation.nl_generation",
+                    "preserveNullAndEmptyArrays": True,  # Keep sql_generations even if no matching nl_generations
+                }
+            },
+            {
+                "$match": {
+                    "$or": [
+                        {
+                            "text": {"$regex": search_term, "$options": "i"}
+                        },  # Search term in prompts.text
+                        {
+                            "sql_generation.sql": {
+                                "$regex": search_term,
+                                "$options": "i",
+                            }
+                        },  # Or in sql_generations.sql
+                    ]
+                }
+            },
+            {"$sort": {order: ASCENDING if ascend else DESCENDING}},
+            {"$skip": skip},
+            {"$limit": limit},
+        ]
+
+        if db_connection_id:
+            pipeline[0]["$match"]["db_connection_id"] = db_connection_id
+
+        cursor = MongoDB.aggregate(PROMPT_COL, pipeline)
+        return [PromptAggregation(**c, id=str(c["_id"])) for c in cursor]
 
     def get_next_display_id(self, org_id: str) -> str:
         return get_next_display_id(PROMPT_COL, org_id, "QR")

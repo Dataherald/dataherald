@@ -54,7 +54,7 @@ class SQLGenerationStatus(str, Enum):
 
 
 class BasePrompt(BaseModel):
-    id: ObjectIdString
+    id: ObjectIdString | None
     text: str
     db_connection_id: ObjectIdString
     metadata: PromptMetadata | None
@@ -142,3 +142,11 @@ class Generation(BaseModel):
     source: GenerationSource | None
     sql_result: dict | None
     slack_message_last_sent_at: datetime | None
+
+
+class SQLGenerationAggregation(SQLGeneration):
+    nl_generation: NLGeneration | None
+
+
+class PromptAggregation(Prompt):
+    sql_generation: SQLGenerationAggregation | None

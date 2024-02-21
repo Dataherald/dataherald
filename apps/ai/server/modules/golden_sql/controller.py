@@ -34,6 +34,7 @@ async def get_golden_sqls(
     page_size: int = 20,
     order: str = "created_at",
     ascend: bool = False,
+    search_term: str = "",
     db_connection_id: str = None,
     api_key: str = Security(get_api_key),
 ) -> list[GoldenSQLResponse]:
@@ -43,6 +44,7 @@ async def get_golden_sqls(
         order=order,
         ascend=ascend,
         org_id=api_key.organization_id,
+        search_term=search_term,
         db_connection_id=db_connection_id,
     )
 
@@ -76,6 +78,7 @@ async def ac_get_golden_sqls(
     page_size: int = 20,
     order: str = "created_at",
     ascend: bool = False,
+    search_term: str = "",
     db_connection_id: str = None,
     token: str = Depends(token_auth_scheme),
 ) -> list[ACGoldenSQLResponse]:
@@ -86,6 +89,7 @@ async def ac_get_golden_sqls(
         order=order,
         ascend=ascend,
         org_id=org_id,
+        search_term=search_term,
         db_connection_id=db_connection_id,
     )
 

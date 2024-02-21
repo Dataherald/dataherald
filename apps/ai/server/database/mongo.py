@@ -1,5 +1,6 @@
 import pymongo
 from bson.objectid import ObjectId
+from pymongo.command_cursor import CommandCursor
 from pymongo.cursor import Cursor
 
 from config import db_settings
@@ -52,3 +53,7 @@ class MongoDB:
     @classmethod
     def delete_one(cls, collection: str, query: dict) -> int:
         return cls._data_store[collection].delete_one(query).deleted_count
+
+    @classmethod
+    def aggregate(cls, collection: str, pipeline: list) -> CommandCursor:
+        return cls._data_store[collection].aggregate(pipeline)

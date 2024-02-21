@@ -1,3 +1,5 @@
+import re
+
 from bson import ObjectId
 
 from config import GOLDEN_SQL_COL, PROMPT_COL
@@ -26,9 +28,17 @@ class GoldenSQLRepository:
         order: str,
         ascend: bool,
         org_id: str,
+        search_term: str = "",
         db_connection_id: str = None,
     ) -> list[GoldenSQL]:
-        query = {"metadata.dh_internal.organization_id": org_id}
+        search_term = re.escape(search_term)
+        query = {
+            "metadata.dh_internal.organization_id": org_id,
+            "$or": [
+                {"prompt_text": {"$regex": search_term, "$options": "i"}},
+                {"sql": {"$regex": search_term, "$options": "i"}},
+            ],
+        }
         if db_connection_id:
             query["db_connection_id"] = db_connection_id
         golden_sqls = (
