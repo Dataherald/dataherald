@@ -13,7 +13,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: k2-core-prod
-  ECS_SERVICE: k2-prod
+  ECS_SERVICE: dhai-prod
   ECS_CLUSTER: k2
   ECS_TASK_DEFINITION: apps/ai/server/.aws/task-definition-prod.json
   CONTAINER_NAME: k2-core-prod
