@@ -71,8 +71,9 @@ class S3:
         try:
             with open(file_location) as file_object:
                 decrypted_content = fernet_encrypt.decrypt(file_object.read())
-            with open(file_location, "w") as file_object:
-                file_object.write(decrypted_content)
+            if decrypted_content != "":
+                with open(file_location, "w") as file_object:
+                    file_object.write(decrypted_content)
         except (InvalidToken, UnicodeDecodeError):
             pass
 
