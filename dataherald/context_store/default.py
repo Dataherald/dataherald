@@ -32,7 +32,7 @@ class DefaultContextStore(ContextStore):
         logger.info(f"Getting context for {prompt.text}")
         closest_questions = self.vector_store.query(
             query_texts=[prompt.text],
-            db_connection_id=prompt.db_connection_id,
+            db_connection_id="65cd371619987c46bf8354b6",
             collection=self.golden_sql_collection,
             num_results=number_of_samples,
         )
@@ -55,7 +55,7 @@ class DefaultContextStore(ContextStore):
         instruction_repository = InstructionRepository(self.db)
         all_instructions = instruction_repository.find_all()
         for instruction in all_instructions:
-            if instruction.db_connection_id == prompt.db_connection_id:
+            if instruction.db_connection_id == "65cd371619987c46bf8354b6":
                 instructions.append(
                     {
                         "instruction": instruction.instruction,
