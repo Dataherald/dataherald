@@ -69,6 +69,7 @@ export interface User extends UserProfile {
   id: string
   organization_id: string
   role: Roles | null
+  created_at: string
 }
 
 export type Users = User[]
