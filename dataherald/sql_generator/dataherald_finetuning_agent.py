@@ -36,6 +36,7 @@ from dataherald.repositories.finetunings import FinetuningsRepository
 from dataherald.repositories.sql_generations import (
     SQLGenerationRepository,
 )
+from dataherald.repositories.vulnerabilities import VulnerabilityRepository
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.sql_database.models.types import (
     DatabaseConnection,
@@ -486,8 +487,36 @@ class DataheraldFinetuningAgent(SQLGenerator):
             **(agent_executor_kwargs or {}),
         )
 
+    def augment_prompt(self, user_prompt: Prompt, storage: DB) -> None:
+        vulnerabilities = VulnerabilityRepository(storage)
+        cves = self.extract_cve_ids(user_prompt.text)
+        extra_info = ""
+        if len(cves) > 0:
+            for cve in cves:
+                vulnerability = vulnerabilities.find_by({"cve_id": cve})[0]
+                if vulnerability:
+                    if vulnerability.description:
+                        extra_info = f"{cve} is {vulnerability.description}. "
+                    if vulnerability.affected_versions:
+                        extra_info += (
+                            f"{cve} affect the {vulnerability.affected_versions}"
+                        )
+                    if vulnerability.date_reserved:
+                        extra_info += (
+                            f"{cve} was reserved on {vulnerability.date_reserved}"
+                        )
+                    if vulnerability.date_updated:
+                        extra_info += (
+                            f"{cve} was updated on {vulnerability.date_updated}"
+                        )
+                    if vulnerability.published_date:
+                        extra_info += (
+                            f"{cve} was published on {vulnerability.published_date}"
+                        )
+        return extra_info
+
     @override
-    def generate_response(
+    def generate_response(  # noqa: C901
         self,
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
@@ -563,6 +592,8 @@ class DataheraldFinetuningAgent(SQLGenerator):
         )
         agent_executor.return_intermediate_steps = True
         agent_executor.handle_parsing_errors = ERROR_PARSING_MESSAGE
+        if self.augment_prompt(user_prompt, storage):
+            user_prompt.text += " \n" + self.augment_prompt(user_prompt, storage)
         with get_openai_callback() as cb:
             try:
                 result = agent_executor.invoke(

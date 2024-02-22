@@ -69,6 +69,9 @@ class SQLGenerator(Component, ABC):
             top_k = 50
         return top_k if isinstance(top_k, int) else int(top_k)
 
+    def extract_cve_ids(self, query: str) -> list:
+        return re.findall(r"CVE-\d{4}-\d{4,7}", query)
+
     def create_sql_query_status(
         self, db: SQLDatabase, query: str, sql_generation: SQLGeneration
     ) -> SQLGeneration:

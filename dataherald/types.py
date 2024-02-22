@@ -209,3 +209,13 @@ class NLGeneration(BaseModel):
     text: str | None
     created_at: datetime = Field(default_factory=datetime.now)
     metadata: dict | None
+
+
+class Vulnerability(BaseModel):
+    id: str | None = None
+    cve_id: str
+    published_date: str
+    date_reserved: str
+    date_updated: str
+    description: str
+    affected_versions: str
