@@ -28,11 +28,11 @@ class UserService:
         return None
 
     def add_user(self, user_request: UserRequest) -> UserResponse:
-        new_user_data = User(**user_request.dict())
-        new_id = self.repo.add_user(new_user_data.dict(exclude_unset=True))
-        if new_id:
-            new_user = self.repo.get_user({"_id": ObjectId(new_id)})
-            return UserResponse(**new_user.dict())
+        new_user = User(**user_request.dict())
+        new_user_id = self.repo.add_user(new_user)
+        if new_user_id:
+            added_user = self.repo.get_user({"_id": ObjectId(new_user_id)})
+            return UserResponse(**added_user.dict())
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -57,7 +57,7 @@ class UserService:
         new_user_data = User(
             **user_request.dict(exclude={"organization_id"}), organization_id=org_id
         )
-        new_user_id = self.repo.add_user(new_user_data.dict(exclude_unset=True))
+        new_user_id = self.repo.add_user(new_user_data)
         if not new_user_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
