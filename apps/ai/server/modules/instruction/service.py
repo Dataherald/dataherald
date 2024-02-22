@@ -70,6 +70,12 @@ class InstructionService:
     ) -> AggrInstruction:
         reserved_key_in_metadata(instruction_request.metadata)
 
+        if self.repo.get_instructions(instruction_request.db_connection_id, org_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Instruction already exists for this db connection",
+            )
+
         db_connection = self.db_connection_service.get_db_connection_in_org(
             instruction_request.db_connection_id, org_id
         )
