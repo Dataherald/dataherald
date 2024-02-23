@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 
 TOP_K = SQLGenerator.get_upper_bound_limit()
 EMBEDDING_MODEL = "text-embedding-3-large"
-TOP_TABLES = 10
+TOP_TABLES = 20
 
 
 def catch_exceptions():  # noqa: C901
