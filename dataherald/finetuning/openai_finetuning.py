@@ -173,7 +173,7 @@ class OpenAIFineTuning(FinetuningModel):
         for table in db_scan:
             next_table = self.format_table(table)
             if len(schema_of_database) + len(next_table) < token_limit:
-                schema_of_database += next_table
+                schema_of_database = next_table + schema_of_database
             else:
                 break
         return schema_of_database
