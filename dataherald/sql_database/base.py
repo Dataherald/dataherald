@@ -26,6 +26,10 @@ class InvalidDBConnectionError(Exception):
     pass
 
 
+class EmptyDBError(Exception):
+    pass
+
+
 class DBConnections:
     db_connections = {}
 
@@ -207,7 +211,10 @@ class SQLDatabase:
         inspector = inspect(self._engine)
         meta = MetaData(bind=self._engine)
         MetaData.reflect(meta, views=True)
-        return inspector.get_table_names() + inspector.get_view_names()
+        rows = inspector.get_table_names() + inspector.get_view_names()
+        if len(rows) == 0:
+            raise EmptyDBError("The db is empty it could be a permission issue")
+        return rows
 
     @property
     def dialect(self) -> str:
