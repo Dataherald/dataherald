@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import datetime
 from typing import Any
 
@@ -82,8 +83,26 @@ class DatabaseConnection(BaseModel):
     metadata: dict | None
     created_at: datetime = Field(default_factory=datetime.now)
 
-    @validator("connection_uri", "llm_api_key", pre=True, always=True)
-    def encrypt(cls, value: str):
+    @classmethod
+    def validate_uri(cls, input_string):
+        pattern = r"([^:/]+)://([^/]+)/([^/]+)"
+        match = re.match(pattern, input_string)
+        if not match:
+            raise ValueError(f"Invalid URI format: {input_string}")
+
+    @validator("connection_uri", pre=True, always=True)
+    def connection_uri_format(cls, value: str):
+        fernet_encrypt = FernetEncrypt()
+        try:
+            fernet_encrypt.decrypt(value)
+            return value
+        except Exception:
+            cls.validate_uri(value)
+            return fernet_encrypt.encrypt(value)
+        return value
+
+    @validator("llm_api_key", pre=True, always=True)
+    def llm_api_key_encrypt(cls, value: str):
         fernet_encrypt = FernetEncrypt()
         try:
             fernet_encrypt.decrypt(value)
