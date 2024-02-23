@@ -28,6 +28,11 @@ docker-compose build
 docker-compose up
 ```
 
+## Setting up Stripe 
+To get the stripe api key for local development, go to stripe's developer dashboard in test mode (https://dashboard.stripe.com/test/developers), then go to the API keys tab and either use the exising key named `test key` or create a new one with the appropriate permissions.
+
+To get the stripe webhook secret go to the Webhook tab instead and click `Add local listener`
+
 ## Testing
 
 ### API Tests
@@ -40,7 +45,7 @@ Can you also use the Postman UI to run the tests instead, the test suite is unde
 
 Besure to choose the appropriate enviornment from postman. For local environment, run the initialzation script first.
 
-### Unit Tests
+### Unit Tests (deprecated)
 To test the endpoints in the server, create your python enviornment with required packages installed and run the pytest:
 ```
 python3 -m pytest tests/
