@@ -6,6 +6,10 @@ from sql_metadata import Parser
 
 from dataherald.config import System
 from dataherald.context_store import ContextStore
+from dataherald.repositories.database_connections import (
+    DatabaseConnectionNotFoundError,
+    DatabaseConnectionRepository,
+)
 from dataherald.repositories.golden_sqls import GoldenSQLRepository
 from dataherald.repositories.instructions import InstructionRepository
 from dataherald.types import GoldenSQL, GoldenSQLRequest, Prompt
@@ -66,6 +70,7 @@ class DefaultContextStore(ContextStore):
     def add_golden_sqls(self, golden_sqls: List[GoldenSQLRequest]) -> List[GoldenSQL]:
         """Creates embeddings of the questions and adds them to the VectorDB. Also adds the golden sqls to the DB"""
         golden_sqls_repository = GoldenSQLRepository(self.db)
+        db_connection_repository = DatabaseConnectionRepository(self.db)
         stored_golden_sqls = []
         for record in golden_sqls:
             try:
@@ -74,6 +79,13 @@ class DefaultContextStore(ContextStore):
                 raise MalformedGoldenSQLError(
                     f"SQL {record.sql} is malformed. Please check the syntax."
                 ) from e
+
+            db_connection = db_connection_repository.find_by_id(record.db_connection_id)
+            if not db_connection:
+                raise DatabaseConnectionNotFoundError(
+                    f"Database connection not found, {record.db_connection_id}"
+                )
+
             prompt_text = record.prompt_text
             golden_sql = GoldenSQL(
                 prompt_text=prompt_text,

@@ -32,7 +32,6 @@ from dataherald.api.types.responses import (
 )
 from dataherald.config import System
 from dataherald.context_store import ContextStore
-from dataherald.context_store.default import MalformedGoldenSQLError
 from dataherald.db import DB
 from dataherald.db_scanner import Scanner
 from dataherald.db_scanner.models.types import (
@@ -49,20 +48,21 @@ from dataherald.repositories.database_connections import (
     DatabaseConnectionRepository,
 )
 from dataherald.repositories.finetunings import FinetuningsRepository
-from dataherald.repositories.golden_sqls import GoldenSQLRepository
+from dataherald.repositories.golden_sqls import (
+    GoldenSQLNotFoundError,
+    GoldenSQLRepository,
+)
 from dataherald.repositories.instructions import InstructionRepository
 from dataherald.repositories.nl_generations import NLGenerationNotFoundError
 from dataherald.repositories.prompts import PromptNotFoundError
 from dataherald.repositories.sql_generations import SQLGenerationNotFoundError
-from dataherald.services.nl_generations import NLGenerationError, NLGenerationService
+from dataherald.services.nl_generations import NLGenerationService
 from dataherald.services.prompts import PromptService
 from dataherald.services.sql_generations import (
     EmptySQLGenerationError,
-    SQLGenerationError,
     SQLGenerationService,
 )
 from dataherald.sql_database.base import (
-    InvalidDBConnectionError,
     SQLDatabase,
     SQLInjectionError,
 )
@@ -83,11 +83,41 @@ from dataherald.types import (
     TableDescriptionRequest,
     UpdateInstruction,
 )
-from dataherald.utils.models_context_window import OPENAI_FINETUNING_MODELS_WINDOW_SIZES
+from dataherald.utils.encrypt import FernetEncrypt
 
 logger = logging.getLogger(__name__)
 
 MAX_ROWS_TO_CREATE_CSV_FILE = 50
+
+ERROR_MAPPING = {
+    "InvalidId": "invalid_object_id",
+    "InvalidDBConnectionError": "invalid_database_connection",
+    "InvalidURIFormatError": "invalid_database_uri_format",
+    "SSHInvalidDatabaseConnectionError": "ssh_invalid_database_connection",
+    "EmptyDBError": "empty_database",
+    "DatabaseConnectionNotFoundError": "database_connection_not_found",
+    "GoldenSQLNotFoundError": "golden_sql_not_found",
+    "LLMNotSupportedError": "llm_model_not_supported",
+    "PromptNotFoundError": "prompt_not_found",
+    "SQLGenerationError": "sql_generation_not_created",
+    "SQLInjectionError": "sql_injection",
+    "SQLGenerationNotFoundError": "sql_generation_not_found",
+    "NLGenerationError": "nl_generation_not_created",
+    "MalformedGoldenSQLError": "invalid_golden_sql",
+}
+
+
+def error_response(error, detail: dict, default_error_code=""):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "error_code": ERROR_MAPPING.get(
+                error.__class__.__name__, default_error_code
+            ),
+            "message": str(error),
+            "detail": detail,
+        },
+    )
 
 
 def async_scanning(scanner, database, scanner_request, storage):
@@ -126,37 +156,38 @@ class FastAPI(API):
         self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
     ) -> list[TableDescriptionResponse]:
         """Takes a db_connection_id and scan all the tables columns"""
-        db_connection_repository = DatabaseConnectionRepository(self.storage)
-
-        db_connection = db_connection_repository.find_by_id(
-            scanner_request.db_connection_id
-        )
-        if not db_connection:
-            raise HTTPException(status_code=404, detail="Database connection not found")
-
         try:
-            database = SQLDatabase.get_sql_engine(db_connection, True)
-        except Exception as e:
-            raise HTTPException(  # noqa: B904
-                status_code=400,
-                detail=f"Unable to connect to db: {scanner_request.db_connection_id}, {e}",
+            db_connection_repository = DatabaseConnectionRepository(self.storage)
+
+            db_connection = db_connection_repository.find_by_id(
+                scanner_request.db_connection_id
             )
-        all_tables = database.get_tables_and_views()
 
-        if scanner_request.table_names:
-            for table in scanner_request.table_names:
-                if table not in all_tables:
-                    raise HTTPException(
-                        status_code=404, detail=f"Table named: {table} doesn't exist"
-                    )  # noqa: B904
-        else:
-            scanner_request.table_names = all_tables
+            if not db_connection:
+                raise DatabaseConnectionNotFoundError(
+                    f"Database connection {scanner_request.db_connection_id} not found"
+                )
 
-        scanner = self.system.instance(Scanner)
-        rows = scanner.synchronizing(
-            scanner_request,
-            TableDescriptionRepository(self.storage),
-        )
+            database = SQLDatabase.get_sql_engine(db_connection, True)
+            all_tables = database.get_tables_and_views()
+
+            if scanner_request.table_names:
+                for table in scanner_request.table_names:
+                    if table not in all_tables:
+                        raise HTTPException(
+                            status_code=404,
+                            detail=f"Table named: {table} doesn't exist",
+                        )  # noqa: B904
+            else:
+                scanner_request.table_names = all_tables
+
+            scanner = self.system.instance(Scanner)
+            rows = scanner.synchronizing(
+                scanner_request,
+                TableDescriptionRepository(self.storage),
+            )
+        except Exception as e:
+            return error_response(e, scanner_request.dict(), "invalid_database_sync")
 
         background_tasks.add_task(
             async_scanning, scanner, database, scanner_request, self.storage
@@ -179,28 +210,32 @@ class FastAPI(API):
                 metadata=database_connection_request.metadata,
             )
             sql_database = SQLDatabase.get_sql_engine(db_connection, True)
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))  # noqa: B904
-        except InvalidDBConnectionError as e:
-            raise HTTPException(  # noqa: B904
-                status_code=400,
-                detail=f"{e}",
-            )
 
-        # Get tables and views and create table-descriptions as NOT_SCANNED
-        db_connection_repository = DatabaseConnectionRepository(self.storage)
+            # Get tables and views and create table-descriptions as NOT_SCANNED
+            db_connection_repository = DatabaseConnectionRepository(self.storage)
 
-        scanner_repository = TableDescriptionRepository(self.storage)
-        scanner = self.system.instance(Scanner)
-        try:
+            scanner_repository = TableDescriptionRepository(self.storage)
+            scanner = self.system.instance(Scanner)
+
             tables = sql_database.get_tables_and_views()
             db_connection = db_connection_repository.insert(db_connection)
             scanner.create_tables(tables, str(db_connection.id), scanner_repository)
         except Exception as e:
-            raise HTTPException(  # noqa: B904
-                status_code=400,
-                detail=f"{e}",
+            # Encrypt sensible values
+            fernet_encrypt = FernetEncrypt()
+            database_connection_request.connection_uri = fernet_encrypt.encrypt(
+                database_connection_request.connection_uri
             )
+            ssh_settings = database_connection_request.ssh_settings
+            if database_connection_request.ssh_settings:
+                ssh_settings.password = fernet_encrypt.encrypt(ssh_settings.password)
+                ssh_settings.private_key_password = fernet_encrypt.encrypt(
+                    ssh_settings.private_key_password
+                )
+            return error_response(
+                e, database_connection_request.dict(), "invalid_database_connection"
+            )
+
         return DatabaseConnectionResponse(**db_connection.dict())
 
     @override
@@ -246,6 +281,13 @@ class FastAPI(API):
         database_connection_request: DatabaseConnectionRequest,
     ) -> DatabaseConnectionResponse:
         try:
+            db_connection_repository = DatabaseConnectionRepository(self.storage)
+            db_connection = db_connection_repository.find_by_id(db_connection_id)
+            if not db_connection:
+                raise DatabaseConnectionNotFoundError(
+                    f"Database connection {db_connection_id} not found"
+                )
+
             db_connection = DatabaseConnection(
                 id=db_connection_id,
                 alias=database_connection_request.alias,
@@ -259,26 +301,28 @@ class FastAPI(API):
             )
 
             sql_database = SQLDatabase.get_sql_engine(db_connection, True)
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))  # noqa: B904
-        except InvalidDBConnectionError as e:
-            raise HTTPException(  # noqa: B904
-                status_code=400,
-                detail=f"{e}",
-            )
-        db_connection_repository = DatabaseConnectionRepository(self.storage)
 
-        # Get tables and views and create missing table-descriptions as NOT_SCANNED and update DEPRECATED
-        scanner_repository = TableDescriptionRepository(self.storage)
-        scanner = self.system.instance(Scanner)
-        try:
+            # Get tables and views and create missing table-descriptions as NOT_SCANNED and update DEPRECATED
+            scanner_repository = TableDescriptionRepository(self.storage)
+            scanner = self.system.instance(Scanner)
+
             tables = sql_database.get_tables_and_views()
             db_connection = db_connection_repository.update(db_connection)
             scanner.refresh_tables(tables, str(db_connection.id), scanner_repository)
         except Exception as e:
-            raise HTTPException(  # noqa: B904
-                status_code=400,
-                detail=f"{e}",
+            # Encrypt sensible values
+            fernet_encrypt = FernetEncrypt()
+            database_connection_request.connection_uri = fernet_encrypt.encrypt(
+                database_connection_request.connection_uri
+            )
+            ssh_settings = database_connection_request.ssh_settings
+            if ssh_settings:
+                ssh_settings.password = fernet_encrypt.encrypt(ssh_settings.password)
+                ssh_settings.private_key_password = fernet_encrypt.encrypt(
+                    ssh_settings.private_key_password
+                )
+            return error_response(
+                e, database_connection_request.dict(), "invalid_database_connection"
             )
 
         return DatabaseConnectionResponse(**db_connection.dict())
@@ -402,8 +446,13 @@ class FastAPI(API):
         context_store = self.system.instance(ContextStore)
         try:
             golden_sqls = context_store.add_golden_sqls(golden_sqls)
-        except MalformedGoldenSQLError as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
+        except Exception as e:
+            return error_response(
+                e,
+                {"items": [row.dict() for row in golden_sqls]},
+                "golden_sql_not_created",
+            )
+
         return [GoldenSQLResponse(**golden_sql.dict()) for golden_sql in golden_sqls]
 
     @override
@@ -475,13 +524,27 @@ class FastAPI(API):
     def add_instruction(
         self, instruction_request: InstructionRequest
     ) -> InstructionResponse:
-        instruction_repository = InstructionRepository(self.storage)
-        instruction = Instruction(
-            instruction=instruction_request.instruction,
-            db_connection_id=instruction_request.db_connection_id,
-            metadata=instruction_request.metadata,
-        )
-        instruction = instruction_repository.insert(instruction)
+        try:
+            db_connection_repository = DatabaseConnectionRepository(self.storage)
+            db_connection = db_connection_repository.find_by_id(
+                instruction_request.db_connection_id
+            )
+            if not db_connection:
+                raise DatabaseConnectionNotFoundError(
+                    f"Database connection {instruction_request.db_connection_id} not found"
+                )
+            instruction_repository = InstructionRepository(self.storage)
+            instruction = Instruction(
+                instruction=instruction_request.instruction,
+                db_connection_id=instruction_request.db_connection_id,
+                metadata=instruction_request.metadata,
+            )
+            instruction = instruction_repository.insert(instruction)
+        except Exception as e:
+            return error_response(
+                e, instruction_request.dict(), "instruction_not_created"
+            )
+
         return InstructionResponse(**instruction.dict())
 
     @override
@@ -533,58 +596,62 @@ class FastAPI(API):
     def create_finetuning_job(
         self, fine_tuning_request: FineTuningRequest, background_tasks: BackgroundTasks
     ) -> Finetuning:
-        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        try:
+            db_connection_repository = DatabaseConnectionRepository(self.storage)
 
-        db_connection = db_connection_repository.find_by_id(
-            fine_tuning_request.db_connection_id
-        )
-        if not db_connection:
-            raise HTTPException(status_code=404, detail="Database connection not found")
+            db_connection = db_connection_repository.find_by_id(
+                fine_tuning_request.db_connection_id
+            )
+            if not db_connection:
+                raise DatabaseConnectionNotFoundError(
+                    f"Database connection not found, {fine_tuning_request.db_connection_id}"
+                )
 
-        golden_sqls_repository = GoldenSQLRepository(self.storage)
-        golden_sqls = []
-        if fine_tuning_request.golden_sqls:
-            for golden_sql_id in fine_tuning_request.golden_sqls:
-                golden_sql = golden_sqls_repository.find_by_id(golden_sql_id)
-                if not golden_sql:
-                    raise HTTPException(
-                        status_code=404, detail="Golden record not found"
+            golden_sqls_repository = GoldenSQLRepository(self.storage)
+            golden_sqls = []
+            if fine_tuning_request.golden_sqls:
+                for golden_sql_id in fine_tuning_request.golden_sqls:
+                    golden_sql = golden_sqls_repository.find_by_id(golden_sql_id)
+                    if not golden_sql:
+                        raise GoldenSQLNotFoundError(
+                            f"Golden sql not found, {golden_sql_id}"
+                        )
+                    golden_sqls.append(golden_sql)
+            else:
+                golden_sqls = golden_sqls_repository.find_by(
+                    {"db_connection_id": str(fine_tuning_request.db_connection_id)},
+                    page=0,
+                    limit=0,
+                )
+                if not golden_sqls:
+                    raise GoldenSQLNotFoundError(
+                        f"No golden sqls found for db_connection: {fine_tuning_request.db_connection_id}"
                     )
-                golden_sqls.append(golden_sql)
-        else:
-            golden_sqls = golden_sqls_repository.find_by(
-                {"db_connection_id": str(fine_tuning_request.db_connection_id)},
-                page=0,
-                limit=0,
+            default_base_llm = BaseLLM(
+                model_provider="openai",
+                model_name="gpt-3.5-turbo-1106",
             )
-            if not golden_sqls:
-                raise HTTPException(status_code=404, detail="No golden sqls found")
-        default_base_llm = BaseLLM(
-            model_provider="openai",
-            model_name="gpt-3.5-turbo-1106",
-        )
-        base_llm = (
-            fine_tuning_request.base_llm
-            if fine_tuning_request.base_llm
-            else default_base_llm
-        )
-        if base_llm.model_name not in OPENAI_FINETUNING_MODELS_WINDOW_SIZES:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Model {fine_tuning_request.base_llm.model_name} not supported",
+            base_llm = (
+                fine_tuning_request.base_llm
+                if fine_tuning_request.base_llm
+                else default_base_llm
             )
-        model_repository = FinetuningsRepository(self.storage)
-        model = model_repository.insert(
-            Finetuning(
-                db_connection_id=fine_tuning_request.db_connection_id,
-                alias=fine_tuning_request.alias
-                if fine_tuning_request.alias
-                else f"{db_connection.alias}_{datetime.datetime.now().strftime('%Y%m%d%H')}",
-                base_llm=base_llm,
-                golden_sqls=[str(golden_sql.id) for golden_sql in golden_sqls],
-                metadata=fine_tuning_request.metadata,
+            model_repository = FinetuningsRepository(self.storage)
+            model = model_repository.insert(
+                Finetuning(
+                    db_connection_id=fine_tuning_request.db_connection_id,
+                    alias=fine_tuning_request.alias
+                    if fine_tuning_request.alias
+                    else f"{db_connection.alias}_{datetime.datetime.now().strftime('%Y%m%d%H')}",
+                    base_llm=base_llm,
+                    golden_sqls=[str(golden_sql.id) for golden_sql in golden_sqls],
+                    metadata=fine_tuning_request.metadata,
+                )
             )
-        )
+        except Exception as e:
+            return error_response(
+                e, fine_tuning_request.dict(), "finetuning_not_created"
+            )
 
         background_tasks.add_task(async_fine_tuning, self.storage, model)
 
@@ -665,74 +732,33 @@ class FastAPI(API):
     ) -> SQLGenerationResponse:
         try:
             ObjectId(prompt_id)
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail="Invalid prompt id") from e
-        sql_generation_service = SQLGenerationService(self.system, self.storage)
-        try:
+            sql_generation_service = SQLGenerationService(self.system, self.storage)
             sql_generation = sql_generation_service.create(
                 prompt_id, sql_generation_request
             )
-        except PromptNotFoundError as e:
-            return JSONResponse(
-                status_code=400,
-                content={"message": str(e.args[0]), "sql_generation_id": e.args[1]},
+        except Exception as e:
+            return error_response(
+                e, sql_generation_request.dict(), "sql_generation_not_created"
             )
-        except SQLGenerationError as e:
-            return JSONResponse(
-                status_code=400,
-                content={"message": str(e.args[0]), "sql_generation_id": e.args[1]},
-            )
-        except SQLInjectionError as e:
-            return JSONResponse(
-                status_code=400,
-                content={"message": str(e.args[0]), "sql_generation_id": e.args[1]},
-            )
+
         return SQLGenerationResponse(**sql_generation.dict())
 
     @override
     def create_prompt_and_sql_generation(
         self, prompt_sql_generation_request: PromptSQLGenerationRequest
     ) -> SQLGenerationResponse:
-        prompt_service = PromptService(self.storage)
         try:
+            prompt_service = PromptService(self.storage)
             prompt = prompt_service.create(prompt_sql_generation_request.prompt)
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
-        except DatabaseConnectionNotFoundError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e
-
-        sql_generation_service = SQLGenerationService(self.system, self.storage)
-        try:
+            sql_generation_service = SQLGenerationService(self.system, self.storage)
             sql_generation = sql_generation_service.create(
                 prompt.id, prompt_sql_generation_request
             )
-        except PromptNotFoundError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": str(e.args[0]),
-                    "prompt_id": prompt.id,
-                    "sql_generation_id": e.args[1],
-                },
+        except Exception as e:
+            return error_response(
+                e, prompt_sql_generation_request.dict(), "sql_generation_not_created"
             )
-        except SQLGenerationError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": str(e.args[0]),
-                    "prompt_id": prompt.id,
-                    "sql_generation_id": e.args[1],
-                },
-            )
-        except SQLInjectionError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": str(e.args[0]),
-                    "prompt_id": prompt.id,
-                    "sql_generation_id": e.args[1],
-                },
-            )
+
         return SQLGenerationResponse(**sql_generation.dict())
 
     @override
@@ -784,25 +810,20 @@ class FastAPI(API):
     ) -> NLGenerationResponse:
         try:
             ObjectId(sql_generation_id)
-        except InvalidId as e:
-            raise HTTPException(
-                status_code=400, detail="Invalid SQL generation id"
-            ) from e
-        nl_generation_service = NLGenerationService(self.system, self.storage)
-        try:
+            nl_generation_service = NLGenerationService(self.system, self.storage)
             nl_generation = nl_generation_service.create(
                 sql_generation_id, nl_generation_request
             )
-        except SQLGenerationNotFoundError as e:
-            return JSONResponse(
-                status_code=400,
-                content={"message": str(e.args[0]), "nl_generation_id": e.args[1]},
+        except Exception as e:
+            return error_response(
+                e,
+                {
+                    "sql_generation_id": sql_generation_id,
+                    "request": nl_generation_request.dict(),
+                },
+                "nl_generation_not_created",
             )
-        except NLGenerationError as e:
-            return JSONResponse(
-                status_code=400,
-                content={"message": str(e.args[0]), "nl_generation_id": e.args[1]},
-            )
+
         return NLGenerationResponse(**nl_generation.dict())
 
     @override
@@ -813,66 +834,25 @@ class FastAPI(API):
     ) -> NLGenerationResponse:
         try:
             ObjectId(prompt_id)
-        except InvalidId as e:
-            raise HTTPException(status_code=400, detail="Invalid prompt id") from e
-        sql_generation_service = SQLGenerationService(self.system, self.storage)
-        try:
+            sql_generation_service = SQLGenerationService(self.system, self.storage)
             sql_generation = sql_generation_service.create(
                 prompt_id, nl_generation_sql_generation_request.sql_generation
             )
-        except PromptNotFoundError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": str(e.args[0]),
-                    "sql_generation_id": e.args[1],
-                    "nl_generation_id": None,
-                },
-            )
-        except SQLGenerationError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": str(e.args[0]),
-                    "sql_generation_id": e.args[1],
-                    "nl_generation_id": None,
-                },
-            )
-        except SQLInjectionError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": str(e.args[0]),
-                    "sql_generation_id": e.args[1],
-                    "nl_generation_id": None,
-                },
-            )
-
-        nl_generation_service = NLGenerationService(self.system, self.storage)
-        try:
+            nl_generation_service = NLGenerationService(self.system, self.storage)
             nl_generation = nl_generation_service.create(
                 sql_generation.id, nl_generation_sql_generation_request
             )
-        except SQLGenerationNotFoundError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": str(e.args[0]),
-                    "sql_generation_id": sql_generation.id,
-                    "nl_generation_id": e.args[1],
+        except Exception as e:
+            return error_response(
+                e,
+                {
+                    "prompt_id": prompt_id,
+                    "request": nl_generation_sql_generation_request.dict(),
                 },
+                "nl_generation_not_created",
             )
-        except NLGenerationError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": str(e.args[0]),
-                    "sql_generation_id": sql_generation.id,
-                    "nl_generation_id": e.args[1],
-                },
-            )
-        nl_generation_dict = nl_generation.dict()
-        return NLGenerationResponse(**nl_generation_dict)
+
+        return NLGenerationResponse(**nl_generation.dict())
 
     @override
     def create_prompt_sql_and_nl_generation(
@@ -881,58 +861,15 @@ class FastAPI(API):
         prompt_service = PromptService(self.storage)
         try:
             prompt = prompt_service.create(request.sql_generation.prompt)
-        except DatabaseConnectionNotFoundError as e:
-            raise HTTPException(status_code=404, detail=str(e)) from e  # noqa: B904
-
-        sql_generation_service = SQLGenerationService(self.system, self.storage)
-        try:
+            sql_generation_service = SQLGenerationService(self.system, self.storage)
             sql_generation = sql_generation_service.create(
                 prompt.id, request.sql_generation
             )
-        except PromptNotFoundError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": str(e.args[0]),
-                    "prompt_id": prompt.id,
-                    "sql_generation_id": e.args[1],
-                    "nl_generation_id": None,
-                },
-            )
-        except SQLGenerationError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": str(e.args[0]),
-                    "prompt_id": prompt.id,
-                    "sql_generation_id": e.args[1],
-                    "nl_generation_id": None,
-                },
-            )
-
-        nl_generation_service = NLGenerationService(self.system, self.storage)
-        try:
+            nl_generation_service = NLGenerationService(self.system, self.storage)
             nl_generation = nl_generation_service.create(sql_generation.id, request)
-        except SQLGenerationNotFoundError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": str(e.args[0]),
-                    "prompt_id": prompt.id,
-                    "sql_generation_id": sql_generation.id,
-                    "nl_generation_id": e.args[1],
-                },
-            )
-        except NLGenerationError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": str(e.args[0]),
-                    "prompt_id": prompt.id,
-                    "sql_generation_id": sql_generation.id,
-                    "nl_generation_id": e.args[1],
-                },
-            )
+        except Exception as e:
+            return error_response(e, request.dict(), "nl_generation_not_created")
+
         return NLGenerationResponse(**nl_generation.dict())
 
     @override
