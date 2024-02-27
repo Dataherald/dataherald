@@ -30,6 +30,10 @@ class EmptyDBError(Exception):
     pass
 
 
+class SSHInvalidDatabaseConnectionError(Exception):
+    pass
+
+
 class DBConnections:
     db_connections = {}
 
@@ -83,6 +87,11 @@ class SQLDatabase:
                 engine = cls.from_uri_ssh(database_info)
                 DBConnections.add(database_info.id, engine)
                 return engine
+        except Exception as e:
+            raise SSHInvalidDatabaseConnectionError(
+                f"Invalid SSH connection, {e}"
+            ) from e
+        try:
             db_uri = unquote(fernet_encrypt.decrypt(database_info.connection_uri))
 
             file_path = database_info.path_to_credentials_file

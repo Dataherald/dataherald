@@ -71,6 +71,10 @@ class SSHSettings(BaseSettings):
         return getattr(self, key)
 
 
+class InvalidURIFormatError(Exception):
+    pass
+
+
 class DatabaseConnection(BaseModel):
     id: str | None
     alias: str
@@ -88,7 +92,7 @@ class DatabaseConnection(BaseModel):
         pattern = r"([^:/]+)://([^/]+)/([^/]+)"
         match = re.match(pattern, input_string)
         if not match:
-            raise ValueError(f"Invalid URI format: {input_string}")
+            raise InvalidURIFormatError(f"Invalid URI format: {input_string}")
 
     @validator("connection_uri", pre=True, always=True)
     def connection_uri_format(cls, value: str):
