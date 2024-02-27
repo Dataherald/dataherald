@@ -5,6 +5,10 @@ from dataherald.types import GoldenSQL
 DB_COLLECTION = "golden_sqls"
 
 
+class GoldenSQLNotFoundError(Exception):
+    pass
+
+
 class GoldenSQLRepository:
     def __init__(self, storage):
         self.storage = storage
