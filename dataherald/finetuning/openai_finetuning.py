@@ -135,14 +135,13 @@ class OpenAIFineTuning(FinetuningModel):
         return table_rep
 
     def sort_tables(
-        self, tables: List[TableDescription], prompt: str
+        self,
+        tables: List[TableDescription],
+        table_embeddings: List[List[float]],
+        prompt: str,
     ) -> List[TableDescription]:
         tables_with_similarity = []
-        table_representations = []
-        for table in tables:
-            table_representations.append(self.create_table_representation(table))
         prompt_embedding = self.embedding.embed_query(prompt)
-        table_embeddings = self.embedding.embed_documents(table_representations)
         similarities = np.dot(table_embeddings, prompt_embedding) / (
             np.linalg.norm(table_embeddings) * np.linalg.norm(prompt_embedding)
         )
@@ -154,6 +153,7 @@ class OpenAIFineTuning(FinetuningModel):
     def format_dataset(
         self,
         db_scan: List[TableDescription],
+        table_embeddings: List[List[float]],
         prompt: str,
         token_limit: int,
         correct_tables: [str] = None,  # type: ignore
@@ -166,10 +166,12 @@ class OpenAIFineTuning(FinetuningModel):
                 schema_of_database += self.format_table(table)
                 indexes_to_remove.append(i)
         new_db_scan = []
+        new_table_embeddings = []
         for i in range(len(db_scan)):
             if i not in indexes_to_remove:
                 new_db_scan.append(db_scan[i])
-        db_scan = self.sort_tables(new_db_scan, prompt)
+                new_table_embeddings.append(table_embeddings[i])
+        db_scan = self.sort_tables(new_db_scan, new_table_embeddings, prompt)
         for table in db_scan:
             next_table = self.format_table(table)
             if len(schema_of_database) + len(next_table) < token_limit:
@@ -199,6 +201,11 @@ class OpenAIFineTuning(FinetuningModel):
         finetuning_dataset_path = f"tmp/{str(uuid.uuid4())}.jsonl"
         model_repository = FinetuningsRepository(self.storage)
         model = model_repository.find_by_id(self.fine_tuning_model.id)
+        results = []
+        table_representations = []
+        for table in db_scan:
+            table_representations.append(self.create_table_representation(table))
+        table_embeddings = self.embedding.embed_documents(table_representations)
         for index, golden_sql_id in enumerate(self.fine_tuning_model.golden_sqls):
             logger.info(
                 f"Processing golden sql {index + 1} of {len(self.fine_tuning_model.golden_sqls)}"
@@ -213,6 +220,7 @@ class OpenAIFineTuning(FinetuningModel):
                 correct_tables.append(table.split(".")[-1])
             database_schema = self.format_dataset(
                 db_scan=list(db_scan),
+                table_embeddings=table_embeddings,
                 prompt=question,
                 token_limit=OPENAI_FINETUNING_MODELS_WINDOW_SIZES[
                     self.fine_tuning_model.base_llm.model_name
@@ -223,14 +231,17 @@ class OpenAIFineTuning(FinetuningModel):
             system_prompt = FINETUNING_SYSTEM_INFORMATION + database_schema
             user_prompt = "User Question: " + question + "\n SQL: "
             assistant_prompt = query + "\n"
-            with open(finetuning_dataset_path, "a") as outfile:
-                messages = {
+            results.append(
+                {
                     "messages": [
-                        {"role": "system", "content": f"{system_prompt}"},
-                        {"role": "user", "content": f"Question : {user_prompt}"},
-                        {"role": "assistant", "content": f"{assistant_prompt}"},
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                        {"role": "assistant", "content": assistant_prompt},
                     ]
                 }
+            )
+        with open(finetuning_dataset_path, "a") as outfile:
+            for messages in results:
                 number_of_tokens = self.count_tokens(messages)
                 if (
                     number_of_tokens
