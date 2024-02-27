@@ -1,13 +1,14 @@
 import httpx
-from fastapi import HTTPException, status
 
 from config import settings
+from exceptions.exception_handlers import raise_engine_exception
 from modules.db_connection.service import DBConnectionService
 from modules.table_description.models.entities import (
     DHTableDescriptionMetadata,
     TableDescription,
     TableDescriptionMetadata,
 )
+from modules.table_description.models.exceptions import TableDescriptionNotFoundError
 from modules.table_description.models.requests import (
     ScanRequest,
     TableDescriptionRequest,
@@ -18,7 +19,6 @@ from modules.table_description.models.responses import (
     DatabaseDescriptionResponse,
 )
 from modules.table_description.repository import TableDescriptionRepository
-from utils.exception import raise_for_status
 from utils.misc import reserved_key_in_metadata
 
 
@@ -39,7 +39,7 @@ class TableDescriptionService:
                 params={"db_connection_id": db_connection_id, "table_name": table_name},
                 timeout=settings.default_engine_timeout,
             )
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
             table_descriptions = [
                 AggrTableDescription(
                     **table_description, db_connection_alias=db_connection.alias
@@ -68,7 +68,7 @@ class TableDescriptionService:
                 settings.engine_url + f"/table-descriptions/{table_description_id}",
                 timeout=settings.default_engine_timeout,
             )
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
             table_description = AggrTableDescription(
                 **response.json(), db_connection_alias=db_connection.alias
             )
@@ -94,7 +94,7 @@ class TableDescriptionService:
                 )
 
                 try:
-                    raise_for_status(response.status_code, response.text)
+                    raise_engine_exception(response, org_id=org_id)
                     table_descriptions = [
                         AggrTableDescription(**table_description)
                         for table_description in response.json()
@@ -139,7 +139,7 @@ class TableDescriptionService:
                     params={"db_connection_id": db_connection.id},
                     timeout=settings.default_engine_timeout,
                 )
-                raise_for_status(response.status_code, response.text)
+                raise_engine_exception(response, org_id=org_id)
                 table_descriptions = [
                     AggrTableDescription(**table_description)
                     for table_description in response.json()
@@ -187,7 +187,7 @@ class TableDescriptionService:
                     json=scan_request.dict(exclude_unset=True),
                     timeout=settings.default_engine_timeout,
                 )
-                raise_for_status(response.status_code, response.text)
+                raise_engine_exception(response, org_id=org_id)
                 table_descriptions = [
                     AggrTableDescription(**table_description)
                     for table_description in response.json()
@@ -218,7 +218,7 @@ class TableDescriptionService:
                 settings.engine_url + f"/table-descriptions/{table_description_id}",
                 json=table_description_request.dict(exclude_unset=True),
             )
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
             return AggrTableDescription(
                 **response.json(), db_connection_alias=db_connection.alias
             )
@@ -230,8 +230,5 @@ class TableDescriptionService:
             table_description_id, org_id
         )
         if not table_description:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Table Description not found",
-            )
+            raise TableDescriptionNotFoundError(table_description_id, org_id)
         return table_description

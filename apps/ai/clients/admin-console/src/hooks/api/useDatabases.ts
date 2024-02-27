@@ -1,14 +1,14 @@
 import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
 import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
-import { Databases } from '@/models/api'
+import { Databases, ErrorResponse } from '@/models/api'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 
 interface DatabasesResponse {
   databases: Databases | undefined
   isLoading: boolean
-  error: unknown
+  error: ErrorResponse | null
   mutate: (
     optimisticData?: Databases,
     refresh?: boolean,

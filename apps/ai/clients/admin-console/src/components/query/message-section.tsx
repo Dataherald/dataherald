@@ -26,7 +26,7 @@ import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import useQueryGenerateMessage from '@/hooks/api/query/useQueryGenerateMessage'
 import { cn } from '@/lib/utils'
-import { Query } from '@/models/api'
+import { ErrorResponse, Query } from '@/models/api'
 import { formatDistance } from 'date-fns'
 import { Bot, Edit, Info, Loader } from 'lucide-react'
 import Image from 'next/image'
@@ -88,12 +88,13 @@ const MessageSection: FC<MessageSectionProps> = ({
         title: 'Message updated',
         description: 'The query message was updated successfully.',
       })
-    } catch (error) {
-      console.error(error)
+    } catch (e) {
+      console.error(e)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description: 'There was a problem with updating the message.',
+        title,
+        description,
         action: (
           <ToastAction
             altText="Try again"

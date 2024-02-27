@@ -19,6 +19,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
 import { usePostApiKey } from '@/hooks/api/api-keys/usePostApiKey'
 import { copyToClipboard } from '@/lib/utils'
+import { ErrorResponse } from '@/models/api'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Copy, Loader, Plus } from 'lucide-react'
 import { FC, useState } from 'react'
@@ -89,12 +90,13 @@ const GenerateApiKeyDialog: FC<AddApiKeyDialogProps> = ({ onGeneratedKey }) => {
         title: 'Secret API key generated',
         description: `Your secret key was generated successfully.`,
       })
-    } catch (error) {
-      console.error(`Error generating the API key: ${error}`)
+    } catch (e) {
+      console.error(e)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description: 'There was a problem generating your secret key.',
+        title,
+        description,
         action: (
           <ToastAction
             altText="Try again"

@@ -1,7 +1,7 @@
 import { DataTable } from '@/components/data-table'
 import { LoadingTable } from '@/components/data-table/loading-table'
+import PageErrorMessage from '@/components/error/page-error-message'
 import { finetunningsColumns } from '@/components/fine-tunnings/columns'
-import FineTunningsError from '@/components/fine-tunnings/error'
 import PageLayout from '@/components/layout/page-layout'
 import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
@@ -22,7 +22,12 @@ const FineTuningPage: FC = () => {
       <LoadingTable columnLength={5} rowLength={5} className="rounded-none" />
     )
   } else if (error) {
-    pageContent = <FineTunningsError />
+    pageContent = (
+      <PageErrorMessage
+        message="Something went wrong while fetching the fine-tunning models."
+        error={error}
+      />
+    )
   } else if (models?.length === 0) {
     pageContent = <div className="text-slate-500">No models created yet.</div>
   } else {

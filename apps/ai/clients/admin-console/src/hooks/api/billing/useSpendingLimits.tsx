@@ -1,14 +1,14 @@
 import { API_URL } from '@/config'
 import { useAppContext } from '@/contexts/app-context'
 import { useAuth } from '@/contexts/auth-context'
-import { SpendingLimits } from '@/models/api'
+import { ErrorResponse, SpendingLimits } from '@/models/api'
 import useSWR, { KeyedMutator } from 'swr'
 
 interface SpendingLimitsResponse {
   limits: SpendingLimits | undefined
   isLoading: boolean
   isValidating: boolean
-  error: unknown
+  error: ErrorResponse | null
   mutate: KeyedMutator<SpendingLimits>
 }
 

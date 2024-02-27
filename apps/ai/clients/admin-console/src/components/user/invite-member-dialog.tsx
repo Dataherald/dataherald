@@ -20,6 +20,8 @@ import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
 import { usePostUserToOrganization } from '@/hooks/api/user/usePostUserToOrganization'
+import { ErrorResponse } from '@/models/api'
+import { EUserErrorCode } from '@/models/errorCodes'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { AlertCircle, Loader, ShieldAlert } from 'lucide-react'
 import { FC, useState } from 'react'
@@ -72,25 +74,22 @@ const InviteMemberDialog: FC<InviteMemberDialogProps> = ({
       })
       onInviteMember()
       setError(undefined)
-    } catch (error) {
-      let errorDescription: string
-      let toastAction: JSX.Element | undefined
-      const errorResponse = error as Error
-      console.error(`Error adding user: ${errorResponse}`)
-      if (errorResponse.cause === 409) {
-        switch (errorResponse.message) {
-          case 'USER_ALREADY_EXISTS_IN_ORG':
-            errorDescription = `The user is already a member of your Organization.`
-            break
-          case 'USER_ALREADY_EXISTS_IN_OTHER_ORG':
-            errorDescription = `The user is already a member of another Organization.`
-            break
-          default:
-            errorDescription = `There was a problem inviting the new member to the Organization.`
-        }
-      } else {
-        errorDescription = `There was a problem inviting the new member to the Organization.`
-        toastAction = (
+    } catch (e) {
+      console.error(e)
+      const {
+        message: title,
+        trace_id: description,
+        error_code,
+      } = e as ErrorResponse
+      let action: JSX.Element | undefined
+      if (
+        ![
+          EUserErrorCode.user_exists_in_org,
+          EUserErrorCode.user_exists_in_other_org,
+        ].includes(error_code as EUserErrorCode)
+      ) {
+        // should be able to retry if the error is not related to user already existing
+        action = (
           <ToastAction
             altText="Try again"
             onClick={() => form.handleSubmit(handleInviteMember)()}
@@ -99,12 +98,12 @@ const InviteMemberDialog: FC<InviteMemberDialogProps> = ({
           </ToastAction>
         )
       }
-      setError(errorDescription)
+      setError(title)
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description: errorDescription,
-        action: toastAction,
+        title,
+        description,
+        action,
       })
     } finally {
       setInvitingMember(false)

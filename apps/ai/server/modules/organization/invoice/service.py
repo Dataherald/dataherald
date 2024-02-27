@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from fastapi import HTTPException, status
 from stripe import PaymentMethod
 
 from config import invoice_settings
@@ -12,6 +11,19 @@ from modules.organization.invoice.models.entities import (
     Usage,
     UsageInvoice,
     UsageType,
+)
+from modules.organization.invoice.models.exceptions import (
+    CannotUpdatePaymentMethodError,
+    CannotUpdateSpendingLimitError,
+    HardSpendingLimitExceededError,
+    IsEnterprisePlanError,
+    LastPaymentMethodError,
+    MissingInvoiceDetailsError,
+    NoPaymentMethodError,
+    SpendingLimitExceededError,
+    SubscriptionCanceledError,
+    SubscriptionPastDueError,
+    UnknownSubscriptionStatusError,
 )
 from modules.organization.invoice.models.requests import (
     CreditRequest,
@@ -28,7 +40,6 @@ from modules.organization.invoice.repository import InvoiceRepository
 from modules.organization.repository import OrganizationRepository
 from utils.analytics import Analytics, EventName, EventType
 from utils.billing import Billing
-from utils.exception import ErrorCode
 
 
 class InvoiceService:
@@ -70,10 +81,7 @@ class InvoiceService:
                 hard_spending_limit=organization.invoice_details.hard_spending_limit,
             )
 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Unable to update spending limit",
-        )
+        raise CannotUpdateSpendingLimitError(org_id)
 
     def get_pending_invoice(self, org_id: str) -> InvoiceResponse:
 
@@ -194,10 +202,7 @@ class InvoiceService:
         ):
             return {"success": True}
 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Unable to set default payment method",
-        )
+        raise CannotUpdatePaymentMethodError(org_id)
 
     def detach_payment_method(
         self, org_id: str, payment_method_id: str
@@ -210,10 +215,7 @@ class InvoiceService:
             organization.invoice_details.stripe_customer_id
         )
         if len(payment_methods) <= 1:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot detach last payment method",
-            )
+            raise LastPaymentMethodError(org_id)
 
         # check if payment method exists for customer, avoids using stripe api
         payment_method = None
@@ -233,9 +235,7 @@ class InvoiceService:
                         break
             return self._get_mapped_payment_method_response(payment_method, False)
 
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Payment method not found"
-        )
+        raise NoPaymentMethodError(org_id)
 
     def record_usage(
         self,
@@ -256,7 +256,7 @@ class InvoiceService:
             description=description,
             status=RecordStatus.UNRECORDED,
         )
-        usage_id = self.repo.create_usage(usage.dict(exclude={"id"}))
+        usage_id = self.repo.create_usage(usage)
         print(f"New usage created: {usage_id}")
         available_credits = organization.invoice_details.available_credits
         self._apply_unrecorded_credits(
@@ -286,15 +286,24 @@ class InvoiceService:
         # check if organization has payment method
         organization = self.org_repo.get_organization(org_id)
         if not organization.invoice_details:
-            raise HTTPException(
-                status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                detail="Organization does not have invoice details",
-            )
+            raise MissingInvoiceDetailsError(org_id)
         # skip check if enterprise
         if organization.invoice_details.plan != PaymentPlan.ENTERPRISE:
-            self._check_subscription_status(
+            if (
                 organization.invoice_details.stripe_subscription_status
-            )
+                != StripeSubscriptionStatus.ACTIVE
+            ):
+                if (
+                    organization.invoice_details.stripe_subscription_status
+                    == StripeSubscriptionStatus.PAST_DUE
+                ):
+                    raise SubscriptionPastDueError(org_id)
+                if (
+                    organization.invoice_details.stripe_subscription_status
+                    == StripeSubscriptionStatus.CANCELED
+                ):
+                    raise SubscriptionCanceledError(org_id)
+                raise UnknownSubscriptionStatusError(org_id)
             start_date, end_date = (
                 self.billing.get_current_subscription_period_with_anchor(
                     organization.invoice_details.billing_cycle_anchor
@@ -316,27 +325,23 @@ class InvoiceService:
                     )
                     > organization.invoice_details.available_credits
                 ):
-                    raise HTTPException(
-                        status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                        detail=ErrorCode.no_payment_method,
-                    )
+                    raise NoPaymentMethodError(org_id)
 
             # for usage based and credit only
-            self._check_spending_limit_from_usage(
-                usages,
-                organization.invoice_details.spending_limit,
-                organization.invoice_details.hard_spending_limit,
+            total_usage_cost = self._calculate_total_usage_cost(
+                self._get_invoice_from_usages(usages)
             )
+            if total_usage_cost > organization.invoice_details.hard_spending_limit:
+                raise HardSpendingLimitExceededError(org_id)
+            if total_usage_cost > organization.invoice_details.spending_limit:
+                raise SpendingLimitExceededError(org_id)
 
     def add_credits(
         self, org_id: str, user_id: str, credit_request: CreditRequest
     ) -> CreditResponse:
         organization = self.org_repo.get_organization(org_id)
         if organization.invoice_details.plan == PaymentPlan.ENTERPRISE:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot add credits to enterprise plan",
-            )
+            raise IsEnterprisePlanError(org_id)
 
         credit_id = self.repo.create_credit(
             Credit(
@@ -344,7 +349,7 @@ class InvoiceService:
                 amount=credit_request.amount,
                 status=RecordStatus.RECORDED,
                 description=f"added by {user_id}: {credit_request.description}",
-            ).dict(exclude={"id"})
+            )
         )
         print(f"New credit created: {credit_id}")
         # apply credits to recorded usage
@@ -359,7 +364,7 @@ class InvoiceService:
                     amount=-credits_due,
                     status=RecordStatus.RECORDED,
                     description=f"negative credits for stripe pending invoice; used from new credit {credit_id}",
-                ).dict(exclude={"id"})
+                )
             )
             self.billing.create_balance_transaction(
                 organization.invoice_details.stripe_customer_id,
@@ -380,23 +385,6 @@ class InvoiceService:
             f"negative credits for pending invoice; used from new credit {credit_id}",
         )
         return self.repo.get_credit(credit_id)
-
-    def _check_spending_limit_from_usage(
-        self, usages: list[Usage], spending_limit: int, hard_spending_limit: int
-    ):
-        total_usage_cost = self._calculate_total_usage_cost(
-            self._get_invoice_from_usages(usages)
-        )
-        if total_usage_cost > hard_spending_limit:
-            raise HTTPException(
-                status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                detail=ErrorCode.hard_spending_limit_exceeded,
-            )
-        if total_usage_cost > spending_limit:
-            raise HTTPException(
-                status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                detail=ErrorCode.spending_limit_exceeded,
-            )
 
     def _get_invoice_from_usages(self, usages: list[Usage]) -> UsageInvoice:
         usage_invoice = {
@@ -436,23 +424,6 @@ class InvoiceService:
             is_default=is_defualt,
         )
 
-    def _check_subscription_status(self, subscription_status: str):
-        if subscription_status != StripeSubscriptionStatus.ACTIVE:
-            if subscription_status == StripeSubscriptionStatus.PAST_DUE:
-                raise HTTPException(
-                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                    detail=ErrorCode.subscription_past_due,
-                )
-            if subscription_status == StripeSubscriptionStatus.CANCELED:
-                raise HTTPException(
-                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                    detail=ErrorCode.subscription_canceled,
-                )
-            raise HTTPException(
-                status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                detail=ErrorCode.unknown_subscription_status,
-            )
-
     def _apply_unrecorded_credits(
         self,
         org_id: str,
@@ -469,7 +440,7 @@ class InvoiceService:
                     amount=-credits_due,
                     status=RecordStatus.UNRECORDED,
                     description=description,
-                ).dict(exclude={"id"})
+                )
             )
             print(f"New negative credit created: {neg_credit_id}")
         self.repo.update_available_credits(org_id, available_credits - credits_due)

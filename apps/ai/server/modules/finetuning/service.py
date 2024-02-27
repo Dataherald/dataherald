@@ -1,19 +1,22 @@
 import httpx
-from fastapi import HTTPException, status
 
 from config import settings
+from exceptions.exception_handlers import raise_engine_exception
 from modules.db_connection.service import DBConnectionService
 from modules.finetuning.models.entities import (
     DHFinetuningMetadata,
     Finetuning,
     FinetuningMetadata,
 )
+from modules.finetuning.models.exceptions import (
+    FinetuningAliasExistsError,
+    FinetuningNotFoundError,
+)
 from modules.finetuning.models.requests import FinetuningRequest
 from modules.finetuning.models.responses import AggrFinetuning
 from modules.finetuning.repository import FinetuningRepository
 from modules.golden_sql.service import GoldenSQLService
 from utils.analytics import Analytics, EventName, EventType
-from utils.exception import raise_for_status
 from utils.misc import reserved_key_in_metadata
 
 
@@ -43,7 +46,7 @@ class FinetuningService:
                     params={"db_connection_id": db_connection.id},
                     timeout=settings.default_engine_timeout,
                 )
-                raise_for_status(response.status_code, response.text)
+                raise_engine_exception(response, org_id=org_id)
                 finetuning_jobs += [
                     AggrFinetuning(
                         **finetuning_job,
@@ -62,7 +65,7 @@ class FinetuningService:
                 settings.engine_url + f"/finetunings/{finetuning_id}",
                 timeout=settings.default_engine_timeout,
             )
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
             finetuning_job = Finetuning(**response.json())
             db_connection = self.db_connection_service.get_db_connection_in_org(
                 finetuning_job.db_connection_id, org_id
@@ -79,6 +82,12 @@ class FinetuningService:
             finetuning_request.db_connection_id, org_id
         )
 
+        finetuning = self.repo.get_finetuning_job_by_alias(
+            finetuning_request.alias, org_id
+        )
+        if finetuning:
+            raise FinetuningAliasExistsError(finetuning.id, org_id)
+
         finetuning_request.metadata = FinetuningMetadata(
             **finetuning_request.metadata,
             dh_internal=DHFinetuningMetadata(organization_id=org_id),
@@ -89,7 +98,7 @@ class FinetuningService:
                 settings.engine_url + "/finetunings",
                 json=finetuning_request.dict(exclude_unset=True),
             )
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
 
             aggr_finetuning = AggrFinetuning(
                 **response.json(), db_connection_alias=db_connection.alias
@@ -124,7 +133,7 @@ class FinetuningService:
             response = await client.post(
                 settings.engine_url + f"/finetunings/{finetuning_id}/cancel",
             )
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
             return AggrFinetuning(
                 **response.json(), db_connection_alias=db_connection.alias
             )
@@ -132,10 +141,7 @@ class FinetuningService:
     def get_finetuning_job_in_org(self, finetuning_id: str, org_id: str) -> Finetuning:
         finetuning_job = self.repo.get_finetuning_job(finetuning_id, org_id)
         if not finetuning_job:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Finetuning not found",
-            )
+            raise FinetuningNotFoundError(finetuning_id, org_id)
         return finetuning_job
 
     def is_gpt_4_model(self, model_name: str) -> bool:

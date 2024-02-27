@@ -7,6 +7,7 @@ import {
   isDatabaseResource,
   isTableResource,
 } from '@/lib/domain/database'
+import { ErrorResponse } from '@/models/api'
 import {
   ColumnResource,
   DatabaseResource,
@@ -17,7 +18,7 @@ import {
 export interface UseDatabaseResourceFromTree<R> {
   resource: R | null
   isLoading: boolean
-  error: unknown
+  error: ErrorResponse | null
   updateResource: ((newText: string) => Promise<void>) | null
 }
 

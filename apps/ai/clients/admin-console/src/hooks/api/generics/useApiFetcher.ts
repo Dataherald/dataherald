@@ -1,10 +1,7 @@
 import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
-import {
-  ESubscriptionErrorCode,
-  isSubscriptionErrorCode,
-  useSubscription,
-} from '@/contexts/subscription-context'
+import { useSubscription } from '@/contexts/subscription-context'
+import { isErrorResponse, isSubscriptionErrorCode } from '@/lib/domain/error'
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
 
@@ -48,16 +45,14 @@ const useApiFetcher = () => {
             router.push('api/auth/logout')
           }
         } else {
-          const serverError: { detail: string } = await response.json()
-          const error = new Error(serverError.detail, {
-            cause: response.status,
-          })
-          // for now the error codes are in the `detail` field. This will become a JSON in the future
-          if (isSubscriptionErrorCode(serverError.detail)) {
-            setSubscriptionStatus(serverError.detail as ESubscriptionErrorCode)
-          }
+          const errorResponse = await response.json()
+          if (isErrorResponse(errorResponse)) {
+            if (isSubscriptionErrorCode(errorResponse.error_code)) {
+              setSubscriptionStatus(errorResponse.error_code)
+            }
 
-          throw error
+            throw errorResponse
+          }
         }
       }
       return response.json()

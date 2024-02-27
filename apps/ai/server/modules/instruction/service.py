@@ -1,17 +1,20 @@
 import httpx
-from fastapi import HTTPException, status
 
 from config import settings
+from exceptions.exception_handlers import raise_engine_exception
 from modules.db_connection.service import DBConnectionService
 from modules.instruction.models.entities import (
     DHInstructionMetadata,
     Instruction,
     InstructionMetadata,
 )
+from modules.instruction.models.exceptions import (
+    InstructionNotFoundError,
+    SingleInstructionOnlyError,
+)
 from modules.instruction.models.requests import InstructionRequest
 from modules.instruction.models.responses import AggrInstruction
 from modules.instruction.repository import InstructionRepository
-from utils.exception import raise_for_status
 from utils.misc import reserved_key_in_metadata
 
 
@@ -57,10 +60,7 @@ class InstructionService:
         )
         instructions = self.repo.get_instructions(db_connection_id, org_id)
         if len(instructions) == 0:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Instruction not found",
-            )
+            raise InstructionNotFoundError(org_id, db_connection_id=db_connection_id)
         return AggrInstruction(
             **instructions[0].dict(), db_connection_alias=db_connection.alias
         )
@@ -71,9 +71,8 @@ class InstructionService:
         reserved_key_in_metadata(instruction_request.metadata)
 
         if self.repo.get_instructions(instruction_request.db_connection_id, org_id):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Instruction already exists for this db connection",
+            raise SingleInstructionOnlyError(
+                instruction_request.db_connection_id, org_id
             )
 
         db_connection = self.db_connection_service.get_db_connection_in_org(
@@ -89,7 +88,7 @@ class InstructionService:
                 settings.engine_url + "/instructions",
                 json=instruction_request.dict(exclude_unset=True),
             )
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
             return AggrInstruction(
                 **response.json(), db_connection_alias=db_connection.alias
             )
@@ -120,7 +119,7 @@ class InstructionService:
                 settings.engine_url + f"/instructions/{instruction_id}",
                 json=instruction_request.dict(exclude_unset=True),
             )
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
             return AggrInstruction(
                 **response.json(), db_connection_alias=db_connection.alias
             )
@@ -135,14 +134,11 @@ class InstructionService:
             response = await client.delete(
                 settings.engine_url + f"/instructions/{instruction_id}",
             )
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
             return {"id": instruction_id}
 
     def get_instruction_in_org(self, instruction_id: str, org_id: str) -> Instruction:
         instruction = self.repo.get_instruction(instruction_id, org_id)
         if not instruction:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Instruction not found",
-            )
+            raise InstructionNotFoundError(org_id, instruction_id=instruction_id)
         return instruction

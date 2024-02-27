@@ -1,16 +1,14 @@
 import WithAnalytics from '@/components/hoc/WithAnalytics'
+import WithApiFetcher from '@/components/hoc/WithApiFetcher'
 import WithMobileRedirect from '@/components/hoc/WithMobileRedirect'
 import WithSubscription from '@/components/hoc/WithSubscription'
 import { AppContextProvider } from '@/contexts/app-context'
 import { AuthProvider } from '@/contexts/auth-context'
 import { SubscriptionProvider } from '@/contexts/subscription-context'
-import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { cn } from '@/lib/utils'
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { Nunito_Sans, Source_Code_Pro } from 'next/font/google'
-import { FC, ReactNode } from 'react'
-import { SWRConfig } from 'swr'
 
 export const sourceCode = Source_Code_Pro({
   subsets: ['latin'],
@@ -25,19 +23,6 @@ export const mainFont = Nunito_Sans({
   display: 'swap',
 })
 
-const SWRConfigWithAuth: FC<{ children: ReactNode }> = ({ children }) => {
-  const { apiFetcher } = useApiFetcher()
-  return (
-    <SWRConfig
-      value={{
-        fetcher: apiFetcher,
-      }}
-    >
-      {children}
-    </SWRConfig>
-  )
-}
-
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
@@ -46,7 +31,7 @@ export default function App({ Component, pageProps }: AppProps) {
           <WithSubscription>
             <AppContextProvider>
               <WithAnalytics>
-                <SWRConfigWithAuth>
+                <WithApiFetcher>
                   <div
                     className={cn(
                       sourceCode.variable,
@@ -56,7 +41,7 @@ export default function App({ Component, pageProps }: AppProps) {
                   >
                     <Component {...pageProps} />
                   </div>
-                </SWRConfigWithAuth>
+                </WithApiFetcher>
               </WithAnalytics>
             </AppContextProvider>
           </WithSubscription>

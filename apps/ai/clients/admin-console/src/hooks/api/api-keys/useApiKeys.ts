@@ -1,13 +1,13 @@
 import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
-import { ApiKeys } from '@/models/api'
+import { ApiKeys, ErrorResponse } from '@/models/api'
 import useSWR, { KeyedMutator } from 'swr'
 
 interface ApiKeysResponse {
   apiKeys: ApiKeys | undefined
   isLoading: boolean
   isValidating: boolean
-  error: unknown
+  error: ErrorResponse | null
   mutate: KeyedMutator<ApiKeys>
 }
 

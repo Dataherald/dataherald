@@ -26,7 +26,7 @@ import {
   isVerified,
 } from '@/lib/domain/query'
 import { cn } from '@/lib/utils'
-import { Query, QueryStatus } from '@/models/api'
+import { ErrorResponse, Query, QueryStatus } from '@/models/api'
 import {
   EDomainQueryWorkspaceStatus,
   QueryWorkspaceStatus,
@@ -149,12 +149,13 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
         description:
           'The query was resubmitted to the platform for a new response.',
       })
-    } catch (error) {
-      console.error(error)
+    } catch (e) {
+      console.error(e)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description: 'There was a problem with resubmitting the query.',
+        title,
+        description,
         action: (
           <ToastAction altText="Try again" onClick={handleResubmit}>
             Try again
@@ -179,10 +180,11 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       })
     } catch (e) {
       console.error(e)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description: 'There was a problem with running the query.',
+        title,
+        description,
         action: (
           <ToastAction altText="Try again" onClick={handleRunQuery}>
             Try again
@@ -223,11 +225,11 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
       }
     } catch (e) {
       console.error(e)
-      setCurrentQueryStatus(getWorkspaceQueryStatus(status))
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description: 'There was a problem with updating the query status.',
+        title,
+        description,
         action: (
           <ToastAction
             altText="Try again"
@@ -237,6 +239,7 @@ const QueryWorkspace: FC<QueryWorkspaceProps> = ({
           </ToastAction>
         ),
       })
+      setCurrentQueryStatus(getWorkspaceQueryStatus(status))
     } finally {
       setUpdatingQueryStatus(false)
     }

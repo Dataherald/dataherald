@@ -1,8 +1,8 @@
 import DatabaseConnectionFormDialog from '@/components/databases/database-connection-form-dialog'
 import DatabaseDetails from '@/components/databases/database-details'
-import DatabasesError from '@/components/databases/error'
 import FirstDatabaseConnection from '@/components/databases/first-database-connection'
 import LoadingDatabases from '@/components/databases/loading'
+import PageErrorMessage from '@/components/error/page-error-message'
 import PageLayout from '@/components/layout/page-layout'
 import { ContentBox } from '@/components/ui/content-box'
 import { GlobalTreeSelectionProvider } from '@/components/ui/tree-view-global-context'
@@ -54,9 +54,12 @@ const DatabasesPage: FC = () => {
 
   if (error) {
     pageContent = (
-      <div className="m-6">
-        <DatabasesError />
-      </div>
+      <ContentBox className="m-6">
+        <PageErrorMessage
+          message="Something went wrong while fetching your database details."
+          error={error}
+        />
+      </ContentBox>
     )
   } else if (
     (isLoading || isLoadingAfterFirstConnection) &&

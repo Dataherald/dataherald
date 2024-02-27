@@ -40,7 +40,7 @@ async function handleMessage(context, say) {
                 workspace_id: teamId,
                 channel_id: channel_id,
                 thread_ts: thread_ts,
-            }
+            },
         }
         log('Fetching data from', endpointUrl)
         log('Request payload:', payload)
@@ -54,15 +54,11 @@ async function handleMessage(context, say) {
         })
         if (!response.ok) {
             try {
-                const { prompt_id, display_id, error_message } =
-                    await response.json()
+                const { error_code, message, detail } = await response.json()
                 error(
-                    `API Response not ok: status code ${response.status}, ${response.statusText}, error message: ${error_message}, query id: ${prompt_id}`
+                    `API Response not ok: status code ${response.status}, ${response.statusText}, error code: ${error_code}, error message: ${message}, detail: ${detail}`
                 )
-                const responseMessage =
-                    prompt_id == undefined || display_id == undefined
-                        ? `:exclamation: Sorry, something went wrong when I was processing your request. Please try again later.`
-                        : `:warning: Sorry, something went wrong while generating response for query ${display_id}. We'll get back to you once it's been reviewed by the data-team admins.`
+                const responseMessage = `:warning: Sorry, something went wrong while generating response. Error message: \`${message}\``
                 await say({
                     blocks: [
                         {

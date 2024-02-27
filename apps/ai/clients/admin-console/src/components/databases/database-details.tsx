@@ -19,7 +19,7 @@ import useSynchronizeSchemas, {
   ScanRequest,
 } from '@/hooks/api/useSynchronizeSchemas'
 import { cn } from '@/lib/utils'
-import { Databases, ETableSyncStatus } from '@/models/api'
+import { Databases, ETableSyncStatus, ErrorResponse } from '@/models/api'
 import { Loader, RefreshCw, ScanText } from 'lucide-react'
 import { FC, useState } from 'react'
 
@@ -97,10 +97,11 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
         await onRefresh(optimisticDatabasesUpdate)
       } catch (e) {
         console.error(e)
+        const { message: title, trace_id: description } = e as ErrorResponse
         toast({
           variant: 'destructive',
-          title: 'Oops! Something went wrong',
-          description: 'There was a problem refreshing your Databases.',
+          title,
+          description,
           action: (
             <ToastAction
               altText="Try again"
@@ -113,18 +114,18 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
       }
     } catch (e) {
       console.error(e)
-      onUpdateDatabasesData(databases)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description:
-          'There was a problem scanning your Databases table schemas.',
+        title,
+        description,
         action: (
           <ToastAction altText="Try again" onClick={handleSynchronization}>
             Try again
           </ToastAction>
         ),
       })
+      onUpdateDatabasesData(databases)
     } finally {
       setIsSynchronizing(false)
     }

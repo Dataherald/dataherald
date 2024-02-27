@@ -1,6 +1,6 @@
 import jwt
 from bson import ObjectId
-from fastapi import HTTPException, Security, status
+from fastapi import Security
 from fastapi.security import APIKeyHeader
 
 from config import (
@@ -8,9 +8,21 @@ from config import (
     auth_settings,
 )
 from database.mongo import MongoDB
+from exceptions.exceptions import UnknownError
+from modules.auth.models.exceptions import (
+    BearerTokenExpiredError,
+    DecodeError,
+    InvalidBearerTokenError,
+    InvalidOrRevokedAPIKeyError,
+    PyJWKClientError,
+    UnauthorizedDataAccessError,
+    UnauthorizedOperationError,
+    UnauthorizedUserError,
+)
 from modules.key.service import KeyService
 from modules.organization.service import OrganizationService
 from modules.user.models.entities import Roles
+from modules.user.models.exceptions import UserNotFoundError
 from modules.user.models.responses import UserResponse
 from modules.user.service import UserService
 
@@ -38,13 +50,9 @@ class VerifyToken:
         try:
             self.signing_key = self.jwks_client.get_signing_key_from_jwt(self.token).key
         except jwt.exceptions.PyJWKClientError as error:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(error)
-            ) from error
+            raise PyJWKClientError() from error
         except jwt.exceptions.DecodeError as error:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail=str(error)
-            ) from error
+            raise DecodeError() from error
 
     def _decode_payload(self):
         try:
@@ -56,21 +64,13 @@ class VerifyToken:
                 issuer=auth_settings.auth0_issuer,
             )
         except jwt.ExpiredSignatureError as error:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired"
-            ) from error
+            raise BearerTokenExpiredError() from error
         except (jwt.InvalidAudienceError, jwt.InvalidIssuerError) as error:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Token is invalid"
-            ) from error
+            raise InvalidBearerTokenError() from error
         except (jwt.DecodeError, jwt.InvalidTokenError) as error:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is invalid"
-            ) from error
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-            ) from e
+            raise InvalidBearerTokenError() from error
+        except Exception as error:
+            raise UnknownError(str(error)) from error
 
 
 class Authorize:
@@ -78,52 +78,29 @@ class Authorize:
         email = payload[auth_settings.auth0_issuer + "email"]
         user = user_service.get_user_by_email(email)
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized User"
-            )
+            raise UnauthorizedUserError(email=email)
         return user
 
     def user_in_organization(self, user_id: str, org_id: str):
-        self._item_in_organization(USER_COL, user_id, org_id)
+        if not MongoDB.find_one(
+            USER_COL,
+            {"_id": ObjectId(user_id), "organization_id": org_id},
+        ):
+            raise UserNotFoundError(user_id, org_id)
 
     def is_admin_user(self, user: UserResponse):
         if user.role != Roles.admin:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authorized"
-            )
+            raise UnauthorizedOperationError(user_id=user.id)
 
-    def is_self(self, id_a: str, id_b: str):
-        if id_a != id_b:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not authorized to access other user data",
-            )
+    def is_self(self, user_a_id: str, user_b_id: str):
+        # TODO - fix param names to clear up confusion
+        if user_a_id != user_b_id:
+            raise UnauthorizedDataAccessError(user_id=user_a_id)
 
-    def is_not_self(self, id_a: str, id_b: str):
-        if id_a == id_b:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not authorized to self modify user data",
-            )
-
-    def _item_in_organization(
-        self,
-        collection: str,
-        id: str,
-        org_id: str,
-        key: str = "_id",
-        is_metadata: bool = False,
-    ):
-        metadata_prefix = "metadata" if is_metadata else ""
-        item = MongoDB.find_one(
-            collection,
-            {key: ObjectId(id), f"{metadata_prefix}organization_id": org_id},
-        )
-
-        if not item:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
-            )
+    def is_not_self(self, user_a_id: str, user_b_id: str):
+        # TODO - fix param names to clear up confusion
+        if user_a_id == user_b_id:
+            raise UnauthorizedOperationError(user_id=user_a_id)
 
 
 api_key_header = APIKeyHeader(name="X-API-Key")
@@ -134,6 +111,4 @@ def get_api_key(api_key: str = Security(api_key_header)) -> str:
     if validated_key:
         return validated_key
 
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail="API Key does not exist"
-    )
+    raise InvalidOrRevokedAPIKeyError(key_id=api_key)

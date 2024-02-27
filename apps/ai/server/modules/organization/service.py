@@ -1,5 +1,4 @@
 import openai
-from fastapi import HTTPException, status
 
 from config import invoice_settings
 from modules.organization.invoice.models.entities import (
@@ -13,6 +12,14 @@ from modules.organization.models.entities import (
     Organization,
     SlackConfig,
     SlackInstallation,
+)
+from modules.organization.models.exceptions import (
+    CannotCreateOrganizationError,
+    CannotDeleteOrganizationError,
+    CannotUpdateOrganizationError,
+    InvalidLlmApiKeyError,
+    OrganizationNotFoundError,
+    SlackInstallationNotFoundError,
 )
 from modules.organization.models.requests import OrganizationRequest
 from modules.organization.models.responses import OrganizationResponse
@@ -36,15 +43,14 @@ class OrganizationService:
         return self.repo.get_organization(org_id)
 
     def get_organization_by_slack_workspace_id(
-        self, workspace_id: str
+        self, slack_workspace_id: str
     ) -> OrganizationResponse:
-        organization = self.repo.get_organization_by_slack_workspace_id(workspace_id)
+        organization = self.repo.get_organization_by_slack_workspace_id(
+            slack_workspace_id
+        )
         if organization:
             return organization
-
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Organization not found"
-        )
+        raise OrganizationNotFoundError(slack_workspace_id=slack_workspace_id)
 
     def add_organization(
         self, org_request: OrganizationRequest
@@ -69,7 +75,7 @@ class OrganizationService:
             hard_spending_limit=invoice_settings.default_hard_spending_limit,
             available_credits=invoice_settings.signup_credits,
         )
-        new_id = self.repo.add_organization(organization.dict(exclude_unset=True))
+        new_id = self.repo.add_organization(organization)
         if new_id:
             new_organization = self.repo.get_organization(new_id)
             # create signup credit, mark as recorded
@@ -79,7 +85,7 @@ class OrganizationService:
                     amount=invoice_settings.signup_credits,
                     status=RecordStatus.RECORDED,
                     description="Signup credits",
-                ).dict(exclude={"id"})
+                )
             )
             print(f"New credit created: {credit_id}")
             self.analytics.track(
@@ -93,10 +99,7 @@ class OrganizationService:
             )
             return OrganizationResponse(**new_organization.dict())
 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Organization exists or cannot add organization",
-        )
+        raise CannotCreateOrganizationError()
 
     def add_user_organization(self, user_id: str, user_email: str) -> str:
         new_organization = self.add_organization(
@@ -120,19 +123,13 @@ class OrganizationService:
         ):
             return self.repo.get_organization(org_id)
 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Organization not found or cannot be updated",
-        )
+        raise CannotUpdateOrganizationError(org_id)
 
     def delete_organization(self, org_id: str) -> dict:
         if self.repo.delete_organization(org_id) == 1:
             return {"id": org_id}
 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Organization not found or cannot be deleted",
-        )
+        raise CannotDeleteOrganizationError(org_id)
 
     def add_organization_by_slack_installation(
         self, slack_installation_request: SlackInstallation
@@ -153,10 +150,7 @@ class OrganizationService:
                 updated_org = self.repo.get_organization(str(current_org.id))
                 return OrganizationResponse(**updated_org.dict())
 
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="An error ocurred while updating organization",
-            )
+            raise CannotUpdateOrganizationError(current_org.id)
 
         organization = Organization(
             name=slack_installation_request.team.name,
@@ -179,24 +173,31 @@ class OrganizationService:
             available_credits=invoice_settings.signup_credits,
         )
 
-        new_id = self.repo.add_organization(organization.dict(exclude={"id"}))
+        new_id = self.repo.add_organization(organization)
         if new_id:
             # create signup credit, mark as recorded
+            new_organization = self.repo.get_organization(new_id)
             credit_id = self.invoice_repo.create_credit(
                 Credit(
                     organization_id=new_id,
                     amount=invoice_settings.signup_credits,
                     status=RecordStatus.RECORDED,
                     description="Signup credits",
-                ).dict(exclude={"id"})
+                )
             )
             print(f"New credit created: {credit_id}")
-            return self.repo.get_organization(new_id)
+            self.analytics.track(
+                new_organization.id,
+                EventName.organization_created,
+                EventType.organization_event(
+                    id=new_organization.id,
+                    name=new_organization.name,
+                    owner=new_organization.owner,
+                ),
+            )
+            return new_organization
 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Organization exists or cannot add organization",
-        )
+        raise CannotCreateOrganizationError()
 
     def get_slack_installation_by_slack_workspace_id(
         self, slack_workspace_id: str
@@ -207,9 +208,7 @@ class OrganizationService:
         if organization:
             return organization.slack_config.slack_installation
 
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="slack installation not found"
-        )
+        raise SlackInstallationNotFoundError(slack_workspace_id)
 
     def get_organization_by_customer_id(self, customer_id: str) -> Organization:
         return self.repo.get_organization_by_customer_id(customer_id)
@@ -223,7 +222,4 @@ class OrganizationService:
         try:
             openai.Model.list()
         except openai.error.AuthenticationError as e:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid LLM API key",
-            ) from e
+            raise InvalidLlmApiKeyError() from e

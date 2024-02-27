@@ -1,7 +1,13 @@
 from bson import ObjectId
-from fastapi import HTTPException, status
 
 from modules.user.models.entities import User
+from modules.user.models.exceptions import (
+    CannotCreateUserError,
+    CannotDeleteUserError,
+    CannotUpdateUserError,
+    UserExistsInOrgError,
+    UserExistsInOtherOrgError,
+)
 from modules.user.models.requests import UserOrganizationRequest, UserRequest
 from modules.user.models.responses import UserResponse
 from modules.user.repository import UserRepository
@@ -34,10 +40,7 @@ class UserService:
             added_user = self.repo.get_user({"_id": ObjectId(new_user_id)})
             return UserResponse(**added_user.dict())
 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User exists or cannot add user",
-        )
+        raise CannotCreateUserError(user_request.organization_id)
 
     def invite_user_to_org(
         self, user_request: UserRequest, org_id: str
@@ -45,24 +48,15 @@ class UserService:
         stored_user = self.repo.get_user_by_email(user_request.email)
         if stored_user:
             if stored_user.organization_id == org_id:
-                error_code = "USER_ALREADY_EXISTS_IN_ORG"
-            else:
-                error_code = "USER_ALREADY_EXISTS_IN_OTHER_ORG"
-
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=error_code,
-            )
+                raise UserExistsInOrgError(stored_user.id)
+            raise UserExistsInOtherOrgError(stored_user.id, stored_user.organization_id)
 
         new_user_data = User(
             **user_request.dict(exclude={"organization_id"}), organization_id=org_id
         )
         new_user_id = self.repo.add_user(new_user_data)
         if not new_user_id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="An error occurred while trying to create the user",
-            )
+            raise CannotCreateUserError(org_id)
 
         new_user = self.repo.get_user({"_id": ObjectId(new_user_id)})
 
@@ -90,10 +84,7 @@ class UserService:
             new_user = self.repo.get_user({"_id": ObjectId(user_id)})
             return UserResponse(**new_user.dict())
 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User not found or cannot be updated",
-        )
+        raise CannotUpdateUserError(user_id)
 
     def update_user_organization(
         self, user_id: str, user_organization_request: UserOrganizationRequest
@@ -108,10 +99,7 @@ class UserService:
             new_user = self.repo.get_user({"_id": ObjectId(user_id)})
             return UserResponse(**new_user.dict())
 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User not found or cannot be updated",
-        )
+        raise CannotUpdateUserError(user_id)
 
     def delete_user(self, user_id: str, org_id: str) -> dict:
         if (
@@ -130,7 +118,4 @@ class UserService:
             ):
                 return {"id": user_id}
 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User not found or cannot be deleted",
-        )
+        raise CannotDeleteUserError(user_id)

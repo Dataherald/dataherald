@@ -36,3 +36,17 @@ class FinetuningRepository:
             if finetuning_job
             else None
         )
+
+    def get_finetuning_job_by_alias(self, alias: str, org_id: str) -> Finetuning:
+        finetuning_job = MongoDB.find_one(
+            FINETUNING_COL,
+            {
+                "alias": alias,
+                "metadata.dh_internal.organization_id": org_id,
+            },
+        )
+        return (
+            Finetuning(id=str(finetuning_job["_id"]), **finetuning_job)
+            if finetuning_job
+            else None
+        )

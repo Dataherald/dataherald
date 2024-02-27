@@ -1,13 +1,5 @@
+import { ESubscriptionErrorCode } from '@/models/errorCodes'
 import React, { ReactNode, createContext, useContext, useState } from 'react'
-
-export enum ESubscriptionErrorCode {
-  no_payment_method = 'no_payment_method',
-  spending_limit_exceeded = 'spending_limit_exceeded',
-  hard_spending_limit_exceeded = 'hard_spending_limit_exceeded',
-  subscription_past_due = 'subscription_past_due',
-  subscription_canceled = 'subscription_canceled',
-  unknown_subscription_status = 'unknown_subscription_status',
-}
 
 export type SubscriptionErrorCode = keyof typeof ESubscriptionErrorCode
 
@@ -47,12 +39,4 @@ export const useSubscription = () => {
     )
   }
   return context
-}
-
-export const isSubscriptionErrorCode = (
-  errorCode: string,
-): errorCode is ESubscriptionErrorCode => {
-  return Object.values(ESubscriptionErrorCode).includes(
-    errorCode as ESubscriptionErrorCode,
-  )
 }

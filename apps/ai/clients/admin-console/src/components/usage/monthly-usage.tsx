@@ -1,4 +1,4 @@
-import PageErrorMessage from '@/components/layout/page-error-message'
+import PageErrorMessage from '@/components/error/page-error-message'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -43,7 +43,10 @@ const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
     )
   } else if (error) {
     pageContent = (
-      <PageErrorMessage message="Something went wrong while retrieving your monthly usage" />
+      <PageErrorMessage
+        message="Something went wrong while retrieving your monthly usage."
+        error={error}
+      />
     )
   } else if (usage) {
     if (usage.current_period_start && usage.current_period_end) {

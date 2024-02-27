@@ -1,13 +1,13 @@
 import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
-import { FineTuningModels } from '@/models/api'
+import { ErrorResponse, FineTuningModels } from '@/models/api'
 import useSWR, { KeyedMutator } from 'swr'
 
 interface FineTuningModelsResponse {
   models: FineTuningModels | undefined
   isLoading: boolean
   isValidating: boolean
-  error: unknown
+  error: ErrorResponse | null
   mutate: KeyedMutator<FineTuningModels>
 }
 

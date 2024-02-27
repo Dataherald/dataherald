@@ -1,12 +1,12 @@
 import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
-import { DatabaseConnections } from '@/models/api'
+import { DatabaseConnections, ErrorResponse } from '@/models/api'
 import useSWR from 'swr'
 
 interface DatabaseConnectionResponse {
   dbConnections: DatabaseConnections | undefined
   isLoading: boolean
-  error: unknown
+  error: ErrorResponse | null
 }
 
 const useDatabaseConnections = (): DatabaseConnectionResponse => {

@@ -35,7 +35,7 @@ async def get_user(
 async def add_user(
     new_user_request: UserRequest, token: str = Depends(token_auth_scheme)
 ) -> UserResponse:
-    authorize.is_admin_user(VerifyToken(token.credentials).verify())
+    authorize.is_admin_user(authorize.user(VerifyToken(token.credentials).verify()))
     return user_service.add_user(new_user_request)
 
 

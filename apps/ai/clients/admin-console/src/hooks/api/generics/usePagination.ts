@@ -1,5 +1,6 @@
 import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
+import { ErrorResponse } from '@/models/api'
 import { KeyedMutator } from 'swr'
 import useSWRInfinite from 'swr/infinite'
 
@@ -12,7 +13,7 @@ export interface PageResponse<T> {
   isLoadingFirst: boolean
   isLoadingMore: boolean
   isReachingEnd: boolean
-  error: unknown
+  error: ErrorResponse | null
   page: number
   setPage: (
     page: number | ((_page: number) => number),

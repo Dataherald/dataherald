@@ -1,14 +1,15 @@
 import { DataTable } from '@/components/data-table'
 import { LoadingTable } from '@/components/data-table/loading-table'
+import PageErrorMessage from '@/components/error/page-error-message'
 import { getColumns } from '@/components/golden-sql/columns'
 import PageLayout from '@/components/layout/page-layout'
-import QueriesError from '@/components/queries/error'
 import { ContentBox } from '@/components/ui/content-box'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
 import { useDeleteGoldenSql } from '@/hooks/api/useDeleteGoldenSql'
 import useGoldenSqlList from '@/hooks/api/useGoldenSqlList'
+import { ErrorResponse } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import Head from 'next/head'
 import { FC, useCallback, useMemo, useState } from 'react'
@@ -38,11 +39,11 @@ const GoldenSQLPage: FC = () => {
         })
       } catch (e) {
         console.error(e)
+        const { message: title, trace_id: description } = e as ErrorResponse
         toast({
           variant: 'destructive',
-          title: 'Oops! Something went wrong',
-          description:
-            'There was a problem with deleting your golden sql query.',
+          title,
+          description,
           action: (
             <ToastAction altText="Try again" onClick={() => handleDelete(id)}>
               Try again
@@ -74,7 +75,12 @@ const GoldenSQLPage: FC = () => {
   let pageContent: JSX.Element = <></>
 
   if (error) {
-    pageContent = <QueriesError />
+    pageContent = (
+      <PageErrorMessage
+        message="Something went wrong while fetching your organization Golden SQL queries."
+        error={error}
+      />
+    )
   } else if (isLoadingFirst) {
     pageContent = <LoadingTable loadFilters rowLength={8} columnLength={6} />
   } else

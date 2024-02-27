@@ -23,7 +23,7 @@ import { toast } from '@/components/ui/use-toast'
 import { useAppContext } from '@/contexts/app-context'
 import usePutSpendingLimits from '@/hooks/api/billing/usePutSpendingLimits'
 import { toCents, toDollars } from '@/lib/utils'
-import { SpendingLimits } from '@/models/api'
+import { ErrorResponse, SpendingLimits } from '@/models/api'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Loader } from 'lucide-react'
 import { FC, useState } from 'react'
@@ -89,11 +89,13 @@ const EditSpendingLimitDialog: FC<EditSpendingLimitDialogProps> = ({
         variant: 'success',
         title: 'Spending limit updated',
       })
-    } catch (error) {
+    } catch (e) {
+      console.error(e)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description: 'The spending limit could not be updated.',
+        title,
+        description,
         action: (
           <ToastAction
             altText="Try again"

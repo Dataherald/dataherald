@@ -1,10 +1,10 @@
 from datetime import datetime
 
 import httpx
-from fastapi import HTTPException, status
 from fastapi.responses import StreamingResponse
 
 from config import settings
+from exceptions.exception_handlers import raise_engine_exception
 from modules.db_connection.service import DBConnectionService
 from modules.generation.models.entities import (
     DHNLGenerationMetadata,
@@ -20,6 +20,12 @@ from modules.generation.models.entities import (
     SQLGeneration,
     SQLGenerationMetadata,
     SQLGenerationStatus,
+)
+from modules.generation.models.exceptions import (
+    GenerationVerifiedOrRejectedError,
+    InvalidSqlGenerationError,
+    PromptNotFoundError,
+    SqlGenerationNotFoundError,
 )
 from modules.generation.models.requests import (
     GenerationUpdateRequest,
@@ -47,7 +53,6 @@ from modules.organization.service import OrganizationService
 from modules.user.models.responses import UserResponse
 from modules.user.service import UserService
 from utils.analytics import Analytics, EventName, EventType
-from utils.exception import GenerationEngineError, raise_for_status
 from utils.slack import SlackWebClient, remove_slack_mentions
 
 CONFIDENCE_CAP = 0.95
@@ -79,9 +84,7 @@ class AggrgationGenerationService:
                 prompt, sql_generation, nl_generation
             )
 
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found"
-        )
+        raise PromptNotFoundError(prompt_id, org_id)
 
     def get_generation_list(
         self,
@@ -192,7 +195,7 @@ class AggrgationGenerationService:
                 json=generation_request.dict(exclude_unset=True),
                 timeout=settings.default_engine_timeout,
             )
-            self._raise_for_generation_status(response, display_id=display_id)
+            raise_engine_exception(response, org_id=organization.id)
 
             nl_generation = NLGeneration(**response.json())
             sql_generation = self.repo.get_sql_generation(
@@ -278,7 +281,7 @@ class AggrgationGenerationService:
                 json=generation_request.dict(exclude_unset=True),
                 timeout=settings.default_engine_timeout,
             )
-            self._raise_for_generation_status(response)
+            raise_engine_exception(response, org_id=org_id)
 
             sql_generation = SQLGeneration(**response.json())
             self.repo.update_prompt_dh_metadata(
@@ -294,15 +297,13 @@ class AggrgationGenerationService:
             prompt = self.repo.get_prompt(sql_generation.prompt_id, organization.id)
 
             if sql_generation.status == SQLGenerationStatus.VALID:
-                sql_result_response = await client.get(
+                response = await client.get(
                     settings.engine_url
                     + f"/sql-generations/{sql_generation.id}/execute",
                     timeout=settings.default_engine_timeout,
                 )
-                raise_for_status(
-                    sql_result_response.status_code, sql_result_response.text
-                )
-                sql_result = sql_result_response.json()
+                raise_engine_exception(response, org_id=org_id)
+                sql_result = response.json()
             else:
                 sql_result = None
 
@@ -323,9 +324,7 @@ class AggrgationGenerationService:
     ) -> GenerationResponse:
         prompt = self.repo.get_prompt(prompt_id, org_id)
         if not prompt:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found"
-            )
+            raise PromptNotFoundError(prompt_id, org_id)
 
         sql_generation = self.repo.get_latest_sql_generation(prompt_id, org_id)
         nl_generation = (
@@ -407,9 +406,7 @@ class AggrgationGenerationService:
     ) -> GenerationResponse:
         prompt = self.repo.get_prompt(prompt_id, org_id)
         if not prompt:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found"
-            )
+            raise PromptNotFoundError(prompt_id, org_id)
 
         generation_request = SQLNLGenerationRequest(
             metadata=NLGenerationMetadata(
@@ -435,7 +432,7 @@ class AggrgationGenerationService:
                 json=generation_request.dict(exclude_unset=True),
                 timeout=settings.default_engine_timeout,
             )
-            self._raise_for_generation_status(response, prompt=prompt)
+            raise_engine_exception(response, org_id=org_id)
             nl_generation = NLGeneration(**response.json())
             sql_generation = self.repo.get_sql_generation(
                 nl_generation.sql_generation_id, org_id
@@ -459,15 +456,13 @@ class AggrgationGenerationService:
             prompt = self.repo.get_prompt(prompt_id, org_id)
 
             if sql_generation.status == SQLGenerationStatus.VALID:
-                sql_result_response = await client.get(
+                response = await client.get(
                     settings.engine_url
                     + f"/sql-generations/{sql_generation.id}/execute",
                     timeout=settings.default_engine_timeout,
                 )
-                raise_for_status(
-                    sql_result_response.status_code, sql_result_response.text
-                )
-                sql_result = sql_result_response.json()
+                raise_engine_exception(response, org_id=org_id)
+                sql_result = response.json()
             else:
                 sql_result = None
 
@@ -484,23 +479,18 @@ class AggrgationGenerationService:
         self,
         prompt_id: str,
         sql_request: SQLRequest,
-        org_id,
+        org_id: str,
         user: UserResponse = None,
     ) -> GenerationResponse:
         prompt = self.repo.get_prompt(prompt_id, org_id)
         if not prompt:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found"
-            )
+            raise PromptNotFoundError(prompt_id, org_id)
 
         if prompt.metadata.dh_internal.generation_status in {
             GenerationStatus.VERIFIED,
             GenerationStatus.REJECTED,
         }:
-            raise_for_status(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                message="generation has already been verified or rejected",
-            )
+            raise GenerationVerifiedOrRejectedError(prompt_id, org_id)
 
         generation_request = SQLGenerationRequest(
             sql=sql_request.sql,
@@ -516,7 +506,7 @@ class AggrgationGenerationService:
                 json=generation_request.dict(exclude_unset=True),
                 timeout=settings.default_engine_timeout,
             )
-            self._raise_for_generation_status(response, prompt=prompt)
+            raise_engine_exception(response, org_id=org_id)
             sql_generation = SQLGeneration(**response.json())
 
             self.repo.update_prompt_dh_metadata(
@@ -537,15 +527,13 @@ class AggrgationGenerationService:
             prompt = self.repo.get_prompt(prompt_id, org_id)
 
             if sql_generation.status == SQLGenerationStatus.VALID:
-                sql_result_response = await client.get(
+                response = await client.get(
                     settings.engine_url
                     + f"/sql-generations/{sql_generation.id}/execute",
                     timeout=settings.default_engine_timeout,
                 )
-                raise_for_status(
-                    sql_result_response.status_code, sql_result_response.text
-                )
-                sql_result = sql_result_response.json()
+                raise_engine_exception(response, org_id=org_id)
+                sql_result = response.json()
             else:
                 sql_result = None
 
@@ -562,14 +550,10 @@ class AggrgationGenerationService:
     ) -> NLGenerationResponse:
         prompt = self.repo.get_prompt(prompt_id, org_id)
         if not prompt:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found"
-            )
+            raise PromptNotFoundError(prompt_id, org_id)
         sql_generation = self.repo.get_latest_sql_generation(prompt_id, org_id)
         if not sql_generation:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="SQL Prompt not found"
-            )
+            raise SqlGenerationNotFoundError(prompt_id, org_id)
 
         generation_request = NLGenerationRequest(
             metadata=NLGenerationMetadata(
@@ -584,7 +568,7 @@ class AggrgationGenerationService:
                 json=generation_request.dict(exclude_unset=True),
                 timeout=settings.default_engine_timeout,
             )
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
 
             nl_generation = NLGeneration(**response.json())
             self.repo.update_prompt_dh_metadata(
@@ -632,27 +616,19 @@ class AggrgationGenerationService:
 
     async def export_csv_file(self, prompt_id: str, org_id: str) -> StreamingResponse:
         if not self.repo.get_prompt(prompt_id, org_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found"
-            )
+            raise PromptNotFoundError(prompt_id, org_id)
         sql_generation = self.repo.get_latest_sql_generation(prompt_id, org_id)
         if not sql_generation:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="SQL Generation not found",
-            )
+            raise SqlGenerationNotFoundError(prompt_id, org_id)
         if sql_generation.status != SQLGenerationStatus.VALID:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="SQL Generation is not valid",
-            )
+            raise InvalidSqlGenerationError(sql_generation.id, org_id)
 
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 settings.engine_url + f"/sql-generations/{sql_generation.id}/csv-file",
                 timeout=settings.default_engine_timeout,
             )
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
             return StreamingResponse(
                 content=response.iter_bytes(),
                 headers=response.headers,
@@ -721,28 +697,3 @@ class AggrgationGenerationService:
             sql_result=sql_result,
             **prompt.metadata.dh_internal.dict(exclude_unset=True),
         )
-
-    def _raise_for_generation_status(
-        self, response: httpx.Response, prompt: Prompt = None, display_id: str = None
-    ):
-        response_json = response.json()
-        if response.status_code != status.HTTP_201_CREATED:
-            if prompt or ("prompt_id" in response_json and response_json["prompt_id"]):
-                prompt_id = prompt.id if prompt else response_json["prompt_id"]
-                self.repo.update_prompt_dh_metadata(
-                    prompt_id,
-                    DHPromptMetadata(
-                        generation_status=GenerationStatus.ERROR,
-                    ),
-                )
-                raise GenerationEngineError(
-                    status_code=response.status_code,
-                    prompt_id=prompt_id,
-                    display_id=(
-                        display_id or prompt.metadata.dh_internal.display_id
-                        if prompt
-                        else None
-                    ),
-                    error_message=response_json["message"],
-                )
-            raise_for_status(response.status_code, response.text)

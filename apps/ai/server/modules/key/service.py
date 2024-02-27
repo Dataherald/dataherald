@@ -1,11 +1,13 @@
 import hashlib
 import secrets
-from datetime import datetime
-
-from fastapi import HTTPException, status
 
 from config import settings
 from modules.key.models.entities import APIKey
+from modules.key.models.exceptions import (
+    CannotCreateKeyError,
+    CannotRevokeKeyError,
+    KeyNameExistsError,
+)
 from modules.key.models.requests import KeyGenerationRequest
 from modules.key.models.responses import KeyPreviewResponse, KeyResponse
 from modules.key.repository import KeyRepository
@@ -24,16 +26,18 @@ class KeyService:
     def add_key(
         self, key_request: KeyGenerationRequest, org_id: str, api_key: str = None
     ) -> KeyResponse:
+        key = self.repo.get_key_by_name(key_request.name, org_id)
+        if key:
+            raise KeyNameExistsError(key.id, org_id)
         if not api_key:
             api_key = KEY_PREFIX + self.generate_new_key()
         key = APIKey(
             key_hash=self.hash_key(key=api_key),
             organization_id=org_id,
-            created_at=datetime.now(),
             name=key_request.name,
             key_preview=KEY_PREFIX + "························" + api_key[-3:],
         )
-        key_id = self.repo.add_key(key.dict(exclude_unset=True))
+        key_id = self.repo.add_key(key)
 
         if key_id:
             return KeyResponse(
@@ -45,10 +49,7 @@ class KeyService:
                 api_key=api_key,
             )
 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Could not create key",
-        )
+        raise CannotCreateKeyError(org_id)
 
     def validate_key(self, api_key: str) -> APIKey:
         return self.repo.get_key_by_hash(key_hash=self.hash_key(api_key))
@@ -71,6 +72,4 @@ class KeyService:
         if self.repo.delete_key(key_id, org_id) == 1:
             return {"id": key_id}
 
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Key not found"
-        )
+        raise CannotRevokeKeyError(key_id, org_id)

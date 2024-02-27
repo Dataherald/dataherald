@@ -4,7 +4,7 @@ import { API_URL } from '@/config'
 import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { UseDatabaseResourceFromTree } from '@/hooks/database/useDatabaseResourceFromTree'
 import { isTableResource } from '@/lib/domain/database'
-import { TableDescription } from '@/models/api'
+import { ErrorResponse, TableDescription } from '@/models/api'
 import { DatabaseResourceType, TableResource } from '@/models/domain'
 import { useCallback } from 'react'
 import useSWR, { mutate } from 'swr'
@@ -56,10 +56,12 @@ export const useTableResource = (
           title: `${tableDescription?.table_name} description updated`,
         })
       } catch (e) {
+        console.error(e)
+        const { message: title, trace_id: description } = e as ErrorResponse
         toast({
           variant: 'destructive',
-          title: 'Oops! Something went wrong',
-          description: `${tableDescription?.table_name} description could not be updated`,
+          title,
+          description,
         })
       }
     },

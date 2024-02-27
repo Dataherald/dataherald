@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
+import { ErrorResponse } from '@/models/api'
 import { Loader, Trash2 } from 'lucide-react'
 import { FC, useState } from 'react'
 
@@ -31,10 +32,11 @@ const DeleteApiKeyDialog: FC<DeleteApiKeyDialogProps> = ({ deleteFnc }) => {
       setOpen(false)
     } catch (e) {
       console.error(e)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description: 'There was a problem with revoking your API Key.',
+        title,
+        description,
         action: (
           <ToastAction altText="Try again" onClick={handleDeleteConfirm}>
             Try again

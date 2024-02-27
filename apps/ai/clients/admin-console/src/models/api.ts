@@ -1,5 +1,12 @@
 import { UserProfile } from '@auth0/nextjs-auth0/client'
 
+export interface ErrorResponse {
+  trace_id: string
+  message: string
+  error_code: string
+  detail?: Record<string, string>
+}
+
 export interface SlackTeam {
   id: string | null
   name: string | null

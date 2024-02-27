@@ -1,3 +1,4 @@
+import PageErrorMessage from '@/components/error/page-error-message'
 import PageLayout from '@/components/layout/page-layout'
 import PaymentMethodsList from '@/components/organization/payment-methods-list'
 import { ContentBox } from '@/components/ui/content-box'
@@ -21,7 +22,7 @@ import { FC } from 'react'
 
 const BillingPage: FC = () => {
   const { organization } = useAppContext()
-  const { usage } = useUsage()
+  const { usage, isLoading, error } = useUsage()
   const router = useRouter()
   if (!organization) return <></>
 
@@ -62,17 +63,26 @@ const BillingPage: FC = () => {
               </TooltipProvider>
             </div>
             <div className="flex items-end gap-2">
-              {usage ? (
-                <>
-                  <div className="text-3xl">
-                    ${toDollars(usage?.amount_due)}
-                  </div>
-                  <span className="pb-1 text-xs text-slate-500">
-                    {billingCycle}
-                  </span>
-                </>
-              ) : (
+              {isLoading ? (
                 <Skeleton className="w-40 h-9" />
+              ) : error ? (
+                <ContentBox>
+                  <PageErrorMessage
+                    message="Something went wrong while fetching your pending invoice."
+                    error={error}
+                  ></PageErrorMessage>
+                </ContentBox>
+              ) : (
+                usage && (
+                  <>
+                    <div className="text-3xl">
+                      ${toDollars(usage?.amount_due)}
+                    </div>
+                    <span className="pb-1 text-xs text-slate-500">
+                      {billingCycle}
+                    </span>
+                  </>
+                )
               )}
             </div>
             <span className="text-slate-700">

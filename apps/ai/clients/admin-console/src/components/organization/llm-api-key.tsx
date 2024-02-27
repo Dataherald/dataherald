@@ -14,6 +14,7 @@ import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import { useAppContext } from '@/contexts/app-context'
 import { usePutOrganization } from '@/hooks/api/organization/usePutOrganization'
+import { ErrorResponse } from '@/models/api'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { AlertCircle, Edit, Loader } from 'lucide-react'
 import Image from 'next/image'
@@ -65,21 +66,21 @@ const LlmApiKeyConfig: FC<LlmApiKeyConfigProps> = ({
       onOrganizationUpdate()
       setEditEnabled(false)
       form.reset()
-    } catch (error) {
-      console.error(error)
-      form.setError('llm_api_key', {
-        message: 'Invalid API key',
-      })
+    } catch (e) {
+      console.error(e)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description:
-          'There was a problem updating the API key. Please try again.',
+        title,
+        description,
         action: (
           <ToastAction altText="Try again" onClick={() => updateLlmApiKey()}>
             Try again
           </ToastAction>
         ),
+      })
+      form.setError('llm_api_key', {
+        message: 'Invalid API key',
       })
     } finally {
       setUpdating(false)

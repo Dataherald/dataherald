@@ -1,5 +1,4 @@
 import { getApiKeysColumns } from '@/components/api-keys/columns'
-import ApiKeysError from '@/components/api-keys/error'
 import GenerateApiKeyDialog from '@/components/api-keys/generate-api-key-dialog'
 import { DataTable } from '@/components/data-table'
 import { LoadingTable } from '@/components/data-table/loading-table'
@@ -8,6 +7,7 @@ import useApiKeys from '@/hooks/api/api-keys/useApiKeys'
 import { useDeleteApiKey } from '@/hooks/api/api-keys/useDeleteApiKey'
 import { KeyRound, RefreshCcw } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
+import PageErrorMessage from '../error/page-error-message'
 
 const ApiKeysList = () => {
   const { isLoading, isValidating, error, apiKeys, mutate } = useApiKeys()
@@ -42,7 +42,13 @@ const ApiKeysList = () => {
       <LoadingTable columnLength={4} rowLength={4} className="rounded-none" />
     )
   } else if (error) {
-    pageContent = <ApiKeysError />
+    pageContent = (
+      <PageErrorMessage
+        message="Something went wrong while fetching your API keys. Please try
+        again later."
+        error={error}
+      />
+    )
   } else if (apiKeys?.length === 0) {
     pageContent = (
       <div className="text-slate-500">No API keys generated yet.</div>

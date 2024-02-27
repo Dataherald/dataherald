@@ -23,7 +23,7 @@ const getErrorCause = (errorDescription: string): string => {
     case ERROR_CODES.EMAIL_NOT_VERIFIED:
       return 'Verify your email address'
     default:
-      return "Oops! We couldn't verify your identity"
+      return "We couldn't verify your identity"
   }
 }
 

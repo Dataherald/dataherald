@@ -1,8 +1,8 @@
 import { DataTable } from '@/components/data-table'
 import { LoadingTable } from '@/components/data-table/loading-table'
+import PageErrorMessage from '@/components/error/page-error-message'
 import PageLayout from '@/components/layout/page-layout'
 import { getColumns } from '@/components/queries/columns'
-import QueriesError from '@/components/queries/error'
 import { ContentBox } from '@/components/ui/content-box'
 import { useAppContext } from '@/contexts/app-context'
 import useQueries from '@/hooks/api/query/useQueries'
@@ -51,8 +51,13 @@ const QueriesPage: FC = () => {
 
   let pageContent: JSX.Element = <></>
 
-  if (!isLoadingFirst && error) {
-    pageContent = <QueriesError />
+  if (error) {
+    pageContent = (
+      <PageErrorMessage
+        message="Something went wrong while fetching your organization queries."
+        error={error}
+      />
+    )
   } else if (isLoadingFirst) {
     pageContent = <LoadingTable loadFilters columnLength={6} />
   } else

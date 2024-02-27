@@ -1,12 +1,12 @@
 import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
-import { Organizations } from '@/models/api'
+import { ErrorResponse, Organizations } from '@/models/api'
 import useSWR from 'swr'
 
 interface OrganizationsResponse {
   organizations: Organizations | undefined
   isLoading: boolean
-  error: unknown
+  error: ErrorResponse | null
 }
 
 const useOrganizations = (): OrganizationsResponse => {

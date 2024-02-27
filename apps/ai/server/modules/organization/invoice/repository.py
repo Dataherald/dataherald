@@ -88,8 +88,8 @@ class InvoiceRepository:
             )
         ]
 
-    def create_usage(self, usage: dict) -> str:
-        return str(MongoDB.insert_one(USAGE_COL, usage))
+    def create_usage(self, usage: Usage) -> str:
+        return str(MongoDB.insert_one(USAGE_COL, usage.dict(exclude={"id"})))
 
     def update_spending_limit(self, org_id: str, spending_limit: int) -> int:
         return MongoDB.update_one(
@@ -119,8 +119,8 @@ class InvoiceRepository:
             {"invoice_details.billing_cycle_anchor": billing_cycle_anchor},
         )
 
-    def create_credit(self, credit: dict) -> str:
-        return str(MongoDB.insert_one(CREDIT_COL, credit))
+    def create_credit(self, credit: Credit) -> str:
+        return str(MongoDB.insert_one(CREDIT_COL, credit.dict(exclude={"id"})))
 
     def update_available_credits(self, org_id: str, credit: int) -> int:
         return MongoDB.update_one(

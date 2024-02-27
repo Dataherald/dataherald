@@ -1,19 +1,23 @@
 import json
 
 import httpx
-from fastapi import HTTPException, UploadFile, status
+from fastapi import UploadFile
 
 from config import settings, ssh_settings
+from exceptions.exception_handlers import raise_engine_exception
 from modules.db_connection.models.entities import (
     DBConnection,
     DBConnectionMetadata,
     DHDBConnectionMetadata,
 )
+from modules.db_connection.models.exceptions import (
+    DBConnectionAliasExistsError,
+    DBConnectionNotFoundError,
+)
 from modules.db_connection.models.requests import DBConnectionRequest
 from modules.db_connection.models.responses import DBConnectionResponse
 from modules.db_connection.repository import DBConnectionRepository
 from utils.analytics import Analytics, EventName, EventType
-from utils.exception import raise_for_status
 from utils.misc import reserved_key_in_metadata
 from utils.s3 import S3
 
@@ -52,6 +56,12 @@ class DBConnectionService:
         file: UploadFile | None = None,
     ) -> DBConnectionResponse:
         reserved_key_in_metadata(db_connection_request.metadata)
+        db_connection = self.repo.get_db_connection_by_alias(
+            db_connection_request.alias, org_id
+        )
+        if db_connection:
+            raise DBConnectionAliasExistsError(db_connection.id, org_id)
+
         db_connection_internal_request = DBConnection(
             **db_connection_request.dict(exclude_unset=True)
         )
@@ -79,7 +89,7 @@ class DBConnectionService:
                 timeout=settings.default_engine_timeout,
             )
 
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
             db_connection = DBConnectionResponse(**response.json())
             self.analytics.track(
                 org_id,
@@ -130,7 +140,7 @@ class DBConnectionService:
                 json=db_connection_internal_request.dict(),
                 timeout=settings.default_engine_timeout,
             )
-            raise_for_status(response.status_code, response.text)
+            raise_engine_exception(response, org_id=org_id)
             return DBConnectionResponse(**response.json())
 
     def get_db_connection_in_org(
@@ -138,10 +148,7 @@ class DBConnectionService:
     ) -> DBConnection:
         db_connection = self.repo.get_db_connection(db_connection_id, org_id)
         if not db_connection:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Database connection not found",
-            )
+            raise DBConnectionNotFoundError(db_connection_id, org_id)
         return db_connection
 
     def get_database_type(self, connection_uri: str) -> str:

@@ -5,6 +5,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
+from exceptions.exception_handlers import exception_handler
+from exceptions.exceptions import BaseError
+from middleware.error import UnknownErrorMiddleware
 from modules.auth import controller as auth_controller
 from modules.db_connection import controller as db_connection_controller
 from modules.finetuning import controller as finetuning_controller
@@ -21,7 +24,6 @@ from modules.organization import controller as organization_controller
 from modules.organization.invoice import controller as invoice_controller
 from modules.table_description import controller as table_description_controller
 from modules.user import controller as user_controller
-from utils.exception import GenerationEngineError, query_engine_exception_handler
 
 tags_metadata = [
     {"name": "Authentication", "description": "Login endpoints for authentication"},
@@ -46,6 +48,7 @@ tags_metadata = [
 
 app = FastAPI()
 
+app.add_middleware(UnknownErrorMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -54,8 +57,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_exception_handler(GenerationEngineError, query_engine_exception_handler)
-
+app.add_exception_handler(BaseError, exception_handler)
 
 app.include_router(db_connection_controller.router, tags=["Database Connection"])
 app.include_router(finetuning_controller.router, tags=["Finetuning"])

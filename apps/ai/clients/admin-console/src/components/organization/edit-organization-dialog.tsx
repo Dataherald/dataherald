@@ -21,6 +21,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
 import { useAppContext } from '@/contexts/app-context'
 import { usePutOrganization } from '@/hooks/api/organization/usePutOrganization'
+import { ErrorResponse } from '@/models/api'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Edit, Loader } from 'lucide-react'
 import { FC, useEffect, useState } from 'react'
@@ -70,11 +71,13 @@ const EditOrganizationDialog: FC = () => {
         title: 'Organization name updated',
         description: `The organization name has been updated.`,
       })
-    } catch (error) {
+    } catch (e) {
+      console.error(e)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description: 'The organization name could not be updated.',
+        title,
+        description,
         action: (
           <ToastAction
             altText="Try again"

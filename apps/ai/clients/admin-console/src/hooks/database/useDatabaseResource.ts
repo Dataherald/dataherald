@@ -4,7 +4,7 @@ import { API_URL } from '@/config'
 import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { UseDatabaseResourceFromTree } from '@/hooks/database/useDatabaseResourceFromTree'
 import { isDatabaseResource } from '@/lib/domain/database'
-import { Instruction } from '@/models/api'
+import { ErrorResponse, Instruction } from '@/models/api'
 import { DatabaseResource, DatabaseResourceType } from '@/models/domain'
 import { useCallback } from 'react'
 import useSWR, { mutate } from 'swr'
@@ -26,7 +26,6 @@ export const useDatabaseResource = (
     isLoading,
     error,
   } = useSWR<Instruction>(resourceUrl, apiFetcher, {
-    errorRetryCount: 0,
     revalidateOnFocus: false,
     revalidateIfStale: false,
   })
@@ -61,10 +60,12 @@ export const useDatabaseResource = (
         )
         toast({ variant: 'success', title: 'Database instructions updated' })
       } catch (e) {
+        console.error(e)
+        const { message: title, trace_id: description } = e as ErrorResponse
         toast({
           variant: 'destructive',
-          title: 'Oops! Something went wrong',
-          description: 'Database instructions could not be updated',
+          title,
+          description,
         })
       }
     },

@@ -1,3 +1,4 @@
+import ErrorDetails from '@/components/error/error-details'
 import PageLayout from '@/components/layout/page-layout'
 import {
   SectionHeader,
@@ -26,10 +27,11 @@ import {
   getDomainStatusColors,
   mapQuery,
 } from '@/lib/domain/query'
-import { Query } from '@/models/api'
+import { ErrorResponse, Query } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import clsx from 'clsx'
 import {
+  AlertOctagon,
   CaseSensitive,
   Code2,
   DatabaseZap,
@@ -54,8 +56,11 @@ const PlaygroundPage: FC = () => {
   const [currentQueryPrompt, setCurrentQueryPrompt] = useState<string>('')
   const [queryError, setQueryError] = useState<string>()
 
-  const { dbConnections, isLoading: loadingDatabases } =
-    useDatabaseConnections()
+  const {
+    dbConnections,
+    isLoading: loadingDatabases,
+    error: dbError,
+  } = useDatabaseConnections()
 
   // Database connections
   const [selectedDbConnectionId, setSelectedDbConnectionId] =
@@ -143,24 +148,25 @@ const PlaygroundPage: FC = () => {
       toast({
         title: 'Generation completed',
       })
-    } catch (error) {
-      console.error(error)
-      if ((error as Error).name === 'AbortError') {
+    } catch (e) {
+      console.error(e)
+      if ((e as Error)?.name === 'AbortError') {
         toast({
           title: 'Generation cancelled',
         })
       } else {
-        setQueryError((error as Error).message)
+        const { message: title, trace_id: description } = e as ErrorResponse
         toast({
           variant: 'destructive',
-          title: 'Oops! Something went wrong',
-          description: 'There was a problem with the SQL generation.',
+          title,
+          description,
           action: (
             <ToastAction altText="Try again" onClick={handleSubmitQuery}>
               Try again
             </ToastAction>
           ),
         })
+        setQueryError(title)
       }
     } finally {
       setSubmittingQuery(false)
@@ -181,7 +187,19 @@ const PlaygroundPage: FC = () => {
 
   let content = <div className="grow"></div>
 
-  if (!dbConnectionOptions?.length) {
+  if (dbError) {
+    content = (
+      <div className="grow text-slate-500 flex flex-col items-center justify-center gap-3">
+        <AlertOctagon size={50} strokeWidth={1} />
+        <span>There was a problem fetching your database connections.</span>
+        <ErrorDetails
+          error={dbError}
+          displayTitle={false}
+          className="items-center justify-center text-xs"
+        />
+      </div>
+    )
+  } else if (!dbConnectionOptions?.length) {
     content = (
       <div className="grow text-slate-500 flex flex-col items-center justify-center gap-3">
         <DatabaseZap size={50} strokeWidth={1} />

@@ -29,3 +29,17 @@ class DBConnectionRepository:
             if db_connection
             else None
         )
+
+    def get_db_connection_by_alias(self, alias: str, org_id: str) -> DBConnection:
+        db_connection = MongoDB.find_one(
+            DATABASE_CONNECTION_COL,
+            {
+                "alias": alias,
+                "metadata.dh_internal.organization_id": org_id,
+            },
+        )
+        return (
+            DBConnection(id=str(db_connection["_id"]), **db_connection)
+            if db_connection
+            else None
+        )

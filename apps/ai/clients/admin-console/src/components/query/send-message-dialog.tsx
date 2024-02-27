@@ -15,6 +15,7 @@ import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import useQuerySendMessage from '@/hooks/api/query/useQuerySendMessage'
 import { cn } from '@/lib/utils'
+import { ErrorResponse } from '@/models/api'
 import { Loader, Send } from 'lucide-react'
 import { FC, useState } from 'react'
 
@@ -41,12 +42,13 @@ const SendMessageDialog: FC<SendMessageDialogProps> = ({
         description: 'The query message was sent to the Slack thread.',
       })
       await onMessageSent()
-    } catch (error) {
-      console.error(error)
+    } catch (e) {
+      console.error(e)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description: 'There was a problem with sending the message.',
+        title,
+        description,
         action: (
           <ToastAction altText="Try again" onClick={handleSendMessage}>
             Try again

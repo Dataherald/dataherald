@@ -1,14 +1,14 @@
 import { API_URL } from '@/config'
 import { useAppContext } from '@/contexts/app-context'
 import { useAuth } from '@/contexts/auth-context'
-import { Usage } from '@/models/api'
+import { ErrorResponse, Usage } from '@/models/api'
 import useSWR, { KeyedMutator } from 'swr'
 
 interface UsageResponse {
   usage: Usage | undefined
   isLoading: boolean
   isValidating: boolean
-  error: unknown
+  error: ErrorResponse | null
   mutate: KeyedMutator<Usage>
 }
 

@@ -52,8 +52,7 @@ class OrganizationRepository:
             ORGANIZATION_COL, {"_id": ObjectId(org_id)}, new_org_data
         )
 
-    def add_organization(self, new_org_data: dict) -> str:
-        # each organization should have unique name
-        if MongoDB.find_one(ORGANIZATION_COL, {"name": new_org_data["name"]}):
-            return None
-        return str(MongoDB.insert_one(ORGANIZATION_COL, new_org_data))
+    def add_organization(self, new_org_data: Organization) -> str:
+        return str(
+            MongoDB.insert_one(ORGANIZATION_COL, new_org_data.dict(exclude={"id"}))
+        )

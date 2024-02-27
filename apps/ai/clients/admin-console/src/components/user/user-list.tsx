@@ -19,14 +19,15 @@ import UserPicture from '@/components/user/user-picture'
 import { useAppContext } from '@/contexts/app-context'
 import { useDeleteUser } from '@/hooks/api/user/useDeleteUser'
 import useUsers from '@/hooks/api/user/useUsers'
-import { User } from '@/models/api'
+import { ErrorResponse, User } from '@/models/api'
 import { Trash2, UserPlus2 } from 'lucide-react'
 import { useState } from 'react'
+import PageErrorMessage from '../error/page-error-message'
 
 const UserList = () => {
   const [openInviteMemberDialog, setOpenInviteMemberDialog] = useState(false)
   const { user: currentUser } = useAppContext()
-  const { isLoading, users, mutate } = useUsers()
+  const { isLoading, error, users, mutate } = useUsers()
   const deleteUser = useDeleteUser()
 
   const handleMemberInvited = () => {
@@ -45,13 +46,13 @@ const UserList = () => {
         } was removed from the Organization.`,
       })
       mutate()
-    } catch (error) {
-      console.error(error)
+    } catch (e) {
+      console.error(e)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description:
-          'There was a problem removing the user from the Organization.',
+        title,
+        description,
         action: (
           <ToastAction
             altText="Try again"
@@ -69,6 +70,11 @@ const UserList = () => {
       <div className="grow overflow-auto py-5">
         {isLoading ? (
           <LoadingList length={3} />
+        ) : error ? (
+          <PageErrorMessage
+            error={error}
+            message="Something went wrong while fetching the team members."
+          />
         ) : (
           users && (
             <ul className="flex flex-col gap-3">

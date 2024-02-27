@@ -1,6 +1,5 @@
-from fastapi import HTTPException, status
-
 from database.mongo import DESCENDING, MongoDB
+from exceptions.exceptions import ReservedMetadataKeyError
 
 MAX_DISPLAY_ID = 99999
 RESERVED_KEY = "dh_internal"
@@ -31,7 +30,4 @@ def get_next_display_id(collection, org_id: str, prefix: str) -> str:
 
 def reserved_key_in_metadata(metadata: dict):
     if RESERVED_KEY in metadata:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Metadata cannot contain reserved key: {RESERVED_KEY}",
-        )
+        raise ReservedMetadataKeyError()

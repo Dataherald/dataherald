@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from utils.validation import ObjectIdString
 
@@ -24,4 +24,4 @@ class BaseUser(BaseModel):
 class User(BaseUser):
     id: ObjectIdString | None
     role: Roles | None
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = datetime.now()

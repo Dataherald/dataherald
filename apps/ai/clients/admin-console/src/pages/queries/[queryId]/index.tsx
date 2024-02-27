@@ -1,7 +1,8 @@
+import PageErrorMessage from '@/components/error/page-error-message'
 import PageLayout from '@/components/layout/page-layout'
-import QueryError from '@/components/query/error'
 import LoadingQuery from '@/components/query/loading'
 import QueryWorkspace from '@/components/query/workspace'
+import { ContentBox } from '@/components/ui/content-box'
 import useQueries from '@/hooks/api/query/useQueries'
 import { useQuery } from '@/hooks/api/query/useQuery'
 import useQueryExecution from '@/hooks/api/query/useQueryExecution'
@@ -73,9 +74,13 @@ const QueryPage: FC = () => {
     pageContent = <LoadingQuery />
   } else if (error) {
     pageContent = (
-      <div className="m-6">
-        <QueryError />
-      </div>
+      <ContentBox className="m-6">
+        <PageErrorMessage
+          message="Something went wrong while fetching the query. Please try
+          again later."
+          error={error}
+        />
+      </ContentBox>
     )
   } else if (query)
     pageContent = (

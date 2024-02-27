@@ -1,6 +1,6 @@
 import AddPaymentMethodDialog from '@/components/billing/add-payment-method-dialog'
 import LoadingList from '@/components/layout/loading-list'
-import PageErrorMessage from '@/components/layout/page-error-message'
+import PageErrorMessage from '@/components/error/page-error-message'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -16,7 +16,7 @@ import { toast } from '@/components/ui/use-toast'
 import { useAppContext } from '@/contexts/app-context'
 import { useDeletePaymentMethod } from '@/hooks/api/billing/useDeletePaymentMethod'
 import usePaymentMethods from '@/hooks/api/billing/usePaymentMethods'
-import { PaymentMethod } from '@/models/api'
+import { ErrorResponse, PaymentMethod } from '@/models/api'
 import { CreditCard, Loader, Trash2 } from 'lucide-react'
 
 import CreditCardLogo from '@/components/billing/credit-card-logo'
@@ -49,12 +49,13 @@ const PaymentMethodsList = () => {
         title: 'Payment Method Removed',
         description: `The payment method ending in ${pm.last4} was removed from the Organization.`,
       })
-    } catch (error) {
-      console.error(error)
+    } catch (e) {
+      console.error(e)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description: 'There was a problem removing the payment method.',
+        title,
+        description,
         action: (
           <ToastAction
             altText="Try again"
@@ -76,7 +77,10 @@ const PaymentMethodsList = () => {
         <h1 className="font-semibold">Payment Methods</h1>
       </div>
       {error ? (
-        <PageErrorMessage message="Something went wrong while retrieving your payment methods." />
+        <PageErrorMessage
+          message="Something went wrong while retrieving your payment methods."
+          error={error}
+        />
       ) : (
         <>
           <div className="text-slate-500">

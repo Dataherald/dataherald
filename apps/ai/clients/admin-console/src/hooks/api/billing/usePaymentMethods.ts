@@ -1,13 +1,13 @@
 import { API_URL } from '@/config'
 import { useAppContext } from '@/contexts/app-context'
 import { useAuth } from '@/contexts/auth-context'
-import { PaymentMethods } from '@/models/api'
+import { ErrorResponse, PaymentMethods } from '@/models/api'
 import useSWR, { KeyedMutator } from 'swr'
 
 interface PaymentMethodsResponse {
   paymentMethods: PaymentMethods | undefined
   isLoading: boolean
-  error: unknown
+  error: ErrorResponse | null
   mutate: KeyedMutator<PaymentMethods>
 }
 

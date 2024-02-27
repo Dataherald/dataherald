@@ -20,7 +20,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
 import usePostDatabaseConnection from '@/hooks/api/usePostDatabaseConnection'
 import { formatDriver } from '@/lib/domain/database'
-import { DatabaseConnection, Databases } from '@/models/api'
+import { DatabaseConnection, Databases, ErrorResponse } from '@/models/api'
 import { yupResolver } from '@hookform/resolvers/yup'
 import {
   AlertCircle,
@@ -99,10 +99,12 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
       setDatabaseConnected(true)
       onConnected(undefined, false)
     } catch (e) {
+      console.error(e)
+      const { message: title, trace_id: description } = e as ErrorResponse
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
-        description: 'There was a problem connecting your Database.',
+        title,
+        description,
         action: (
           <ToastAction
             altText="Try again"

@@ -11,7 +11,7 @@ import {
 import { toast } from '@/components/ui/use-toast'
 import { useAppContext } from '@/contexts/app-context'
 import { usePostPaymentMethod } from '@/hooks/api/billing/usePostPaymentMethod'
-import { PaymentMethods } from '@/models/api'
+import { ErrorResponse, PaymentMethods } from '@/models/api'
 import { CardElement, useElements } from '@stripe/react-stripe-js'
 import { Loader, Plus } from 'lucide-react'
 import { ComponentType, FC, FormEvent, useState } from 'react'
@@ -66,19 +66,20 @@ const AddPaymentMethodDialog: FC<AddPaymentMethodDialogProps> = ({
           })
           await onPaymentMethodAdded()
           reset()
-        } catch (error) {
-          console.error(error)
+        } catch (e) {
+          console.error(e)
+          const { message: title, trace_id: description } = e as ErrorResponse
           toast({
             variant: 'destructive',
-            title: 'Oops! Something went wrong',
-            description: 'The payment method could not be added.',
+            title,
+            description,
           })
         }
       }
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: 'Oops! Something went wrong',
+        title: 'An error occurred',
         description:
           'The payment method could not be added due to service provider error.',
       })
