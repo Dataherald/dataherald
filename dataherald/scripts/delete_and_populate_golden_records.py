@@ -1,10 +1,9 @@
 import os
 
-from sql_metadata import Parser
-
 import dataherald.config
 from dataherald.config import System
 from dataherald.db import DB
+from dataherald.types import GoldenSQL
 from dataherald.vector_store import VectorStore
 
 if __name__ == "__main__":
@@ -16,26 +15,14 @@ if __name__ == "__main__":
         "GOLDEN_SQL_COLLECTION", "dataherald-staging"
     )
 
+    golden_sqls = storage.find_all("golden_sqls")
     vector_store = system.instance(VectorStore)
     try:
         vector_store.delete_collection(golden_sql_collection)
     except Exception:  # noqa: S110
         pass
-    golden_sqls = storage.find_all("golden_sqls")
-    for golden_sql in golden_sqls:
-        tables = Parser(golden_sql["sql"]).tables
-        if len(tables) == 0:
-            tables = [""]
-        question = golden_sql["prompt_text"]
-        vector_store.add_record(
-            documents=question,
-            db_connection_id=str(golden_sql["db_connection_id"]),
-            collection=golden_sql_collection,
-            metadata=[
-                {
-                    "tables_used": tables[0],
-                    "db_connection_id": str(golden_sql["db_connection_id"]),
-                }
-            ],
-            ids=[str(golden_sql["_id"])],
-        )
+    stored_golden_sqls = []
+    for golden_sql_dict in golden_sqls:
+        golden_sql = GoldenSQL(**golden_sql_dict, id=str(golden_sql_dict["_id"]))
+        stored_golden_sqls.append(golden_sql)
+    vector_store.add_records(stored_golden_sqls, golden_sql_collection)
