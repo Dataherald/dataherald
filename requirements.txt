@@ -40,4 +40,4 @@ tiktoken==0.5.2
 duckdb-engine==0.9.1
 duckdb==0.9.1
 PyMySQL==1.1.0
-clickhouse-sqlalchemy==0.2.2
+clickhouse-sqlalchemy==0.2.5
