@@ -49,7 +49,9 @@ class TableDescriptionRepository:
     def save_table_info(self, table_info: TableDescription) -> TableDescription:
         table_info_dict = table_info.dict(exclude={"id"})
         table_info_dict["db_connection_id"] = str(table_info.db_connection_id)
-        table_info_dict = {k: v for k, v in table_info_dict.items() if v is not None}
+        table_info_dict = {
+            k: v for k, v in table_info_dict.items() if v is not None and v != []
+        }
         table_info.id = str(
             self.storage.update_or_create(
                 DB_COLLECTION,
@@ -65,7 +67,9 @@ class TableDescriptionRepository:
     def update(self, table_info: TableDescription) -> TableDescription:
         table_info_dict = table_info.dict(exclude={"id"})
         table_info_dict["db_connection_id"] = str(table_info.db_connection_id)
-        table_info_dict = {k: v for k, v in table_info_dict.items() if v is not None}
+        table_info_dict = {
+            k: v for k, v in table_info_dict.items() if v is not None and v != []
+        }
         self.storage.update_or_create(
             DB_COLLECTION,
             {"_id": ObjectId(table_info.id)},
@@ -113,7 +117,7 @@ class TableDescriptionRepository:
                 for column in table.columns:
                     if column_request.name == column.name:
                         for field, value in column_request:
-                            if value is None:
+                            if value is None or value == []:
                                 continue
                             setattr(column, field, value)
         return self.update(table)
