@@ -244,9 +244,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     def cosine_similarity(self, a: List[float], b: List[float]) -> float:
         return round(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), 4)
 
-    def similart_tables_based_on_few_shot_examples(
-        self, df: pd.DataFrame
-    ) -> List[str]:
+    def similart_tables_based_on_few_shot_examples(self, df: pd.DataFrame) -> List[str]:
         most_similar_tables = set()
         if self.few_shot_examples is not None:
             for example in self.few_shot_examples:
@@ -296,7 +294,9 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
             )
         if len(most_similar_tables) > 0:
             for table in most_similar_tables:
-                table_relevance += f"Table: {table}, relevance score: {max(df['similarities'])}\n"
+                table_relevance += (
+                    f"Table: {table}, relevance score: {max(df['similarities'])}\n"
+                )
         return table_relevance
 
     async def _arun(

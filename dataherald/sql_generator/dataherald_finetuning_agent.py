@@ -302,7 +302,9 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
                     logger.error(f"Error parsing example: {e}")
         table_representations = []
         for table in self.db_scan:
-            table_representations.append(self.openai_fine_tuning.create_table_representation(table))
+            table_representations.append(
+                self.openai_fine_tuning.create_table_representation(table)
+            )
         table_embeddings = self.embedding.embed_documents(table_representations)
         system_prompt = (
             FINETUNING_SYSTEM_INFORMATION
