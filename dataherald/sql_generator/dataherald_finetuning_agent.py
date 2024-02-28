@@ -266,6 +266,7 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
     db_scan: List[TableDescription]
     api_key: str = Field(exclude=True)
     openai_fine_tuning: OpenAIFineTuning = Field(exclude=True)
+    embedding: OpenAIEmbeddings = Field(exclude=True)
 
     @catch_exceptions()
     def _run(
@@ -274,10 +275,17 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Execute the query, return the results or an error message."""
+        table_representations = []
+        for table in self.db_scan:
+            table_representations.append(
+                self.openai_fine_tuning.create_table_representation(table)
+            )
+        table_embeddings = self.embedding.embed_documents(table_representations)
         system_prompt = (
             FINETUNING_SYSTEM_INFORMATION
             + self.openai_fine_tuning.format_dataset(
                 self.db_scan,
+                table_embeddings,
                 question,
                 OPENAI_FINETUNING_MODELS_WINDOW_SIZES[self.model_name] - 500,
             )
@@ -387,6 +395,7 @@ class SQLDatabaseToolkit(BaseToolkit):
                 finetuning_model_id=self.finetuning_model_id,
                 model_name=self.model_name,
                 openai_fine_tuning=self.openai_fine_tuning,
+                embedding=self.embedding,
             )
         )
         return tools
