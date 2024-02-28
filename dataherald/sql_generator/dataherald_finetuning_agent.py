@@ -25,6 +25,7 @@ from langchain_openai import OpenAIEmbeddings
 from openai import OpenAI
 from overrides import override
 from pydantic import BaseModel, Field
+from sql_metadata import Parser
 from sqlalchemy.exc import SQLAlchemyError
 
 from dataherald.context_store import ContextStore
@@ -282,6 +283,7 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
     db_scan: List[TableDescription]
     api_key: str = Field(exclude=True)
     openai_fine_tuning: OpenAIFineTuning = Field(exclude=True)
+    few_shot_examples: List[dict] | None = Field(exclude=True, default=None)
     embedding: OpenAIEmbeddings = Field(exclude=True)
 
     @catch_exceptions()
@@ -291,11 +293,16 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Execute the query, return the results or an error message."""
+        correct_tables = set()
+        if self.few_shot_examples:
+            for example in self.few_shot_examples:
+                try:
+                    correct_tables.update(Parser(example["sql"]).tables)
+                except Exception as e:
+                    logger.error(f"Error parsing example: {e}")
         table_representations = []
         for table in self.db_scan:
-            table_representations.append(
-                self.openai_fine_tuning.create_table_representation(table)
-            )
+            table_representations.append(self.openai_fine_tuning.create_table_representation(table))
         table_embeddings = self.embedding.embed_documents(table_representations)
         system_prompt = (
             FINETUNING_SYSTEM_INFORMATION
@@ -304,6 +311,7 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
                 table_embeddings,
                 question,
                 OPENAI_FINETUNING_MODELS_WINDOW_SIZES[self.model_name] - 500,
+                correct_tables=list(correct_tables),
             )
         )
         user_prompt = "User Question: " + question + "\n SQL: "
@@ -390,6 +398,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     model_name: str = Field(exclude=True)
     openai_fine_tuning: OpenAIFineTuning = Field(exclude=True)
     embedding: OpenAIEmbeddings = Field(exclude=True)
+    few_shot_examples: List[dict] | None = Field(exclude=True, default=None)
 
     @property
     def dialect(self) -> str:
@@ -421,6 +430,7 @@ class SQLDatabaseToolkit(BaseToolkit):
                 finetuning_model_id=self.finetuning_model_id,
                 model_name=self.model_name,
                 openai_fine_tuning=self.openai_fine_tuning,
+                few_shot_examples=self.few_shot_examples,
                 embedding=self.embedding,
             )
         )
@@ -558,7 +568,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         )
         if not db_scan:
             raise ValueError("No scanned tables found for database")
-        _, instructions = context_store.retrieve_context_for_question(
+        few_shot_examples, instructions = context_store.retrieve_context_for_question(
             user_prompt, number_of_samples=1
         )
         finetunings_repository = FinetuningsRepository(storage)
@@ -574,6 +584,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         toolkit = SQLDatabaseToolkit(
             db=self.database,
             instructions=instructions,
+            few_shot_examples=few_shot_examples,
             db_scan=db_scan,
             api_key=database_connection.decrypt_api_key(),
             finetuning_model_id=finetuning.model_id,
