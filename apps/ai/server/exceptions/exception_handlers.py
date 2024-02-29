@@ -18,6 +18,7 @@ async def exception_handler(request: Request, exc: BaseError):  # noqa: ARG001
     error_code = exc.error_code
     status_code = exc.status_code
     message = exc.message
+    description = exc.description
     detail = {k: v for k, v in exc.detail.items() if v is not None}
 
     logger.error(
@@ -32,6 +33,7 @@ async def exception_handler(request: Request, exc: BaseError):  # noqa: ARG001
             trace_id=trace_id,
             error_code=error_code,
             message=message,
+            description=description,
             detail=detail,
         ).dict(),
     )
@@ -48,6 +50,7 @@ def raise_engine_exception(response: Response, org_id: str):
         message = response_json.get(
             "message", f"Unknown translation engine error_code: {error_code}"
         )
+        description = response_json.get("description", None)
         detail = response_json.get("detail", {})
         detail["organization_id"] = org_id
 
@@ -57,6 +60,7 @@ def raise_engine_exception(response: Response, org_id: str):
             error_code=error_code,
             status_code=response.status_code,
             message=message,
+            description=description,
             detail=detail,
         )
 

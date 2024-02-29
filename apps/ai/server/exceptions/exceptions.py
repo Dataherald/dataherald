@@ -24,14 +24,19 @@ class BaseError(ABC, Exception):
         return self._message
 
     @property
+    def description(self) -> str:
+        return self._description
+
+    @property
     def detail(self) -> dict:
         return self._detail
 
     def __init__(
         self,
         error_code: str = None,
-        status_code: str = None,
+        status_code: int = None,
         message: str = None,
+        description: str = None,
         detail: dict = None,
     ) -> None:
 
@@ -59,7 +64,7 @@ class BaseError(ABC, Exception):
                     else self.ERROR_CODES[error_code].value.message
                 )
             else:
-                self._status_code = status_code if status_code is not None else "500"
+                self._status_code = status_code if status_code is not None else 500
                 self._message = (
                     message
                     if message is not None
@@ -70,6 +75,7 @@ class BaseError(ABC, Exception):
             self._message = message if message is not None else "Unknown error"
 
         self._detail = detail if detail is not None else {}
+        self._description = description
 
 
 class GeneralError(BaseError):
@@ -86,12 +92,14 @@ class EngineError(GeneralError):
         error_code: str,
         status_code: int,
         message: str,
+        description: str,
         detail: dict,
     ) -> None:
         super().__init__(
             error_code=error_code,
             status_code=status_code,
             message=message,
+            description=description,
             detail=detail,
         )
 
@@ -113,5 +121,5 @@ class ReservedMetadataKeyError(GeneralError):
 class UnknownError(GeneralError):
     def __init__(self, error: str = None) -> None:
         super().__init__(
-            error_code=GeneralErrorCode.unknown_error.name, detail={"error": error}
+            error_code=GeneralErrorCode.unknown_error.name, description=error
         )
