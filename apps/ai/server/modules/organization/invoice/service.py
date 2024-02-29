@@ -317,6 +317,15 @@ class InvoiceService:
                 organization_id=org_id,
             )
             usages.append(usage)
+            # for usage based and credit only
+            total_usage_cost = self._calculate_total_usage_cost(
+                self._get_invoice_from_usages(usages)
+            )
+            if total_usage_cost > organization.invoice_details.hard_spending_limit:
+                raise HardSpendingLimitExceededError(org_id)
+            if total_usage_cost > organization.invoice_details.spending_limit:
+                raise SpendingLimitExceededError(org_id)
+
             # check for available credits if credit only
             if organization.invoice_details.plan == PaymentPlan.CREDIT_ONLY:
                 if (
@@ -326,15 +335,6 @@ class InvoiceService:
                     > organization.invoice_details.available_credits
                 ):
                     raise NoPaymentMethodError(org_id)
-
-            # for usage based and credit only
-            total_usage_cost = self._calculate_total_usage_cost(
-                self._get_invoice_from_usages(usages)
-            )
-            if total_usage_cost > organization.invoice_details.hard_spending_limit:
-                raise HardSpendingLimitExceededError(org_id)
-            if total_usage_cost > organization.invoice_details.spending_limit:
-                raise SpendingLimitExceededError(org_id)
 
     def add_credits(
         self, org_id: str, user_id: str, credit_request: CreditRequest

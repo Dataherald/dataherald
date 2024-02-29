@@ -1,6 +1,6 @@
 import calendar
 import uuid
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import stripe
 
@@ -73,11 +73,13 @@ class Billing:
                 today.year,
                 today.month,
                 min(anchor_day, last_date_current_month.day),
+                tzinfo=timezone.utc,
             )
             end_date = datetime(
                 last_date_next_month.year,
                 last_date_next_month.month,
                 min(anchor_day, last_date_next_month.day),
+                tzinfo=timezone.utc,
             )
         return (start_date, end_date)
 

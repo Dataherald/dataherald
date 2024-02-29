@@ -7,6 +7,7 @@ from modules.user.models.exceptions import (
     CannotUpdateUserError,
     UserExistsInOrgError,
     UserExistsInOtherOrgError,
+    UserNotFoundError,
 )
 from modules.user.models.requests import UserOrganizationRequest, UserRequest
 from modules.user.models.responses import UserResponse
@@ -24,8 +25,7 @@ class UserService:
         return [UserResponse(**user.dict()) for user in users]
 
     def get_user(self, user_id: str, org_id: str) -> UserResponse:
-        user = self.repo.get_user({"_id": ObjectId(user_id), "organization_id": org_id})
-        return UserResponse(**user.dict()) if user else None
+        return self.get_user_in_org(user_id, org_id)
 
     def get_user_by_email(self, email: str) -> UserResponse:
         user = self.repo.get_user_by_email(email)
@@ -34,6 +34,7 @@ class UserService:
         return None
 
     def add_user(self, user_request: UserRequest) -> UserResponse:
+        self.check_user_exists(user_request.email, user_request.organization_id)
         new_user = User(**user_request.dict())
         new_user_id = self.repo.add_user(new_user)
         if new_user_id:
@@ -45,11 +46,7 @@ class UserService:
     def invite_user_to_org(
         self, user_request: UserRequest, org_id: str
     ) -> UserResponse:
-        stored_user = self.repo.get_user_by_email(user_request.email)
-        if stored_user:
-            if stored_user.organization_id == org_id:
-                raise UserExistsInOrgError(stored_user.id)
-            raise UserExistsInOtherOrgError(stored_user.id, stored_user.organization_id)
+        self.check_user_exists(user_request.email, org_id)
 
         new_user_data = User(
             **user_request.dict(exclude={"organization_id"}), organization_id=org_id
@@ -119,3 +116,16 @@ class UserService:
                 return {"id": user_id}
 
         raise CannotDeleteUserError(user_id)
+
+    def get_user_in_org(self, user_id: str, org_id: str) -> User:
+        user = self.repo.get_user({"_id": ObjectId(user_id), "organization_id": org_id})
+        if not user:
+            raise UserNotFoundError(user_id, org_id)
+        return user
+
+    def check_user_exists(self, email: str, org_id: str):
+        stored_user = self.repo.get_user_by_email(email)
+        if stored_user:
+            if stored_user.organization_id == org_id:
+                raise UserExistsInOrgError(stored_user.id, org_id)
+            raise UserExistsInOtherOrgError(stored_user.id, stored_user.organization_id)

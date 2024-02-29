@@ -7,207 +7,2520 @@
 	},
 	"item": [
 		{
-			"name": "Database Connections",
+			"name": "API Key",
 			"item": [
 				{
-					"name": "Get database connections",
-					"event": [
+					"name": "Database Connections",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"id": "be5b9917-70a8-42eb-b88b-2eec7f5e07b8",
-								"exec": [
-									"",
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"db_connection_schema\"))",
-									"}",
-									"    ",
-									"// Test that the response matches the expected schema using built-in schema verification",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "39d03165-a74c-434d-91b7-99b938207c3a",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/database-connections",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"database-connections"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get a database connection",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "b4827da4-c538-4c53-812a-f912d3eeb8af",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"db_connection_schema\"));",
-									"    ",
-									"// Test that the response matches the expected schema using built-in schema verification",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "38f1404d-fd65-45fe-a69d-14ae1eed8cde",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/database-connections/{{db_connection_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"database-connections",
-								"{{db_connection_id}}"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "c32cec8d-f940-4cbb-9eb8-5090f7f03abd"
-		},
-		{
-			"name": "Finetunings",
-			"item": [
-				{
-					"name": "Get finetunings",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "e2af1ef3-9511-4a89-9072-7c3bf2ae67f6",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"finetuning_schema\"))",
-									"}",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "f25c3aab-2966-4b55-a3a1-67d69f2979f2",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/finetunings?db_connection_id={{db_connection_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"finetunings"
-							],
-							"query": [
+							"name": "Responses",
+							"item": [
 								{
-									"key": "db_connection_id",
-									"value": "{{db_connection_id}}"
+									"name": "Database connection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "be5b9917-70a8-42eb-b88b-2eec7f5e07b8",
+												"exec": [
+													"",
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, 'db_connection_schema')"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "e88deec5-f55f-4bf1-b00c-a78c653e988a",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"alias\": \"test database connection\",\n    \"connection_uri\": \"snowflake://Leo:Dat31642099.00@ksxgmup-qrb65970/v2_real_estate/public\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/database-connections",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"database-connections"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Database connections",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "be5b9917-70a8-42eb-b88b-2eec7f5e07b8",
+												"exec": [
+													"",
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"db_connection_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "39d03165-a74c-434d-91b7-99b938207c3a",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/database-connections",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"database-connections"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Database connection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b4827da4-c538-4c53-812a-f912d3eeb8af",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"",
+													"utils.matchSchema(pm.response, \"db_connection_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "38f1404d-fd65-45fe-a69d-14ae1eed8cde",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/database-connections/{{db_connection_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"database-connections",
+												"{{db_connection_id}}"
+											]
+										}
+									},
+									"response": []
 								}
-							]
+							],
+							"id": "28f149dc-ee27-4f1d-8f7b-3e0679ea0a51"
+						},
+						{
+							"name": "Errors",
+							"item": [
+								{
+									"name": "Database connection not found",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "8eb46b8a-ca4d-4f8a-8085-2f9c5f8d3c48",
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {",
+													"    pm.response.to.have.status(404);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response,'db_connection_not_found')"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "dbcb3341-bf86-475a-aa53-db54d40a1a0b",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/database-connections/:id",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"database-connections",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "0123456789ab0123456789ab"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Database connection alias exists",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b240e540-8a84-429f-8878-87cbb9000f41",
+												"exec": [
+													"pm.test(\"Status code is 400\", function () {",
+													"    pm.response.to.have.status(400);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response,'db_connection_alias_exists')"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "e2ef7e7c-b742-420c-a522-6a445711ef9c",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"alias\": \"test database connection\",\n    \"connection_uri\": \"\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/database-connections",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"database-connections"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Invalid database connection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b240e540-8a84-429f-8878-87cbb9000f41",
+												"exec": [
+													"pm.test(\"Status code is 400\", function () {",
+													"    pm.response.to.have.status(400);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response,'invalid_database_connection')"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "b621f548-14cd-47df-8d94-785f104bb386",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"alias\": \"bad database connection\",\n    \"connection_uri\": \"foo://foo/bar\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/database-connections",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"database-connections"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Invalid URI format",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b240e540-8a84-429f-8878-87cbb9000f41",
+												"exec": [
+													"pm.test(\"Status code is 400\", function () {",
+													"    pm.response.to.have.status(400);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response,'invalid_database_uri_format')"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "9274fe80-14a5-4c4c-a0d8-4119d28332f4",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"alias\": \"bad database connection\",\n    \"connection_uri\": \"foo://foo\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/database-connections",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"database-connections"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Invalid SSH connection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b240e540-8a84-429f-8878-87cbb9000f41",
+												"exec": [
+													"pm.test(\"Status code is 400\", function () {",
+													"    pm.response.to.have.status(400);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response,'ssh_invalid_database_connection')"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "8e409a77-c7f5-45bf-b4b9-3cd67426e387",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"alias\": \"bad database connection\",\n    \"use_ssh\": true,\n    \"connection_uri\": \"foo://bar/foo\",\n    \"path_to_credentials_file\": \"string\",\n    \"llm_api_key\": \"string\",\n    \"ssh_settings\": {\n        \"host\": \"string\",\n        \"username\": \"string\",\n        \"password\": \"string\",\n        \"port\": \"22\",\n        \"private_key_password\": \"string\"\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/database-connections",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"database-connections"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "084313c3-1269-4145-8d48-ccbffed65308"
 						}
-					},
-					"response": []
+					],
+					"id": "c32cec8d-f940-4cbb-9eb8-5090f7f03abd"
 				},
 				{
-					"name": "Get a funetuning",
+					"name": "Prompts",
+					"item": [
+						{
+							"name": "Responses",
+							"item": [
+								{
+									"name": "Prompt",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "0f24501d-6bfc-4c55-8792-1566b22c60fb",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"prompt_schema\")",
+													"",
+													"const responseJson = pm.response.json();",
+													"pm.environment.set(\"prompt_id\", responseJson.id);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "54e2a46e-4310-44a8-8771-6b4807462b01",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"text\": \"What is the average rent price in Chicago Jan 2023?\",\n  \"db_connection_id\": \"{{db_connection_id}}\",\n  \"metadata\": {\"note\":\"this is a note\"}\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/prompts",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"prompts"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Prompts",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "03db0db7-630a-402a-9f82-6c79a4851a9b",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"prompt_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "34204902-231e-4234-ab37-7e865a5f4cc0",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/prompts",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"prompts"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Prompt",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "aced7c5b-f57e-4e85-ab14-72066a583838",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"prompt_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "3412128b-2075-4f9b-8853-b4f49f7c7340",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/prompts/{{prompt_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"prompts",
+												"{{prompt_id}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "5d6fbb38-21d0-4d34-9dc6-0e6a03fb10f5"
+						},
+						{
+							"name": "Errors",
+							"item": [
+								{
+									"name": "Prompt not found",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "02b35357-2c7d-4528-8e34-8d4c3ffb0afd",
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {",
+													"    pm.response.to.have.status(404);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"prompt_not_found\");"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "99490dc4-56e3-4d01-94b3-3be916821054",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/prompts/:id",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"prompts",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "0123456789ab0123456789ab"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "19d873ac-0c9b-4f83-ae2d-ba07759da454"
+						}
+					],
+					"id": "9ddc9799-a5a0-4fef-b100-7b17eb2f91ea"
+				},
+				{
+					"name": "SQL Generations",
+					"item": [
+						{
+							"name": "Responses",
+							"item": [
+								{
+									"name": "SQL generation with evaluate",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "56f6c877-8015-41c2-a15b-b05aabf35b4f",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"sql_generation_schema\")",
+													"",
+													"pm.test('Returns valid SQL', () => {",
+													"    const responseJson = pm.response.json();",
+													"    pm.expect(responseJson).to.have.property('status');",
+													"    pm.expect(responseJson.status).to.equal('VALID');",
+													"})",
+													"",
+													"const responseJson = pm.response.json();",
+													"pm.environment.set(\"sql_generation_id\", responseJson.id);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "b69846f3-6ee8-4831-ba9e-dc4c23f0483a",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"evaluate\": true\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/prompts/{{prompt_id}}/sql-generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"prompts",
+												"{{prompt_id}}",
+												"sql-generations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Prompt and SQL generation with finetuning agent",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "2421c365-ae09-468d-ac36-b013b5004523",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"sql_generation_schema\")",
+													"",
+													"pm.test('Returns valid SQL', () => {",
+													"    const responseJson = pm.response.json();",
+													"    pm.expect(responseJson).to.have.property('status');",
+													"    // pm.expect(responseJson.status).to.equal('VALID');",
+													"})",
+													"",
+													"const responseJson = pm.response.json();",
+													"pm.environment.set(\"sql_generation_id\", responseJson.id);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "f3262ed2-1dd7-489b-8600-732d73dbedc0",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n   \"finetuning_id\":\"{{finetuning_id}}\",\n    \"prompt\": {\n        \"text\": \"What was the median home sale price in CA in May 2023?\",\n        \"db_connection_id\": \"{{db_connection_id}}\"\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/prompts/sql-generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"prompts",
+												"sql-generations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Prompt and SQL generation",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "3c285f9a-5fd6-423d-95dd-d947e7d241e1",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"sql_generation_schema\")",
+													"",
+													"pm.test('Returns valid SQL', () => {",
+													"    const responseJson = pm.response.json();",
+													"    pm.expect(responseJson).to.have.property('status');",
+													"    pm.expect(responseJson.status).to.equal('VALID');",
+													"})",
+													"",
+													"const responseJson = pm.response.json();",
+													"pm.environment.set(\"sql_generation_id\", responseJson.id);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "244b37ae-d67e-4cdc-b45c-3ae3251c6fad",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"prompt\": {\n        \"text\": \"What was the median home sale price in CA in May 2023?\",\n        \"db_connection_id\": \"{{db_connection_id}}\"\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/prompts/sql-generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"prompts",
+												"sql-generations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "SQL generations",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "08ef2fa0-ecd1-42b1-88cb-80a1d9c2a705",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"sql_generation_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "720da2ff-d096-4d7a-b986-2c4051a78aca",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/sql-generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"sql-generations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "SQL generation",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "989827b2-7514-4732-83b4-36a611b73099",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"sql_generation_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "168e1585-eb85-40bb-a20a-8f1265aafb70",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"sql-generations",
+												"{{sql_generation_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "SQL generation execute",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "d3b771da-28a7-4e30-b04f-8b9eec18c56e",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"const expectedSchema = {",
+													"    \"type\": \"array\"",
+													"}",
+													"",
+													"pm.test('response matches JSON schema', () => {",
+													"    pm.response.to.have.jsonSchema(expectedSchema);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "e5274262-dad5-4081-ae55-b301672f2d17",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}/execute?max_rows=10",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"sql-generations",
+												"{{sql_generation_id}}",
+												"execute"
+											],
+											"query": [
+												{
+													"key": "max_rows",
+													"value": "10"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "SQL generation csv-file",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "e55e907f-05c0-4bbc-a3c2-baafaae954a1",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "d4e1ddef-3548-45d4-95fe-19fea3f951df",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}/csv-file",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"sql-generations",
+												"{{sql_generation_id}}",
+												"csv-file"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "SQL generations with prompt_id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "cf759e6b-f5b3-4e02-8437-98b1469e3611",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"sql_generation_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "e7b9ba95-6dee-47d7-9b4b-6aaba632f624",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/prompts/{{prompt_id}}/sql-generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"prompts",
+												"{{prompt_id}}",
+												"sql-generations"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "c925edae-e9f2-4d9c-aa14-9d4a21039e0b"
+						},
+						{
+							"name": "Errors",
+							"item": [
+								{
+									"name": "SQL generation not found",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "989827b2-7514-4732-83b4-36a611b73099",
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {",
+													"    pm.response.to.have.status(404);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"sql_generation_not_found\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "6550b73b-7700-484d-b168-9996fbd668f6",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/sql-generations/:id",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"sql-generations",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "0123456789ab0123456789ab"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "255544db-2d44-4c5d-b01c-dc08fb445d48"
+						}
+					],
+					"id": "1a76571f-cd5e-4178-80bf-405a49e5f6a9"
+				},
+				{
+					"name": "NL Generations",
+					"item": [
+						{
+							"name": "Responses",
+							"item": [
+								{
+									"name": "NL generation",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "ba831e7c-423f-46fc-a358-2241d715ca99",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"nl_generation_schema\")",
+													"",
+													"const responseJson = pm.response.json();",
+													"pm.environment.set(\"nl_generation_id\", responseJson.id);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "b233d8c8-19f6-4d9e-bab1-fe10dcdc7a4f",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"max_rows\": 10\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}/nl-generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"sql-generations",
+												"{{sql_generation_id}}",
+												"nl-generations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "SQL, and NL generations",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "3ddcd493-08d9-4150-9bf9-a38692ba133b",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"nl_generation_schema\")",
+													"",
+													"const responseJson = pm.response.json();",
+													"pm.environment.set(\"nl_generation_id\", responseJson.id);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "e259e688-2cad-48a8-9024-4334ff695f9a",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"max_rows\":50,\n    \"sql_generation\": {\n        \"evaluate\": false\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/prompts/{{prompt_id}}/sql-generations/nl-generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"prompts",
+												"{{prompt_id}}",
+												"sql-generations",
+												"nl-generations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Prompts, SQL, and NL generations with finetuning agent",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "2525e416-c315-48db-b53c-aae52f86f96b",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"nl_generation_schema\")",
+													"",
+													"const responseJson = pm.response.json();",
+													"pm.environment.set(\"nl_generation_id\", responseJson.id);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "61dc68b9-5c79-48a6-bb16-e3b57aad8f6a",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"max_rows\":50,\n    \"sql_generation\": {\n        \"finetuning_id\": \"{{finetuning_id}}\",\n        \"evaluate\": false,\n        \"prompt\": {\n            \"text\": \"What is the average rent price in San Francisco in August 2023?\",\n            \"db_connection_id\": \"{{db_connection_id}}\",\n            \"metadata\": {\"note\": \"this is a note\"}\n        }\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/prompts/sql-generations/nl-generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"prompts",
+												"sql-generations",
+												"nl-generations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "NL generations",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "f10aba95-8284-4073-a8e6-a087dd11f49b",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"nl_generation_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "ebc35836-6c84-4cca-8373-a13558176aeb",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/nl-generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"nl-generations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "NL generation",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "1194d4bb-a050-4f3f-9a86-0cc6bdae54d0",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"nl_generation_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "d6769c14-3864-404d-b182-c0ea03991bba",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/nl-generations/{{nl_generation_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"nl-generations",
+												"{{nl_generation_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "NL generations with sql_generation_id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "0dca8810-2288-4d74-a04d-00d3f8976be1",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"nl_generation_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "433d9d38-6743-4620-a548-523855461780",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}/nl-generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"sql-generations",
+												"{{sql_generation_id}}",
+												"nl-generations"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "794cebb9-a5fb-43d5-8645-d70b425ea056"
+						},
+						{
+							"name": "Errors",
+							"item": [
+								{
+									"name": "NL generation not found",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "30344eef-9995-4085-899d-08e1b2c99902",
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {",
+													"    pm.response.to.have.status(404);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response,'nl_generation_not_found')"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "02599ae3-b923-4e4e-abeb-35cb5b868ae7",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/nl-generations/:id",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"nl-generations",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "0123456789ab0123456789ab"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "538e6f4e-8dfa-4087-8fff-7ed453415f1d"
+						}
+					],
+					"id": "8c38aeba-b799-4d90-8a00-218c9d3fd5ca"
+				},
+				{
+					"name": "Golden SQLs",
+					"item": [
+						{
+							"name": "Responses",
+							"item": [
+								{
+									"name": "Golden SQLs",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "a58a26a3-4feb-4339-a85f-2be3c17713ff",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"golden_sql_schema\")",
+													"",
+													"const responseJson = pm.response.json();",
+													"pm.environment.set(\"golden_sql_id\", responseJson[0].id);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "d71a87c3-615f-4627-953b-4d91020172b3",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "[\n    {\n        \"db_connection_id\": \"{{db_connection_id}}\",\n        \"prompt_text\": \"what was the most expensive zip code to rent in Los Angeles county in May 2022?\",\n        \"sql\": \"SELECT location_name,        metric_value FROM renthub_median_rent WHERE dh_county_name = 'Los Angeles'   AND dh_state_name = 'California'   AND property_type = 'All Residential'   AND period_start='2022-05-01'   AND geo_type='zip' ORDER BY metric_value DESC LIMIT 1;\",\n        \"metadata\": {}\n    }\n]",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/golden-sqls",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"golden-sqls"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Golden SQLs",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "0e43abbf-0750-40c2-bdc0-fd1cf8c7fc47",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"golden_sql_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "33f0cc1b-6955-476b-88d5-86cf48af1758",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/golden-sqls",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"golden-sqls"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Golden SQL",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "2bb2b504-d1a0-4726-a6a4-96762c6283b3",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"golden_sql_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "93614bd9-62bf-4c67-83ee-1b26594753dd",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/golden-sqls/{{golden_sql_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"golden-sqls",
+												"{{golden_sql_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Golden SQL",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "0e5f0da7-c200-4409-bd61-a2239d739bae",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"pm.test('Returns deleted id', () => {",
+													"    const responseJson = pm.response.json();",
+													"    pm.expect(responseJson).to.have.property('id');",
+													"})"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "dda4fef9-0496-49d7-b678-8faf88ad8bf8",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/golden-sqls/{{golden_sql_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"golden-sqls",
+												"{{golden_sql_id}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "94b65da6-e6c7-4ef6-b4fc-967fa4870ff0"
+						},
+						{
+							"name": "Errors",
+							"item": [
+								{
+									"name": "Golden SQL not found",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "2bb2b504-d1a0-4726-a6a4-96762c6283b3",
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {",
+													"    pm.response.to.have.status(404);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response,'golden_sql_not_found')"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "71f7c8c8-ac74-4174-8078-ca5479e87e04",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/golden-sqls/:id",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"golden-sqls",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "0123456789ab0123456789ab"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "a486a2c8-fc4b-47f4-9315-43ac7394e8f0"
+						}
+					],
+					"id": "bac0b8ce-e87b-41de-85cf-4069408aed6a"
+				},
+				{
+					"name": "Instructions",
+					"item": [
+						{
+							"name": "Responses",
+							"item": [
+								{
+									"name": "Instruction",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "7f3d7302-89b4-443c-95e0-23a548e55031",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"instruction_schema\")",
+													"",
+													"const responseJson = pm.response.json();",
+													"pm.environment.set(\"instruction_id\", responseJson.id);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "85c65984-38b7-4257-800c-e6e0c0a84e39",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"instruction\": \"This is a test instruction\",\n  \"db_connection_id\": \"{{db_connection_id}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/instructions",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"instructions"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Instructions",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b9cdccc2-c9d5-4175-ba56-9108a1c1289b",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"instruction_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "09cd4596-4781-42eb-a71e-c07f8e81b695",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/instructions?db_connection_id={{db_connection_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"instructions"
+											],
+											"query": [
+												{
+													"key": "db_connection_id",
+													"value": "{{db_connection_id}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Instruction",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "ff1924b1-f545-4c58-897e-05d6337ac74f",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"id": "4eee5fbd-bb7f-4b23-af65-ba202b959a2a",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"instruction_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "3512b543-7090-4863-b436-97f59f5d0a74",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/instructions/{{instruction_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"instructions",
+												"{{instruction_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Instruction",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b5b863ca-1cdf-48ae-9820-00dc58d5bc77",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"instruction_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "c57b1ed5-7878-4b29-bb29-73789b9711b4",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"instruction\": \"This is an updated test instruction\",\n  \"db_connection_id\": \"{{db_connection_id}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/instructions/{{instruction_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"instructions",
+												"{{instruction_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Instruction",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "a6642ec7-b260-4580-b98b-3aa69bec5cdd",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"pm.test('Returns deleted id', () => {",
+													"    const responseJson = pm.response.json();",
+													"    pm.expect(responseJson).to.have.property('id');",
+													"})"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "13540639-7337-421d-bae0-66f66b1cd7fd",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/instructions/{{instruction_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"instructions",
+												"{{instruction_id}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "1db6cd86-4fd3-4538-8e0f-b372d212a564"
+						},
+						{
+							"name": "Errors",
+							"item": [
+								{
+									"name": "Instruction not found",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "ff1924b1-f545-4c58-897e-05d6337ac74f",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"id": "4eee5fbd-bb7f-4b23-af65-ba202b959a2a",
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {",
+													"    pm.response.to.have.status(404);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"instruction_not_found\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "3f1bdf83-bd2d-442d-8306-b12e882edc83",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/instructions/:id",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"instructions",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "0123456789ab0123456789ab"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Instruction",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "7f3d7302-89b4-443c-95e0-23a548e55031",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"instruction_schema\")",
+													"",
+													"const responseJson = pm.response.json();",
+													"pm.environment.set(\"instruction_id\", responseJson.id);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "78ca9614-1bee-47ad-bdec-a2200f374b02",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"instruction\": \"This is a test instruction\",\n  \"db_connection_id\": \"{{db_connection_id}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/instructions",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"instructions"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Instruction singles only",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "fab6bdff-e49b-4371-b65e-a7e4ad145771",
+												"exec": [
+													"pm.test(\"Status code is 400\", function () {",
+													"    pm.response.to.have.status(400);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"single_instruction_only\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "66d23aa3-3c4b-42f1-8592-227a07694d9c",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"instruction\": \"This is a failed test instruction\",\n  \"db_connection_id\": \"{{db_connection_id}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/instructions",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"instructions"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "1c16383d-9fdd-43d1-be36-9e597ef2d3ed"
+						}
+					],
+					"id": "accbf152-72c7-4ae6-9beb-675f70606fff"
+				},
+				{
+					"name": "Table Descriptions",
+					"item": [
+						{
+							"name": "Responses",
+							"item": [
+								{
+									"name": "Table descriptions",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "c260cad4-95cf-49be-bbcf-2da4d60edf83",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"table_description_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "9a08deae-7a51-4a1b-a1d1-c27398ae80ee",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/table-descriptions?db_connection_id={{db_connection_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"table-descriptions"
+											],
+											"query": [
+												{
+													"key": "db_connection_id",
+													"value": "{{db_connection_id}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Table descriptions with table_name",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "2e367954-2ac0-4fbb-b334-f38bc40c392e",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"table_description_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "1b189af4-5013-43a5-a435-b7759c21e2d4",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/table-descriptions?db_connection_id={{db_connection_id}}&table_name=redfin_avg_sale_to_list",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"table-descriptions"
+											],
+											"query": [
+												{
+													"key": "db_connection_id",
+													"value": "{{db_connection_id}}"
+												},
+												{
+													"key": "table_name",
+													"value": "redfin_avg_sale_to_list"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Table description",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "91e36bbe-c952-4f99-b988-b4612f8eecb4",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"table_description_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "ef06dbd7-17e0-4bdd-a8b3-681778f97553",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/table-descriptions/{{table_description_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"table-descriptions",
+												"{{table_description_id}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "cf9ee42c-824d-49c2-bc4e-faf1130268bc"
+						},
+						{
+							"name": "Errors",
+							"item": [
+								{
+									"name": "Table descriptions not found",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "c260cad4-95cf-49be-bbcf-2da4d60edf83",
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {",
+													"    pm.response.to.have.status(404);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"table_description_not_found\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "b2abf504-2250-4129-88db-4589fd0b42a7",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/table-descriptions/:id",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"table-descriptions",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "0123456789ab0123456789ab"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "adb6bc1c-1be6-478b-90b7-4bfbb2370f9e"
+						}
+					],
+					"id": "f2d6036b-854a-4acf-a74e-169031034bd8"
+				},
+				{
+					"name": "Aggregated Generations",
+					"item": [
+						{
+							"name": "Responses",
+							"item": [
+								{
+									"name": "Generations",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "34d6db5a-24d1-408c-859a-f8f9ac936b75",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"generation_list_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "3d476528-6284-467e-810e-f5c2756de18e",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"generations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Generation",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "23b8903d-0a3a-41bf-b7c5-b59ce73f360b",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"generation_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "811760c8-4bc3-412b-9140-e8a63dfb2a44",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/generations/{{prompt_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"generations",
+												"{{prompt_id}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "d6669a48-841b-47d8-816c-2dbc482a6cf4"
+						},
+						{
+							"name": "Errors",
+							"item": [
+								{
+									"name": "Generation not found",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "23b8903d-0a3a-41bf-b7c5-b59ce73f360b",
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {",
+													"    pm.response.to.have.status(404);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"prompt_not_found\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "943f11cc-106f-44eb-957f-3c3be4353f42",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/generations/:id",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"generations",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "0123456789ab0123456789ab"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "4976df26-2585-4b32-a360-a34b79128b59"
+						}
+					],
+					"id": "f1cd0463-59b4-4cf8-9096-e80e2a3b04b9"
+				},
+				{
+					"name": "Finetunings",
+					"item": [
+						{
+							"name": "Responses",
+							"item": [
+								{
+									"name": "Finetunings",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "e2af1ef3-9511-4a89-9072-7c3bf2ae67f6",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"finetuning_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "f25c3aab-2966-4b55-a3a1-67d69f2979f2",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/finetunings?db_connection_id={{db_connection_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"finetunings"
+											],
+											"query": [
+												{
+													"key": "db_connection_id",
+													"value": "{{db_connection_id}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Finetuning",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "08c29427-2b3f-4189-be00-ddc2800b9eb5",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"finetuning_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "37c28d2f-8179-49ee-94cb-30cc954b11d5",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/finetunings/{{finetuning_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"finetunings",
+												"{{finetuning_id}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "c1d64905-4549-4c32-9068-0b175b5f89f6"
+						},
+						{
+							"name": "Errors",
+							"item": [
+								{
+									"name": "Finetuning not found",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "08c29427-2b3f-4189-be00-ddc2800b9eb5",
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {",
+													"    pm.response.to.have.status(404);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response,'finetuning_not_found')"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "5c4b13f2-7ab5-4b6f-89dc-9de05678edc6",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/finetunings/:id",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"finetunings",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "0123456789ab0123456789ab"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "80268a86-8a2a-48f9-92c4-943d4e323147"
+						}
+					],
+					"id": "c38a312e-869b-48fc-ace6-d476daba34c4",
 					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "279f50bd-d66b-49fb-a2b6-6736cd74fb7e",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
 						{
 							"listen": "test",
 							"script": {
-								"id": "08c29427-2b3f-4189-be00-ddc2800b9eb5",
+								"id": "ab7c0250-5ccb-4955-9294-2a8050696f7e",
+								"type": "text/javascript",
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"finetuning_schema\"));",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
+									""
+								]
 							}
 						}
-					],
-					"id": "37c28d2f-8179-49ee-94cb-30cc954b11d5",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/finetunings/{{finetuning_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"finetunings",
-								"{{finetuning_id}}"
-							]
-						}
-					},
-					"response": []
+					]
 				}
 			],
-			"id": "c38a312e-869b-48fc-ace6-d476daba34c4",
+			"id": "fecf507f-8f09-4408-98a5-31859d2b79a3",
+			"auth": {
+				"type": "apikey",
+				"apikey": [
+					{
+						"key": "value",
+						"value": "{{api_key}}",
+						"type": "string"
+					},
+					{
+						"key": "key",
+						"value": "X-API-Key",
+						"type": "string"
+					}
+				]
+			},
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "279f50bd-d66b-49fb-a2b6-6736cd74fb7e",
+						"id": "0c67f9eb-cf93-40b3-b31a-870b8493426a",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -217,7 +2530,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "ab7c0250-5ccb-4955-9294-2a8050696f7e",
+						"id": "fa85ac2d-0399-46c5-a065-b2c408d45384",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -227,1539 +2540,1070 @@
 			]
 		},
 		{
-			"name": "Prompts",
+			"name": "Access Token",
 			"item": [
 				{
-					"name": "Prompt",
-					"event": [
+					"name": "Invoices",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"id": "0f24501d-6bfc-4c55-8792-1566b22c60fb",
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"prompt_schema\"));",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});",
-									"",
-									"const responseJson = pm.response.json();",
-									"pm.environment.set(\"prompt_id\", responseJson.id);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "54e2a46e-4310-44a8-8771-6b4807462b01",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"text\": \"What is the average rent price in Chicago Jan 2023?\",\n  \"db_connection_id\": \"{{db_connection_id}}\",\n  \"metadata\": {\"note\":\"this is a note\"}\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/prompts",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"prompts"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Prompts",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "03db0db7-630a-402a-9f82-6c79a4851a9b",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"prompt_schema\"))",
-									"}",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "34204902-231e-4234-ab37-7e865a5f4cc0",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/prompts",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"prompts"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Prompt",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "aced7c5b-f57e-4e85-ab14-72066a583838",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"prompt_schema\"));",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "3412128b-2075-4f9b-8853-b4f49f7c7340",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/prompts/{{prompt_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"prompts",
-								"{{prompt_id}}"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "9ddc9799-a5a0-4fef-b100-7b17eb2f91ea"
-		},
-		{
-			"name": "SQL Generations",
-			"item": [
-				{
-					"name": "SQL Generation with evaluate",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "56f6c877-8015-41c2-a15b-b05aabf35b4f",
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"sql_generation_schema\"));",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});",
-									"",
-									"pm.test('Returns valid SQL', () => {",
-									"    const responseJson = pm.response.json();",
-									"    pm.expect(responseJson).to.have.property('status');",
-									"    pm.expect(responseJson.status).to.equal('VALID');",
-									"})",
-									"",
-									"const responseJson = pm.response.json();",
-									"pm.environment.set(\"sql_generation_id\", responseJson.id);",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "b69846f3-6ee8-4831-ba9e-dc4c23f0483a",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"evaluate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/prompts/{{prompt_id}}/sql-generations",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"prompts",
-								"{{prompt_id}}",
-								"sql-generations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Prompt and SQL Generation",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "3c285f9a-5fd6-423d-95dd-d947e7d241e1",
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"sql_generation_schema\"));",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});",
-									"",
-									"pm.test('Returns valid SQL', () => {",
-									"    const responseJson = pm.response.json();",
-									"    pm.expect(responseJson).to.have.property('status');",
-									"    pm.expect(responseJson.status).to.equal('VALID');",
-									"})",
-									"",
-									"const responseJson = pm.response.json();",
-									"pm.environment.set(\"sql_generation_id\", responseJson.id);",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "244b37ae-d67e-4cdc-b45c-3ae3251c6fad",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"prompt\": {\n        \"text\": \"What was the median home sale price in CA in May 2023?\",\n        \"db_connection_id\": \"{{db_connection_id}}\"\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/prompts/sql-generations",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"prompts",
-								"sql-generations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Prompt and SQL Generation with finetuning agent",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "2421c365-ae09-468d-ac36-b013b5004523",
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"sql_generation_schema\"));",
-									"",
-									"// Test that the response matches the expected schema using built-in schema verification",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});",
-									"",
-									"pm.test('Returns valid SQL', () => {",
-									"    const responseJson = pm.response.json();",
-									"    pm.expect(responseJson).to.have.property('status');",
-									"    pm.expect(responseJson.status).to.equal('VALID');",
-									"})",
-									"",
-									"const responseJson = pm.response.json();",
-									"pm.environment.set(\"sql_generation_id\", responseJson.id);",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "f3262ed2-1dd7-489b-8600-732d73dbedc0",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n   \"finetuning_id\":\"{{finetuning_id}}\",\n    \"prompt\": {\n        \"text\": \"What was the median home sale price in CA in May 2023?\",\n        \"db_connection_id\": \"{{db_connection_id}}\"\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/prompts/sql-generations",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"prompts",
-								"sql-generations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "SQL Generations",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "08ef2fa0-ecd1-42b1-88cb-80a1d9c2a705",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"sql_generation_schema\"))",
-									"}",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "720da2ff-d096-4d7a-b986-2c4051a78aca",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/sql-generations",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"sql-generations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "SQL Generation",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "989827b2-7514-4732-83b4-36a611b73099",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"sql_generation_schema\"));",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "168e1585-eb85-40bb-a20a-8f1265aafb70",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"sql-generations",
-								"{{sql_generation_id}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "SQL Generation execute",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "d3b771da-28a7-4e30-b04f-8b9eec18c56e",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\"",
-									"}",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "e5274262-dad5-4081-ae55-b301672f2d17",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}/execute?max_rows=10",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"sql-generations",
-								"{{sql_generation_id}}",
-								"execute"
-							],
-							"query": [
+							"name": "Responses",
+							"item": [
 								{
-									"key": "max_rows",
-									"value": "10"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "SQL Generation csv-file",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "e55e907f-05c0-4bbc-a3c2-baafaae954a1",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "d4e1ddef-3548-45d4-95fe-19fea3f951df",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}/csv-file",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"sql-generations",
-								"{{sql_generation_id}}",
-								"csv-file"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "SQL Generations with prompt_id",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "cf759e6b-f5b3-4e02-8437-98b1469e3611",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"sql_generation_schema\"))",
-									"}",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "e7b9ba95-6dee-47d7-9b4b-6aaba632f624",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/prompts/{{prompt_id}}/sql-generations",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"prompts",
-								"{{prompt_id}}",
-								"sql-generations"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "1a76571f-cd5e-4178-80bf-405a49e5f6a9"
-		},
-		{
-			"name": "NL Generations",
-			"item": [
-				{
-					"name": "NL Generation",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "ba831e7c-423f-46fc-a358-2241d715ca99",
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"nl_generation_schema\"));",
-									"",
-									"// Test that the response matches the expected schema using built-in schema verification",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});",
-									"",
-									"const responseJson = pm.response.json();",
-									"pm.environment.set(\"nl_generation_id\", responseJson.id);",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "b233d8c8-19f6-4d9e-bab1-fe10dcdc7a4f",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"max_rows\": 10\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}/nl-generations",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"sql-generations",
-								"{{sql_generation_id}}",
-								"nl-generations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "SQL, and NL Generations",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "3ddcd493-08d9-4150-9bf9-a38692ba133b",
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"nl_generation_schema\"));",
-									"",
-									"// Test that the response matches the expected schema using built-in schema verification",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});",
-									"",
-									"const responseJson = pm.response.json();",
-									"pm.environment.set(\"nl_generation_id\", responseJson.id);",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "e259e688-2cad-48a8-9024-4334ff695f9a",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"max_rows\":50,\n    \"sql_generation\": {\n        \"evaluate\": false\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/prompts/{{prompt_id}}/sql-generations/nl-generations",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"prompts",
-								"{{prompt_id}}",
-								"sql-generations",
-								"nl-generations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Prompts, SQL, and NL Generations with finetuning agent",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "2525e416-c315-48db-b53c-aae52f86f96b",
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"nl_generation_schema\"));",
-									"",
-									"// Test that the response matches the expected schema using built-in schema verification",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});",
-									"",
-									"const responseJson = pm.response.json();",
-									"pm.environment.set(\"nl_generation_id\", responseJson.id);",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "61dc68b9-5c79-48a6-bb16-e3b57aad8f6a",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"max_rows\":50,\n    \"sql_generation\": {\n        \"finetuning_id\": \"{{finetuning_id}}\",\n        \"evaluate\": false,\n        \"prompt\": {\n            \"text\": \"What is the average rent price in San Francisco in August 2023?\",\n            \"db_connection_id\": \"{{db_connection_id}}\",\n            \"metadata\": {\"note\": \"this is a note\"}\n        }\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/prompts/sql-generations/nl-generations",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"prompts",
-								"sql-generations",
-								"nl-generations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "NL Generations",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "f10aba95-8284-4073-a8e6-a087dd11f49b",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"nl_generation_schema\"))",
-									"};",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "ebc35836-6c84-4cca-8373-a13558176aeb",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/nl-generations",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"nl-generations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "NL Generation",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "1194d4bb-a050-4f3f-9a86-0cc6bdae54d0",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"nl_generation_schema\"));",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "d6769c14-3864-404d-b182-c0ea03991bba",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/nl-generations/{{nl_generation_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"nl-generations",
-								"{{nl_generation_id}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "NL Generations with sql_generation_id",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "0dca8810-2288-4d74-a04d-00d3f8976be1",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"nl_generation_schema\"))",
-									"}",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "433d9d38-6743-4620-a548-523855461780",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/sql-generations/{{sql_generation_id}}/nl-generations",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"sql-generations",
-								"{{sql_generation_id}}",
-								"nl-generations"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "8c38aeba-b799-4d90-8a00-218c9d3fd5ca"
-		},
-		{
-			"name": "Golden SQLs",
-			"item": [
-				{
-					"name": "Golden SQLs",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "a58a26a3-4feb-4339-a85f-2be3c17713ff",
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"golden_sql_schema\"))",
-									"};",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});",
-									"",
-									"const responseJson = pm.response.json();",
-									"pm.environment.set(\"golden_sql_id\", responseJson[0].id);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "d71a87c3-615f-4627-953b-4d91020172b3",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "[\n    {\n        \"db_connection_id\": \"{{db_connection_id}}\",\n        \"prompt_text\": \"what was the most expensive zip code to rent in Los Angeles county in May 2022?\",\n        \"sql\": \"SELECT location_name,        metric_value FROM renthub_median_rent WHERE dh_county_name = 'Los Angeles'   AND dh_state_name = 'California'   AND property_type = 'All Residential'   AND period_start='2022-05-01'   AND geo_type='zip' ORDER BY metric_value DESC LIMIT 1;\",\n        \"metadata\": {}\n    }\n]",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/golden-sqls",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"golden-sqls"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Golden SQLs",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "0e43abbf-0750-40c2-bdc0-fd1cf8c7fc47",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"golden_sql_schema\"))",
-									"};",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "33f0cc1b-6955-476b-88d5-86cf48af1758",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/golden-sqls",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"golden-sqls"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Golden SQL",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "2bb2b504-d1a0-4726-a6a4-96762c6283b3",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"golden_sql_schema\"));",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "93614bd9-62bf-4c67-83ee-1b26594753dd",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/golden-sqls/{{golden_sql_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"golden-sqls",
-								"{{golden_sql_id}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Golden SQL",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "0e5f0da7-c200-4409-bd61-a2239d739bae",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test('Returns deleted id', () => {",
-									"    const responseJson = pm.response.json();",
-									"    pm.expect(responseJson).to.have.property('id');",
-									"})"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "dda4fef9-0496-49d7-b678-8faf88ad8bf8",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/golden-sqls/{{golden_sql_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"golden-sqls",
-								"{{golden_sql_id}}"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "bac0b8ce-e87b-41de-85cf-4069408aed6a"
-		},
-		{
-			"name": "Instructions",
-			"item": [
-				{
-					"name": "Instruction",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "7f3d7302-89b4-443c-95e0-23a548e55031",
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"",
-									"const responseJson = pm.response.json();",
-									"pm.environment.set(\"instruction_id\", responseJson.id);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "85c65984-38b7-4257-800c-e6e0c0a84e39",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"instruction\": \"This is a test instruction\",\n  \"db_connection_id\": \"{{db_connection_id}}\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/instructions",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"instructions"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Instructions",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "b9cdccc2-c9d5-4175-ba56-9108a1c1289b",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"instruction_schema\"))",
-									"};",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "09cd4596-4781-42eb-a71e-c07f8e81b695",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/instructions?db_connection_id={{db_connection_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"instructions"
-							],
-							"query": [
-								{
-									"key": "db_connection_id",
-									"value": "{{db_connection_id}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Instruction",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"id": "ff1924b1-f545-4c58-897e-05d6337ac74f",
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"id": "4eee5fbd-bb7f-4b23-af65-ba202b959a2a",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"instruction_schema\"));",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "3512b543-7090-4863-b436-97f59f5d0a74",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/instructions/{{instruction_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"instructions",
-								"{{instruction_id}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Instruction",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "b5b863ca-1cdf-48ae-9820-00dc58d5bc77",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"instruction_schema\"));",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "c57b1ed5-7878-4b29-bb29-73789b9711b4",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"instruction\": \"This is an updated test instruction\",\n  \"db_connection_id\": \"{{db_connection_id}}\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/instructions/{{instruction_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"instructions",
-								"{{instruction_id}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Instruction",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "a6642ec7-b260-4580-b98b-3aa69bec5cdd",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test('Returns deleted id', () => {",
-									"    const responseJson = pm.response.json();",
-									"    pm.expect(responseJson).to.have.property('id');",
-									"})"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "13540639-7337-421d-bae0-66f66b1cd7fd",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/instructions/{{instruction_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"instructions",
-								"{{instruction_id}}"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "accbf152-72c7-4ae6-9beb-675f70606fff"
-		},
-		{
-			"name": "Table Descriptions",
-			"item": [
-				{
-					"name": "Table Descriptions",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "c260cad4-95cf-49be-bbcf-2da4d60edf83",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"table_description_schema\"))",
-									"};",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "9a08deae-7a51-4a1b-a1d1-c27398ae80ee",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/table-descriptions?db_connection_id={{db_connection_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"table-descriptions"
-							],
-							"query": [
-								{
-									"key": "db_connection_id",
-									"value": "{{db_connection_id}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Table Descriptions with table_name",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "2e367954-2ac0-4fbb-b334-f38bc40c392e",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"table_description_schema\"))",
-									"};",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "1b189af4-5013-43a5-a435-b7759c21e2d4",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/table-descriptions?db_connection_id={{db_connection_id}}&table_name=redfin_avg_sale_to_list",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"table-descriptions"
-							],
-							"query": [
-								{
-									"key": "db_connection_id",
-									"value": "{{db_connection_id}}"
+									"name": "Pending invoice",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "2a996753-0461-41f4-8c5a-d95255b5bf6d",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"const sql_generation_cost = 90 * 5",
+													"const finetuning_gpt_35_cost = 0",
+													"const finetuning_gpt_4_cost = 0",
+													"",
+													"utils.matchSchema(pm.response, 'invoice_schema')",
+													"",
+													"responseJson = pm.response.json()",
+													"",
+													"pm.test(\"SQL Generation cost incurred and recorded\", function () {",
+													"    pm.expect(responseJson).to.have.property('sql_generation_cost');",
+													"    pm.expect(responseJson.sql_generation_cost).to.equal(sql_generation_cost);",
+													"})",
+													"",
+													"pm.test(\"Finetuning cost not incurred and remained zero\",",
+													"    function () {",
+													"        pm.expect(responseJson).to.have.property('finetuning_gpt_35_cost');",
+													"        pm.expect(responseJson.finetuning_gpt_35_cost).to.equal(finetuning_gpt_35_cost);",
+													"        pm.expect(responseJson).to.have.property('finetuning_gpt_4_cost');",
+													"        pm.expect(responseJson.finetuning_gpt_4_cost).to.equal(finetuning_gpt_4_cost);",
+													"    })",
+													"",
+													"pm.test(\"Credits used and recorded\", function () {",
+													"    pm.expect(responseJson).to.have.property('available_credits');",
+													"    pm.expect(responseJson).to.have.property('total_credits');",
+													"    pm.expect(responseJson.available_credits).to.equal(responseJson.total_credits - sql_generation_cost - finetuning_gpt_35_cost - finetuning_gpt_4_cost);",
+													"",
+													"})"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "4cde5416-cda6-4fc7-a14b-11ec90c108a8",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/organizations/{{organization_id}}/invoices/pending",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"organizations",
+												"{{organization_id}}",
+												"invoices",
+												"pending"
+											]
+										}
+									},
+									"response": []
 								},
 								{
-									"key": "table_name",
-									"value": "redfin_avg_sale_to_list"
+									"name": "Spending Limit",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b784308b-2e7a-44e3-8ac8-23a557630171",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, 'spending_limit_schema')"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "1236b861-8234-4ee0-aee0-5e60e20594a7",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/organizations/{{organization_id}}/invoices/limits",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"organizations",
+												"{{organization_id}}",
+												"invoices",
+												"limits"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Spending Limit",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "aab7f289-80e9-4b02-a99a-01526a49df14",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, 'spending_limit_schema')",
+													"",
+													"pm.test('Returns updated spending limit', () => {",
+													"    const responseJson = pm.response.json();",
+													"    pm.expect(responseJson).to.have.property('spending_limit');",
+													"    pm.expect(responseJson.spending_limit).to.equal(1200);",
+													"})"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "405b02c3-3a48-439f-875c-1d42bd9643d8",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"spending_limit\": 1200\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/organizations/{{organization_id}}/invoices/limits",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"organizations",
+												"{{organization_id}}",
+												"invoices",
+												"limits"
+											]
+										}
+									},
+									"response": []
 								}
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "f2d6036b-854a-4acf-a74e-169031034bd8"
-		},
-		{
-			"name": "Aggregated Generations",
-			"item": [
-				{
-					"name": "Generations",
-					"event": [
+							],
+							"id": "d837f576-fbc5-432a-a49f-694c855cc5be"
+						},
 						{
-							"listen": "test",
-							"script": {
-								"id": "34d6db5a-24d1-408c-859a-f8f9ac936b75",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = {",
-									"    \"type\": \"array\",",
-									"    \"items\": JSON.parse(pm.collectionVariables.get(\"generation_list_schema\"))",
-									"};",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
+							"name": "Errors",
+							"item": [
+								{
+									"name": "No payment method",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "3c285f9a-5fd6-423d-95dd-d947e7d241e1",
+												"exec": [
+													"pm.test(\"Status code is 402\", function () {",
+													"    pm.response.to.have.status(402);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"no_payment_method\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "c48dea25-93cf-4ed1-966c-37e73fe54c0b",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "apikey",
+											"apikey": [
+												{
+													"key": "value",
+													"value": "{{api_key}}",
+													"type": "string"
+												},
+												{
+													"key": "in",
+													"value": "header",
+													"type": "string"
+												},
+												{
+													"key": "key",
+													"value": "X-API-Key",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"prompt\": {\n        \"text\": \"What was the median home sale price in CA in May 2023?\",\n        \"db_connection_id\": \"{{db_connection_id}}\"\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/prompts/sql-generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"prompts",
+												"sql-generations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Spending Limit lowered",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "aab7f289-80e9-4b02-a99a-01526a49df14",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, 'spending_limit_schema')",
+													"",
+													"pm.test('Returns updated spending limit', () => {",
+													"    const responseJson = pm.response.json();",
+													"    pm.expect(responseJson).to.have.property('spending_limit');",
+													"    pm.expect(responseJson.spending_limit).to.equal(450);",
+													"})"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "2fba3de9-11eb-4f0b-9d8e-f77f38d87161",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"spending_limit\": 450\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/organizations/{{organization_id}}/invoices/limits",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"organizations",
+												"{{organization_id}}",
+												"invoices",
+												"limits"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Spending Limit reached",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "3c285f9a-5fd6-423d-95dd-d947e7d241e1",
+												"exec": [
+													"pm.test(\"Status code is 402\", function () {",
+													"    pm.response.to.have.status(402);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"spending_limit_exceeded\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "b6bbfbe9-b2ee-4c77-b44b-643b4ead4e97",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "apikey",
+											"apikey": [
+												{
+													"key": "value",
+													"value": "{{api_key}}",
+													"type": "string"
+												},
+												{
+													"key": "in",
+													"value": "header",
+													"type": "string"
+												},
+												{
+													"key": "key",
+													"value": "X-API-Key",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"prompt\": {\n        \"text\": \"What was the median home sale price in CA in May 2023?\",\n        \"db_connection_id\": \"{{db_connection_id}}\"\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/prompts/sql-generations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"prompts",
+												"sql-generations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Detach last payment method",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "1c828f23-2555-4dda-86db-f6fb66e6575d",
+												"exec": [
+													"pm.test(\"Status code is 400\", function () {",
+													"    pm.response.to.have.status(400);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"last_payment_method\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "95c56cf5-d723-427b-9c91-b643228becfd",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/organizations/{{organization_id}}/invoices/payment-methods/:id",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"organizations",
+												"{{organization_id}}",
+												"invoices",
+												"payment-methods",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "1234567890"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "ea91ab6d-c787-4624-a7e0-4a4045c849bc"
 						}
 					],
-					"id": "3d476528-6284-467e-810e-f5c2756de18e",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/generations",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"generations"
-							]
-						}
-					},
-					"response": []
+					"id": "67905c6d-dc51-4e94-a9e2-e4aa789ca04b"
 				},
 				{
-					"name": "Generation",
-					"event": [
+					"name": "Users",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"id": "23b8903d-0a3a-41bf-b7c5-b59ce73f360b",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const expectedSchema = JSON.parse(pm.collectionVariables.get(\"generation_schema\"));",
-									"",
-									"pm.test('response matches JSON schema', () => {",
-									"    pm.response.to.have.jsonSchema(expectedSchema);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
+							"name": "Responses",
+							"item": [
+								{
+									"name": "Users",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "3710de05-4859-4661-932b-3e1eaf922f98",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"user_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "a1735a9f-e187-4d10-879c-8a7f72263314",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/users",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"users"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "User",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "3710de05-4859-4661-932b-3e1eaf922f98",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"user_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "3269711b-b59d-4313-a11a-34eb89626444",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/users/{{user_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"users",
+												"{{user_id}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "8b574545-5125-457c-bc5f-40516e1295ec"
+						},
+						{
+							"name": "Errors",
+							"item": [
+								{
+									"name": "User not found",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "3710de05-4859-4661-932b-3e1eaf922f98",
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {",
+													"    pm.response.to.have.status(404);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"user_not_found\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "0bd0fbdf-e236-432c-9b46-d11b1e97aec0",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/users/:id",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"users",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "0123456789ab0123456789ab"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "User exists in organization",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "a0bca2db-f5b4-4c2d-bfbe-a237af467d54",
+												"exec": [
+													"pm.test(\"Status code is 409\", function () {",
+													"    pm.response.to.have.status(409);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"user_exists_in_org\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "757881ef-bc68-4673-8b3b-0094dcaa7217",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"organization_id\": \"{{organization_id}}\",\n    \"email\": \"{{user_email}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/users/invite",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"users",
+												"invite"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "5a88496e-c8d6-440d-86eb-47c546597c3e"
 						}
 					],
-					"id": "811760c8-4bc3-412b-9140-e8a63dfb2a44",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/generations/{{prompt_id}}",
-							"host": [
-								"{{base_url}}"
+					"id": "74462483-ae6c-44db-9c93-e93435bf171a"
+				},
+				{
+					"name": "Organizations",
+					"item": [
+						{
+							"name": "Responses",
+							"item": [
+								{
+									"name": "Organization",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "c9e9c327-31e6-43b2-9b9c-b17051a0f73e",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"organization_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "a2df8d11-4ed2-45bd-abac-b893ac6febc5",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/organizations/{{organization_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"organizations",
+												"{{organization_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Organization",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "c9e9c327-31e6-43b2-9b9c-b17051a0f73e",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"organization_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "55b138a5-92c2-4a66-ad64-5ead7dce70a5",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"new test org name\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/organizations/{{organization_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"organizations",
+												"{{organization_id}}"
+											]
+										}
+									},
+									"response": []
+								}
 							],
-							"path": [
-								"api",
-								"generations",
-								"{{prompt_id}}"
-							]
+							"id": "816993f1-0d08-4f60-a1aa-fdac10672ffd"
+						},
+						{
+							"name": "Errors",
+							"item": [
+								{
+									"name": "Not authorized",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "c205e07e-5290-42a2-a358-70dce3ec2c46",
+												"exec": [
+													"pm.test(\"Status code is 401\", function () {",
+													"    pm.response.to.have.status(401);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"unauthorized_operation\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "80549f0f-7715-4e7a-8db8-f875b52c6522",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"new test org\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/organizations",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"organizations"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "ea84af16-63bb-44c4-ba9d-d82aa03680d2"
 						}
-					},
-					"response": []
+					],
+					"id": "c657fc8a-c03e-43f4-8bda-9d7c98ba00bb"
+				},
+				{
+					"name": "Keys",
+					"item": [
+						{
+							"name": "Responses",
+							"item": [
+								{
+									"name": "Key",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "5efc1869-b5a2-4d2a-9058-45edee4a0c1d",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"utils.matchSchema(pm.response, \"key_schema\")",
+													"",
+													"const responseJson = pm.response.json();",
+													"pm.environment.set(\"key_id\", responseJson.id);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "41f0440e-7788-4e93-8d81-faaf6597366e",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"test key 2\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/keys",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"keys"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Keys",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "28b85739-210a-48a3-8edf-ba66480fb735",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"utils.matchArraySchema(pm.response, \"key_schema\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "989389ce-24f6-45d4-a20c-6367daf8111a",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/keys",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"keys"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Key",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "e7556983-ad84-4a7a-89e2-b974e599605e",
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"pm.test('Returns deleted id', () => {",
+													"    const responseJson = pm.response.json();",
+													"    pm.expect(responseJson).to.have.property('id');",
+													"})"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "101dee08-2803-47ca-9ea7-5e6880b1816d",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/keys/{{key_id}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"keys",
+												"{{key_id}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "8c20921c-b912-4228-ad41-9df505b4cac8"
+						},
+						{
+							"name": "Errors",
+							"item": [
+								{
+									"name": "Key name exists",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "d6a050ab-0f88-48be-86b7-859d7ab13178",
+												"exec": [
+													"pm.test(\"Status code is 400\", function () {",
+													"    pm.response.to.have.status(400);",
+													"});",
+													"",
+													"utils.checkErrorCode(pm.response, \"key_name_exists\")"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"id": "fc345153-4a8c-42d0-8d0e-749c4650d963",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"Test key\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/keys",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"keys"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "a933e0c2-6f16-43e4-bb52-14bde90ddbc5"
+						}
+					],
+					"id": "854b7df1-33e2-4f3e-abff-7d6337a5e3c6"
 				}
 			],
-			"id": "f1cd0463-59b4-4cf8-9096-e80e2a3b04b9"
+			"id": "8a124d72-0491-4460-802f-757ee12bf41e",
+			"auth": {
+				"type": "oauth2",
+				"oauth2": [
+					{
+						"key": "scope",
+						"value": "offline_access",
+						"type": "string"
+					},
+					{
+						"key": "refreshTokenUrl",
+						"value": "https://auth.dataherald.com/oauth/token",
+						"type": "string"
+					},
+					{
+						"key": "tokenType",
+						"value": "Bearer",
+						"type": "string"
+					},
+					{
+						"key": "accessToken",
+						"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImZfQzJSVF80VDJHQlQya2RiRExfYSJ9.eyJodHRwczovL2F1dGguZGF0YWhlcmFsZC5jb20vZW1haWwiOiJwb3N0bWFuYXBpdGVzdEBkYXRhaGVyYWxkLmNvbSIsImh0dHBzOi8vYXV0aC5kYXRhaGVyYWxkLmNvbS91c2VyX2lkIjoiYXV0aDB8NjVkZTI5NTdmMzM0NzU0MDk2NzBlYWRmIiwiaHR0cHM6Ly9hdXRoLmRhdGFoZXJhbGQuY29tL2ltYWdlX3VybCI6Imh0dHBzOi8vcy5ncmF2YXRhci5jb20vYXZhdGFyL2UzMzZkNDliMDQ5ZGZlZjMwMDQxMWZjNjhkMWIwMzgyP3M9NDgwJnI9cGcmZD1odHRwcyUzQSUyRiUyRmNkbi5hdXRoMC5jb20lMkZhdmF0YXJzJTJGcG8ucG5nIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLmRhdGFoZXJhbGQuY29tLyIsInN1YiI6ImF1dGgwfDY1ZGUyOTU3ZjMzNDc1NDA5NjcwZWFkZiIsImF1ZCI6Imh0dHBzOi8vaGktZ2VvcmdlLnVzLmF1dGgwLmNvbS9hcGkvdjIvIiwiaWF0IjoxNzA5MTUzMjI0LCJleHAiOjE3MDkyMzk2MjQsImF6cCI6IllTTjNtZVFyWlNldVQxTHRaaWZzN0UyZmpwSmwyakdHIiwic2NvcGUiOiJyZWFkOmN1cnJlbnRfdXNlciB1cGRhdGU6Y3VycmVudF91c2VyX21ldGFkYXRhIGRlbGV0ZTpjdXJyZW50X3VzZXJfbWV0YWRhdGEgY3JlYXRlOmN1cnJlbnRfdXNlcl9tZXRhZGF0YSBjcmVhdGU6Y3VycmVudF91c2VyX2RldmljZV9jcmVkZW50aWFscyBkZWxldGU6Y3VycmVudF91c2VyX2RldmljZV9jcmVkZW50aWFscyB1cGRhdGU6Y3VycmVudF91c2VyX2lkZW50aXRpZXMiLCJndHkiOiJwYXNzd29yZCJ9.k7HtCviwfnjh6gB6QNM9i7SwWjYWfhJQxyZk7lvW_ZCuQGS6cL0OHQYn0fOnhahmLkWUEEV2m9RBe4p2Wua_8Vl_hfzqK3NffX-mg-uUxDM4E7rWrxJuqRrodR_wmVoxACnT7sVGXHo8X8iRpCPCm_wZe4hhq5QKqxWlOvZC23TjqKOQGmDvOOYhRl9Kq4JF78IGknjQPDGppeZ-4SetacKaj4BhH9Q2jWN9B-dFfYRPU7_CNhjCPLsHmSTX7-MGYVzZwnfc6DW6TXd1etK9xupuCvd8Fc8JnIJ0oFLcak1Z5N-eKMjwBaMYFM1ePQtMi3UyExw17ws5jMWuQf2vlw",
+						"type": "string"
+					},
+					{
+						"key": "username",
+						"value": "{{user_email}}",
+						"type": "string"
+					},
+					{
+						"key": "password",
+						"value": "{{password}}",
+						"type": "string"
+					},
+					{
+						"key": "clientSecret",
+						"value": "{{auth0_client_secret}}",
+						"type": "string"
+					},
+					{
+						"key": "clientId",
+						"value": "{{auth0_client_id}}",
+						"type": "string"
+					},
+					{
+						"key": "tokenRequestParams",
+						"value": [
+							{
+								"key": "audience",
+								"value": "https://hi-george.us.auth0.com/api/v2/",
+								"enabled": true,
+								"send_as": "request_body"
+							}
+						],
+						"type": "any"
+					},
+					{
+						"key": "accessTokenUrl",
+						"value": "https://auth.dataherald.com/oauth/token",
+						"type": "string"
+					},
+					{
+						"key": "addTokenTo",
+						"value": "header",
+						"type": "string"
+					},
+					{
+						"key": "grant_type",
+						"value": "password_credentials",
+						"type": "string"
+					},
+					{
+						"key": "refreshRequestParams",
+						"value": [],
+						"type": "any"
+					},
+					{
+						"key": "authRequestParams",
+						"value": [],
+						"type": "any"
+					},
+					{
+						"key": "tokenName",
+						"value": "test token",
+						"type": "string"
+					},
+					{
+						"key": "challengeAlgorithm",
+						"value": "S256",
+						"type": "string"
+					},
+					{
+						"key": "client_authentication",
+						"value": "header",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "44d32f22-d1cb-4ba6-937a-a84debf72d33",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "3f25ec9e-39b2-4940-a2a2-b6d0366e18f2",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
 		},
 		{
 			"name": "heartbeat",
@@ -1797,28 +3641,43 @@
 			"response": []
 		}
 	],
-	"auth": {
-		"type": "apikey",
-		"apikey": [
-			{
-				"key": "value",
-				"value": "{{api_key}}",
-				"type": "string"
-			},
-			{
-				"key": "key",
-				"value": "X-API-Key",
-				"type": "string"
-			}
-		]
-	},
 	"event": [
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "683b18ac-79e3-4cf2-a082-b27ecce3bbce",
+				"id": "045279b2-44ec-45ba-a3d9-632a794824de",
 				"type": "text/javascript",
 				"exec": [
+					"utils = {",
+					"    matchSchema: (response, schemaName) => {",
+					"        const expectedSchema = JSON.parse(pm.collectionVariables.get(schemaName));",
+					"",
+					"        pm.test('response matches JSON schema', () => {",
+					"            response.to.have.jsonSchema(expectedSchema);",
+					"        });",
+					"    },",
+					"",
+					"    matchArraySchema: (response, schemaName) => {",
+					"        const expectedSchema = {",
+					"            \"type\": \"array\",",
+					"            \"items\": JSON.parse(pm.collectionVariables.get(schemaName))",
+					"        }",
+					"",
+					"        pm.test('response matches JSON schema', () => {",
+					"            response.to.have.jsonSchema(expectedSchema);",
+					"        });",
+					"    },",
+					"",
+					"    checkErrorCode: (response, errorCode) => {",
+					"        const responseJson = response.json()",
+					"        pm.test('Returns error code', () => {",
+					"            pm.expect(responseJson).to.have.property('error_code');",
+					"            pm.expect(responseJson).to.have.property('message');",
+					"            pm.expect(responseJson.error_code).to.equal(errorCode);",
+					"        })",
+					"    }",
+					"}",
+					"",
 					""
 				]
 			}
@@ -1826,14 +3685,14 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "c126c2cc-6710-4185-9216-f62f250f23c0",
+				"id": "629c65d4-940b-4973-ad4f-611bf42ef7f1",
 				"type": "text/javascript",
 				"exec": [
 					"",
-					"if (pm.info.requestName === \"SQL Generation csv-file\"){",
+					"if (pm.info.requestName === \"SQL generation csv-file\") {",
 					"    pm.test('Response has a valid Content-Type header', function () {",
-					"    pm.expect(pm.response).to.have.header('Content-Type', 'text/csv; charset=utf-8');",
-					"})",
+					"        pm.expect(pm.response).to.have.header('Content-Type', 'text/csv; charset=utf-8');",
+					"    })",
 					"} else {",
 					"    pm.test('Response has a valid Content-Type header', function () {",
 					"        pm.expect(pm.response).to.have.header('Content-Type', 'application/json');",
@@ -1846,63 +3705,93 @@
 	],
 	"variable": [
 		{
-			"id": "3d00719a-2422-4208-9e05-f73e52d0bc87",
+			"id": "86dbdf63-47fa-479d-a55f-0eb622ab6752",
 			"key": "db_connection_schema",
 			"value": "{\n            \"type\": \"object\",\n            \"properties\": {\n                \"alias\": {\n                    \"title\": \"Alias\",\n                    \"type\": \"string\"\n                },\n                \"use_ssh\": {\n                    \"title\": \"Use Ssh\",\n                    \"type\": \"boolean\",\n                    \"default\": false\n                },\n                \"connection_uri\": {\n                    \"title\": \"Connection Uri\",\n                    \"type\": [\"string\", \"null\"]\n                },\n                \n                \"id\": {\n                    \"title\": \"Id\",\n                    \"type\": \"string\"\n                },\n                \"created_at\": {\n                    \"title\": \"Created At\",\n                    \"type\": \"string\",\n                    \"format\": \"date-time\"\n                }\n                },\n            \"required\": [\n                \"id\",\n                \"alias\",\n                \"created_at\"\n            ]\n        }",
 			"type": "string"
 		},
 		{
-			"id": "031c9083-e4c5-4586-959b-f355c78169af",
+			"id": "c80ba39b-dfa3-41f8-ab91-206bcb2b99bf",
 			"key": "prompt_schema",
 			"value": "{\n    \"required\": [\"id\", \"text\", \"db_connection_id\"],\n    \"type\": \"object\",\n    \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"text\": { \"title\": \"Text\", \"type\": \"string\" },\n        \"db_connection_id\": { \"title\": \"Db Connection Id\", \"type\": \"string\" },\n        \"created_at\": {\n            \"title\": \"Created At\",\n            \"type\": \"string\",\n            \"format\": \"date-time\"\n        }\n    }\n}",
 			"type": "string"
 		},
 		{
-			"id": "5bfc2b32-d805-4b13-a7a9-5d788865c086",
+			"id": "d12571b6-d885-466a-bf2e-f48864c2b469",
 			"key": "finetuning_schema",
 			"value": "{\n    \"title\": \"FinetuningResponse\",\n        \"required\": [\"id\"],\n            \"type\": \"object\",\n                \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"db_connection_id\": { \"title\": \"Db Connection Id\", \"type\": \"string\" },\n        \"status\": {\n            \"title\": \"Status\",\n                \"type\": \"string\",\n                    \"default\": \"queued\"\n        },\n        \"error\": { \"title\": \"Error\", \"type\": [\"string\", \"null\"] },\n        \"base_llm\": {\n            \"title\": \"BaseLLM\",\n                \"type\": [\"object\", \"null\"],\n                    \"properties\": {\n                \"model_provider\": { \"title\": \"Model Provider\", \"type\": [\"string\", \"null\"] },\n                \"model_name\": { \"title\": \"Model Name\", \"type\": [\"string\", \"null\"] },\n                \"model_parameters\": {\n                    \"title\": \"Model Parameters\",\n                        \"type\": [\"object\", \"null\"],\n                            \"additionalProperties\": { \"type\": [\"string\", \"null\"] }\n                }\n            }\n        },\n        \"finetuning_file_id\": {\n            \"title\": \"Finetuning File Id\",\n                \"type\": \"string\"\n        },\n        \"finetuning_job_id\": {\n            \"title\": \"Finetuning Job Id\",\n                \"type\": \"string\"\n        },\n        \"model_id\": { \"title\": \"Model Id\", \"type\": \"string\" },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        },\n        \"golden_sqls\": {\n            \"title\": \"Golden Sqls\",\n                \"type\": [\"array\", \"null\"],\n                    \"items\": { \"type\": \"string\" }\n        }\n    }\n}",
 			"type": "string"
 		},
 		{
-			"id": "49a0c51e-334c-4391-ac11-017970507e9c",
+			"id": "142378d7-07b3-4206-be71-404a74ea9e57",
 			"key": "sql_generation_schema",
 			"value": "{\n    \"type\": \"object\",\n        \"properties\": {\n        \"id\": {\n            \"title\": \"Id\",\n                \"type\": \"string\"\n        },\n        \"prompt_id\": {\n            \"title\": \"Prompt Id\",\n                \"type\": \"string\"\n        },\n        \"finetuning_id\": {\n            \"title\": \"Finetuning Id\",\n                \"type\": [\n                    \"string\",\n                    \"null\"\n                ]\n        },\n        \"sql\": {\n            \"title\": \"Sql\",\n                \"type\": \"string\"\n        },\n        \"status\": {\n            \"title\": \"SQLGenerationStatus\",\n                \"enum\": [\"VALID\", \"INVALID\"],\n                    \"type\": \"string\",\n                        \"description\": \"An enumeration.\"\n        },\n        \"tokens_used\": {\n            \"title\": \"Tokens Used\",\n                \"type\": \"integer\"\n        },\n        \"confidence_score\": {\n            \"title\": \"Confidence Score\",\n                \"maximum\": 1,\n                    \"minimum\": 0,\n                        \"type\": [\n                            \"number\",\n                            \"null\"\n                        ]\n        },\n        \"error\": {\n            \"title\": \"Error\",\n                \"type\": [\n                    \"string\",\n                    \"null\"\n                ]\n        },\n        \"completed_at\": {\n            \"title\": \"Completed At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        }\n    },\n    \"required\": [\n        \"prompt_id\",\n        \"status\",\n        \"sql\",\n        \"created_at\",\n        \"completed_at\"\n    ]\n}",
 			"type": "string"
 		},
 		{
-			"id": "8a00f45d-0381-4d7a-b02a-b3268469eb4a",
+			"id": "999403a9-741b-4bf0-8718-181bae021613",
 			"key": "nl_generation_schema",
 			"value": "{\n    \"title\": \"NLGenerationResponse\",\n        \"type\": \"object\",\n            \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"text\": { \"title\": \"Text\", \"type\": \"string\" },\n        \"sql_generation_id\": {\n            \"title\": \"Sql Generation Id\",\n                \"type\": \"string\"\n        },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        }\n    },\n    \"required\": [\n        \"id\",\n        \"text\",\n        \"sql_generation_id\",\n        \"created_at\"\n    ]\n}",
 			"type": "string"
 		},
 		{
-			"id": "3facf6a4-cc74-42a5-bc28-d1a299e522d8",
+			"id": "1d185da4-d019-452f-94a2-3804a22986a7",
 			"key": "golden_sql_schema",
 			"value": "{\n        \"title\": \"GoldenSQLResponse\",\n        \"required\": [\"db_connection_id\", \"prompt_text\", \"sql\", \"id\"],\n        \"type\": \"object\",\n        \"properties\": {\n          \"db_connection_id\": { \"title\": \"Db Connection Id\", \"type\": \"string\" },\n          \"prompt_text\": { \"title\": \"Prompt Text\", \"type\": \"string\" },\n          \"sql\": { \"title\": \"Sql\", \"type\": \"string\" },\n          \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n          \"created_at\": {\n            \"title\": \"Created At\",\n            \"type\": \"string\",\n            \"format\": \"date-time\"\n          }\n        }\n      }",
 			"type": "string"
 		},
 		{
-			"id": "51add3e4-0ed8-4892-8cba-22721285902d",
+			"id": "1483de0e-5fd6-46b0-ad04-51d0587fbfd7",
 			"key": "instruction_schema",
 			"value": "{\n    \"required\": [\"instruction\", \"id\"],\n    \"type\": \"object\",\n    \"properties\": {\n        \"instruction\": { \"title\": \"Instruction\", \"type\": \"string\" },\n        \"db_connection_id\": { \"title\": \"Db Connection Id\", \"type\": \"string\" },\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"created_at\": {\n        \"title\": \"Created At\",\n        \"type\": \"string\",\n        \"format\": \"date-time\"\n        }\n    }\n}",
 			"type": "string"
 		},
 		{
-			"id": "361ef31d-cc6e-4134-9889-2d095c2e9149",
+			"id": "df361521-bb65-47a7-bba7-655c77bc5fbe",
 			"key": "generation_schema",
 			"value": "{\n    \"title\": \"GenerationResponse\",\n        \"required\": [\"id\", \"db_connection_id\", \"prompt_text\", \"organization_id\"],\n            \"type\": \"object\",\n                \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"db_connection_id\": { \"title\": \"Db Connection Id\", \"type\": \"string\" },\n        \"prompt_text\": { \"title\": \"Prompt Text\", \"type\": \"string\" },\n        \"created_by\": { \"title\": \"Created By\", \"type\": [\"string\", \"null\"] },\n        \"updated_by\": { \"title\": \"Updated By\", \"type\": [\"string\", \"null\"] },\n        \"organization_id\": { \"title\": \"Organization Id\", \"type\": \"string\" },\n        \"display_id\": { \"title\": \"Display Id\", \"type\": [\"string\", \"null\"] },\n        \"slack_info\": {\n            \"title\": \"SlackInfo\",\n                \"type\": [\"object\", \"null\"],\n                    \"properties\": {\n                \"user_id\": { \"title\": \"User Id\", \"type\": \"string\" },\n                \"channel_id\": { \"title\": \"Channel Id\", \"type\": \"string\" },\n                \"thread_ts\": { \"title\": \"Thread Ts\", \"type\": \"string\" }\n            }\n        },\n        \"message\": { \"title\": \"Message\", \"type\": [\"string\", \"null\"] },\n        \"sql\": { \"title\": \"Sql\", \"type\": [\"string\", \"null\"] },\n        \"confidence_score\": { \"title\": \"Confidence Score\", \"type\": [\"number\", \"null\"] },\n        \"sql_generation_error\": {\n            \"title\": \"Sql Generation Error\",\n                \"type\": [\"string\", \"null\"]\n        },\n        \"nl_generation_text\": {\n            \"title\": \"Nl Generation Text\",\n                \"type\": [\"string\", \"null\"]\n        },\n        \"updated_at\": {\n            \"title\": \"Updated At\",\n                \"type\": [\"string\", \"null\"],\n                    \"format\": \"date-time\"\n        },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        },\n        \"status\": {\n            \"title\": \"GenerationStatus\",\n                \"enum\": [\n                    \"INITIALIZED\",\n                    \"IN_PROGRESS\",\n                    \"NOT_VERIFIED\",\n                    \"VERIFIED\",\n                    \"ERROR\",\n                    \"REJECTED\"\n                ],\n                    \"type\": \"string\",\n                        \"description\": \"An enumeration.\"\n        },\n        \"sql_result\": { \"title\": \"Sql Result\", \"type\": [\"object\", \"null\"] }\n    }\n}",
 			"type": "string"
 		},
 		{
-			"id": "22bdbd18-1a1c-423f-b87a-5c867727c198",
+			"id": "b36ac52e-c714-47cd-8e08-4ffe139a6143",
 			"key": "generation_list_schema",
 			"value": "{\n    \"title\": \"GenerationListResponse\",\n        \"required\": [\"id\", \"created_by\", \"prompt_text\"],\n            \"type\": \"object\",\n                \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"created_by\": { \"title\": \"Created By\", \"type\": [\"string\", \"null\"] },\n        \"prompt_text\": { \"title\": \"Prompt Text\", \"type\": \"string\" },\n        \"nl_generation_text\": {\n            \"title\": \"Nl Generation Text\",\n                \"type\": [\"string\", \"null\"]\n        },\n        \"sql\": { \"title\": \"Sql\", \"type\": [\"string\", \"null\"] },\n        \"status\": {\n            \"title\": \"GenerationStatus\",\n                \"enum\": [\n                    \"INITIALIZED\",\n                    \"IN_PROGRESS\",\n                    \"NOT_VERIFIED\",\n                    \"VERIFIED\",\n                    \"ERROR\",\n                    \"REJECTED\"\n                ],\n                    \"type\": \"string\",\n                        \"description\": \"An enumeration.\"\n        },\n        \"confidence_score\": { \"title\": \"Confidence Score\", \"type\": [\"number\", \"null\"] },\n        \"display_id\": { \"title\": \"Display Id\", \"type\": [\"string\", \"null\"] },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        }\n    }\n}",
 			"type": "string"
 		},
 		{
-			"id": "a5391de7-8e56-451d-a3be-440a433b839e",
+			"id": "42d2c408-1b43-4f35-a774-244f56626ace",
 			"key": "table_description_schema",
 			"value": "{\n    \"title\": \"TableDescriptionResponse\",\n        \"type\": \"object\",\n            \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"table_name\": { \"title\": \"Table Name\", \"type\": \"string\" },\n        \"db_connection_id\": { \"title\": \"Db Connection Id\", \"type\": [\"string\", \"null\"] },\n        \"description\": { \"title\": \"Description\", \"type\": [\"string\", \"null\"] },\n        \"columns\": {\n            \"title\": \"Columns\",\n                \"type\": \"array\",\n                    \"items\": {\n                \"title\": \"ColumnDescription\",\n                    \"type\": [\"object\", \"null\"],\n                        \"properties\": {\n                    \"name\": { \"title\": \"Name\", \"type\": [\"string\", \"null\"] },\n                    \"description\": { \"title\": \"Description\", \"type\": [\"string\", \"null\"] },\n                    \"is_primary_key\": { \"title\": \"Is Primary Key\", \"type\": \"boolean\" },\n                    \"data_type\": { \"title\": \"Data Type\", \"type\": [\"string\", \"null\"] },\n                    \"low_cardinality\": { \"title\": \"Low Cardinality\", \"type\": \"boolean\" },\n                    \"categories\": {\n                        \"title\": \"Categories\",\n                            \"type\": [\"array\", \"null\"],\n                                \"items\": { \"type\": [\"string\", \"null\"] }\n                    },\n                    \"forengin_key\": { \"title\": \"Forengin Key\", \"type\": \"object\" }\n                }\n            }\n        },\n        \"examples\": { \"title\": \"Examples\", \"type\": [\"array\", \"null\"], \"items\": { } },\n        \"status\": {\n            \"title\": \"SchemaStatus\",\n                \"enum\": [\n                    \"NOT_SCANNED\",\n                    \"SYNCHRONIZING\",\n                    \"SCANNED\",\n                    \"DEPRECATED\",\n                    \"FAILED\"\n                ],\n                    \"description\": \"An enumeration.\"\n        },\n        \"last_schema_sync\": {\n            \"title\": \"Last Schema Sync\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"id": "8dfbd351-be25-4159-85d3-0fc6fcfad2fc",
+			"key": "invoice_schema",
+			"value": "{\n    \"title\": \"InvoiceResponse\",\n        \"type\": \"object\",\n            \"properties\": {\n        \"sql_generation_cost\": {\n            \"title\": \"Sql Generation Cost\",\n                \"type\": \"integer\",\n                    \"default\": 0\n        },\n        \"finetuning_gpt_35_cost\": {\n            \"title\": \"Finetuning Gpt 35 Cost\",\n                \"type\": \"integer\",\n                    \"default\": 0\n        },\n        \"finetuning_gpt_4_cost\": {\n            \"title\": \"Finetuning Gpt 4 Cost\",\n                \"type\": \"integer\",\n                    \"default\": 0\n        },\n        \"available_credits\": {\n            \"title\": \"Available Credits\",\n                \"type\": \"integer\",\n                    \"default\": 0\n        },\n        \"total_credits\": {\n            \"title\": \"Total Credits\",\n                \"type\": \"integer\",\n                    \"default\": 0\n        },\n        \"amount_due\": {\n            \"title\": \"Amount Due\",\n                \"type\": \"integer\",\n                    \"default\": 0\n        },\n        \"spending_limit\": { \"title\": \"Spending Limit\", \"type\": \"integer\" },\n        \"current_period_start\": {\n            \"title\": \"Current Period Start\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        },\n        \"current_period_end\": {\n            \"title\": \"Current Period End\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\"\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"id": "7e43ef3d-34e9-4602-aa15-de4a37c03e76",
+			"key": "spending_limit_schema",
+			"value": "{\n        \"title\": \"SpendingLimitResponse\",\n        \"required\": [\"spending_limit\", \"hard_spending_limit\"],\n        \"type\": \"object\",\n        \"properties\": {\n          \"spending_limit\": { \"title\": \"Spending Limit\", \"type\": \"integer\" },\n          \"hard_spending_limit\": {\n            \"title\": \"Hard Spending Limit\",\n            \"type\": \"integer\"\n          }\n        }\n      }",
+			"type": "string"
+		},
+		{
+			"id": "2cd1cb9d-4249-4635-b89b-44458bf9c732",
+			"key": "user_schema",
+			"value": "{\n    \"title\": \"UserResponse\",\n        \"type\": \"object\",\n            \"properties\": {\n        \"organization_id\": { \"title\": \"Organization Id\", \"type\": \"string\" },\n        \"email\": { \"title\": \"Email\", \"type\": \"string\" },\n        \"email_verified\": { \"title\": \"Email Verified\", \"type\": [\"boolean\", \"null\"] },\n        \"name\": { \"title\": \"Name\", \"type\": [\"string\", \"null\"] },\n        \"nickname\": { \"title\": \"Nickname\", \"type\": [\"string\", \"null\"] },\n        \"picture\": { \"title\": \"Picture\", \"type\": [\"string\", \"null\"] },\n        \"sub\": { \"title\": \"Sub\", \"type\": [\"string\", \"null\"] },\n        \"updated_at\": { \"title\": \"Updated At\", \"type\": [\"string\", \"null\"] },\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"role\": {\n            \"title\": \"Roles\",\n                \n                    \"type\": [\"string\", \"null\"],\n                        \"description\": \"An enumeration.\"\n        },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": [\"string\", \"null\"],\n                    \"format\": \"date-time\",\n                        \"default\": \"2024-02-27T21:17:14.713720\"\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"id": "4edadb75-5cdb-4584-aa8f-7183444c2712",
+			"key": "organization_schema",
+			"value": "{\n    \"title\": \"OrganizationResponse\",\n        \"required\": [\"name\"],\n            \"type\": \"object\",\n                \"properties\": {\n        \"name\": { \"title\": \"Name\", \"type\": \"string\" },\n        \"confidence_threshold\": {\n            \"title\": \"Confidence Threshold\",\n                \"maximum\": 1.0,\n                    \"minimum\": 0.0,\n                        \"type\": \"number\",\n                            \"default\": 1.0\n        },\n        \"slack_config\": {\n            \"title\": \"SlackConfig\",\n                \"type\": \"null\"\n        },\n        \"llm_api_key\": { \"title\": \"Llm Api Key\", \"type\": [\"string\", \"null\"] },\n        \"owner\": { \"title\": \"Owner\", \"type\": \"string\" },\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\",\n                        \"default\": \"2024-02-27T21:17:13.515002\"\n        },\n        \"invoice_details\": {\n            \"title\": \"InvoiceDetails\",\n                \"required\": [\"plan\"],\n                    \"type\": \"object\",\n                        \"properties\": {\n                \"plan\": {\n                    \"title\": \"PaymentPlan\",\n                        \"enum\": [\"CREDIT_ONLY\", \"USAGE_BASED\", \"ENTERPRISE\"],\n                            \"type\": \"string\",\n                                \"description\": \"An enumeration.\"\n                },\n                \"billing_cycle_anchor\": {\n                    \"title\": \"Billing Cycle Anchor\",\n                        \"type\": \"integer\"\n                },\n                \"spending_limit\": { \"title\": \"Spending Limit\", \"type\": \"integer\" },\n                \"hard_spending_limit\": {\n                    \"title\": \"Hard Spending Limit\",\n                        \"type\": \"integer\"\n                },\n                \"available_credits\": {\n                    \"title\": \"Available Credits\",\n                        \"type\": \"integer\"\n                },\n                \"stripe_customer_id\": {\n                    \"title\": \"Stripe Customer Id\",\n                        \"type\": \"string\"\n                },\n                \"stripe_subscription_id\": {\n                    \"title\": \"Stripe Subscription Id\",\n                        \"type\": \"string\"\n                },\n                \"stripe_subscription_status\": {\n                    \"title\": \"StripeSubscriptionStatus\",\n                        \"enum\": [\n                            \"active\",\n                            \"canceled\",\n                            \"unpaid\",\n                            \"incomplete\",\n                            \"incomplete_expired\",\n                            \"trialing\",\n                            \"past_due\"\n                        ],\n                            \"type\": \"string\",\n                                \"description\": \"An enumeration.\"\n                }\n            }\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"id": "cc5ca9af-c852-499b-a39a-5f51c0772892",
+			"key": "key_schema",
+			"value": "{\n    \"title\": \"KeyResponse\",\n        \"required\": [\"organization_id\"],\n            \"type\": \"object\",\n                \"properties\": {\n        \"id\": { \"title\": \"Id\", \"type\": \"string\" },\n        \"name\": { \"title\": \"Name\", \"type\": \"string\" },\n        \"organization_id\": { \"title\": \"Organization Id\", \"type\": \"string\" },\n        \"created_at\": {\n            \"title\": \"Created At\",\n                \"type\": \"string\",\n                    \"format\": \"date-time\",\n                        \"default\": \"2024-02-27T21:17:14.733889\"\n        },\n        \"key_preview\": { \"title\": \"Key Preview\", \"type\": \"string\" },\n        \"api_key\": { \"title\": \"Api Key\", \"type\": \"string\" }\n    }\n}",
 			"type": "string"
 		}
 	]

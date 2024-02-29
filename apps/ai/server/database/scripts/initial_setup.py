@@ -28,17 +28,20 @@ if __name__ == "__main__":
     ]
 
     fernet_encrypt = FernetEncrypt()
-    db_connection_id = ObjectId("65847ee5c2f29b08592c2401")
     organization_id = ObjectId("65847ee5c2f29b08592c2402")
+    user_id = ObjectId("65847ee5c2f29b08592c2403")
+    db_connection_id = ObjectId("65847ee5c2f29b08592c2401")
     finetuning_id = ObjectId("659c57d1d648d1d3a6d96373")
     api_key = "dh-016e428d9f0c1c42458fcf4f5b407584a777b2fbf8d453670c2b8fc877511035"
+    user_email = "postmanapitest@dataherald.com"
+    initial_credits = 500
 
     insert_or_update(
         data_store,
         "database_connections",
         {
             "_id": db_connection_id,
-            "alias": "snowflake_local_test",
+            "alias": "snowflake local test",
             "use_ssh": False,
             "connection_uri": fernet_encrypt.encrypt(
                 "snowflake://Leo:Dat31642099.00@ksxgmup-qrb65970/v2_real_estate/public"
@@ -56,16 +59,53 @@ if __name__ == "__main__":
         "organizations",
         {
             "_id": organization_id,
-            "name": "Local Test",
+            "name": "Organization 1",
+            "owner": str(user_id),
             "confidence_threshold": 1,
-            "db_connection_id": str(db_connection_id),
             "invoice_details": {
-                "plan": "ENTERPRISE",
+                "plan": "CREDIT_ONLY",
+                "billing_cycle_anchor": 1708719407,
+                "spending_limit": 1000,
+                "hard_spending_limit": 10000,
+                "available_credits": initial_credits,
+                "stripe_customer_id": "cus_PcJnlZg6LgqmkH",
+                "stripe_subscription_id": "sub_1On5ApEohyIdoJ6S2VKhBaBk",
+                "stripe_subscription_status": "active",
             },
+            "created_at": datetime.now(),
         },
     )
 
     print(f"Organization created: {organization_id}")
+
+    insert_or_update(
+        data_store,
+        "users",
+        {
+            "_id": user_id,
+            "email": user_email,
+            "organization_id": str(organization_id),
+            "created_at": datetime.now(),
+            "role": None,
+        },
+    )
+
+    print(f"User created: {user_id}")
+
+    insert_or_update(
+        data_store,
+        "credits",
+        {
+            "_id": ObjectId("659c57d1d648d1d3a6d96374"),
+            "organization_id": str(organization_id),
+            "amount": initial_credits,
+            "status": "RECORDED",
+            "description": "Initial credits",
+            "created_at": datetime.now(),
+        },
+    )
+
+    print("Initial credits created")
 
     insert_or_update(
         data_store,
@@ -104,6 +144,6 @@ if __name__ == "__main__":
 
     key_service = KeyService()
     key = key_service.add_key(
-        KeyGenerationRequest(name="Local Test"), str(organization_id), api_key
+        KeyGenerationRequest(name="Test key"), str(organization_id), api_key
     )
     print(f"Key created: {key}")

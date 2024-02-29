@@ -27,10 +27,10 @@ class InstructionError(BaseError):
 
 class InstructionNotFoundError(InstructionError):
     def __init__(
-        self, org_id: str, instruction_id: str | None, db_connection_id: str | None
+        self, org_id: str, instruction_id: str = None, db_connection_id: str = None
     ) -> None:
         if instruction_id:
-            detail = {"db_connection_id": db_connection_id, "organization_id": org_id}
+            detail = {"instruction_id": instruction_id, "organization_id": org_id}
         elif db_connection_id:
             detail = {"db_connection_id": db_connection_id, "organization_id": org_id}
         else:

@@ -40,12 +40,13 @@ class KeyService:
         key_id = self.repo.add_key(key)
 
         if key_id:
+            new_key = self.repo.get_key(key_id, org_id)
             return KeyResponse(
                 id=key_id,
-                name=key.name,
-                organization_id=key.organization_id,
-                created_at=key.created_at,
-                key_preview=key.key_preview,
+                name=new_key.name,
+                organization_id=new_key.organization_id,
+                created_at=new_key.created_at,
+                key_preview=new_key.key_preview,
                 api_key=api_key,
             )
 
