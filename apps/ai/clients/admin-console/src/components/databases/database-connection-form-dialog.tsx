@@ -86,10 +86,13 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
 
   const [databaseConnected, setDatabaseConnected] = useState(false)
 
+  const [dbError, setDbError] = useState<ErrorResponse | null>(null)
+
   const connectDatabase = usePostDatabaseConnection()
 
   const onSubmit = async () => {
     try {
+      setDbError(null)
       const formFieldsValues = form.getValues()
       const { file, ...dbConnectionFields } = formFieldsValues
       await connectDatabase(
@@ -101,6 +104,7 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
     } catch (e) {
       console.error(e)
       const { message: title, trace_id: description } = e as ErrorResponse
+      setDbError(e as ErrorResponse)
       toast({
         variant: 'destructive',
         title,
@@ -189,25 +193,36 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
                 </DialogTitle>
                 <DialogDescription>
                   {isFirstConnection
-                    ? 'Connect your database to start using the platform.'
-                    : 'Connect another database to the platform.'}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grow flex flex-col overflow-auto p-1">
-                <div className="grow">
-                  <DatabaseConnectionForm form={form} />
-                </div>
-                <DialogFooter className="mt-5 w-full flex items-center sm:justify-between gap-3">
+                    ? 'Connect your database to start using the platform. '
+                    : 'Connect another database to the platform. '}
                   <Link
                     href="https://docs.dataherald.com/database-connection/add-database-connection"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
-                    <Button variant="external-link" size="sm" className="p-0">
+                    <Button
+                      variant="external-link"
+                      size="sm"
+                      className="p-0 h-fit"
+                    >
                       Learn more about adding a database
                       <ArrowUpRight size={14} className="mr-2" />
                     </Button>
                   </Link>
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grow flex flex-col overflow-auto p-1">
+                <div className="grow flex flex-col gap-3">
+                  <DatabaseConnectionForm form={form} />
+                  {dbError && (
+                    <Alert variant="destructive" className="my-5">
+                      <AlertDescription className="break-words">
+                        {dbError.description || dbError.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+                <DialogFooter className="mt-3">
                   <Button
                     onClick={form.handleSubmit(onSubmit)}
                     type="button"

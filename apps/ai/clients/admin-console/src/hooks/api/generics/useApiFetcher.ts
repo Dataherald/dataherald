@@ -2,6 +2,7 @@ import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
 import { useSubscription } from '@/contexts/subscription-context'
 import { isErrorResponse, isSubscriptionErrorCode } from '@/lib/domain/error'
+import { ErrorResponse } from '@/models/api'
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
 
@@ -52,6 +53,13 @@ const useApiFetcher = () => {
             }
 
             throw errorResponse
+          } else {
+            const unhandledError: ErrorResponse = {
+              error_code: 'UNHANDLED_ERROR',
+              message: 'Unhandled server error',
+              trace_id: '',
+            }
+            throw unhandledError
           }
         }
       }

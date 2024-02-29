@@ -4,6 +4,7 @@ export interface ErrorResponse {
   trace_id: string
   message: string
   error_code: string
+  description?: string
   detail?: Record<string, string>
 }
 
