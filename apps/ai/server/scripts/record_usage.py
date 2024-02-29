@@ -16,16 +16,19 @@ stripe.max_network_retries = 2
 
 def lambda_handler(event, context):  # noqa: ARG001
     print("Start Recording Usage")
+
+    result = []
+
+    # credit only customer's usage won't matter until they have a usage based plan
+    # so we only process usage based plan
     org_cursor = data_store["organizations"].find(
-        {"invoice_details.plan": {"$in": ["USAGE_BASED", "CREDIT_ONLY"]}}
+        {"invoice_details.plan": {"$in": ["USAGE_BASED"]}}
     )
     for org in org_cursor:
-        print(f"Processing usage for organization: {str(org['_id'])}")
         try:
             subscription = stripe.Subscription.retrieve(
                 org["invoice_details"]["stripe_subscription_id"]
             )
-            print(f"Subscription: {subscription.id}")
 
             # this is a safe guard in case webhook listener doesn't update the status
             data_store["organizations"].update_one(
@@ -37,7 +40,9 @@ def lambda_handler(event, context):  # noqa: ARG001
                 },
             )
             if subscription.status != "active":
-                print(f"Subscription status is not active: {subscription.status}")
+                print(
+                    f"Subscription status is not active for organization: {str(org['_id'])}"
+                )
                 data_store["organizations"].update_one(
                     {"_id": org["_id"]},
                     {
@@ -101,13 +106,20 @@ def lambda_handler(event, context):  # noqa: ARG001
                 {"$set": {"status": "RECORDED"}},
             )
 
-            print(f"Total usage: {usage_dict}")
-            print(f"Total usage cost: {usage_cost_in_cents} cents")
-            print(f"Total credit applied: {credit_in_cents} cents")
-            print(f"Total balance: {usage_cost_in_cents + credit_in_cents} cents")
+            if usage_cost_in_cents > 0 or credit_in_cents < 0:
+                result.append(
+                    {
+                        "organization_id": str(org["_id"]),
+                        "usage": usage_dict,
+                        "usage_cost": usage_cost_in_cents,
+                        "credit_applied": credit_in_cents,
+                        "balance": usage_cost_in_cents + credit_in_cents,
+                    }
+                )
 
         except Exception as e:
             print(f"Error processing organization: {str(org['_id'])}")
             print(e)
 
-    return {"statusCode": 200, "body": json.dumps("Record usage completed!")}
+    print(result)
+    return {"statusCode": 200, "body": json.dumps(result)}
