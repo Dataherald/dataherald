@@ -12,25 +12,26 @@ from sshtunnel import SSHTunnelForwarder
 
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.utils.encrypt import FernetEncrypt
+from dataherald.utils.error_codes import CustomError
 from dataherald.utils.s3 import S3
 
 logger = logging.getLogger(__name__)
 
 
 # Define a custom exception class
-class SQLInjectionError(Exception):
+class SQLInjectionError(CustomError):
     pass
 
 
-class InvalidDBConnectionError(Exception):
+class InvalidDBConnectionError(CustomError):
     pass
 
 
-class EmptyDBError(Exception):
+class EmptyDBError(CustomError):
     pass
 
 
-class SSHInvalidDatabaseConnectionError(Exception):
+class SSHInvalidDatabaseConnectionError(CustomError):
     pass
 
 
@@ -89,7 +90,7 @@ class SQLDatabase:
                 return engine
         except Exception as e:
             raise SSHInvalidDatabaseConnectionError(
-                f"Invalid SSH connection, {e}"
+                "Invalid SSH connection", description=str(e)
             ) from e
         try:
             db_uri = unquote(fernet_encrypt.decrypt(database_info.connection_uri))
@@ -107,7 +108,7 @@ class SQLDatabase:
             DBConnections.add(database_info.id, engine)
         except Exception as e:
             raise InvalidDBConnectionError(  # noqa: B904
-                f"Unable to connect to db: {database_info.alias}, {e}"
+                f"Unable to connect to db: {database_info.alias}", description=str(e)
             )
         return engine
 
