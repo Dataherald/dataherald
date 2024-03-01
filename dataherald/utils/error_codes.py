@@ -18,6 +18,12 @@ ERROR_MAPPING = {
 }
 
 
+class CustomError(Exception):
+    def __init__(self, message, description=None):
+        super().__init__(message)
+        self.description = description
+
+
 def error_response(error, detail: dict, default_error_code=""):
     return JSONResponse(
         status_code=400,
@@ -26,6 +32,9 @@ def error_response(error, detail: dict, default_error_code=""):
                 error.__class__.__name__, default_error_code
             ),
             "message": str(error),
+            "description": error.description
+            if isinstance(error, CustomError)
+            else None,
             "detail": detail,
         },
     )
