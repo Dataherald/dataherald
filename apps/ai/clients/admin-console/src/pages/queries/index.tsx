@@ -1,18 +1,25 @@
 import { DataTable } from '@/components/data-table'
-import { LoadingTable } from '@/components/data-table/loading-table'
 import PageErrorMessage from '@/components/error/page-error-message'
 import PageLayout from '@/components/layout/page-layout'
 import { getColumns } from '@/components/queries/columns'
 import { ContentBox } from '@/components/ui/content-box'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useAppContext } from '@/contexts/app-context'
 import useQueries from '@/hooks/api/query/useQueries'
 import { QueryListItem } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
+import { Info } from 'lucide-react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { FC, useMemo, useState } from 'react'
 
 const QueriesPage: FC = () => {
+  const { organization } = useAppContext()
   const {
     items = [],
     isLoadingFirst,
@@ -21,9 +28,10 @@ const QueriesPage: FC = () => {
     error,
     page,
     setPage,
+    searchText,
+    setSearchText,
     mutate,
   } = useQueries()
-  const { organization } = useAppContext()
   const columns = useMemo(
     () =>
       getColumns({
@@ -51,6 +59,22 @@ const QueriesPage: FC = () => {
 
   let pageContent: JSX.Element = <></>
 
+  const searchInfo = (
+    <TooltipProvider>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <Info size={18} className="text-slate-600" />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>
+            Search queries by <strong>question</strong> or{' '}
+            <strong>generated SQL</strong> fields.
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+
   if (error) {
     pageContent = (
       <PageErrorMessage
@@ -58,19 +82,20 @@ const QueriesPage: FC = () => {
         error={error}
       />
     )
-  } else if (isLoadingFirst) {
-    pageContent = <LoadingTable loadFilters columnLength={6} />
   } else
     pageContent = (
       <DataTable
         id="queries"
         columns={columns}
         data={items}
-        enableFiltering
         enableColumnVisibility
+        isLoadingFirst={isLoadingFirst}
         isLoadingMore={isLoadingMore}
         isReachingEnd={isReachingEnd}
         isRefreshing={isRefreshing}
+        searchText={searchText}
+        searchInfo={searchInfo}
+        onSearchTextSubmit={setSearchText}
         onRowClick={handleQueryClick}
         onLoadMore={handleLoadMore}
         onRefresh={handleRefresh}

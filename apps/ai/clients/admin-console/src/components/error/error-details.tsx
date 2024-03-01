@@ -1,9 +1,9 @@
+import { Button } from '@/components/ui/button'
+import { toast } from '@/components/ui/use-toast'
 import { cn, copyToClipboard } from '@/lib/utils'
 import { ErrorResponse } from '@/models/api'
 import { Copy } from 'lucide-react'
 import { FC, HTMLAttributes } from 'react'
-import { Button } from '../ui/button'
-import { toast } from '../ui/use-toast'
 
 type ErrorDetailsProps = HTMLAttributes<HTMLDivElement> & {
   error: ErrorResponse

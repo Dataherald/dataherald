@@ -1,8 +1,8 @@
+import ErrorDetails from '@/components/error/error-details'
 import { Toaster } from '@/components/ui/toaster'
 import { ErrorResponse } from '@/models/api'
 import { AlertOctagon } from 'lucide-react'
 import { FC, HTMLAttributes } from 'react'
-import ErrorDetails from './error-details'
 
 export type PageErrorMessageProps = HTMLAttributes<HTMLDivElement> & {
   message: string

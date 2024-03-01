@@ -1,16 +1,22 @@
 import { DataTable } from '@/components/data-table'
-import { LoadingTable } from '@/components/data-table/loading-table'
 import PageErrorMessage from '@/components/error/page-error-message'
 import { getColumns } from '@/components/golden-sql/columns'
 import PageLayout from '@/components/layout/page-layout'
 import { ContentBox } from '@/components/ui/content-box'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { toast } from '@/components/ui/use-toast'
 import { useDeleteGoldenSql } from '@/hooks/api/useDeleteGoldenSql'
 import useGoldenSqlList from '@/hooks/api/useGoldenSqlList'
 import { ErrorResponse } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
+import { Info } from 'lucide-react'
 import Head from 'next/head'
 import { FC, useCallback, useMemo, useState } from 'react'
 
@@ -23,10 +29,15 @@ const GoldenSQLPage: FC = () => {
     error,
     page,
     setPage,
+    searchText,
+    setSearchText,
     mutate,
   } = useGoldenSqlList()
+
   const [isRefreshing, setIsRefreshing] = useState(false)
+
   const deleteGoldenSql = useDeleteGoldenSql(mutate)
+
   const handleDelete = useCallback(
     async (id: string) => {
       try {
@@ -60,6 +71,22 @@ const GoldenSQLPage: FC = () => {
     [handleDelete],
   )
 
+  const searchInfo = (
+    <TooltipProvider>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <Info size={18} className="text-slate-600" />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>
+            Search Golden SQL queries by <strong>question</strong> or{' '}
+            <strong>SQL</strong> fields.
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+
   const handleRefresh = async () => {
     setIsRefreshing(true)
     await mutate()
@@ -81,19 +108,20 @@ const GoldenSQLPage: FC = () => {
         error={error}
       />
     )
-  } else if (isLoadingFirst) {
-    pageContent = <LoadingTable loadFilters rowLength={8} columnLength={6} />
   } else
     pageContent = (
       <DataTable
         id="golden-sql"
         columns={columns}
         data={items}
-        enableFiltering
         enableColumnVisibility
+        isLoadingFirst={isLoadingFirst}
         isRefreshing={isRefreshing}
         isLoadingMore={isLoadingMore}
         isReachingEnd={isReachingEnd}
+        searchText={searchText}
+        searchInfo={searchInfo}
+        onSearchTextSubmit={setSearchText}
         onLoadMore={handleLoadMore}
         onRefresh={handleRefresh}
         noMoreDataMessage="No more queries"

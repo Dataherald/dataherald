@@ -2,12 +2,12 @@ import { getApiKeysColumns } from '@/components/api-keys/columns'
 import GenerateApiKeyDialog from '@/components/api-keys/generate-api-key-dialog'
 import { DataTable } from '@/components/data-table'
 import { LoadingTable } from '@/components/data-table/loading-table'
+import PageErrorMessage from '@/components/error/page-error-message'
 import { Button } from '@/components/ui/button'
 import useApiKeys from '@/hooks/api/api-keys/useApiKeys'
 import { useDeleteApiKey } from '@/hooks/api/api-keys/useDeleteApiKey'
 import { KeyRound, RefreshCcw } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
-import PageErrorMessage from '../error/page-error-message'
 
 const ApiKeysList = () => {
   const { isLoading, isValidating, error, apiKeys, mutate } = useApiKeys()

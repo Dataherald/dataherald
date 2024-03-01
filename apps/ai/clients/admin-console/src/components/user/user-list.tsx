@@ -1,3 +1,4 @@
+import PageErrorMessage from '@/components/error/page-error-message'
 import LoadingList from '@/components/layout/loading-list'
 import {
   AlertDialog,
@@ -22,7 +23,6 @@ import useUsers from '@/hooks/api/user/useUsers'
 import { ErrorResponse, User } from '@/models/api'
 import { Trash2, UserPlus2 } from 'lucide-react'
 import { useState } from 'react'
-import PageErrorMessage from '../error/page-error-message'
 
 const UserList = () => {
   const [openInviteMemberDialog, setOpenInviteMemberDialog] = useState(false)

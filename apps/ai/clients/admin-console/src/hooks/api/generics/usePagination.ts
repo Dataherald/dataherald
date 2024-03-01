@@ -1,6 +1,7 @@
 import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
 import { ErrorResponse } from '@/models/api'
+import { useState } from 'react'
 import { KeyedMutator } from 'swr'
 import useSWRInfinite from 'swr/infinite'
 
@@ -18,6 +19,8 @@ export interface PageResponse<T> {
   setPage: (
     page: number | ((_page: number) => number),
   ) => Promise<List<T>[] | undefined>
+  searchText: string
+  setSearchText: (search: string) => void
   mutate: KeyedMutator<List<T>[]>
 }
 
@@ -33,6 +36,7 @@ const usePagination = <T>({
   itemMapper = (item) => item,
 }: PaginationParams<T>): PageResponse<T> => {
   const { token } = useAuth()
+  const [searchText, setSearchText] = useState('')
   const {
     data: pages,
     size: page,
@@ -43,13 +47,13 @@ const usePagination = <T>({
   } = useSWRInfinite<List<T>>(
     (index) =>
       token
-        ? `${API_URL}${resourceUrl}?page=${index}&page_size=${pageSize}`
+        ? `${API_URL}${resourceUrl}?page=${index}&page_size=${pageSize}&search_term=${searchText}`
         : null,
     { revalidateAll: true },
   )
 
   const items = pages?.flat()
-  const isLoadingFirst = !items
+  const isLoadingFirst = isLoading && !items
   const isLoadingMore =
     isLoading || (page > 0 && !!pages && typeof pages[page - 1] === 'undefined')
   const isEmpty = pages?.[0]?.length === 0
@@ -64,6 +68,8 @@ const usePagination = <T>({
     error,
     page,
     setPage,
+    searchText,
+    setSearchText,
     mutate,
   }
 }

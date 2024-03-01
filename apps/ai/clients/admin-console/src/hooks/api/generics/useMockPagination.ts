@@ -3,6 +3,7 @@ import {
   List,
   PageResponse,
 } from '@/hooks/api/generics/usePagination'
+import { useState } from 'react'
 import useSWRInfinite from 'swr/infinite'
 
 const useMockPagination = <T>(
@@ -32,6 +33,7 @@ const useMockPagination = <T>(
     (page) => fetchMockData(parseInt(page as string)),
   )
 
+  const [searchText, setSearchText] = useState('')
   const items = pages?.flat()
   const isLoadingFirst = !items
   const isLoadingMore =
@@ -48,6 +50,8 @@ const useMockPagination = <T>(
     error,
     page,
     setPage,
+    searchText,
+    setSearchText,
     mutate,
   }
 }

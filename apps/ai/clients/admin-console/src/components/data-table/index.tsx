@@ -6,7 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
+import SearchInput from '@/components/ui/search-input'
 import {
   Table,
   TableBody,
@@ -37,7 +37,7 @@ import {
   LucideIcon,
   RefreshCcw,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 
 export type CustomColumnDef<
   TData extends RowData,
@@ -50,12 +50,15 @@ interface DataTableProps<TData, TValue> {
   id: string
   columns: CustomColumnDef<TData, TValue>[] | CustomColumnDef<TData, TValue>[]
   data: TData[]
+  isLoadingFirst?: boolean
   isRefreshing?: boolean
   isLoadingMore?: boolean
   isReachingEnd?: boolean
   noMoreDataMessage?: string
-  enableFiltering?: boolean
   enableColumnVisibility?: boolean
+  searchText?: string
+  onSearchTextSubmit?: (search: string) => void
+  searchInfo?: ReactNode
   onRowClick?: (row: TData) => void
   onLoadMore?: () => void
   onRefresh?: () => void
@@ -65,12 +68,15 @@ export function DataTable<TData, TValue>({
   id,
   columns,
   data,
+  isLoadingFirst = false,
   isRefreshing = false,
   isLoadingMore = false,
   isReachingEnd = true,
   noMoreDataMessage = '',
-  enableFiltering = false,
   enableColumnVisibility = false,
+  searchText = '',
+  searchInfo = null,
+  onSearchTextSubmit,
   onRowClick,
   onLoadMore,
   onRefresh,
@@ -92,7 +98,6 @@ export function DataTable<TData, TValue>({
         : defaultVisibility
     },
   )
-  const [globalFilter, setGlobalFilter] = useState('')
 
   const table = useReactTable({
     data,
@@ -101,14 +106,21 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
-      globalFilter,
       columnVisibility,
     },
   })
+
+  const isSearchEnabled = onSearchTextSubmit !== undefined
+  const [currentSearchText, setCurrentSearchText] = useState(searchText)
+
+  const handleSearchClear = () => {
+    if (!isSearchEnabled) return
+    setCurrentSearchText('')
+    onSearchTextSubmit('')
+  }
 
   useEffect(() => {
     const stateToSave = { sorting, columnVisibility }
@@ -121,16 +133,23 @@ export function DataTable<TData, TValue>({
         <div
           className={cn(
             'flex items-center',
-            enableFiltering ? 'justify-between' : 'justify-end',
+            isSearchEnabled ? 'justify-between' : 'justify-end',
           )}
         >
-          {enableFiltering && (
-            <div className="w-full flex items-center max-w-sm py-3">
-              <Input
+          {isSearchEnabled && (
+            <div className="w-full flex items-center gap-3 max-w-sm py-3">
+              <SearchInput
                 placeholder="Search..."
-                value={globalFilter}
-                onChange={(e) => setGlobalFilter(e.target.value)}
+                value={currentSearchText}
+                onChange={(e) => setCurrentSearchText(e.target.value)}
+                onClear={handleSearchClear}
+                onKeyUp={(e) => {
+                  if (e.key === 'Enter') {
+                    onSearchTextSubmit(currentSearchText)
+                  }
+                }}
               />
+              {searchInfo}
             </div>
           )}
           <div className="flex items-center gap-2">
@@ -139,9 +158,9 @@ export function DataTable<TData, TValue>({
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    className="h-10 border-input text-slate-600 hover:bg-white"
+                    className="h-10 py-2 border-input hover:bg-white text-sm"
                   >
-                    <Columns3 size={16} className="mr-2" />
+                    <Columns3 size={14} className="mr-2" />
                     Select visible columns
                     <ChevronDown size={16} className="ml-2" />
                   </Button>
@@ -212,7 +231,14 @@ export function DataTable<TData, TValue>({
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length ? (
+          {isLoadingFirst ? (
+            <LoadingTableRows
+              rowLength={10}
+              columnLength={
+                Object.values(columnVisibility).filter((v) => !!v).length
+              }
+            />
+          ) : table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
@@ -248,30 +274,28 @@ export function DataTable<TData, TValue>({
               }
             />
           )}
-          {!globalFilter &&
-            table.getRowModel().rows?.length > 0 &&
-            !isLoadingMore && (
-              <TableRow className="border-none hover:bg-slate-50">
-                <TableCell
-                  colSpan={columns.length}
-                  className="p-0 pt-2 text-center"
-                >
-                  {!isReachingEnd ? (
-                    <Button
-                      variant="outline"
-                      className="w-full bg-slate-50 text-slate-900 hover:bg-slate-100 border-slate-300"
-                      onClick={onLoadMore}
-                    >
-                      Load More
-                    </Button>
-                  ) : (
-                    noMoreDataMessage && (
-                      <div className="p-4">{noMoreDataMessage}</div>
-                    )
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
+          {table.getRowModel().rows?.length > 0 && !isLoadingMore && (
+            <TableRow className="border-none hover:bg-slate-50">
+              <TableCell
+                colSpan={columns.length}
+                className="p-0 pt-2 text-center"
+              >
+                {!isReachingEnd ? (
+                  <Button
+                    variant="outline"
+                    className="w-full bg-slate-50 text-slate-900 hover:bg-slate-100 border-slate-300"
+                    onClick={onLoadMore}
+                  >
+                    Load More
+                  </Button>
+                ) : (
+                  noMoreDataMessage && (
+                    <div className="p-4">{noMoreDataMessage}</div>
+                  )
+                )}
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>
