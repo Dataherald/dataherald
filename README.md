@@ -314,7 +314,7 @@ curl -X 'POST' \
 }'
 ```
 
-### Run scripts
+### How to migrate data between versions
 Our engine is under ongoing development and in order to support the latest features, we provide scripts to migrate the data from the previous version to the latest version. You can find all of the scripts in the `dataherald.scripts` module. To run the migration script, execute the following command:
 
 ```

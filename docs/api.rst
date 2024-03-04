@@ -225,6 +225,26 @@ Related endpoints are:
         "metadata": "dict | None" // Optional, default None
     }
 
+Error Codes
+---------------------
+Certain errors are accompanied by an error code and an explanatory message. These errors trigger an HTTP 400 response
+code.
+
+**DB connection error code response example:**
+
+.. code-block:: json
+
+    {
+      "error_code": "invalid_database_uri_format",
+      "message": "Invalid URI format: foo",
+      "description": null,
+      "detail": {
+        "alias": "foo",
+        "use_ssh": false,
+        "connection_uri": "gdfgdgAABl5e-dfg_-wErFJdFZeVXwnmew_dfg__WU-dfgdfa=="
+      }
+    }
+
 .. toctree::
     :hidden:
 
@@ -268,3 +288,5 @@ Related endpoints are:
     api.cancel_finetuning
     api.delete_finetuning
     api.list_finetunings
+
+    api.error_codes
