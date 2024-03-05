@@ -39,6 +39,7 @@ from dataherald.sql_database.models.types import (
 from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
 from dataherald.types import FineTuningStatus, Prompt, SQLGeneration
 from dataherald.utils.agent_prompts import (
+    ERROR_PARSING_MESSAGE,
     FINETUNING_AGENT_PREFIX,
     FINETUNING_AGENT_PREFIX_FINETUNING_ONLY,
     FINETUNING_AGENT_SUFFIX,
@@ -546,7 +547,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
             max_execution_time=int(os.environ.get("DH_ENGINE_TIMEOUT", 150)),
         )
         agent_executor.return_intermediate_steps = True
-        agent_executor.handle_parsing_errors = True
+        agent_executor.handle_parsing_errors = ERROR_PARSING_MESSAGE
         with get_openai_callback() as cb:
             try:
                 result = agent_executor.invoke({"input": user_prompt.text})
