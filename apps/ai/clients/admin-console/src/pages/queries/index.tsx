@@ -30,6 +30,7 @@ const QueriesPage: FC = () => {
     setPage,
     searchText,
     setSearchText,
+    clearSearchText,
     mutate,
   } = useQueries()
   const columns = useMemo(
@@ -95,7 +96,8 @@ const QueriesPage: FC = () => {
         isRefreshing={isRefreshing}
         searchText={searchText}
         searchInfo={searchInfo}
-        onSearchTextSubmit={setSearchText}
+        onSearchTextChange={setSearchText}
+        onSearchTextClear={clearSearchText}
         onRowClick={handleQueryClick}
         onLoadMore={handleLoadMore}
         onRefresh={handleRefresh}

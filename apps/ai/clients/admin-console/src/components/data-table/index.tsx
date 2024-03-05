@@ -57,7 +57,8 @@ interface DataTableProps<TData, TValue> {
   noMoreDataMessage?: string
   enableColumnVisibility?: boolean
   searchText?: string
-  onSearchTextSubmit?: (search: string) => void
+  onSearchTextChange?: (search: string) => void
+  onSearchTextClear?: () => void
   searchInfo?: ReactNode
   onRowClick?: (row: TData) => void
   onLoadMore?: () => void
@@ -76,7 +77,8 @@ export function DataTable<TData, TValue>({
   enableColumnVisibility = false,
   searchText = '',
   searchInfo = null,
-  onSearchTextSubmit,
+  onSearchTextChange,
+  onSearchTextClear,
   onRowClick,
   onLoadMore,
   onRefresh,
@@ -113,14 +115,8 @@ export function DataTable<TData, TValue>({
     },
   })
 
-  const isSearchEnabled = onSearchTextSubmit !== undefined
-  const [currentSearchText, setCurrentSearchText] = useState(searchText)
-
-  const handleSearchClear = () => {
-    if (!isSearchEnabled) return
-    setCurrentSearchText('')
-    onSearchTextSubmit('')
-  }
+  const isSearchEnabled =
+    onSearchTextChange !== undefined && onSearchTextClear !== undefined
 
   useEffect(() => {
     const stateToSave = { sorting, columnVisibility }
@@ -140,12 +136,12 @@ export function DataTable<TData, TValue>({
             <div className="w-full flex items-center gap-3 max-w-sm py-3">
               <SearchInput
                 placeholder="Search..."
-                value={currentSearchText}
-                onChange={(e) => setCurrentSearchText(e.target.value)}
-                onClear={handleSearchClear}
+                value={searchText}
+                onChange={(e) => onSearchTextChange(e.target.value)}
+                onClear={onSearchTextClear}
                 onKeyUp={(e) => {
                   if (e.key === 'Enter') {
-                    onSearchTextSubmit(currentSearchText)
+                    onSearchTextChange(e.currentTarget.value)
                   }
                 }}
               />

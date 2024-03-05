@@ -1,7 +1,8 @@
 import { API_URL } from '@/config'
 import { useAuth } from '@/contexts/auth-context'
+import useDebounce from '@/hooks/useDebounce'
 import { ErrorResponse } from '@/models/api'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { KeyedMutator } from 'swr'
 import useSWRInfinite from 'swr/infinite'
 
@@ -21,6 +22,7 @@ export interface PageResponse<T> {
   ) => Promise<List<T>[] | undefined>
   searchText: string
   setSearchText: (search: string) => void
+  clearSearchText: () => void
   mutate: KeyedMutator<List<T>[]>
 }
 
@@ -37,6 +39,18 @@ const usePagination = <T>({
 }: PaginationParams<T>): PageResponse<T> => {
   const { token } = useAuth()
   const [searchText, setSearchText] = useState('')
+  const [searchTextApiParam, setSearchTextApiParam] = useState('')
+  const debouncedSearchText = useDebounce(searchText)
+
+  const clearSearchText = useCallback(() => {
+    setSearchTextApiParam('')
+    setSearchText('')
+  }, [])
+
+  useEffect(() => {
+    setSearchTextApiParam(debouncedSearchText)
+  }, [debouncedSearchText])
+
   const {
     data: pages,
     size: page,
@@ -47,7 +61,7 @@ const usePagination = <T>({
   } = useSWRInfinite<List<T>>(
     (index) =>
       token
-        ? `${API_URL}${resourceUrl}?page=${index}&page_size=${pageSize}&search_term=${searchText}`
+        ? `${API_URL}${resourceUrl}?page=${index}&page_size=${pageSize}&search_term=${searchTextApiParam}`
         : null,
     { revalidateAll: true },
   )
@@ -70,6 +84,7 @@ const usePagination = <T>({
     setPage,
     searchText,
     setSearchText,
+    clearSearchText,
     mutate,
   }
 }

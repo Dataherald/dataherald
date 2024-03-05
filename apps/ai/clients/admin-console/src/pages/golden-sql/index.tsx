@@ -31,6 +31,7 @@ const GoldenSQLPage: FC = () => {
     setPage,
     searchText,
     setSearchText,
+    clearSearchText,
     mutate,
   } = useGoldenSqlList()
 
@@ -121,7 +122,8 @@ const GoldenSQLPage: FC = () => {
         isReachingEnd={isReachingEnd}
         searchText={searchText}
         searchInfo={searchInfo}
-        onSearchTextSubmit={setSearchText}
+        onSearchTextChange={setSearchText}
+        onSearchTextClear={clearSearchText}
         onLoadMore={handleLoadMore}
         onRefresh={handleRefresh}
         noMoreDataMessage="No more queries"

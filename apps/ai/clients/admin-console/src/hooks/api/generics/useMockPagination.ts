@@ -3,7 +3,7 @@ import {
   List,
   PageResponse,
 } from '@/hooks/api/generics/usePagination'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import useSWRInfinite from 'swr/infinite'
 
 const useMockPagination = <T>(
@@ -34,6 +34,7 @@ const useMockPagination = <T>(
   )
 
   const [searchText, setSearchText] = useState('')
+  const clearSearchText = useCallback(() => setSearchText(''), [])
   const items = pages?.flat()
   const isLoadingFirst = !items
   const isLoadingMore =
@@ -52,6 +53,7 @@ const useMockPagination = <T>(
     setPage,
     searchText,
     setSearchText,
+    clearSearchText,
     mutate,
   }
 }
