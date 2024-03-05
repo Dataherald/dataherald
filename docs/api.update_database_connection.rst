@@ -54,12 +54,20 @@ HTTP 200 code response
       }
     }
 
-HTTP 400 code response (if the db connection fails it returns a 400 error)
+HTTP 400 code response (if the db connection fails it returns a 400 error), :doc:`here <api.error_codes>` you can find
+all the error codes
 
 .. code-block:: rst
 
     {
-        "detail": "string"
+      "error_code": "string",
+      "message": "string",
+      "description": "string",
+      "detail": {
+        "alias": "string",
+        "use_ssh": false,
+        "connection_uri": "string"
+      }
     }
 
 **Example 1**
