@@ -41,6 +41,7 @@ from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
 from dataherald.types import Prompt, SQLGeneration
 from dataherald.utils.agent_prompts import (
     AGENT_PREFIX,
+    ERROR_PARSING_MESSAGE,
     FORMAT_INSTRUCTIONS,
     PLAN_BASE,
     PLAN_WITH_FEWSHOT_EXAMPLES,
@@ -692,7 +693,7 @@ class DataheraldSQLAgent(SQLGenerator):
             max_execution_time=int(os.environ.get("DH_ENGINE_TIMEOUT", 150)),
         )
         agent_executor.return_intermediate_steps = True
-        agent_executor.handle_parsing_errors = True
+        agent_executor.handle_parsing_errors = ERROR_PARSING_MESSAGE
         with get_openai_callback() as cb:
             try:
                 result = agent_executor.invoke({"input": user_prompt.text})
