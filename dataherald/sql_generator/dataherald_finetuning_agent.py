@@ -186,11 +186,11 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         for table in self.db_scan:
             col_rep = ""
             for column in table.columns:
-                if column.description is not None:
+                if column.description:
                     col_rep += f"{column.name}: {column.description}, "
                 else:
                     col_rep += f"{column.name}, "
-            if table.description is not None:
+            if table.description:
                 table_rep = f"Table {table.table_name} contain columns: [{col_rep}], this tables has: {table.description}"
             else:
                 table_rep = f"Table {table.table_name} contain columns: [{col_rep}]"
@@ -338,8 +338,18 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         for table in self.db_scan:
             if table.table_name in table_names_list:
                 tables_schema += table.table_schema + "\n"
+                descriptions = []
                 if table.description is not None:
-                    tables_schema += "Table description: " + table.description + "\n"
+                    descriptions.append(
+                        f"Table `{table.table_name}`: {table.description}\n"
+                    )
+                    for column in table.columns:
+                        if column.description is not None:
+                            descriptions.append(
+                                f"Column `{column.name}`: {column.description}\n"
+                            )
+                if len(descriptions) > 0:
+                    tables_schema += f"/*\n{''.join(descriptions)}*/\n"
         if tables_schema == "":
             tables_schema += "Tables not found in the database"
         return tables_schema
