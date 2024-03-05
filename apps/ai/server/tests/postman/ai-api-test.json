@@ -2438,7 +2438,9 @@
 													"    pm.response.to.have.status(404);",
 													"});",
 													"",
-													"utils.checkErrorCode(pm.response,'finetuning_not_found')"
+													"utils.checkErrorCode(pm.response,'finetuning_not_found')",
+													"",
+													"postman.setNextRequest(\"heartbeat\")"
 												],
 												"type": "text/javascript"
 											}
@@ -3489,6 +3491,16 @@
 				"type": "oauth2",
 				"oauth2": [
 					{
+						"key": "tokenType",
+						"value": "Bearer",
+						"type": "string"
+					},
+					{
+						"key": "accessToken",
+						"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImZfQzJSVF80VDJHQlQya2RiRExfYSJ9.eyJodHRwczovL2F1dGguZGF0YWhlcmFsZC5jb20vZW1haWwiOiJwb3N0bWFuYXBpdGVzdEBkYXRhaGVyYWxkLmNvbSIsImh0dHBzOi8vYXV0aC5kYXRhaGVyYWxkLmNvbS91c2VyX2lkIjoiYXV0aDB8NjVkZTI5NTdmMzM0NzU0MDk2NzBlYWRmIiwiaHR0cHM6Ly9hdXRoLmRhdGFoZXJhbGQuY29tL2ltYWdlX3VybCI6Imh0dHBzOi8vcy5ncmF2YXRhci5jb20vYXZhdGFyL2UzMzZkNDliMDQ5ZGZlZjMwMDQxMWZjNjhkMWIwMzgyP3M9NDgwJnI9cGcmZD1odHRwcyUzQSUyRiUyRmNkbi5hdXRoMC5jb20lMkZhdmF0YXJzJTJGcG8ucG5nIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLmRhdGFoZXJhbGQuY29tLyIsInN1YiI6ImF1dGgwfDY1ZGUyOTU3ZjMzNDc1NDA5NjcwZWFkZiIsImF1ZCI6Imh0dHBzOi8vaGktZ2VvcmdlLnVzLmF1dGgwLmNvbS9hcGkvdjIvIiwiaWF0IjoxNzA5MzMzNzQ2LCJleHAiOjE3MDk0MjAxNDYsImF6cCI6IllTTjNtZVFyWlNldVQxTHRaaWZzN0UyZmpwSmwyakdHIiwic2NvcGUiOiJyZWFkOmN1cnJlbnRfdXNlciB1cGRhdGU6Y3VycmVudF91c2VyX21ldGFkYXRhIGRlbGV0ZTpjdXJyZW50X3VzZXJfbWV0YWRhdGEgY3JlYXRlOmN1cnJlbnRfdXNlcl9tZXRhZGF0YSBjcmVhdGU6Y3VycmVudF91c2VyX2RldmljZV9jcmVkZW50aWFscyBkZWxldGU6Y3VycmVudF91c2VyX2RldmljZV9jcmVkZW50aWFscyB1cGRhdGU6Y3VycmVudF91c2VyX2lkZW50aXRpZXMgb2ZmbGluZV9hY2Nlc3MiLCJndHkiOlsicmVmcmVzaF90b2tlbiIsInBhc3N3b3JkIl19.D5tqdYNhH64EJqQiHJYPMvTGm1YXGq8Vbe4XtdH1GuMh5jxGwEw0li69h1CdH2fticP-EuSbjNiCv54tzKRtaiDwUw_UUO2r4n0-LxXexe-byJaHSL6QNWhPaOPSm4-mSi3pJSz5ta0rjGpHg7HBdMgkjomBtP-uTte9l-BvH82Y-5GXYFEGKNLibmrF6gSj4Lis06FdEJdOd8T38AW1WRGsggNa-yQjB5DSI2rC5Liho3YTREI16aUjKjUrpT98m4mVgYcu8Wq18OFlxIbl0QSqqBYyOgKzlkvjrRvum-lu8iSV9p8CaS0EJTbzuXMe8XatbhKIpT2StiQg6xwTYw",
+						"type": "string"
+					},
+					{
 						"key": "scope",
 						"value": "offline_access",
 						"type": "string"
@@ -3496,16 +3508,6 @@
 					{
 						"key": "refreshTokenUrl",
 						"value": "https://auth.dataherald.com/oauth/token",
-						"type": "string"
-					},
-					{
-						"key": "tokenType",
-						"value": "Bearer",
-						"type": "string"
-					},
-					{
-						"key": "accessToken",
-						"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImZfQzJSVF80VDJHQlQya2RiRExfYSJ9.eyJodHRwczovL2F1dGguZGF0YWhlcmFsZC5jb20vZW1haWwiOiJwb3N0bWFuYXBpdGVzdEBkYXRhaGVyYWxkLmNvbSIsImh0dHBzOi8vYXV0aC5kYXRhaGVyYWxkLmNvbS91c2VyX2lkIjoiYXV0aDB8NjVkZTI5NTdmMzM0NzU0MDk2NzBlYWRmIiwiaHR0cHM6Ly9hdXRoLmRhdGFoZXJhbGQuY29tL2ltYWdlX3VybCI6Imh0dHBzOi8vcy5ncmF2YXRhci5jb20vYXZhdGFyL2UzMzZkNDliMDQ5ZGZlZjMwMDQxMWZjNjhkMWIwMzgyP3M9NDgwJnI9cGcmZD1odHRwcyUzQSUyRiUyRmNkbi5hdXRoMC5jb20lMkZhdmF0YXJzJTJGcG8ucG5nIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLmRhdGFoZXJhbGQuY29tLyIsInN1YiI6ImF1dGgwfDY1ZGUyOTU3ZjMzNDc1NDA5NjcwZWFkZiIsImF1ZCI6Imh0dHBzOi8vaGktZ2VvcmdlLnVzLmF1dGgwLmNvbS9hcGkvdjIvIiwiaWF0IjoxNzA5MTUzMjI0LCJleHAiOjE3MDkyMzk2MjQsImF6cCI6IllTTjNtZVFyWlNldVQxTHRaaWZzN0UyZmpwSmwyakdHIiwic2NvcGUiOiJyZWFkOmN1cnJlbnRfdXNlciB1cGRhdGU6Y3VycmVudF91c2VyX21ldGFkYXRhIGRlbGV0ZTpjdXJyZW50X3VzZXJfbWV0YWRhdGEgY3JlYXRlOmN1cnJlbnRfdXNlcl9tZXRhZGF0YSBjcmVhdGU6Y3VycmVudF91c2VyX2RldmljZV9jcmVkZW50aWFscyBkZWxldGU6Y3VycmVudF91c2VyX2RldmljZV9jcmVkZW50aWFscyB1cGRhdGU6Y3VycmVudF91c2VyX2lkZW50aXRpZXMiLCJndHkiOiJwYXNzd29yZCJ9.k7HtCviwfnjh6gB6QNM9i7SwWjYWfhJQxyZk7lvW_ZCuQGS6cL0OHQYn0fOnhahmLkWUEEV2m9RBe4p2Wua_8Vl_hfzqK3NffX-mg-uUxDM4E7rWrxJuqRrodR_wmVoxACnT7sVGXHo8X8iRpCPCm_wZe4hhq5QKqxWlOvZC23TjqKOQGmDvOOYhRl9Kq4JF78IGknjQPDGppeZ-4SetacKaj4BhH9Q2jWN9B-dFfYRPU7_CNhjCPLsHmSTX7-MGYVzZwnfc6DW6TXd1etK9xupuCvd8Fc8JnIJ0oFLcak1Z5N-eKMjwBaMYFM1ePQtMi3UyExw17ws5jMWuQf2vlw",
 						"type": "string"
 					},
 					{
@@ -3586,7 +3588,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "44d32f22-d1cb-4ba6-937a-a84debf72d33",
+						"id": "d3c76c2a-52bb-4374-9a80-2370648a7726",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -3596,7 +3598,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "3f25ec9e-39b2-4940-a2a2-b6d0366e18f2",
+						"id": "09d7122a-b4b9-46b7-9cf0-0f717251531c",
 						"type": "text/javascript",
 						"exec": [
 							""
