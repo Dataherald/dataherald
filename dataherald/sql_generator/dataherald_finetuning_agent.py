@@ -186,11 +186,11 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         for table in self.db_scan:
             col_rep = ""
             for column in table.columns:
-                if column.description is not None:
+                if column.description:
                     col_rep += f"{column.name}: {column.description}, "
                 else:
                     col_rep += f"{column.name}, "
-            if table.description is not None:
+            if table.description:
                 table_rep = f"Table {table.table_name} contain columns: [{col_rep}], this tables has: {table.description}"
             else:
                 table_rep = f"Table {table.table_name} contain columns: [{col_rep}]"
