@@ -27,8 +27,7 @@ const useDatabases = (): DatabasesResponse => {
     error,
     mutate: swrMutate,
   } = useSWR<Databases>(token ? endpointUrl : null, {
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
+    refreshInterval: 60000, // 1 minute
   })
 
   const [data, setData] = useState<Databases | undefined>(serverData)
