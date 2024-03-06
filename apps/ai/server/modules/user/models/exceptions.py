@@ -25,6 +25,9 @@ class UserErrorCode(BaseErrorCode):
     cannot_delete_user = ErrorCodeData(
         status_code=HTTP_400_BAD_REQUEST, message="Cannot delete user"
     )
+    cannot_delete_last_user = ErrorCodeData(
+        status_code=HTTP_400_BAD_REQUEST, message="Cannot delete last user"
+    )
 
 
 class UserError(BaseError):
@@ -79,5 +82,13 @@ class CannotDeleteUserError(UserError):
     def __init__(self, user_id: str, org_id: str) -> None:
         super().__init__(
             error_code=UserErrorCode.cannot_delete_user.name,
+            detail={"user_id": user_id, "organization_id": org_id},
+        )
+
+
+class CannotDeleteLastUserError(UserError):
+    def __init__(self, user_id: str, org_id: str) -> None:
+        super().__init__(
+            error_code=UserErrorCode.cannot_delete_last_user.name,
             detail={"user_id": user_id, "organization_id": org_id},
         )

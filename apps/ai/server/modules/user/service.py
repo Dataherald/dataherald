@@ -3,6 +3,7 @@ from bson import ObjectId
 from modules.user.models.entities import User
 from modules.user.models.exceptions import (
     CannotCreateUserError,
+    CannotDeleteLastUserError,
     CannotDeleteUserError,
     CannotUpdateUserError,
     UserExistsInOrgError,
@@ -81,7 +82,7 @@ class UserService:
             new_user = self.repo.get_user({"_id": ObjectId(user_id)})
             return UserResponse(**new_user.dict())
 
-        raise CannotUpdateUserError(user_id)
+        raise CannotUpdateUserError(user_id, user_request.organization_id)
 
     def update_user_organization(
         self, user_id: str, user_organization_request: UserOrganizationRequest
@@ -96,7 +97,7 @@ class UserService:
             new_user = self.repo.get_user({"_id": ObjectId(user_id)})
             return UserResponse(**new_user.dict())
 
-        raise CannotUpdateUserError(user_id)
+        raise CannotUpdateUserError(user_id, user_organization_request.organization_id)
 
     def delete_user(self, user_id: str, org_id: str) -> dict:
         if (
@@ -115,7 +116,9 @@ class UserService:
             ):
                 return {"id": user_id}
 
-        raise CannotDeleteUserError(user_id)
+            raise CannotDeleteUserError(user_id, org_id)
+
+        raise CannotDeleteLastUserError(user_id, org_id)
 
     def get_user_in_org(self, user_id: str, org_id: str) -> User:
         user = self.repo.get_user({"_id": ObjectId(user_id), "organization_id": org_id})

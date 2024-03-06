@@ -258,7 +258,7 @@ class GenerationService:
             GenerationStatus.REJECTED,
             GenerationStatus.VERIFIED,
         }:
-            raise GenerationVerifiedOrRejectedError(prompt_id, org_id=org_id)
+            raise GenerationVerifiedOrRejectedError(prompt_id, org_id)
         create_request.sql_generation.metadata = SQLGenerationMetadata(
             **create_request.sql_generation.metadata,
             dh_internal=DHSQLGenerationMetadata(organization_id=org_id),
