@@ -1,6 +1,7 @@
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_402_PAYMENT_REQUIRED,
+    HTTP_403_FORBIDDEN,
 )
 
 from exceptions.error_codes import BaseErrorCode, ErrorCodeData
@@ -13,13 +14,13 @@ class InvoiceErrorCode(BaseErrorCode):
         message="No payment method on file",
     )
     last_payment_method = ErrorCodeData(
-        status_code=HTTP_400_BAD_REQUEST, message="Last payment method"
+        status_code=HTTP_403_FORBIDDEN, message="Last payment method"
     )
     spending_limit_exceeded = ErrorCodeData(
-        status_code=HTTP_402_PAYMENT_REQUIRED, message="Spending limit exceeded"
+        status_code=HTTP_403_FORBIDDEN, message="Spending limit exceeded"
     )
     hard_spending_limit_exceeded = ErrorCodeData(
-        status_code=HTTP_402_PAYMENT_REQUIRED,
+        status_code=HTTP_403_FORBIDDEN,
         message="Hard spending limit exceeded",
     )
     subscription_past_due = ErrorCodeData(
