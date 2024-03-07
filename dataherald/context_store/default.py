@@ -94,7 +94,6 @@ class DefaultContextStore(ContextStore):
                 metadata=record.metadata,
             )
             stored_golden_sqls.append(golden_sqls_repository.insert(golden_sql))
-
         self.vector_store.add_records(stored_golden_sqls, self.golden_sql_collection)
         return stored_golden_sqls
 
