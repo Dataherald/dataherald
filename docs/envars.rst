@@ -15,6 +15,9 @@ provided in the .env.example file with the default values.
     PINECONE_API_KEY =
     PINECONE_ENVIRONMENT =
 
+    ASTRA_DB_API_ENDPOINT =
+    ASTRA_DB_APPLICATION_TOKEN =
+
    
     API_SERVER = "dataherald.api.fastapi.FastAPI"
     SQL_GENERATOR = "dataherald.sql_generator.dataherald_sqlagent.DataheraldSQLAgent"
@@ -24,7 +27,7 @@ provided in the .env.example file with the default values.
     CONTEXT_STORE = 'dataherald.context_store.default.DefaultContextStore' 
     DB_SCANNER = 'dataherald.db_scanner.sqlalchemy.SqlAlchemyScanner'
 
-  
+
     MONGODB_URI = "mongodb://admin:admin@mongodb:27017"
     MONGODB_DB_NAME = 'dataherald'
     MONGODB_DB_USERNAME = 'admin'
@@ -51,6 +54,8 @@ provided in the .env.example file with the default values.
    "GOLDEN_RECORD_COLLECTION", "The name of the collection in Mongo where golden records will be stored", "``my-golden-records``", "No"
    "PINECONE_API_KEY", "The Pinecone API key used", "None", "Yes if using the Pinecone vector store"
    "PINECONE_ENVIRONMENT", "The Pinecone environment", "None", "Yes if using the Pinecone vector store"
+    "ASTRA_DB_API_ENDPOINT", "The Astra DB API endpoint", "None", "Yes if using the Astra DB"
+    "ASTRA_DB_APPLICATION_TOKEN", "The Astra DB application token", "None", "Yes if using the Astra DB
    "API_SERVER", "The implementation of the API Module used by the Dataherald Engine.", "``dataherald.api.fastapi.FastAPI``", "Yes"
    "SQL_GENERATOR", "The implementation of the SQLGenerator Module to be used.", "``dataherald.sql_generator.  dataherald_sqlagent. DataheraldSQLAgent``", "Yes"
    "EVALUATOR", "The implementation of the Evaluator Module to be used.", "``dataherald.eval. simple_evaluator.SimpleEvaluator``", "Yes"

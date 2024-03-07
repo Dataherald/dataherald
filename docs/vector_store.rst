@@ -1,18 +1,18 @@
 Vector Store 
 ====================
 
-The Dataherald Engine uses a Vector store for retrieving similar few shot examples from previous Natural Language to SQL pairs that have been marked as correct. Currently Pinecone and ChromaDB are the 
+The Dataherald Engine uses a Vector store for retrieving similar few shot examples from previous Natural Language to SQL pairs that have been marked as correct. Currently Pinecone, AstraDB, and ChromaDB are the 
 supported vector stores, though developers can easily add support for other vector stores by implementing the abstract VectorStore class.
 
 Abstract Vector Store Class
 ---------------------------
 
-Both ChromaDB and Pinecone are implemented as subclasses of the abstract :class:`VectorStore` class. This abstract class provides a unified interface for working with different vector store implementations.
+AstraDB, ChromaDB and Pinecone are implemented as subclasses of the abstract :class:`VectorStore` class. This abstract class provides a unified interface for working with different vector store implementations.
 
 :class:`VectorStore`
 ^^^^^^^^^^^^^^^^^^^^^
 
-This abstract class defines the common methods that both ChromaDB and Pinecone vector stores should implement.
+This abstract class defines the common methods that AstraDB, ChromaDB, and Pinecone vector stores should implement.
 
 .. method:: __init__(self, system: System)
    :noindex:

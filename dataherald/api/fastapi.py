@@ -422,7 +422,6 @@ class FastAPI(API):
                 {"items": [row.dict() for row in golden_sqls]},
                 "golden_sql_not_created",
             )
-
         return [GoldenSQLResponse(**golden_sql.dict()) for golden_sql in golden_sqls]
 
     @override
