@@ -1,6 +1,6 @@
 dnspython==2.3.0
 fastapi==0.98.0
-httpx==0.24.1
+httpx==0.27.0
 langchain==0.1.11
 langchain-community==0.0.25
 langchain-openai==0.0.8
@@ -41,3 +41,4 @@ duckdb-engine==0.9.1
 duckdb==0.9.1
 PyMySQL==1.1.0
 clickhouse-sqlalchemy==0.2.5
+astrapy==0.7.6
