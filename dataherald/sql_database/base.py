@@ -224,7 +224,7 @@ class SQLDatabase:
         rows = inspector.get_table_names() + inspector.get_view_names()
         if len(rows) == 0:
             raise EmptyDBError("The db is empty it could be a permission issue")
-        return rows
+        return [row.lower() for row in rows]
 
     @property
     def dialect(self) -> str:
