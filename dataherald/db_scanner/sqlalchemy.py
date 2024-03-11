@@ -22,6 +22,7 @@ from dataherald.db_scanner.services.base_scanner import BaseScanner
 from dataherald.db_scanner.services.big_query_scanner import BigQueryScanner
 from dataherald.db_scanner.services.postgre_sql_scanner import PostgreSqlScanner
 from dataherald.db_scanner.services.snowflake_scanner import SnowflakeScanner
+from dataherald.db_scanner.services.sql_server_scanner import SqlServerScanner
 from dataherald.sql_database.base import SQLDatabase
 from dataherald.types import ScannerRequest
 
@@ -273,6 +274,7 @@ class SqlAlchemyScanner(Scanner):
             "snowflake": SnowflakeScanner,
             "bigquery": BigQueryScanner,
             "psycopg2": PostgreSqlScanner,
+            "pymssql": SqlServerScanner,
         }
         self.scanner_service = BaseScanner()
         if db_engine.engine.driver in services.keys():

@@ -216,6 +216,21 @@ Example::
 
 "connection_uri": mysql+pymysql://admin:123456@foo.rds.amazonaws.com:3306/my-database
 
+Microsoft SQL Server
+^^^^^^^^^^^^
+
+Uri structure::
+
+"connection_uri": mssql+pymssql://<user>:<password>@<host>:<port>/<db-name>
+
+Example::
+
+"connection_uri": mssql+pymssql://admin:123456@foo.rds.amazonaws.com:1433/my-database
+
+To specify a schema other than the default dbo, execute the following command::
+
+ALTER USER <your_username> WITH DEFAULT_SCHEMA = <your_schema_name>;
+
 Databricks
 ^^^^^^^^^^^^
 
