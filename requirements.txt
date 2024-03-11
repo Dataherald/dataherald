@@ -42,3 +42,4 @@ duckdb==0.9.1
 PyMySQL==1.1.0
 clickhouse-sqlalchemy==0.2.5
 astrapy==0.7.6
+pymssql==2.2.11

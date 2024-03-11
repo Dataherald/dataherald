@@ -49,6 +49,7 @@ class TableDescriptionRepository:
     def save_table_info(self, table_info: TableDescription) -> TableDescription:
         table_info_dict = table_info.dict(exclude={"id"})
         table_info_dict["db_connection_id"] = str(table_info.db_connection_id)
+        table_info_dict["table_name"] = table_info.table_name.lower()
         table_info_dict = {
             k: v for k, v in table_info_dict.items() if v is not None and v != []
         }
@@ -57,7 +58,7 @@ class TableDescriptionRepository:
                 DB_COLLECTION,
                 {
                     "db_connection_id": table_info_dict["db_connection_id"],
-                    "table_name": table_info.table_name,
+                    "table_name": table_info_dict["table_name"],
                 },
                 table_info_dict,
             )
