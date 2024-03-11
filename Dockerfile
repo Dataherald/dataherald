@@ -10,6 +10,10 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 COPY . /app
 
-EXPOSE 80
+# Set default CORE_PORT to 80 if not provided
+ARG CORE_PORT=80
+ENV CORE_PORT=${CORE_PORT}
 
-CMD ["uvicorn", "dataherald.app:app", "--host", "0.0.0.0", "--port", "80"]
+EXPOSE ${CORE_PORT}
+
+CMD ["uvicorn", "dataherald.app:app", "--host", "0.0.0.0", "--port", "${CORE_PORT}"]
