@@ -11,7 +11,7 @@ jobs:
       run:
         working-directory: ./apps/ai/server
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: chartboost/ruff-action@v1
         with:
           src: ./apps/ai/server
