@@ -1,8 +1,8 @@
-name: AI Admin Console - Quality checks
+name: AI Console - Quality checks
 on:
   push:
     paths:
-      - .github/workflows/ai-admin-console-build.yml # this file
+      - .github/workflows/ai-console-checks.yml # this file
       - apps/ai/clients/admin-console/**
     branches:
       - main

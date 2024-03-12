@@ -1,0 +1,11 @@
+{
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "production": true
+    }
+  },
+  "github": {
+    "enabled": false
+  }
+}

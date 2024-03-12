@@ -17,3 +17,15 @@ env/
 ENV/
 env.bak/
 .DS_Store
+
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+**/.terraform/*
+.vercel

@@ -1,0 +1,141 @@
+name: AI Destroy branch environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch environment to Destroy"
+        required: true
+  pull_request:
+    types: [closed]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_CORE_REPOSITORY: k2-core-ephemeral-envs
+  ECR_SERVER_REPOSITORY: k2-server-ephemeral-envs
+jobs:
+  extract-branch-name:
+    name: Extract branch name
+    outputs:
+      branch: ${{ steps.extract_branch.outputs.branch }}
+      branch_name: ${{ steps.extract_branch.outputs.branch_name }}
+      db_name: ${{ steps.extract_branch.outputs.db_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name
+        id: extract_branch
+        shell: bash
+        run: |
+          branch="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          formatted_branch=$(echo "$branch" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-zA-Z0-9]/-/g')
+          db_name=ephemeral-$formatted_branch
+
+          RESOURCE_NAME_LENGHT=32
+
+          # Terraform resources name lenght limit is 32
+          # MongoDB database name length limit is 38
+          formatted_branch=${formatted_branch:0:$RESOURCE_NAME_LENGHT}
+          db_name=${db_name:0:$RESOURCE_NAME_LENGHT} 
+
+          # Ensure the last character is alphanumeric 
+          # Pinecone doesn't allow special characters for the last character
+          while [[ ! ${formatted_branch: -1} =~ [a-zA-Z0-9] ]]; do
+            formatted_branch=${formatted_branch:0:-1}
+          done
+
+          echo "branch=$branch" >> $GITHUB_OUTPUT
+          echo "branch_name=$formatted_branch" >> $GITHUB_OUTPUT
+          echo "db_name=$db_name" >> $GITHUB_OUTPUT
+  destroy-ephemeral-env:
+    name: Destroy branch environment
+    runs-on: ubuntu-latest
+    needs: extract-branch-name
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    defaults:
+        run:
+          working-directory: ./apps/ai/server
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          submodules: true
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: true
+      - name: Destroy Terraform
+        env:
+          TF_VAR_branch_name: ${{ needs.extract-branch-name.outputs.branch_name }}
+          TF_VAR_pinecone_index_name: ${{ needs.extract-branch-name.outputs.db_name }}
+          TF_VAR_mongodb_uri: ${{ vars.EPHEMERAL_MONGODB_URI }}
+          TF_VAR_mongodb_name: ${{ needs.extract-branch-name.outputs.db_name }}
+          TF_VAR_mongodb_username: ${{ secrets.MONGODB_USERNAME }}
+          TF_VAR_mongodb_password: ${{ secrets.MONGODB_PASSWORD }}
+        timeout-minutes: 3
+        run: |
+          cd terraform
+          terraform init -upgrade -backend-config="key=${{ needs.extract-branch-name.outputs.branch_name }}"
+          terraform destroy -auto-approve
+      - name: Delete images
+        run: |
+          # Delete images
+          aws ecr batch-delete-image --repository-name $ECR_CORE_REPOSITORY --image-ids imageTag=${{ needs.extract-branch-name.outputs.branch_name }} --region us-east-1
+          aws ecr batch-delete-image --repository-name $ECR_SERVER_REPOSITORY --image-ids imageTag=${{ needs.extract-branch-name.outputs.branch_name }} --region us-east-1
+  start-self-hosted-runner:
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Start EC2 runner
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: start
+          github-token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          ec2-image-id: ami-07c717106b75d6968
+          ec2-instance-type: t2.micro
+          subnet-id: subnet-047b3ad5f1945b456 # this is a private subnet, even though the mongo vpce is set for public subnet, it will work, probably because of the route table
+          security-group-id: sg-0af2c0fe34e9184ad
+  delete-database:
+    name: Delete database
+    needs:
+      - extract-branch-name
+      - start-self-hosted-runner
+    runs-on: ${{ needs.start-self-hosted-runner.outputs.label }} # run the job on the newly created runner
+    steps:
+      - name: Delete mongo database
+        run: |
+          mongosh --username ${{ secrets.MONGODB_USERNAME }} --password ${{ secrets.MONGODB_PASSWORD }} "${{ vars.EPHEMERAL_MONGODB_URI }}" --eval "db.getSiblingDB('${{ needs.extract-branch-name.outputs.db_name }}').dropDatabase()"
+  stop-runner:
+    name: Stop self-hosted EC2 runner
+    needs:
+      - start-self-hosted-runner # required to get output from the start-runner job
+      - delete-database
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: stop
+          github-token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          label: ${{ needs.start-self-hosted-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-self-hosted-runner.outputs.ec2-instance-id }}

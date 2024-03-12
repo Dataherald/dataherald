@@ -1,4 +1,4 @@
-name: AI Chat - Code Format
+name: AI Chat - Quality checks
 
 on:
   push:

@@ -6,11 +6,13 @@ on:
     paths:
       - ".github/workflows/ai-server-api-test.yml"
       - "apps/ai/server/**"
+      - "!.github/workflows/**"
       - "!apps/ai/server/.env.example"
       - "!apps/ai/server/README.md"
       - "!apps/ai/server/database/migrations/**"
       - "!apps/ai/server/database/scripts/**"
       - "!apps/ai/server/scripts/**"
+      - "!apps/ai/server/terraform/**"
     branches:
       - main
       - production
@@ -38,11 +40,11 @@ jobs:
           echo "${{ secrets.ENTERPRISE_API_TEST_ENV_FILE }}" > .env
       - name: Run Engine container
         run: |
-          docker compose -f ./dataherald/docker-compose.yml up --build -d 
+          docker compose -f ./dataherald/docker-compose.yml up --build -d
           echo "Engine container running at http://localhost:80"
       - name: Run Enterprise container
         run: |
-          docker compose -f ./docker-compose.yml up --build -d 
+          docker compose -f ./docker-compose.yml up --build -d
           echo "Enterprise container running at http://localhost:3001"
       - name: Wait for containers to start
         run: sleep 5

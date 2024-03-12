@@ -1,0 +1,436 @@
+name: AI Deploy Branch Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy"
+        required: true
+
+env:
+  AWS_REGION: us-east-1
+  ECR_CORE_REPOSITORY: k2-core-ephemeral-envs
+  ECR_SERVER_REPOSITORY: k2-server-ephemeral-envs
+  SLACK_WEBHOOK: ${{ secrets.GH_SLACK_WEBHOOK_URL }}
+  SLACK_ICON: https://files.dataherald.com/random/github-actions.png
+  SLACK_USERNAME: GitHub Actions
+  SLACK_CHANNEL: eng-notifications
+jobs:
+  extract-branch-name:
+    name: Extract branch name
+    outputs:
+      branch: ${{ steps.extract_branch.outputs.branch }}
+      branch_name: ${{ steps.extract_branch.outputs.branch_name }}
+      db_name: ${{ steps.extract_branch.outputs.db_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name
+        id: extract_branch
+        shell: bash
+        run: |
+          branch="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          formatted_branch=$(echo "$branch" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-zA-Z0-9]/-/g')
+          db_name=ephemeral-$formatted_branch
+
+          RESOURCE_NAME_LENGHT=32
+
+          # Terraform resources name lenght limit is 32
+          # MongoDB database name length limit is 38
+          formatted_branch=${formatted_branch:0:$RESOURCE_NAME_LENGHT}
+          db_name=${db_name:0:$RESOURCE_NAME_LENGHT} 
+
+          # Ensure the last character is alphanumeric 
+          # Pinecone doesn't allow special characters for the last character
+          while [[ ! ${formatted_branch: -1} =~ [a-zA-Z0-9] ]]; do
+            formatted_branch=${formatted_branch:0:-1}
+          done
+
+          echo "branch=$branch" >> $GITHUB_OUTPUT
+          echo "branch_name=$formatted_branch" >> $GITHUB_OUTPUT
+          echo "db_name=$db_name" >> $GITHUB_OUTPUT
+
+  push-engine-image:
+    name: Push engine image
+    runs-on: ubuntu-latest
+    needs: extract-branch-name
+    defaults:
+      run:
+        working-directory: ./apps/ai/server
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          submodules: true
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build, tag, and push ENGINE image to Amazon ECR
+        id: build-engine-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          git submodule init
+          git submodule update
+          cd dataherald
+          ls
+          echo building dockerfile
+          docker build -t $ECR_REGISTRY/$ECR_CORE_REPOSITORY:${{ needs.extract-branch-name.outputs.branch_name }} .
+          docker push $ECR_REGISTRY/$ECR_CORE_REPOSITORY:${{ needs.extract-branch-name.outputs.branch_name }}
+          echo "k2_engine_image=$ECR_REGISTRY/$ECR_CORE_REPOSITORY:${{ needs.extract-branch-name.outputs.branch_name }}" >> $GITHUB_OUTPUT
+  push-enterprise-image:
+    name: Push enterprise image
+    runs-on: ubuntu-latest
+    needs: extract-branch-name
+    defaults:
+      run:
+        working-directory: ./apps/ai/server
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build, tag, and push ENTERPRISE image to Amazon ECR
+        id: build-enterprise-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_SERVER_REPOSITORY:${{ needs.extract-branch-name.outputs.branch_name }} .
+          docker push $ECR_REGISTRY/$ECR_SERVER_REPOSITORY:${{ needs.extract-branch-name.outputs.branch_name }}
+          echo "k2_enterprise_image=$ECR_REGISTRY/$ECR_SERVER_REPOSITORY:${{ needs.extract-branch-name.outputs.branch_name }}" >> $GITHUB_OUTPUT
+  deploy-backend:
+    name: Deploy Backend
+    needs: [extract-branch-name, push-engine-image, push-enterprise-image]
+    runs-on: ubuntu-latest
+    outputs:
+      api_url: ${{ steps.get-api-url.outputs.api_url }}
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
+    defaults:
+      run:
+        working-directory: ./apps/ai/server
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          submodules: true
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Force ECS deployment
+        id: force-ecs-deployment
+        run: |
+          # Variables
+          cluster_name=k2
+          service_name=k2-ephemeral-env-${{ needs.extract-branch-name.outputs.branch_name }}
+
+          # Check if service exists
+          service_exists=$(aws ecs describe-services --cluster $cluster_name --services $service_name --query 'services' --output text)
+          if [ -z "$service_exists" ]; then
+            echo "Service does not exist."
+          else
+            # Check if service is active
+            service_status=$(aws ecs describe-services --cluster $cluster_name --services $service_name --query 'services[0].status' --output text)
+            if [ "$service_status" != "ACTIVE" ]; then
+              echo "Service is not active. Aborting deployment."
+            else
+              echo "Service exists and is active. Forcing a new deployment..."
+              # Force a new deployment by updating the service with the same task definition
+              aws ecs update-service --cluster $cluster_name --service $service_name --force-new-deployment
+              # Wait for the deployment to finish
+              echo "Waiting for deployment to finish..."
+              aws ecs wait services-stable --cluster $cluster_name --services $service_name
+            fi
+          fi
+      - name: Apply Terraform
+        id: apply-terraform
+        env:
+          TF_VAR_branch_name: ${{ needs.extract-branch-name.outputs.branch_name }}
+          TF_VAR_pinecone_index_name: ${{ needs.extract-branch-name.outputs.db_name }}
+          TF_VAR_mongodb_uri: ${{ vars.EPHEMERAL_MONGODB_URI }}
+          TF_VAR_mongodb_name: ${{ needs.extract-branch-name.outputs.db_name }}
+          TF_VAR_mongodb_username: ${{ secrets.MONGODB_USERNAME }}
+          TF_VAR_mongodb_password: ${{ secrets.MONGODB_PASSWORD }}
+
+        run: |
+          cd terraform
+          terraform init -upgrade -backend-config="key=${{ needs.extract-branch-name.outputs.branch_name }}"
+          terraform plan
+          terraform apply -auto-approve
+      - name: Get API URL
+        id: get-api-url
+        run: |
+          echo "api_url=https://${{ needs.extract-branch-name.outputs.branch_name }}.api.dataherald.ai" >> "$GITHUB_OUTPUT"
+
+      - name: Delete untagged images
+        run: |
+          # Get untagged images
+          UNTAGGED_CORE_IMAGES=$(aws ecr list-images --repository-name $ECR_CORE_REPOSITORY --filter tagStatus=UNTAGGED --query 'imageIds[*]' --region us-east-1 --output json --region us-east-1)
+          UNTAGGED_SERVER_IMAGES=$(aws ecr list-images --repository-name $ECR_SERVER_REPOSITORY --filter tagStatus=UNTAGGED --query 'imageIds[*]' --region us-east-1 --output json --region us-east-1)
+
+          # Delete images
+          if [ -n "$UNTAGGED_CORE_IMAGES" ] && [ "$UNTAGGED_CORE_IMAGES" != "[]" ]; then
+            aws ecr batch-delete-image --repository-name $ECR_CORE_REPOSITORY --image-ids "$UNTAGGED_CORE_IMAGES" --region us-east-1
+          fi
+          if [ -n "$UNTAGGED_SERVER_IMAGES" ] && [ "$UNTAGGED_SERVER_IMAGES" != "[]" ]; then
+            aws ecr batch-delete-image --repository-name $ECR_SERVER_REPOSITORY --image-ids "$UNTAGGED_SERVER_IMAGES" --region us-east-1
+          fi
+
+      - name: Destroy env and images if fails
+        if: failure()
+        env:
+          TF_LOG: DEBUG
+          TF_VAR_branch_name: ${{ needs.extract-branch-name.outputs.branch_name }}
+          TF_VAR_pinecone_index_name: ${{ needs.extract-branch-name.outputs.db_name }}
+          TF_VAR_mongodb_uri: ${{ vars.EPHEMERAL_MONGODB_URI }}
+          TF_VAR_mongodb_name: ${{ needs.extract-branch-name.outputs.db_name }}
+          TF_VAR_mongodb_username: ${{ secrets.MONGODB_USERNAME }}
+          TF_VAR_mongodb_password: ${{ secrets.MONGODB_PASSWORD }}
+        timeout-minutes: 5
+        run: |
+          cd terraform
+          terraform init -upgrade -backend-config="key=${{ needs.extract-branch-name.outputs.branch_name }}"
+          terraform destroy -auto-approve
+
+      - name: Delete Images if failure
+        if: failure()
+        run: |
+          # Delete images
+          aws ecr batch-delete-image --repository-name $ECR_CORE_REPOSITORY --image-ids imageTag=${{ needs.extract-branch-name.outputs.branch_name }} --region us-east-1
+          aws ecr batch-delete-image --repository-name $ECR_SERVER_REPOSITORY --image-ids imageTag=${{ needs.extract-branch-name.outputs.branch_name }} --region us-east-1
+  start-self-hosted-runner:
+    name: Start self-hosted EC2 runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Start EC2 runner
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: start
+          github-token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          ec2-image-id: ami-07c717106b75d6968
+          ec2-instance-type: t2.micro
+          subnet-id: subnet-047b3ad5f1945b456 # this is a private subnet, even though the mongo vpce is set for public subnet, it will work, probably because of the route table
+          security-group-id: sg-0af2c0fe34e9184ad
+
+  populate-mongo-db:
+    name: Populate MongoDB
+    needs: [extract-branch-name, start-self-hosted-runner]
+    runs-on: ${{ needs.start-self-hosted-runner.outputs.label }} # run the job on the newly created runner
+    defaults:
+      run:
+        working-directory: ./apps/ai/server
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          submodules: true
+      - name: Restore MongoDB # ensure there's only one folder in the dump directory
+        run: |
+          cd terraform
+          mongodump --username ${{ secrets.MONGODB_USERNAME }} --password ${{ secrets.MONGODB_PASSWORD }} --uri="${{ vars.STAGING_MONGODB_URI }}"
+          cd dump
+          from_db=(*)
+          mongorestore . --username ${{ secrets.MONGODB_USERNAME }} --password ${{ secrets.MONGODB_PASSWORD }} --nsFrom "$from_db.*" --nsTo "${{ needs.extract-branch-name.outputs.db_name }}.*" --uri="${{ vars.EPHEMERAL_MONGODB_URI }}"
+      - name: Delete DB if failure
+        if: failure()
+        run: |
+          mongosh --username ${{ secrets.MONGODB_USERNAME }} --password ${{ secrets.MONGODB_PASSWORD }} "${{ vars.EPHEMERAL_MONGODB_URI }}" --eval "db.getSiblingDB('${{ needs.extract-branch-name.outputs.db_name }}').dropDatabase()"
+  populate-pinecone-db:
+    name: Populate PineconeDB
+    needs:
+      [
+        extract-branch-name,
+        deploy-backend,
+        start-self-hosted-runner,
+        populate-mongo-db,
+      ]
+    runs-on: ${{ needs.start-self-hosted-runner.outputs.label }} # run the job on the newly created runner
+    defaults:
+      run:
+        working-directory: ./apps/ai/server
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          submodules: true
+      - name: Populate PineconeDB
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
+          PINECONE_INDEX_NAME: ${{ needs.extract-branch-name.outputs.db_name }}
+          MONGODB_URI: ${{ vars.EPHEMERAL_MONGODB_URI }}
+          MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME }}
+          MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
+          MONGODB_NAME: ${{ needs.extract-branch-name.outputs.db_name }}
+        run: |
+          cd database/scripts/populate_pinecone_db
+          python3 -m venv venv
+          source venv/bin/activate
+          pip3 install -r requirements.txt
+          python3 -u script.py
+
+  deploy-frontend:
+    name: Deploy Frontend
+    needs:
+      [
+        extract-branch-name,
+        deploy-backend,
+        populate-mongo-db,
+        populate-pinecone-db,
+      ]
+    runs-on: ubuntu-latest
+    outputs:
+      url: ${{ steps.console_dns.outputs.url }}
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_AI_CONSOLE_PROJECT_ID }}
+      VERCEL_TEAM_NAME: dataherald
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+      - name: Set Console DNS
+        id: console_dns
+        run: |
+          echo "domain=${{ needs.extract-branch-name.outputs.branch_name }}.console.dataherald.ai" >> "$GITHUB_OUTPUT"
+          echo "url=https://${{ needs.extract-branch-name.outputs.branch_name }}.console.dataherald.ai" >> "$GITHUB_OUTPUT"
+      - name: Deploy to Vercel and set custom domain alias
+        run: |
+          echo Deploying to Vercel with the following environment variables:
+          echo "NEXT_PUBLIC_API_URL=${{ needs.deploy-backend.outputs.api_url }}"
+          echo "AUTH0_BASE_URL=${{ steps.console_dns.outputs.url }}"
+
+          vercel deploy --yes --build-env NEXT_PUBLIC_API_URL=${{ needs.deploy-backend.outputs.api_url }} --env AUTH0_BASE_URL=${{ steps.console_dns.outputs.url }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }} >deployment-url.txt 2>error.txt
+
+          # check the exit code
+          code=$?
+          if [ $code -eq 0 ]; then
+              # Now you can use the deployment url from stdout for the next step of your workflow
+              deploymentUrl=`cat deployment-url.txt`
+              vercel alias set $deploymentUrl ${{ steps.console_dns.outputs.domain }} --scope $VERCEL_TEAM_NAME --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+          else
+              # Handle the error
+              errorMessage=`cat error.txt`
+              echo "There was an error: $errorMessage"
+          fi
+  send-cancelled-slack-notification:
+    name: Send Cancelled Slack Notification
+    needs:
+      [
+        extract-branch-name,
+        deploy-backend,
+        deploy-frontend,
+        stop-self-hosted-runner,
+      ]
+    if: cancelled()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send cancelled notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_TITLE: Branch Deployment CANCELLED
+          SLACK_MESSAGE: |
+
+            The branch environment deployment was cancelled. Please check the GitHub Actions logs for more details.
+
+          SLACK_COLOR: cancelled
+  send-failure-slack-notification:
+    name: Send Failure Slack Notification
+    needs:
+      [
+        extract-branch-name,
+        deploy-backend,
+        deploy-frontend,
+        stop-self-hosted-runner,
+      ]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send failed notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_TITLE: Branch Deployment FAILED
+          SLACK_MESSAGE: |
+
+            The branch environment deployment failed. Please check the GitHub Actions logs for more details.
+
+          SLACK_COLOR: failure
+  send-success-slack-notification:
+    name: Send Success Slack Notification
+    needs:
+      [
+        extract-branch-name,
+        deploy-backend,
+        deploy-frontend,
+        stop-self-hosted-runner,
+      ]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send success notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_TITLE: Branch Deployment SUCCEEDED
+          SLACK_MESSAGE: |
+            The branch environment deployment succeeded. Here are the details:
+
+            *Branch*: `${{ needs.extract-branch-name.outputs.branch }}`
+            *API URL*: ${{ needs.deploy-backend.outputs.api_url }}
+            *Console URL*: ${{ needs.deploy-frontend.outputs.url }}
+          SLACK_COLOR: success
+  stop-self-hosted-runner:
+    name: Stop self-hosted EC2 runner
+    needs: [start-self-hosted-runner, populate-mongo-db, populate-pinecone-db]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: stop
+          github-token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          label: ${{ needs.start-self-hosted-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-self-hosted-runner.outputs.ec2-instance-id }}
