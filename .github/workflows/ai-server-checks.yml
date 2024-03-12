@@ -1,4 +1,4 @@
-name: ai-server-lint
+name: AI Server - Quality Checks
 on:
   push:
     paths:
@@ -8,7 +8,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     defaults:
-      run: 
+      run:
         working-directory: ./apps/ai/server
     steps:
       - uses: actions/checkout@v3

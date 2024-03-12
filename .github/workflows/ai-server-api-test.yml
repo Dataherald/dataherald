@@ -15,7 +15,6 @@ on:
       - "!apps/ai/server/terraform/**"
     branches:
       - main
-      - production
 
 jobs:
   automated-api-tests:

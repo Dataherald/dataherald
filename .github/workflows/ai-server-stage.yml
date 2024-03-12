@@ -1,15 +1,6 @@
-name: ai-server-stage
+name: AI Server - Deploy STAGE
 
-on:
-  push:
-    paths:
-      - '.github/workflows/ai-server-stage.yml'
-      - 'apps/ai/server/**'
-      - '!apps/ai/server/dataherald' # ignore k2-core changes
-      - '!apps/ai/server/.env.example'
-      - '!apps/ai/server/README.md'
-    branches:
-      - main 
+on: workflow_call
 
 env:
   AWS_REGION: us-east-1
@@ -20,20 +11,19 @@ env:
 
   K2_SERVER_CONTAINER_NAME: k2-server-stage
 
-
 jobs:
   build-push-deploy-image:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
 
     defaults:
-      run: 
+      run:
         working-directory: ./apps/ai/server
 
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:

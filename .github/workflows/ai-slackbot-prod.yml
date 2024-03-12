@@ -1,14 +1,12 @@
-name: AI Slackbot [prod]
+name: AI Slackbot - Deploy PRODUCTION
 
 on:
   push:
     paths:
       - .github/workflows/ai-slackbot-prod.yml # this file
       - apps/ai/clients/slack/**
-    branches:
-      - production
     tags:
-    - "v1.*"
+      - "v1.*"
 
 env:
   AWS_REGION: us-east-1

@@ -1,12 +1,10 @@
-name: ai-server-dataherald-prod
+name: AI Engine - Deploy PRODUCTION
 
 on:
   push:
     paths:
-        - .github/workflows/ai-server-dataherald-prod.yml
-        - apps/ai/server/dataherald
-    branches:
-      - production
+      - .github/workflows/ai-server-dataherald-prod.yml
+      - apps/ai/server/dataherald
     tags:
       - "v1.*"
 
@@ -18,20 +16,19 @@ env:
   ECS_TASK_DEFINITION: apps/ai/server/.aws/task-definition-prod.json
   CONTAINER_NAME: k2-core-prod
 
-
 jobs:
   build-push-deploy-image:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
 
     defaults:
-        run: 
-          working-directory: ./apps/ai/server
+      run:
+        working-directory: ./apps/ai/server
 
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-        with: 
+        with:
           token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
           submodules: true
 

@@ -1,22 +1,14 @@
-name: ai-server-dataherald-stage
+name: AI Engine - Deploy STAGE
 
-on:
-  push:
-    paths:
-        - .github/workflows/ai-server-dataherald-stage.yml
-        - apps/ai/server/dataherald
-    branches:
-      - main
+on: workflow_call
 
 env:
-  AWS_REGION: us-east-1               
+  AWS_REGION: us-east-1
   ECR_REPOSITORY: k2-core-stage
   ECS_SERVICE: k2-stage
   ECS_CLUSTER: k2
   ECS_TASK_DEFINITION: apps/ai/server/.aws/task-definition-stage.json
   CONTAINER_NAME: k2-core-stage
-
-
 
 jobs:
   build-push-deploy-image:
@@ -24,13 +16,13 @@ jobs:
     runs-on: ubuntu-latest
 
     defaults:
-        run: 
-          working-directory: ./apps/ai/server
+      run:
+        working-directory: ./apps/ai/server
 
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-        with: 
+        with:
           token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
           submodules: true
 

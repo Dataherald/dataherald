@@ -1,27 +1,24 @@
-name: ai-server-prod
+name: AI Server - Deploy PRODUCTION
 
 on:
   push:
     paths:
-      - '.github/workflows/ai-server-prod.yml'
-      - 'apps/ai/server/**'
-      - '!apps/ai/server/dataherald' # ignore k2-core changes
-      - '!apps/ai/server/.env.example'
-      - '!apps/ai/server/README.md'
-    branches:
-      - production
+      - ".github/workflows/ai-server-prod.yml"
+      - "apps/ai/server/**"
+      - "!apps/ai/server/dataherald" # ignore k2-core changes
+      - "!apps/ai/server/.env.example"
+      - "!apps/ai/server/README.md"
     tags:
-    - "v1.*"
+      - "v1.*"
 
 env:
-  AWS_REGION: us-east-1               
+  AWS_REGION: us-east-1
   ECR_K2_SERVER_REPOSITORY: k2-server-prod
   ECS_SERVICE: dhai-prod
-  ECS_CLUSTER: k2             
+  ECS_CLUSTER: k2
   ECS_TASK_DEFINITION: apps/ai/server/.aws/task-definition-prod.json
 
   K2_SERVER_CONTAINER_NAME: k2-server-prod
-
 
 jobs:
   build-push-deploy-image:
@@ -29,13 +26,13 @@ jobs:
     runs-on: ubuntu-latest
 
     defaults:
-      run: 
+      run:
         working-directory: ./apps/ai/server
 
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:

@@ -1,12 +1,6 @@
-name: AI Slackbot [stage]
+name: AI Slackbot - Deploy STAGE
 
-on:
-  push:
-    paths:
-      - .github/workflows/ai-slackbot-stage.yml # this file
-      - apps/ai/clients/slack/**
-    branches:
-      - main
+on: workflow_call
 
 env:
   AWS_REGION: us-east-1
