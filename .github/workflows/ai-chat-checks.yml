@@ -22,7 +22,7 @@ jobs:
         working-directory: .apps/ai/clients/chat
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v2

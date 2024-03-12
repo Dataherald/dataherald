@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
           submodules: true
