@@ -674,6 +674,7 @@ class DataheraldSQLAgent(SQLGenerator):
         vulnerabilities = VulnerabilityRepository(storage)
         cves = self.extract_cve_ids(user_prompt.text)
         extra_info = ""
+        source = ""
         if len(cves) > 0:
             for cve in cves:
                 vulnerability = vulnerabilities.find_by({"cve_id": cve})[0]
@@ -696,7 +697,9 @@ class DataheraldSQLAgent(SQLGenerator):
                         extra_info += (
                             f"{cve} was published on {vulnerability.published_date}"
                         )
-        return extra_info
+                    if vulnerability.source:
+                        source = vulnerability.source
+        return extra_info, source
 
     @override
     def generate_response(  # noqa: C901
@@ -712,6 +715,7 @@ class DataheraldSQLAgent(SQLGenerator):
             prompt_id=user_prompt.id,
             llm_config=self.llm_config,
             created_at=datetime.datetime.now(),
+            metadata={},
         )
         self.llm = self.model.get_model(
             database_connection=database_connection,
@@ -759,8 +763,9 @@ class DataheraldSQLAgent(SQLGenerator):
         )
         agent_executor.return_intermediate_steps = True
         agent_executor.handle_parsing_errors = ERROR_PARSING_MESSAGE
-        if self.augment_prompt(user_prompt, storage):
-            user_prompt.text += " \n" + self.augment_prompt(user_prompt, storage)
+        cve_augmented, cve_source = self.augment_prompt(user_prompt, storage)
+        if cve_augmented:
+            user_prompt.text += " \n" + cve_augmented
         with get_openai_callback() as cb:
             try:
                 result = agent_executor.invoke(
@@ -798,6 +803,8 @@ class DataheraldSQLAgent(SQLGenerator):
         response.intermediate_steps = self.construct_intermediate_steps(
             result["intermediate_steps"], suffix=suffix
         )
+        if cve_source:
+            response.metadata.update({"cve_source": cve_source})
         return self.create_sql_query_status(
             self.database,
             response.sql,

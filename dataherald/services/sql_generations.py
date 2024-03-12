@@ -72,7 +72,9 @@ class SQLGenerationService:
             llm_config=sql_generation_request.llm_config
             if sql_generation_request.llm_config
             else LLMConfig(),
-            metadata=sql_generation_request.metadata,
+            metadata=sql_generation_request.metadata
+            if sql_generation_request.metadata
+            else {},
         )
         langsmith_metadata = (
             sql_generation_request.metadata.get("lang_smith", {})

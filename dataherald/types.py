@@ -219,3 +219,4 @@ class Vulnerability(BaseModel):
     date_updated: str
     description: str
     affected_versions: str
+    source: str
