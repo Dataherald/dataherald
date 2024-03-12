@@ -5,8 +5,10 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "80:80"
-    command: uvicorn dataherald.app:app --host 0.0.0.0 --port 80 --log-config log_config.yml --log-level debug --reload
+      - "${CORE_PORT:-80}:${CORE_PORT:-80}"
+    environment:
+      - CORE_PORT=${CORE_PORT:-80}
+    command: uvicorn dataherald.app:app --host 0.0.0.0 --port ${CORE_PORT:-80} --log-config log_config.yml --log-level debug --reload
     stdin_open: true
     tty: true
     volumes:
