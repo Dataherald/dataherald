@@ -1,11 +1,6 @@
 name: AI Deploy Branch Environment
 
-on:
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: "Branch to deploy"
-        required: true
+on: workflow_dispatch
 
 env:
   AWS_REGION: us-east-1

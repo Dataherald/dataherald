@@ -2,10 +2,6 @@ name: AI Destroy branch environment
 
 on:
   workflow_dispatch:
-    inputs:
-      branch:
-        description: "Branch environment to Destroy"
-        required: true
   pull_request:
     types: [closed]
 
@@ -55,8 +51,8 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     defaults:
-        run:
-          working-directory: ./apps/ai/server
+      run:
+        working-directory: ./apps/ai/server
 
     steps:
       - name: Check out code
