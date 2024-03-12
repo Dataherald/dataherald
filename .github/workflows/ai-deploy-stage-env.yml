@@ -27,7 +27,7 @@ jobs:
               - 'apps/ai/server/dataherald/**'
 
       - id: filter_server
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         with:
           filters: |
             server:
@@ -35,7 +35,7 @@ jobs:
               - 'apps/ai/server/**'
 
       - id: filter_slackbot
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         with:
           filters: |
             console:
@@ -43,7 +43,7 @@ jobs:
               - 'apps/ai/clients/slack/**'
 
       - id: filter_console
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         with:
           filters: |
             console:
@@ -51,21 +51,25 @@ jobs:
               - 'apps/ai/clients/admin-console/**'
 
   deploy-engine:
+    name: Deploy Engine
     needs: check-changes
     if: needs.check-changes.outputs.engine_changed == 'true'
     uses: ./.github/workflows/ai-server-dataherald-stage.yml
 
   deploy-server:
+    name: Deploy Server
     needs: [check-changes, deploy-engine]
     if: needs.check-changes.outputs.server_changed == 'true' && success()
     uses: ./.github/workflows/ai-server-stage.yml
 
   deploy-slackbot:
+    name: Deploy Slackbot
     needs: [check-changes, deploy-server]
     if: needs.check-changes.outputs.slackbot_changed == 'true' && success()
     uses: ./.github/workflows/ai-slackbot-stage.yml
 
   deploy-console:
+    name: Deploy Console
     needs: [check-changes, deploy-server]
     if: needs.check-changes.outputs.console_changed == 'true' && success()
     uses: ./.github/workflows/ai-console-stage.yml
