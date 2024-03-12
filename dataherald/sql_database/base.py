@@ -185,6 +185,7 @@ class SQLDatabase:
             "TRUNCATE",
             "MERGE",
             "EXECUTE",
+            "CREATE",
         ]
         parsed_command = sqlparse.parse(command)
 
