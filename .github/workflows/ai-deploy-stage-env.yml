@@ -13,7 +13,7 @@ jobs:
     outputs:
       engine_changed: ${{ steps.filter_engine.outputs.engine }}
       server_changed: ${{ steps.filter_server.outputs.server }}
-      slackbot_changed: ${{ steps.filter_slackbot.outputs.console }}
+      slackbot_changed: ${{ steps.filter_slackbot.outputs.slackbot }}
       console_changed: ${{ steps.filter_console.outputs.console }}
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            console:
+            slackbot:
               - '.github/workflows/ai-slackbot-stage.yml'
               - 'apps/ai/clients/slack/**'
 
