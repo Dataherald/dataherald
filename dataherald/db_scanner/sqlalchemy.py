@@ -20,6 +20,7 @@ from dataherald.db_scanner.repository.query_history import QueryHistoryRepositor
 from dataherald.db_scanner.services.abstract_scanner import AbstractScanner
 from dataherald.db_scanner.services.base_scanner import BaseScanner
 from dataherald.db_scanner.services.big_query_scanner import BigQueryScanner
+from dataherald.db_scanner.services.click_house_scanner import ClickHouseScanner
 from dataherald.db_scanner.services.postgre_sql_scanner import PostgreSqlScanner
 from dataherald.db_scanner.services.snowflake_scanner import SnowflakeScanner
 from dataherald.db_scanner.services.sql_server_scanner import SqlServerScanner
@@ -275,6 +276,7 @@ class SqlAlchemyScanner(Scanner):
             "bigquery": BigQueryScanner,
             "psycopg2": PostgreSqlScanner,
             "pymssql": SqlServerScanner,
+            "http": ClickHouseScanner,
         }
         self.scanner_service = BaseScanner()
         if db_engine.engine.driver in services.keys():
