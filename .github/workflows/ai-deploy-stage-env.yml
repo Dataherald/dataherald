@@ -10,6 +10,12 @@ on:
       - "!**/.env.example"
       - "!**/README.md"
 
+env:
+  SLACK_WEBHOOK: ${{ secrets.GH_SLACK_WEBHOOK_URL }}
+  SLACK_ICON: https://files.dataherald.com/random/github-actions.png
+  SLACK_USERNAME: GitHub Actions
+  SLACK_CHANNEL: eng-notifications
+
 jobs:
   check-changes:
     name: Check Changes
@@ -54,3 +60,50 @@ jobs:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_AI_CONSOLE_PROJECT_ID: ${{ secrets.VERCEL_AI_CONSOLE_PROJECT_ID }}
       VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
+
+  send-cancelled-slack-notification:
+    name: Send Cancelled Slack Notification
+    needs: [deploy-engine, deploy-server, deploy-slackbot, deploy-console]
+    if: cancelled()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send cancelled notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_TITLE: STAGE Deployment CANCELLED
+          SLACK_MESSAGE: |
+
+            The STAGE environment deployment was cancelled. Please check the GitHub Actions logs for more details.
+
+          SLACK_COLOR: cancelled
+  send-failure-slack-notification:
+    name: Send Failure Slack Notification
+    needs: [deploy-engine, deploy-server, deploy-slackbot, deploy-console]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send failed notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_TITLE: STAGE Deployment FAILED
+          SLACK_MESSAGE: |
+
+            The STAGE environment deployment failed. Please check the GitHub Actions logs for more details.
+
+          SLACK_COLOR: failure
+  send-success-slack-notification:
+    name: Send Success Slack Notification
+    needs: [deploy-engine, deploy-server, deploy-slackbot, deploy-console]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send success notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_TITLE: STAGE Deployment SUCCEEDED
+          SLACK_MESSAGE: |
+            The STAGE environment deployment succeeded. More details:
+
+            *API URL*: https://stage.api.dataherald.ai
+            *Console URL*: https://stage.console.dataherald.ai
+          SLACK_COLOR: success
