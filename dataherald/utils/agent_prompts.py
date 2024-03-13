@@ -155,5 +155,6 @@ Observation: the result of the action
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question
 
-If you know the final answer and do not need to use any tools, you can directly return the Final Answer: <your final answer>.
+If you know the final answer and do not need to use any tools, directly return the final answer in this format:
+Final Answer: <your final answer>.
 """

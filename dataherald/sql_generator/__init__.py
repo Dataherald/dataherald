@@ -85,6 +85,26 @@ class SQLGenerator(Component, ABC):
 
         return parsed + "\n" + "\n".join(comments)
 
+    def extract_query_from_intermediate_steps(
+        self, intermediate_steps: List[Tuple[AgentAction, str]]
+    ) -> str:
+        """Extract the SQL query from the intermediate steps."""
+        sql_query = ""
+        for step in intermediate_steps:
+            action = step[0]
+            if type(action) == AgentAction and action.tool == "SqlDbQuery":
+                sql_query = self.format_sql_query(action.tool_input)
+                if "```sql" in sql_query:
+                    sql_query = self.remove_markdown(sql_query)
+        if sql_query == "":
+            for step in intermediate_steps:
+                action = step[0]
+                sql_query = action.tool_input
+                if "```sql" in sql_query:
+                    sql_query = self.remove_markdown(sql_query)
+
+        return sql_query
+
     @abstractmethod
     def generate_response(
         self,
