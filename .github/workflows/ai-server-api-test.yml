@@ -1,4 +1,4 @@
-name: Automated API tests using Postman CLI
+name: AI API tests using Postman CLI
 
 on:
   pull_request:

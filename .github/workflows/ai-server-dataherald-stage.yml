@@ -16,7 +16,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: k2-core-stage
-  ECS_SERVICE: k2-stage
+  ECS_SERVICE: k2-stage-2
   ECS_CLUSTER: k2
   ECS_TASK_DEFINITION: apps/ai/server/.aws/task-definition-stage.json
   CONTAINER_NAME: k2-core-stage

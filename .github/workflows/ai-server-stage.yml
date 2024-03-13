@@ -13,7 +13,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_K2_SERVER_REPOSITORY: k2-server-stage
-  ECS_SERVICE: k2-stage
+  ECS_SERVICE: k2-stage-2
   ECS_CLUSTER: k2
   ECS_TASK_DEFINITION: apps/ai/server/.aws/task-definition-stage.json
 
