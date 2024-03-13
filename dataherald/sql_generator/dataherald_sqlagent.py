@@ -166,7 +166,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
                 self.db.run_sql,
                 args=(query,),
                 kwargs={"top_k": top_k},
-                timeout_duration=int(os.getenv("SQL_EXECUTION_TIMEOUT", "30")),
+                timeout_duration=int(os.getenv("SQL_EXECUTION_TIMEOUT", "60")),
             )
         except TimeoutError:
             return "SQL query execution time exceeded, proceed without query execution"
