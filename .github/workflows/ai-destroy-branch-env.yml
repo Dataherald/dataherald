@@ -1,4 +1,4 @@
-name: AI Destroy branch environment
+name: AI Destroy Branch Environment
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: AI Chat - Quality checks
+name: AI Chat - Quality Checks
 
 on:
   push:

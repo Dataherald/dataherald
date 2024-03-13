@@ -1,4 +1,4 @@
-name: AI Console - Quality checks
+name: AI Console - Quality Checks
 on:
   push:
     paths:

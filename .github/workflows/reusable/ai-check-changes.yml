@@ -1,0 +1,66 @@
+name: AI Check Repository Changes
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: "The environment to check changes for. Possible values are: stage, prod"
+    outputs:
+      engine_changed:
+        description: "Whether the engine has changed"
+        value: ${{ jobs.check-changes.outputs.engine_changed }}
+      server_changed:
+        description: "Whether the server has changed"
+        value: ${{ jobs.check-changes.outputs.server_changed }}
+      slackbot_changed:
+        description: "Whether the slackbot has changed"
+        value: ${{ jobs.check-changes.outputs.slackbot_changed }}
+      console_changed:
+        description: "Whether the console has changed"
+        value: ${{ jobs.check-changes.outputs.console_changed }}
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      engine_changed: ${{ steps.filter_engine.outputs.engine }}
+      server_changed: ${{ steps.filter_server.outputs.server }}
+      slackbot_changed: ${{ steps.filter_slackbot.outputs.slackbot }}
+      console_changed: ${{ steps.filter_console.outputs.console }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: filter_engine
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            engine:
+            - '.github/workflows/ai-server-dataherald-${{ inputs.environment }}.yml'
+            - 'apps/ai/server/.aws/task-definition-${{ inputs.environment }}.json'
+            - 'apps/ai/server/dataherald/**'
+
+      - id: filter_server
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            server:
+            - '.github/workflows/ai-server-${{ inputs.environment }}.yml'
+            - 'apps/ai/server/**'
+
+      - id: filter_slackbot
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            slackbot:
+            - '.github/workflows/ai-slackbot-${{ inputs.environment }}.yml'
+            - 'apps/ai/clients/slack/**'
+
+      - id: filter_console
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            console:
+            - '.github/workflows/ai-console-${{ inputs.environment }}.yml'
+            - 'apps/ai/clients/admin-console/**'
