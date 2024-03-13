@@ -1,6 +1,14 @@
 name: AI Slackbot - Deploy STAGE
 
-on: workflow_call
+on:
+  workflow_call:
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        description: "AWS Access Key ID"
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        description: "AWS Secret Access Key"
+        required: true
 
 env:
   AWS_REGION: us-east-1

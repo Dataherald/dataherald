@@ -1,6 +1,14 @@
 name: AI Console - Deploy STAGE
 
-on: workflow_call
+on:
+  workflow_call:
+    secrets:
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_AI_CONSOLE_PROJECT_ID:
+        required: true
+      VERCEL_ACCESS_TOKEN:
+        required: true
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}

@@ -5,7 +5,10 @@ on:
     branches:
       - main
     paths:
-      - .github/workflows/ai-deploy-stage-env.yml
+      - ".github/workflows/ai-deploy-stage-env.yml" # this file
+      - "apps/ai/**"
+      - "!**/.env.example"
+      - "!**/README.md"
 
 jobs:
   check-changes:
@@ -55,21 +58,35 @@ jobs:
     needs: check-changes
     if: needs.check-changes.outputs.engine_changed == 'true'
     uses: ./.github/workflows/ai-server-dataherald-stage.yml
+    secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   deploy-server:
     name: Deploy Server
     needs: [check-changes, deploy-engine]
     if: needs.check-changes.outputs.server_changed == 'true' && success()
     uses: ./.github/workflows/ai-server-stage.yml
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   deploy-slackbot:
     name: Deploy Slackbot
     needs: [check-changes, deploy-server]
     if: needs.check-changes.outputs.slackbot_changed == 'true' && success()
     uses: ./.github/workflows/ai-slackbot-stage.yml
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   deploy-console:
     name: Deploy Console
     needs: [check-changes, deploy-server]
     if: needs.check-changes.outputs.console_changed == 'true' && success()
     uses: ./.github/workflows/ai-console-stage.yml
+    secrets:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_AI_CONSOLE_PROJECT_ID: ${{ secrets.VERCEL_AI_CONSOLE_PROJECT_ID }}
+      VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
