@@ -19,7 +19,6 @@ from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
 )
 from langchain.chains.llm import LLMChain
-from langchain.schema import AgentAction
 from langchain.tools.base import BaseTool
 from langchain_community.callbacks import get_openai_callback
 from langchain_openai import OpenAIEmbeddings
@@ -591,7 +590,7 @@ class DataheraldSQLAgent(SQLGenerator):
         max_examples: int = 20,
         number_of_instructions: int = 1,
         max_iterations: int
-        | None = int(os.getenv("AGENT_MAX_ITERATIONS", "20")),  # noqa: B008
+        | None = int(os.getenv("AGENT_MAX_ITERATIONS", "15")),  # noqa: B008
         max_execution_time: float | None = None,
         early_stopping_method: str = "generate",
         verbose: bool = False,
@@ -725,12 +724,9 @@ class DataheraldSQLAgent(SQLGenerator):
         if "```sql" in result["output"]:
             sql_query = self.remove_markdown(result["output"])
         else:
-            for step in result["intermediate_steps"]:
-                action = step[0]
-                if type(action) == AgentAction and action.tool == "SqlDbQuery":
-                    sql_query = self.format_sql_query(action.tool_input)
-                    if "```sql" in sql_query:
-                        sql_query = self.remove_markdown(sql_query)
+            sql_query = self.extract_query_from_intermediate_steps(
+                result["intermediate"]
+            )
         logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
         response.sql = replace_unprocessable_characters(sql_query)
         response.tokens_used = cb.total_tokens
