@@ -1,7 +1,8 @@
-from sqlalchemy import text
+import os
 
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.types import SQLGeneration
+from dataherald.utils.timeout_utils import run_with_timeout
 
 
 def format_error_message(
@@ -30,10 +31,18 @@ def create_sql_query_status(
     else:
         try:
             query = db.parser_to_filter_commands(query)
-            with db._engine.connect() as connection:
-                connection.execute(text(query))
+            run_with_timeout(
+                db.run_sql,
+                args=(query,),
+                timeout_duration=int(os.getenv("SQL_EXECUTION_TIMEOUT", "60")),
+            )
             sql_generation.status = "VALID"
             sql_generation.error = None
+        except TimeoutError:
+            sql_generation = format_error_message(
+                sql_generation,
+                "The query execution exceeded the timeout.",
+            )
         except SQLInjectionError as e:
             raise SQLInjectionError(
                 "Sensitive SQL keyword detected in the query."
