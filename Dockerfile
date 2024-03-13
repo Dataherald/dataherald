@@ -16,4 +16,4 @@ ENV CORE_PORT=${CORE_PORT}
 
 EXPOSE ${CORE_PORT}
 
-CMD ["uvicorn", "dataherald.app:app", "--host", "0.0.0.0", "--port", "${CORE_PORT}"]
+CMD ["sh", "-c", "uvicorn dataherald.app:app --host 0.0.0.0 --port $CORE_PORT"]
