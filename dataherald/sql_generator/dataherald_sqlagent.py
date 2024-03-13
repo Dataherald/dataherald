@@ -50,6 +50,7 @@ from dataherald.utils.agent_prompts import (
     SUFFIX_WITH_FEW_SHOT_SAMPLES,
     SUFFIX_WITHOUT_FEW_SHOT_SAMPLES,
 )
+from dataherald.utils.timeout_utils import run_with_timeout
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +160,16 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
         query = replace_unprocessable_characters(query)
         if "```sql" in query:
             query = query.replace("```sql", "").replace("```", "")
-        return self.db.run_sql(query, top_k=top_k)[0]
+
+        try:
+            return run_with_timeout(
+                self.db.run_sql,
+                args=(query,),
+                kwargs={"top_k": top_k},
+                timeout_duration=int(os.getenv("SQL_EXECUTION_TIMEOUT", "60")),
+            )
+        except TimeoutError:
+            return "SQL query execution time exceeded, proceed without query execution"
 
     async def _arun(
         self,
