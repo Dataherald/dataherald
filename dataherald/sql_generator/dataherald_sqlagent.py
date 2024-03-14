@@ -3,6 +3,8 @@ import difflib
 import logging
 import os
 from functools import wraps
+from queue import Queue
+from threading import Thread
 from typing import Any, Callable, Dict, List
 
 import numpy as np
@@ -32,6 +34,9 @@ from dataherald.context_store import ContextStore
 from dataherald.db import DB
 from dataherald.db_scanner.models.types import TableDescription, TableDescriptionStatus
 from dataherald.db_scanner.repository.base import TableDescriptionRepository
+from dataherald.repositories.sql_generations import (
+    SQLGenerationRepository,
+)
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.sql_database.models.types import (
     DatabaseConnection,
@@ -166,7 +171,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
                 args=(query,),
                 kwargs={"top_k": top_k},
                 timeout_duration=int(os.getenv("SQL_EXECUTION_TIMEOUT", "60")),
-            )
+            )[0]
         except TimeoutError:
             return "SQL query execution time exceeded, proceed without query execution"
 
@@ -736,3 +741,73 @@ class DataheraldSQLAgent(SQLGenerator):
             response.sql,
             response,
         )
+
+    @override
+    def stream_response(
+        self,
+        user_prompt: Prompt,
+        database_connection: DatabaseConnection,
+        response: SQLGeneration,
+        queue: Queue,
+    ):
+        context_store = self.system.instance(ContextStore)
+        storage = self.system.instance(DB)
+        sql_generation_repository = SQLGenerationRepository(storage)
+        self.llm = self.model.get_model(
+            database_connection=database_connection,
+            temperature=0,
+            model_name=self.llm_config.llm_name,
+            api_base=self.llm_config.api_base,
+            streaming=True,
+        )
+        repository = TableDescriptionRepository(storage)
+        db_scan = repository.get_all_tables_by_db(
+            {
+                "db_connection_id": str(database_connection.id),
+                "status": TableDescriptionStatus.SCANNED.value,
+            }
+        )
+        if not db_scan:
+            raise ValueError("No scanned tables found for database")
+        few_shot_examples, instructions = context_store.retrieve_context_for_question(
+            user_prompt, number_of_samples=self.max_number_of_examples
+        )
+        if few_shot_examples is not None:
+            new_fewshot_examples = self.remove_duplicate_examples(few_shot_examples)
+            number_of_samples = len(new_fewshot_examples)
+        else:
+            new_fewshot_examples = None
+            number_of_samples = 0
+        self.database = SQLDatabase.get_sql_engine(database_connection)
+        toolkit = SQLDatabaseToolkit(
+            queuer=queue,
+            db=self.database,
+            context=[{}],
+            few_shot_examples=new_fewshot_examples,
+            instructions=instructions,
+            db_scan=db_scan,
+            embedding=OpenAIEmbeddings(
+                openai_api_key=database_connection.decrypt_api_key(),
+                model=EMBEDDING_MODEL,
+            ),
+        )
+        agent_executor = self.create_sql_agent(
+            toolkit=toolkit,
+            verbose=True,
+            max_examples=number_of_samples,
+            number_of_instructions=len(instructions) if instructions is not None else 0,
+            max_execution_time=int(os.environ.get("DH_ENGINE_TIMEOUT", 150)),
+        )
+        agent_executor.return_intermediate_steps = True
+        agent_executor.handle_parsing_errors = ERROR_PARSING_MESSAGE
+        thread = Thread(
+            target=self.stream_agent_steps,
+            args=(
+                user_prompt.text,
+                agent_executor,
+                response,
+                sql_generation_repository,
+                queue,
+            ),
+        )
+        thread.start()

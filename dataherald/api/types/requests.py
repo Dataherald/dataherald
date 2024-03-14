@@ -18,7 +18,18 @@ class SQLGenerationRequest(BaseModel):
     metadata: dict | None
 
 
+class StreamSQLGenerationRequest(BaseModel):
+    finetuning_id: str | None
+    low_latency_mode: bool = False
+    llm_config: LLMConfig | None
+    metadata: dict | None
+
+
 class PromptSQLGenerationRequest(SQLGenerationRequest):
+    prompt: PromptRequest
+
+
+class StreamPromptSQLGenerationRequest(StreamSQLGenerationRequest):
     prompt: PromptRequest
 
 
