@@ -16,6 +16,7 @@ from dataherald.api.types.requests import (
     PromptSQLGenerationNLGenerationRequest,
     PromptSQLGenerationRequest,
     SQLGenerationRequest,
+    StreamPromptSQLGenerationRequest,
     UpdateMetadataRequest,
 )
 from dataherald.api.types.responses import (
@@ -357,6 +358,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/stream-sql-generation",
+            self.stream_sql_generation,
+            methods=["POST"],
+            tags=["Stream SQL Generation"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/heartbeat", self.heartbeat, methods=["GET"], tags=["System"]
         )
 
@@ -601,3 +609,11 @@ class FastAPI(dataherald.server.Server):
     ) -> Finetuning:
         """Gets fine tuning jobs"""
         return self._api.update_finetuning_job(finetuning_id, update_metadata_request)
+
+    async def stream_sql_generation(
+        self, request: StreamPromptSQLGenerationRequest
+    ) -> StreamingResponse:
+        return StreamingResponse(
+            self._api.stream_create_prompt_and_sql_generation(request),
+            media_type="text/event-stream",
+        )

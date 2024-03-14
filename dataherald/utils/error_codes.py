@@ -46,3 +46,20 @@ def error_response(error, detail: dict, default_error_code=""):
             "detail": detail,
         },
     )
+
+
+def stream_error_response(error, detail: dict, default_error_code=""):
+    error_code = ERROR_MAPPING.get(error.__class__.__name__, default_error_code)
+    description = getattr(error, "description", None)
+    logger.error(
+        f"Error code: {error_code}, message: {error}, description: {description}, detail: {detail}"
+    )
+
+    detail.pop("metadata", None)
+
+    return {
+        "error_code": error_code,
+        "message": str(error),
+        "description": description,
+        "detail": detail,
+    }

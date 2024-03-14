@@ -12,6 +12,7 @@ from dataherald.api.types.requests import (
     PromptSQLGenerationNLGenerationRequest,
     PromptSQLGenerationRequest,
     SQLGenerationRequest,
+    StreamPromptSQLGenerationRequest,
     UpdateMetadataRequest,
 )
 from dataherald.api.types.responses import (
@@ -264,4 +265,11 @@ class API(Component, ABC):
     def update_nl_generation(
         self, nl_generation_id: str, update_metadata_request: UpdateMetadataRequest
     ) -> NLGenerationResponse:
+        pass
+
+    @abstractmethod
+    async def stream_create_prompt_and_sql_generation(
+        self,
+        request: StreamPromptSQLGenerationRequest,
+    ):
         pass

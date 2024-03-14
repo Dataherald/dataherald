@@ -2,6 +2,8 @@ import datetime
 import logging
 import os
 from functools import wraps
+from queue import Queue
+from threading import Thread
 from typing import Any, Callable, Dict, List, Type
 
 import numpy as np
@@ -31,6 +33,9 @@ from dataherald.db_scanner.models.types import TableDescription, TableDescriptio
 from dataherald.db_scanner.repository.base import TableDescriptionRepository
 from dataherald.finetuning.openai_finetuning import OpenAIFineTuning
 from dataherald.repositories.finetunings import FinetuningsRepository
+from dataherald.repositories.sql_generations import (
+    SQLGenerationRepository,
+)
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.sql_database.models.types import (
     DatabaseConnection,
@@ -248,7 +253,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
                 args=(query,),
                 kwargs={"top_k": TOP_K},
                 timeout_duration=int(os.getenv("SQL_EXECUTION_TIMEOUT", "60")),
-            )
+            )[0]
         except TimeoutError:
             return "SQL query execution time exceeded, proceed without query execution"
 
@@ -591,3 +596,76 @@ class DataheraldFinetuningAgent(SQLGenerator):
             response.sql,
             response,
         )
+
+    @override
+    def stream_response(
+        self,
+        user_prompt: Prompt,
+        database_connection: DatabaseConnection,
+        response: SQLGeneration,
+        queue: Queue,
+    ):
+        context_store = self.system.instance(ContextStore)
+        storage = self.system.instance(DB)
+        sql_generation_repository = SQLGenerationRepository(storage)
+        self.llm = self.model.get_model(
+            database_connection=database_connection,
+            temperature=0,
+            model_name=self.llm_config.llm_name,
+            api_base=self.llm_config.api_base,
+            streaming=True,
+        )
+        repository = TableDescriptionRepository(storage)
+        db_scan = repository.get_all_tables_by_db(
+            {
+                "db_connection_id": str(database_connection.id),
+                "status": TableDescriptionStatus.SCANNED.value,
+            }
+        )
+        if not db_scan:
+            raise ValueError("No scanned tables found for database")
+        _, instructions = context_store.retrieve_context_for_question(
+            user_prompt, number_of_samples=1
+        )
+        finetunings_repository = FinetuningsRepository(storage)
+        finetuning = finetunings_repository.find_by_id(self.finetuning_id)
+        openai_fine_tuning = OpenAIFineTuning(storage, finetuning)
+        finetuning = openai_fine_tuning.retrieve_finetuning_job()
+        if finetuning.status != FineTuningStatus.SUCCEEDED.value:
+            raise FinetuningNotAvailableError(
+                f"Finetuning({self.finetuning_id}) has the status {finetuning.status}."
+                f"Finetuning should have the status {FineTuningStatus.SUCCEEDED.value} to generate SQL queries."
+            )
+        self.database = SQLDatabase.get_sql_engine(database_connection)
+        toolkit = SQLDatabaseToolkit(
+            db=self.database,
+            instructions=instructions,
+            db_scan=db_scan,
+            api_key=database_connection.decrypt_api_key(),
+            finetuning_model_id=finetuning.model_id,
+            use_finetuned_model_only=self.use_fintuned_model_only,
+            model_name=finetuning.base_llm.model_name,
+            openai_fine_tuning=openai_fine_tuning,
+            embedding=OpenAIEmbeddings(
+                openai_api_key=database_connection.decrypt_api_key(),
+                model=EMBEDDING_MODEL,
+            ),
+        )
+        agent_executor = self.create_sql_agent(
+            toolkit=toolkit,
+            verbose=True,
+            max_execution_time=int(os.environ.get("DH_ENGINE_TIMEOUT", 150)),
+        )
+        agent_executor.return_intermediate_steps = True
+        agent_executor.handle_parsing_errors = ERROR_PARSING_MESSAGE
+        thread = Thread(
+            target=self.stream_agent_steps,
+            args=(
+                user_prompt.text,
+                agent_executor,
+                response,
+                sql_generation_repository,
+                queue,
+            ),
+        )
+        thread.start()

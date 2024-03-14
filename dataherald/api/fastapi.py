@@ -1,8 +1,11 @@
+import asyncio
 import datetime
 import io
+import json
 import logging
 import os
 import time
+from queue import Queue
 from typing import List
 
 from bson.objectid import InvalidId, ObjectId
@@ -18,6 +21,7 @@ from dataherald.api.types.requests import (
     PromptSQLGenerationNLGenerationRequest,
     PromptSQLGenerationRequest,
     SQLGenerationRequest,
+    StreamPromptSQLGenerationRequest,
     UpdateMetadataRequest,
 )
 from dataherald.api.types.responses import (
@@ -83,7 +87,7 @@ from dataherald.types import (
     UpdateInstruction,
 )
 from dataherald.utils.encrypt import FernetEncrypt
-from dataherald.utils.error_codes import error_response
+from dataherald.utils.error_codes import error_response, stream_error_response
 
 logger = logging.getLogger(__name__)
 
@@ -884,3 +888,26 @@ class FastAPI(API):
                 detail=f"NL Generation {nl_generation_id} not found",
             )
         return NLGenerationResponse(**nl_generations[0].dict())
+
+    @override
+    async def stream_create_prompt_and_sql_generation(
+        self,
+        request: StreamPromptSQLGenerationRequest,
+    ):
+        try:
+            queue = Queue()
+            prompt_service = PromptService(self.storage)
+            prompt = prompt_service.create(request.prompt)
+            sql_generation_service = SQLGenerationService(self.system, self.storage)
+            sql_generation_service.start_streaming(prompt.id, request, queue)
+            while True:
+                value = queue.get()
+                if value is None:
+                    break
+                yield value
+                queue.task_done()
+                await asyncio.sleep(0.001)
+        except Exception as e:
+            yield json.dumps(
+                stream_error_response(e, request.dict(), "nl_generation_not_created")
+            )
