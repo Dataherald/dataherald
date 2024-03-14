@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - test-ai-deploy-stage-env # TODO - remove this line after testing
     paths:
       - ".github/workflows/ai-deploy-stage-env.yml" # this file
       - "apps/ai/**"
@@ -21,13 +22,48 @@ jobs:
     name: Check Changes
     uses: ./.github/workflows/ai-check-changes.yml
     with:
-      environment: stage
+      target_env: stage
+
+  build-engine:
+    name: Build Engine
+    needs: check-changes
+    if: needs.check-changes.outputs.engine_changed == 'true'
+    uses: ./.github/workflows/ai-build-docker.yml
+    with:
+      target_app: engine
+      ecr_repository: k2-core-stage
+      ecs_service_name: k2-stage-2
+      container_name: k2-core-stage
+    secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   deploy-engine:
     name: Deploy Engine
+    needs: build-engine
+    uses: ./.github/workflows/ai-deploy-docker-ecs.yml
+    with:
+      target_env: stage
+      docker_image: ${{ needs.build-engine.outputs.docker_image }}
+      ecs_service_name: k2-stage-2
+      ecs_task_definition: ./apps/ai/server/.aws/task-definition-stage.json
+      container_name: k2-core-stage
+    secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  build-server:
+    name: Build Server
     needs: check-changes
-    if: needs.check-changes.outputs.engine_changed == 'true'
-    uses: ./.github/workflows/ai-server-dataherald-stage.yml
+    if: needs.check-changes.outputs.server_changed == 'true' && success()
+    uses: ./.github/workflows/ai-build-docker.yml
+    with:
+      target_app: server
+      ecr_repository: k2-server-stage
+      ecs_service_name: k2-stage-2
+      container_name: k2-server-stage
     secrets:
       SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -35,27 +71,56 @@ jobs:
 
   deploy-server:
     name: Deploy Server
-    needs: [check-changes, deploy-engine]
-    if: needs.check-changes.outputs.server_changed == 'true' && success()
-    uses: ./.github/workflows/ai-server-stage.yml
+    needs: build-server
+    uses: ./.github/workflows/ai-deploy-docker-ecs.yml
+    with:
+      target_env: stage
+      docker_image: ${{ needs.build-server.outputs.docker_image }}
+      ecs_service_name: k2-stage-2
+      ecs_task_definition: ./apps/ai/server/.aws/task-definition-stage.json
+      container_name: k2-server-stage
     secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  build-slackbot:
+    name: Build Slackbot
+    needs: [check-changes]
+    if: needs.check-changes.outputs.slackbot_changed == 'true' && success()
+    uses: ./.github/workflows/ai-build-docker.yml
+    with:
+      target_app: slackbot
+      ecr_repository: k2-slackbot-stage
+      ecs_service_name: k2-slackbot-stage
+      container_name: k2-slackbot-stage
+    secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   deploy-slackbot:
     name: Deploy Slackbot
-    needs: [check-changes, deploy-server]
-    if: needs.check-changes.outputs.slackbot_changed == 'true' && success()
-    uses: ./.github/workflows/ai-slackbot-stage.yml
+    needs: [build-slackbot, deploy-engine, deploy-server]
+    uses: ./.github/workflows/ai-deploy-docker-ecs.yml
+    with:
+      target_env: stage
+      docker_image: ${{ needs.build-slackbot.outputs.docker_image }}
+      ecs_service_name: k2-slackbot-stage
+      ecs_task_definition: ./apps/ai/clients/slack/.aws/task-definition-stage.json
+      container_name: k2-slackbot-stage
     secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  deploy-console:
+  deploy-frontend:
     name: Deploy Console
-    needs: [check-changes, deploy-server]
+    needs: [check-changes, deploy-engine, deploy-server]
     if: needs.check-changes.outputs.console_changed == 'true' && success()
-    uses: ./.github/workflows/ai-console-stage.yml
+    uses: ./.github/workflows/ai-deploy-frontend.yml
+    with:
+      target_env: preview
     secrets:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_AI_CONSOLE_PROJECT_ID: ${{ secrets.VERCEL_AI_CONSOLE_PROJECT_ID }}
@@ -63,7 +128,7 @@ jobs:
 
   send-cancelled-slack-notification:
     name: Send Cancelled Slack Notification
-    needs: [deploy-engine, deploy-server, deploy-slackbot, deploy-console]
+    needs: [deploy-engine, deploy-server, deploy-slackbot, deploy-frontend]
     if: cancelled()
     runs-on: ubuntu-latest
     steps:
@@ -76,9 +141,10 @@ jobs:
             The STAGE environment deployment was cancelled. Please check the GitHub Actions logs for more details.
 
           SLACK_COLOR: cancelled
+
   send-failure-slack-notification:
     name: Send Failure Slack Notification
-    needs: [deploy-engine, deploy-server, deploy-slackbot, deploy-console]
+    needs: [deploy-engine, deploy-server, deploy-slackbot, deploy-frontend]
     if: failure()
     runs-on: ubuntu-latest
     steps:
@@ -91,9 +157,10 @@ jobs:
             The STAGE environment deployment failed. Please check the GitHub Actions logs for more details.
 
           SLACK_COLOR: failure
+
   send-success-slack-notification:
     name: Send Success Slack Notification
-    needs: [deploy-engine, deploy-server, deploy-slackbot, deploy-console]
+    needs: [deploy-engine, deploy-server, deploy-slackbot, deploy-frontend]
     if: success()
     runs-on: ubuntu-latest
     steps:

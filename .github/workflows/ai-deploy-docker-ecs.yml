@@ -1,4 +1,4 @@
-name: AI Engine - Deploy STAGE
+name: AI Deploy Docker Image to ECS
 
 on:
   workflow_call:
@@ -13,23 +13,39 @@ on:
         description: "AWS Secret Access Key"
         required: true
 
+    inputs:
+      target_env:
+        description: "The target environment"
+        required: true
+        type: string
+      docker_image:
+        description: "Docker image"
+        required: true
+        type: string
+      ecs_service_name:
+        description: "The ECS service name"
+        required: true
+        type: string
+      ecs_task_definition:
+        description: "The ECS task definition"
+        required: true
+        type: string
+      container_name:
+        description: "The container name to update in the ECS service task definition"
+        required: true
+        type: string
+
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: k2-core-stage
-  ECS_SERVICE: k2-stage-2
   ECS_CLUSTER: k2
-  ECS_TASK_DEFINITION: apps/ai/server/.aws/task-definition-stage.json
-  CONTAINER_NAME: k2-core-stage
+  ECS_SERVICE: ${{ inputs.ecs_service_name }}
+  CONTAINER_NAME: ${{ inputs.container_name }}
+  ECS_TASK_DEFINITION: ${{ inputs.ecs_task_definition }}
 
 jobs:
-  build-push-deploy-image:
-    name: Build and Push Docker Image
+  deploy-to-ecs:
+    name: Deploy to ECS
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: ./apps/ai/server
-
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -44,32 +60,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: latest
-        run: |
-          git submodule init
-          git submodule update
-          cd dataherald
-          ls
-          echo building dockerfile
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-      # cannot separate this to another job since image is treated as secret and will skip
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
+          image: ${{ inputs.docker_image }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1

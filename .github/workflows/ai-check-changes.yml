@@ -3,10 +3,10 @@ name: AI Check Repository Changes
 on:
   workflow_call:
     inputs:
-      environment:
+      target_env:
         required: true
         type: string
-        description: "The environment to check changes for. Possible values are: stage, prod"
+        description: "The environment to check changes for. Possible values are: `stage`, `prod`"
     outputs:
       engine_changed:
         description: "Whether the engine has changed"
@@ -37,9 +37,8 @@ jobs:
         with:
           filters: |
             engine:
-            - '.github/workflows/ai-deploy-${{ inputs.environment }}-env.yml'
-            - '.github/workflows/ai-server-dataherald-${{ inputs.environment }}.yml'
-            - 'apps/ai/server/.aws/task-definition-${{ inputs.environment }}.json'
+            - '.github/workflows/ai-deploy-${{ inputs.target_env }}-env.yml'
+            - 'apps/ai/server/.aws/task-definition-${{ inputs.target_env }}.json'
             - 'apps/ai/server/dataherald/**'
 
       - id: filter_server
@@ -47,8 +46,8 @@ jobs:
         with:
           filters: |
             server:
-            - '.github/workflows/ai-deploy-${{ inputs.environment }}-env.yml'
-            - '.github/workflows/ai-server-${{ inputs.environment }}.yml'
+            - '.github/workflows/ai-deploy-${{ inputs.target_env }}-env.yml'
+            - 'apps/ai/server/.aws/task-definition-${{ inputs.target_env }}.json'
             - 'apps/ai/server/**'
 
       - id: filter_slackbot
@@ -56,8 +55,8 @@ jobs:
         with:
           filters: |
             slackbot:
-            - '.github/workflows/ai-deploy-${{ inputs.environment }}-env.yml'
-            - '.github/workflows/ai-slackbot-${{ inputs.environment }}.yml'
+            - '.github/workflows/ai-deploy-${{ inputs.target_env }}-env.yml'
+            - 'apps/ai/clients/slack/.aws/task-definition-${{ inputs.target_env }}.json'
             - 'apps/ai/clients/slack/**'
 
       - id: filter_console
@@ -65,6 +64,5 @@ jobs:
         with:
           filters: |
             console:
-            - '.github/workflows/ai-deploy-${{ inputs.environment }}-env.yml'
-            - '.github/workflows/ai-console-${{ inputs.environment }}.yml'
+            - '.github/workflows/ai-deploy-${{ inputs.target_env }}-env.yml'
             - 'apps/ai/clients/admin-console/**'

@@ -1,0 +1,48 @@
+name: AI Deploy Frontend
+
+on:
+  workflow_call:
+    secrets:
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_AI_CONSOLE_PROJECT_ID:
+        required: true
+      VERCEL_ACCESS_TOKEN:
+        required: true
+
+    inputs:
+      target_env:
+        description: The target environment to deploy to. Possible values are `preview`, `development`, `production`
+        required: true
+        type: string
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_AI_CONSOLE_PROJECT_ID }}
+
+jobs:
+  deploy-vercel:
+    name: Deploy Vercel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        run: npm install --global pnpm
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=${{ inputs.target_env }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Build Project Artifacts
+        run: |
+          if [ ${{ inputs.target_env }} == "production" ]; then
+            vercel build --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+          else
+            vercel build --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+          fi
+      - name: Deploy Project Artifacts to Vercel
+        run: |
+          if [ ${{ inputs.target_env }} == "production" ]; then
+            vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+          else
+            vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+          fi
