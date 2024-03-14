@@ -14,10 +14,6 @@ on:
         required: true
 
     inputs:
-      target_env:
-        description: "The target environment"
-        required: true
-        type: string
       docker_image:
         description: "Docker image"
         required: true

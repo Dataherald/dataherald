@@ -2,8 +2,15 @@ name: AI Server - Quality Checks
 on:
   push:
     paths:
-      - .github/workflows/ai-server-lint.yml
       - apps/ai/server/**
+      - .github/workflows/ai-server-checks.yml # this file
+      - "!.github/workflows/**"
+      - "!apps/ai/server/database/migrations/**"
+      - "!apps/ai/server/database/scripts/**"
+      - "!apps/ai/server/scripts/**"
+      - "!apps/ai/server/terraform/**"
+      - "!apps/ai/**/.env.example"
+      - "!apps/ai/**/README.md"
 jobs:
   lint:
     runs-on: ubuntu-latest
