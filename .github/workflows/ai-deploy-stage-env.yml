@@ -43,7 +43,6 @@ jobs:
     needs: build-engine
     uses: ./.github/workflows/ai-deploy-docker-ecs.yml
     with:
-      target_env: stage
       docker_image: ${{ needs.build-engine.outputs.docker_image }}
       ecs_service_name: k2-stage-2
       ecs_task_definition: ./apps/ai/server/.aws/task-definition-stage.json
@@ -73,7 +72,6 @@ jobs:
     needs: build-server
     uses: ./.github/workflows/ai-deploy-docker-ecs.yml
     with:
-      target_env: stage
       docker_image: ${{ needs.build-server.outputs.docker_image }}
       ecs_service_name: k2-stage-2
       ecs_task_definition: ./apps/ai/server/.aws/task-definition-stage.json
@@ -103,7 +101,6 @@ jobs:
     needs: [build-slackbot, deploy-engine, deploy-server]
     uses: ./.github/workflows/ai-deploy-docker-ecs.yml
     with:
-      target_env: stage
       docker_image: ${{ needs.build-slackbot.outputs.docker_image }}
       ecs_service_name: k2-slackbot-stage
       ecs_task_definition: ./apps/ai/clients/slack/.aws/task-definition-stage.json
