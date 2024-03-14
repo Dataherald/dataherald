@@ -77,7 +77,7 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: latest
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           if [ ${{ inputs.target_app }} == "engine" ]; then
             git submodule init
