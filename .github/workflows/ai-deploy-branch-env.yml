@@ -1,7 +1,6 @@
 name: AI Deploy Branch Environment
 
-on:
-  workflow_dispatch:
+on: workflow_dispatch
 
 env:
   AWS_REGION: us-east-1
@@ -83,12 +82,19 @@ jobs:
         with:
           token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
           submodules: true
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
       - name: Apply Terraform
         env:
+          PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
           TF_VAR_sha: ${{ github.sha }}
           TF_VAR_branch_name: ${{ needs.extract-branch-names.outputs.branch_name }}
           TF_VAR_pinecone_index_name: ${{ needs.extract-branch-names.outputs.db_name }}
