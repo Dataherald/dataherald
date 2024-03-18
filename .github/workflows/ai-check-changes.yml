@@ -10,16 +10,16 @@ on:
     outputs:
       engine_changed:
         description: "Whether the engine has changed"
-        value: ${{ jobs.check-changes.outputs.engine_changed }}
+        value: ${{ jobs.set-changes.outputs.engine_changed }}
       server_changed:
         description: "Whether the server has changed"
-        value: ${{ jobs.check-changes.outputs.server_changed }}
+        value: ${{ jobs.set-changes.outputs.server_changed }}
       slackbot_changed:
         description: "Whether the slackbot has changed"
-        value: ${{ jobs.check-changes.outputs.slackbot_changed }}
+        value: ${{ jobs.set-changes.outputs.slackbot_changed }}
       console_changed:
         description: "Whether the console has changed"
-        value: ${{ jobs.check-changes.outputs.console_changed }}
+        value: ${{ jobs.set-changes.outputs.console_changed }}
 
 jobs:
   check-changes:
@@ -68,3 +68,28 @@ jobs:
             console:
             - '.github/workflows/ai-deploy-${{ inputs.target_env }}-env.yml'
             - 'apps/ai/clients/admin-console/**'
+  set-changes:
+    needs: check-changes
+    runs-on: ubuntu-latest
+    outputs:
+      engine_changed: ${{ steps.set-outputs.outputs.engine_changed }}
+      server_changed: ${{ steps.set-outputs.outputs.server_changed }}
+      slackbot_changed: ${{ steps.set-outputs.outputs.slackbot_changed }}
+      console_changed: ${{ steps.set-outputs.outputs.console_changed }}
+    steps:
+      - name: Set Changes Outputs
+        id: set-outputs
+        run: |
+          if [ ${{ inputs.target_env }} == "stage" ]; then
+            echo Setting changes outputs for stage
+            echo "engine_changed=${{ needs.check-changes.outputs.engine_changed }}" >> $GITHUB_OUTPUT
+            echo "server_changed=${{ needs.check-changes.outputs.server_changed }}" >> $GITHUB_OUTPUT
+            echo "slackbot_changed=${{ needs.check-changes.outputs.slackbot_changed }}" >> $GITHUB_OUTPUT
+            echo "console_changed=${{ needs.check-changes.outputs.console_changed }}" >> $GITHUB_OUTPUT
+          else
+            echo Setting changes outputs for prod -- all true
+            echo "engine_changed=true" >> $GITHUB_OUTPUT
+            echo "server_changed=true" >> $GITHUB_OUTPUT
+            echo "slackbot_changed=true" >> $GITHUB_OUTPUT
+            echo "console_changed=true" >> $GITHUB_OUTPUT
+          fi
