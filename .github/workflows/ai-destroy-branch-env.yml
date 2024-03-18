@@ -7,8 +7,8 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_CORE_REPOSITORY: k2-core-ephemeral-envs
-  ECR_SERVER_REPOSITORY: k2-server-ephemeral-envs
+  ECR_CORE_REPOSITORY: ai-engine-branch
+  ECR_SERVER_REPOSITORY: ai-server-branch
 jobs:
   extract-branch-name:
     name: Extract branch name
@@ -24,7 +24,7 @@ jobs:
         run: |
           branch="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
           formatted_branch=$(echo "$branch" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-zA-Z0-9]/-/g')
-          db_name=ephemeral-$formatted_branch
+          db_name=branch-$formatted_branch
 
           RESOURCE_NAME_LENGHT=32
 
@@ -42,7 +42,7 @@ jobs:
           echo "branch=$branch" >> $GITHUB_OUTPUT
           echo "branch_name=$formatted_branch" >> $GITHUB_OUTPUT
           echo "db_name=$db_name" >> $GITHUB_OUTPUT
-  destroy-ephemeral-env:
+  destroy-branch-env:
     name: Destroy branch environment
     runs-on: ubuntu-latest
     needs: extract-branch-name
@@ -66,6 +66,7 @@ jobs:
           terraform_wrapper: true
       - name: Destroy Terraform
         env:
+          TF_VAR_sha: ${{ github.sha }}
           TF_VAR_branch_name: ${{ needs.extract-branch-name.outputs.branch_name }}
           TF_VAR_pinecone_index_name: ${{ needs.extract-branch-name.outputs.db_name }}
           TF_VAR_mongodb_uri: ${{ vars.EPHEMERAL_MONGODB_URI }}

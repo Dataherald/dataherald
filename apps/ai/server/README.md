@@ -1,9 +1,9 @@
-# K2 Enterprise
+# AI Backend Enterprise
 
-This is a fastapi application that handles the business logic k2 enterprise and exposes k2-core API externally
+This is a fastapi backend application that handles the enterprise business logic. It's build on top of the ai engine and uses it internally
 
 ## Building and Running with Docker
-We use Docker to create a reproducible environment for k2-server.
+We use Docker to create a reproducible environment for ai-server.
 
 1. Create your local `.env` file and copy the variables from `.env.example` and fill them up
 
@@ -13,7 +13,7 @@ Run the following command:
 ```
 docker network create backendnetwork
 ```
->If you are running k2-core locally on docker, you can find container's IP by running this command:
+>If you are running ai-engine locally on docker, you can find container's IP by running this command:
 ```
 docker inspect <container_id> | grep IPAddress
 ```

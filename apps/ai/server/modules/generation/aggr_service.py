@@ -186,7 +186,7 @@ class AggrgationGenerationService:
             ),
         )
 
-        # ask Prompt to k2 engine
+        # ask Prompt to ai engine
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.engine_url + "/prompts/sql-generations/nl-generations",
@@ -272,7 +272,7 @@ class AggrgationGenerationService:
                 dh_internal=DHSQLGenerationMetadata(organization_id=organization.id)
             ),
         )
-        # ask Prompt to k2 engine
+        # ask Prompt to ai engine
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 settings.engine_url + "/prompts/sql-generations",

@@ -1,6 +1,6 @@
 # Text-2-SQL Benchmark Tool
 
-The benchmark engine is a tool that helps measure the performance (accuracy, speed and cost) of the core Dataherald engine. The tool comes pre-loaded with test-sets and users can start the engine, load examples and run benchmark tests by running a single script
+The benchmark engine is a tool that helps measure the performance (accuracy, speed and cost) of the engine Dataherald engine. The tool comes pre-loaded with test-sets and users can start the engine, load examples and run benchmark tests by running a single script
 
 
 ## How to run the tool

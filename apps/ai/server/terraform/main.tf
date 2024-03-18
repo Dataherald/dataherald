@@ -24,6 +24,8 @@ provider "pinecone" {}
 
 variable "branch_name" { type= string }
 
+variable "sha" { type= string }
+
 variable "pinecone_index_name" {
   description = "pinecone_index_name"
   type        = string
@@ -84,7 +86,7 @@ locals {
 }
 
 resource "aws_ecs_task_definition" "my_task_definition" {
-  family = "k2-ephemeral-env-${var.branch_name}"
+  family = "ai-backend-branch-${var.branch_name}"
   task_role_arn = "arn:aws:iam::422486916789:role/ecsk2TaskExecutionRole"
   execution_role_arn = "arn:aws:iam::422486916789:role/ecsk2TaskExecutionRole"
   network_mode = "awsvpc"
@@ -95,13 +97,13 @@ resource "aws_ecs_task_definition" "my_task_definition" {
   container_definitions =<<DEFINITION
 [
         {
-            "name": "k2-core-ephemeral-env",
-            "image": "422486916789.dkr.ecr.us-east-1.amazonaws.com/k2-core-ephemeral-envs:${var.branch_name}",
+            "name": "ai-engine-branch",
+            "image": "422486916789.dkr.ecr.us-east-1.amazonaws.com/ai-engine-branch:${var.branch_name}-${var.sha}",
             "cpu": 1024,
             "memory": 3072,
             "portMappings": [
                 {
-                    "name": "k2-core-ephemeral-env-80-tcp",
+                    "name": "ai-engine-branch-80-tcp",
                     "containerPort": 3001,
                     "hostPort": 3001,
                     "protocol": "tcp",
@@ -111,7 +113,7 @@ resource "aws_ecs_task_definition" "my_task_definition" {
             "essential": true,
             "environmentFiles": [
                 {
-                    "value": "arn:aws:s3:::ecs-k2-core-ephemeral-environment-variables/.env",
+                    "value": "arn:aws:s3:::ai-engine-branch-environment-variables/.env",
                     "type": "s3"
                 }
             ],
@@ -140,20 +142,20 @@ resource "aws_ecs_task_definition" "my_task_definition" {
                 "logDriver": "awslogs",
                 "options": {
                     "awslogs-create-group": "true",
-                    "awslogs-group": "/ecs/ecs-k2-ephemeral",
+                    "awslogs-group": "/ecs/ai-engine-branch",
                     "awslogs-region": "us-east-1",
                     "awslogs-stream-prefix": "ecs"
                 }
             }
         },
         {
-            "name": "k2-server-ephemeral-env",
-            "image": "422486916789.dkr.ecr.us-east-1.amazonaws.com/k2-server-ephemeral-envs:${var.branch_name}",
+            "name": "ai-server-branch",
+            "image": "422486916789.dkr.ecr.us-east-1.amazonaws.com/ai-server-branch:${var.branch_name}-${var.sha}",
             "cpu": 1024,
             "memory": 3072,
             "portMappings": [
                 {
-                    "name": "k2-server-ephemeral-env-3001-tcp",
+                    "name": "ai-server-branch-3001-tcp",
                     "containerPort": 80,
                     "hostPort": 80,
                     "protocol": "tcp",
@@ -163,7 +165,7 @@ resource "aws_ecs_task_definition" "my_task_definition" {
             "essential": true,
             "environmentFiles": [
                 {
-                    "value": "arn:aws:s3:::ecs-k2-server-ephemeral-environment-variables/.env",
+                    "value": "arn:aws:s3:::ai-server-branch-environment-variables/.env",
                     "type": "s3"
                 }
             ],
@@ -187,7 +189,7 @@ resource "aws_ecs_task_definition" "my_task_definition" {
                 "logDriver": "awslogs",
                 "options": {
                     "awslogs-create-group": "true",
-                    "awslogs-group": "/ecs/ecs-k2-ephemeral",
+                    "awslogs-group": "/ecs/ai-server-branch",
                     "awslogs-region": "us-east-1",
                     "awslogs-stream-prefix": "ecs"
                 }
@@ -200,6 +202,7 @@ resource "aws_ecs_task_definition" "my_task_definition" {
 resource "aws_lb" "my_load_balancer" {
   name               = "${var.branch_name}"
   internal           = false
+  idle_timeout       = 300
   load_balancer_type = "application"
   security_groups    = ["sg-07fac199a96aa3b65"]  # Replace with your security group ID
   subnets            = ["subnet-076afb4a159204349", "subnet-0b6b9dbf631131b09"]  # Replace with your subnet IDs
@@ -247,8 +250,8 @@ resource "aws_lb_listener" "https_listener" {
 }
 
 resource "aws_ecs_service" "my_service" {
-  name            = "k2-ephemeral-env-${var.branch_name}"
-  cluster         = "arn:aws:ecs:us-east-1:422486916789:cluster/k2"
+  name            = "ai-backend-branch-${var.branch_name}"
+  cluster         = "arn:aws:ecs:us-east-1:422486916789:cluster/ai"
   task_definition = aws_ecs_task_definition.my_task_definition.arn
   desired_count   = 1
   launch_type     = "FARGATE"
@@ -257,7 +260,7 @@ resource "aws_ecs_service" "my_service" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.ecs_target_group.arn
-    container_name   = "k2-server-ephemeral-env"
+    container_name   = "ai-server-branch"
     container_port   = 80
   }
 

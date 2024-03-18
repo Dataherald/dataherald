@@ -14,20 +14,16 @@ on:
         required: true
 
     inputs:
+      target_env:
+        description: "The target environment to build the docker image for. Possible values are `branch`, `stage` or `prod`"
+        required: true
+        type: string
       target_app:
         description: "The target backend app to build the docker image for. Possible values are `engine`, `server`, or `slackbot`"
         required: true
         type: string
-      ecr_repository:
-        description: "The ECR repository to push the image to"
-        required: true
-        type: string
-      ecs_service_name:
-        description: "The ECS service name"
-        required: true
-        type: string
-      container_name:
-        description: "The container name to update in the ECS service task definition"
+      image_tag:
+        description: "The image tag"
         required: true
         type: string
 
@@ -38,10 +34,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECS_CLUSTER: k2
-  ECR_REPOSITORY: ${{ inputs.ecr_repository }}
-  ECS_SERVICE: ${{ inputs.ecs_service_name }}
-  CONTAINER_NAME: ${{ inputs.container_name }}
+  ECR_REPOSITORY: ai-${{ inputs.target_app }}-${{ inputs.target_env }}
 
 jobs:
   build-docker-image:
@@ -77,21 +70,24 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
         run: |
           if [ ${{ inputs.target_app }} == "engine" ]; then
+            echo Build engine
             git submodule init
             git submodule update
             cd apps/ai/server/dataherald
             ls
           elif [ ${{ inputs.target_app }} == "server" ]; then
+            echo Build server
             cd apps/ai/server
           elif [ ${{ inputs.target_app }} == "slackbot" ]; then
+            echo Build slackbot
             cd apps/ai/clients/slack
             npm install -g pnpm
             pnpm install
           fi
-          echo building dockerfile
+          echo Building Dockerfile
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

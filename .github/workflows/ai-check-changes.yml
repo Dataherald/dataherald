@@ -39,6 +39,7 @@ jobs:
             engine:
             - '.github/workflows/ai-deploy-${{ inputs.target_env }}-env.yml'
             - 'apps/ai/server/.aws/task-definition-${{ inputs.target_env }}.json'
+            - 'apps/ai/server/main.tf'
             - 'apps/ai/server/dataherald/**'
 
       - id: filter_server
@@ -48,6 +49,7 @@ jobs:
             server:
             - '.github/workflows/ai-deploy-${{ inputs.target_env }}-env.yml'
             - 'apps/ai/server/.aws/task-definition-${{ inputs.target_env }}.json'
+            - 'apps/ai/server/main.tf'
             - 'apps/ai/server/**'
 
       - id: filter_slackbot

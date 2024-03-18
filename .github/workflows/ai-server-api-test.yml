@@ -4,15 +4,15 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
-      - ".github/workflows/ai-server-api-test.yml"
+      - ".github/workflows/ai-server-api-test.yml" # this file
       - "apps/ai/server/**"
       - "!.github/workflows/**"
-      - "!apps/ai/server/.env.example"
-      - "!apps/ai/server/README.md"
       - "!apps/ai/server/database/migrations/**"
       - "!apps/ai/server/database/scripts/**"
       - "!apps/ai/server/scripts/**"
       - "!apps/ai/server/terraform/**"
+      - "!**/.env.example"
+      - "!**/README.md"
     branches:
       - main
 

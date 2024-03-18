@@ -1,0 +1,185 @@
+name: Deploy Environment
+
+on:
+  workflow_call:
+    inputs:
+      target_env:
+        description: "The target environment to deploy to. Possible values are: `stage` or `prod`"
+        required: true
+        type: string
+
+    secrets:
+      SUBMODULE_UPDATE_TOKEN:
+        description: "The token to use to update the submodules"
+        required: true
+      AWS_ACCESS_KEY_ID:
+        description: "The AWS access key ID"
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        description: "The AWS secret access key"
+        required: true
+      GH_SLACK_WEBHOOK_URL:
+        description: "The Slack webhook URL"
+        required: true
+      VERCEL_ORG_ID:
+        description: "The Vercel organization ID"
+        required: true
+      VERCEL_AI_CONSOLE_PROJECT_ID:
+        description: "The Vercel project ID for the AI Console"
+        required: true
+      VERCEL_ACCESS_TOKEN:
+        description: "The Vercel access token"
+        required: true
+
+env:
+  SLACK_WEBHOOK: ${{ secrets.GH_SLACK_WEBHOOK_URL }}
+  SLACK_ICON: https://files.dataherald.com/random/github-actions.png
+  SLACK_USERNAME: GitHub Actions
+  SLACK_CHANNEL: eng-notifications
+
+jobs:
+  check-changes:
+    name: Check Changes
+    uses: ./.github/workflows/ai-check-changes.yml
+    with:
+      target_env: ${{ inputs.target_env }}
+
+  build-engine:
+    name: Build Engine
+    needs: check-changes
+    if: needs.check-changes.outputs.engine_changed == 'true'
+    uses: ./.github/workflows/ai-build-docker.yml
+    with:
+      target_app: engine
+      target_env: ${{ inputs.target_env }}
+      image_tag: ${{ github.sha }}
+    secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  build-server:
+    name: Build Server
+    needs: check-changes
+    if: needs.check-changes.outputs.server_changed == 'true' && success()
+    uses: ./.github/workflows/ai-build-docker.yml
+    with:
+      target_app: server
+      target_env: ${{ inputs.target_env }}
+      image_tag: ${{ github.sha }}
+    secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  deploy-backend:
+    name: Deploy Backend
+    needs: [build-engine, build-server]
+    uses: ./.github/workflows/ai-deploy-backend.yml
+    with:
+      target_env: ${{ inputs.target_env }}
+      engine_image: ${{ needs.build-engine.outputs.docker_image }}
+      server_image: ${{ needs.build-server.outputs.docker_image }}
+    secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  build-slackbot:
+    name: Build Slackbot
+    needs: [check-changes]
+    if: needs.check-changes.outputs.slackbot_changed == 'true' && success()
+    uses: ./.github/workflows/ai-build-docker.yml
+    with:
+      target_app: slackbot
+      target_env: ${{ inputs.target_env }}
+      image_tag: ${{ github.sha }}
+    secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  deploy-slackbot:
+    name: Deploy Slackbot
+    needs: [build-slackbot, deploy-backend]
+    uses: ./.github/workflows/ai-deploy-docker-ecs.yml
+    with:
+      docker_image: ${{ needs.build-slackbot.outputs.docker_image }}
+      ecs_service_name: ai-slackbot-${{ inputs.target_env }}
+      ecs_task_definition: ./apps/ai/clients/slack/.aws/task-definition-${{ inputs.target_env }}.json
+      container_name: ai-slackbot-${{ inputs.target_env }}
+    secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  deploy-frontend:
+    name: Deploy Console
+    needs: [check-changes, deploy-backend]
+    if: needs.check-changes.outputs.console_changed == 'true' && success()
+    uses: ./.github/workflows/ai-deploy-frontend.yml
+    with:
+      target_env: preview
+    secrets:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_AI_CONSOLE_PROJECT_ID: ${{ secrets.VERCEL_AI_CONSOLE_PROJECT_ID }}
+      VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
+
+  send-cancelled-slack-notification:
+    name: Send Cancelled Slack Notification
+    needs: [deploy-backend, deploy-slackbot, deploy-frontend]
+    if: cancelled()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send cancelled notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_TITLE: STAGE Deployment CANCELLED
+          SLACK_MESSAGE: |
+
+            The STAGE environment deployment was cancelled. Please check the GitHub Actions logs for more details.
+
+          SLACK_COLOR: cancelled
+
+  send-failure-slack-notification:
+    name: Send Failure Slack Notification
+    needs: [deploy-backend, deploy-slackbot, deploy-frontend]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send failed notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_TITLE: STAGE Deployment FAILED
+          SLACK_MESSAGE: |
+
+            The STAGE environment deployment failed. Please check the GitHub Actions logs for more details.
+
+          SLACK_COLOR: failure
+
+  send-success-slack-notification:
+    name: Send Success Slack Notification
+    needs: [deploy-backend, deploy-slackbot, deploy-frontend]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup URLs
+        id: setup-urls
+        run: |
+          if [ ${{ inputs.target_env }} == 'stage' ]; then
+            echo "API_URL=https://stage.api.dataherald.ai" >> $GITHUB_OUTPUT
+            echo "CONSOLE_URL=https://stage.console.dataherald.ai" >> $GITHUB_OUTPUT
+          else
+            echo "API_URL=https://api.dataherald.ai" >> $GITHUB_OUTPUT
+            echo "CONSOLE_URL=https://console.dataherald.ai" >> $GITHUB_OUTPUT
+          fi
+      - name: Send success notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_TITLE: STAGE Deployment SUCCEEDED
+          SLACK_MESSAGE: |
+            The STAGE environment deployment succeeded. More details:
+
+            *API URL*: ${{ steps.setup-urls.outputs.API_URL }}
+            *Console URL*: ${{ steps.setup-urls.outputs.CONSOLE_URL }}
+          SLACK_COLOR: success

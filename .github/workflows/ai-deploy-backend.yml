@@ -1,4 +1,4 @@
-name: AI Deploy Docker Image to ECS
+name: AI Deploy Backend
 
 on:
   workflow_call:
@@ -14,29 +14,23 @@ on:
         required: true
 
     inputs:
-      docker_image:
-        description: "Docker image"
+      target_env:
+        description: "The target environment to deploy to. Possible values: `stage` or `prod`"
         required: true
         type: string
-      ecs_service_name:
-        description: "The ECS service name"
+      engine_image:
+        description: "The engine image to deploy"
         required: true
         type: string
-      ecs_task_definition:
-        description: "The ECS task definition"
-        required: true
-        type: string
-      container_name:
-        description: "The container name to update in the ECS service task definition"
+      server_image:
+        description: "The server image to deploy"
         required: true
         type: string
 
 env:
   AWS_REGION: us-east-1
   ECS_CLUSTER: ai
-  ECS_SERVICE: ${{ inputs.ecs_service_name }}
-  CONTAINER_NAME: ${{ inputs.container_name }}
-  ECS_TASK_DEFINITION: ${{ inputs.ecs_task_definition }}
+  ECS_SERVICE: ai-backend-${{ inputs.target_env }}
 
 jobs:
   deploy-to-ecs:
@@ -56,18 +50,26 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
+      - name: Replace Engine image ID in the Amazon ECS task definition
+        id: partial-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ inputs.docker_image }}
+          task-definition: ./apps/ai/server/.aws/task-definition-${{ inputs.target_env }}.json
+          container-name: ai-engine-${{ inputs.target_env }}
+          image: ${{ inputs.engine_image }}
+
+      - name: Replace Server image ID in the Amazon ECS task definition
+        id: complete-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.partial-def.outputs.task-definition }}
+          container-name: ai-server-${{ inputs.target_env }}
+          image: ${{ inputs.server_image }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          task-definition: ${{ steps.complete-task-def.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
+          wait-for-service-stability: trØue
