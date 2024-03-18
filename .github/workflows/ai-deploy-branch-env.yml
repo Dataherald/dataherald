@@ -1,10 +1,7 @@
 name: AI Deploy Branch Environment
 
-# on: workflow_dispatch
 on:
-  push:
-    branches:
-      - ft/DH-5365_port_name_fixes
+  workflow_dispatch:
 
 env:
   AWS_REGION: us-east-1
