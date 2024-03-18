@@ -70,6 +70,38 @@ jobs:
           subnet-id: subnet-047b3ad5f1945b456 # this is a private subnet, even though the mongo vpce is set for public subnet, it will work, probably because of the route table
           security-group-id: sg-0af2c0fe34e9184ad
 
+  init-infra:
+    name: Initialize Infrastructure
+    needs: [extract-branch-names]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          submodules: true
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+      - name: Apply Terraform
+        env:
+          TF_VAR_sha: ${{ github.sha }}
+          TF_VAR_branch_name: ${{ needs.extract-branch-names.outputs.branch_name }}
+          TF_VAR_pinecone_index_name: ${{ needs.extract-branch-names.outputs.db_name }}
+          TF_VAR_mongodb_uri: ${{ vars.EPHEMERAL_MONGODB_URI }}
+          TF_VAR_mongodb_name: ${{ needs.extract-branch-names.outputs.db_name }}
+          TF_VAR_mongodb_username: ${{ secrets.MONGODB_USERNAME }}
+          TF_VAR_mongodb_password: ${{ secrets.MONGODB_PASSWORD }}
+
+        run: |
+          terraform init -upgrade -backend-config="key=${{ needs.extract-branch-names.outputs.branch_name }}"
+          terraform plan
+          terraform apply -auto-approve
+
   build-engine:
     name: Build Engine
     needs: extract-branch-names
@@ -96,11 +128,9 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  # MongoDB and Pinecone setup
-
   populate-db:
     name: Populate MongoDB
-    needs: [extract-branch-names, start-self-hosted-runner]
+    needs: [extract-branch-names, start-self-hosted-runner, init-infra]
     runs-on: ${{ needs.start-self-hosted-runner.outputs.label }} # run the job on the newly created runner
     defaults:
       run:
@@ -167,14 +197,7 @@ jobs:
 
   deploy-backend:
     name: Deploy Backend
-    needs:
-      [
-        extract-branch-names,
-        build-engine,
-        build-server,
-        populate-db,
-        populate-vector-db,
-      ]
+    needs: [extract-branch-names, build-engine, build-server, init-infra]
     runs-on: ubuntu-latest
     outputs:
       api_url: ${{ steps.get-api-url.outputs.api_url }}
@@ -191,10 +214,6 @@ jobs:
         with:
           token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
           submodules: true
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_wrapper: false
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -226,22 +245,7 @@ jobs:
               aws ecs wait services-stable --cluster $cluster_name --services $service_name
             fi
           fi
-      - name: Apply Terraform
-        id: apply-terraform
-        env:
-          TF_VAR_sha: ${{ github.sha }}
-          TF_VAR_branch_name: ${{ needs.extract-branch-names.outputs.branch_name }}
-          TF_VAR_pinecone_index_name: ${{ needs.extract-branch-names.outputs.db_name }}
-          TF_VAR_mongodb_uri: ${{ vars.EPHEMERAL_MONGODB_URI }}
-          TF_VAR_mongodb_name: ${{ needs.extract-branch-names.outputs.db_name }}
-          TF_VAR_mongodb_username: ${{ secrets.MONGODB_USERNAME }}
-          TF_VAR_mongodb_password: ${{ secrets.MONGODB_PASSWORD }}
 
-        run: |
-          cd terraform
-          terraform init -upgrade -backend-config="key=${{ needs.extract-branch-names.outputs.branch_name }}"
-          terraform plan
-          terraform apply -auto-approve
       - name: Get API URL
         id: get-api-url
         run: |
@@ -260,30 +264,6 @@ jobs:
           if [ -n "$UNTAGGED_SERVER_IMAGES" ] && [ "$UNTAGGED_SERVER_IMAGES" != "[]" ]; then
             aws ecr batch-delete-image --repository-name $ECR_SERVER_REPOSITORY --image-ids "$UNTAGGED_SERVER_IMAGES" --region us-east-1
           fi
-
-      - name: Destroy env and images if fails
-        if: failure()
-        env:
-          TF_LOG: DEBUG
-          TF_VAR_sha: ${{ github.sha }}
-          TF_VAR_branch_name: ${{ needs.extract-branch-names.outputs.branch_name }}
-          TF_VAR_pinecone_index_name: ${{ needs.extract-branch-names.outputs.db_name }}
-          TF_VAR_mongodb_uri: ${{ vars.EPHEMERAL_MONGODB_URI }}
-          TF_VAR_mongodb_name: ${{ needs.extract-branch-names.outputs.db_name }}
-          TF_VAR_mongodb_username: ${{ secrets.MONGODB_USERNAME }}
-          TF_VAR_mongodb_password: ${{ secrets.MONGODB_PASSWORD }}
-        timeout-minutes: 5
-        run: |
-          cd terraform
-          terraform init -upgrade -backend-config="key=${{ needs.extract-branch-names.outputs.branch_name }}"
-          terraform destroy -auto-approve
-
-      - name: Delete Images if failure
-        if: failure()
-        run: |
-          # Delete images
-          aws ecr batch-delete-image --repository-name $ECR_CORE_REPOSITORY --image-ids imageTag=${{ needs.extract-branch-names.outputs.branch_name }} --region us-east-1
-          aws ecr batch-delete-image --repository-name $ECR_SERVER_REPOSITORY --image-ids imageTag=${{ needs.extract-branch-names.outputs.branch_name }} --region us-east-1
 
   deploy-frontend:
     name: Deploy Frontend
