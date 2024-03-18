@@ -60,7 +60,7 @@ class SQLGenerator(Component, ABC):
         matches = re.findall(pattern, query, re.DOTALL)
         if matches:
             return matches[0].strip()
-        return ""
+        return query
 
     @classmethod
     def get_upper_bound_limit(cls) -> int:
@@ -110,15 +110,14 @@ class SQLGenerator(Component, ABC):
             action = step[0]
             if type(action) == AgentAction and action.tool == "SqlDbQuery":
                 sql_query = self.format_sql_query(action.tool_input)
-                if "```sql" in sql_query:
+                if "SELECT" in sql_query.upper():
                     sql_query = self.remove_markdown(sql_query)
         if sql_query == "":
             for step in intermediate_steps:
                 action = step[0]
                 sql_query = action.tool_input
-                if "```sql" in sql_query:
+                if "SELECT" in sql_query.upper():
                     sql_query = self.remove_markdown(sql_query)
-
         return sql_query
 
     @abstractmethod

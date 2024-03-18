@@ -585,7 +585,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
             sql_query = self.remove_markdown(result["output"])
         else:
             sql_query = self.extract_query_from_intermediate_steps(
-                result["intermediate"]
+                result["intermediate_steps"]
             )
         logger.info(f"cost: {str(cb.total_cost)} tokens: {str(cb.total_tokens)}")
         response.sql = replace_unprocessable_characters(sql_query)
