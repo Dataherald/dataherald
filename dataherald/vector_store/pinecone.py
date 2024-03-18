@@ -16,15 +16,15 @@ EMBEDDING_MODEL = "text-embedding-3-small"
 
 
 class Pinecone(VectorStore):
+    pinecone: None
+
     def __init__(self, system: System):
         super().__init__(system)
         api_key = os.environ.get("PINECONE_API_KEY")
-        environment = os.environ.get("PINECONE_ENVIRONMENT")
         if api_key is None:
             raise ValueError("PINECONE_API_KEY environment variable not set")
-        if environment is None:
-            raise ValueError("PINECONE_ENVIRONMENT environment variable not set")
-        pinecone.init(api_key=api_key, environment=environment)
+
+        self.pinecone = pinecone.Pinecone(api_key=api_key)
 
     @override
     def query(
@@ -34,7 +34,7 @@ class Pinecone(VectorStore):
         collection: str,
         num_results: int,
     ) -> list:
-        index = pinecone.Index(collection)
+        index = self.pinecone.Index(name=collection)
         db_connection_repository = DatabaseConnectionRepository(
             self.system.instance(DB)
         )
@@ -44,18 +44,18 @@ class Pinecone(VectorStore):
         )
         xq = embedding.embed_query(query_texts[0])
         query_response = index.query(
-            queries=[xq],
+            vector=[xq],
             filter={
                 "db_connection_id": {"$eq": db_connection_id},
             },
             top_k=num_results,
             include_metadata=True,
         )
-        return query_response.to_dict()["results"][0]["matches"]
+        return query_response.to_dict()["matches"]
 
     @override
     def add_records(self, golden_sqls: List[GoldenSQL], collection: str):
-        if collection not in pinecone.list_indexes():
+        if collection not in self.pinecone.list_indexes().names():
             self.create_collection(collection)
         db_connection_repository = DatabaseConnectionRepository(
             self.system.instance(DB)
@@ -66,7 +66,7 @@ class Pinecone(VectorStore):
         embedding = OpenAIEmbeddings(
             openai_api_key=database_connection.decrypt_api_key(), model=EMBEDDING_MODEL
         )
-        index = pinecone.Index(collection)
+        index = self.pinecone.Index(name=collection)
         batch_limit = 100
         for limit_index in range(0, len(golden_sqls), batch_limit):
             golden_sql_batch = golden_sqls[limit_index : limit_index + batch_limit]
@@ -101,7 +101,7 @@ class Pinecone(VectorStore):
         metadata: Any,
         ids: List,
     ):
-        if collection not in pinecone.list_indexes():
+        if collection not in self.pinecone.list_indexes().names():
             self.create_collection(collection)
         db_connection_repository = DatabaseConnectionRepository(
             self.system.instance(DB)
@@ -110,22 +110,27 @@ class Pinecone(VectorStore):
         embedding = OpenAIEmbeddings(
             openai_api_key=database_connection.decrypt_api_key(), model=EMBEDDING_MODEL
         )
-        index = pinecone.Index(collection)
+        index = self.pinecone.Index(name=collection)
         embeds = embedding.embed_documents([documents])
         record = [(ids[0], embeds, metadata[0])]
         index.upsert(vectors=record)
 
     @override
     def delete_record(self, collection: str, id: str):
-        if collection not in pinecone.list_indexes():
+        if collection not in self.pinecone.list_indexes().names():
             self.create_collection(collection)
-        index = pinecone.Index(collection)
+        index = self.pinecone.Index(name=collection)
         index.delete(ids=[id])
 
     @override
     def delete_collection(self, collection: str):
-        return pinecone.delete_index(collection)
+        return self.pinecone.delete_index(name=collection)
 
     @override
     def create_collection(self, collection: str):
-        pinecone.create_index(name=collection, dimension=1536, metric="cosine")
+        self.pinecone.create_index(
+            name=collection,
+            dimension=1536,
+            metric="cosine",
+            spec=pinecone.ServerlessSpec(cloud="aws", region="us-west-2"),
+        )
