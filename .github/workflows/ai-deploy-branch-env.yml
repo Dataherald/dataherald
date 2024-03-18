@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./terraform
+        working-directory: .apps/ai/server/terraform
     steps:
       - name: Check out code
         uses: actions/checkout@v4
