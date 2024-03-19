@@ -125,42 +125,60 @@ jobs:
       VERCEL_AI_CONSOLE_PROJECT_ID: ${{ secrets.VERCEL_AI_CONSOLE_PROJECT_ID }}
       VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
 
+  slack-notification-env:
+    name: Set Environment Messages
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-slack-env.outputs.environment }}
+    steps:
+      - name: Set env messages
+        id: set-slack-env
+        run: |
+          if [ ${{ inputs.target_env }} == 'stage' ]; then
+            echo "environment=STAGE" >> $GITHUB_OUTPUT
+          else
+            echo "environment=PRODUCTION" >> $GITHUB_OUTPUT
+          fi
+
   send-cancelled-slack-notification:
     name: Send Cancelled Slack Notification
-    needs: [deploy-backend, deploy-slackbot, deploy-frontend]
+    needs:
+      [slack-notification-env, deploy-backend, deploy-slackbot, deploy-frontend]
     if: cancelled()
     runs-on: ubuntu-latest
     steps:
       - name: Send cancelled notification
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_TITLE: STAGE Deployment CANCELLED
+          SLACK_TITLE: ${{ needs.slack-notification-env.outputs.environment }} Deployment CANCELLED
           SLACK_MESSAGE: |
+            The ${{ needs.slack-notification-env.outputs.environment }} environment deployment was cancelled.
 
-            The STAGE environment deployment was cancelled. Please check the GitHub Actions logs for more details.
-
+            *WARNING:* Some artifacts could be deployed before cancelled. Please check the GitHub Actions logs for more details.
           SLACK_COLOR: cancelled
 
   send-failure-slack-notification:
     name: Send Failure Slack Notification
-    needs: [deploy-backend, deploy-slackbot, deploy-frontend]
-    if: failure()
+    needs:
+      [slack-notification-env, deploy-backend, deploy-slackbot, deploy-frontend]
+    if: needs.deploy-backend.result == 'failure' || needs.deploy-slackbot.result == 'failure' || needs.deploy-frontend.result == 'failure'
     runs-on: ubuntu-latest
     steps:
       - name: Send failed notification
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_TITLE: STAGE Deployment FAILED
+          SLACK_TITLE: ${{ needs.slack-notification-env.outputs.environment }} Deployment FAILED
           SLACK_MESSAGE: |
+            The ${{ needs.slack-notification-env.outputs.environment }} environment deployment failed. One or more of the deployment jobs failed.
 
-            The STAGE environment deployment failed. Please check the GitHub Actions logs for more details.
-
+            *WARNING:* Some artifacts could be deployed before failure. Please check the GitHub Actions logs for more details.
           SLACK_COLOR: failure
 
   send-success-slack-notification:
     name: Send Success Slack Notification
-    needs: [deploy-backend, deploy-slackbot, deploy-frontend]
-    if: success()
+    needs:
+      [slack-notification-env, deploy-backend, deploy-slackbot, deploy-frontend]
+    if: needs.deploy-backend.result == 'success' && needs.deploy-slackbot.result == 'success' && needs.deploy-frontend.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Setup URLs
@@ -176,9 +194,9 @@ jobs:
       - name: Send success notification
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_TITLE: STAGE Deployment SUCCEEDED
+          SLACK_TITLE: ${{ needs.slack-notification-env.outputs.environment }} Deployment SUCCEEDED
           SLACK_MESSAGE: |
-            The STAGE environment deployment succeeded. More details:
+            The ${{ needs.slack-notification-env.outputs.environment }} environment deployment succeeded. More details:
 
             *API URL*: ${{ steps.setup-urls.outputs.API_URL }}
             *Console URL*: ${{ steps.setup-urls.outputs.CONSOLE_URL }}

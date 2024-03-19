@@ -154,7 +154,8 @@ jobs:
 
   populate-db:
     name: Populate MongoDB
-    needs: [extract-branch-names, start-self-hosted-runner, deploy-backend-dbs-infra]
+    needs:
+      [extract-branch-names, start-self-hosted-runner, deploy-backend-dbs-infra]
     runs-on: ${{ needs.start-self-hosted-runner.outputs.label }} # run the job on the newly created runner
     defaults:
       run:
@@ -261,7 +262,14 @@ jobs:
 
   send-cancelled-slack-notification:
     name: Send Cancelled Slack Notification
-    needs: [extract-branch-names, deploy-backend-dbs-infra, populate-db, populate-vector-db, deploy-frontend]
+    needs:
+      [
+        extract-branch-names,
+        deploy-backend-dbs-infra,
+        populate-db,
+        populate-vector-db,
+        deploy-frontend,
+      ]
     if: cancelled()
     runs-on: ubuntu-latest
     steps:
@@ -278,8 +286,15 @@ jobs:
 
   send-failure-slack-notification:
     name: Send Failure Slack Notification
-    needs: [extract-branch-names, deploy-backend-dbs-infra, populate-db, populate-vector-db, deploy-frontend]
-    if: failure()
+    needs:
+      [
+        extract-branch-names,
+        deploy-backend-dbs-infra,
+        populate-db,
+        populate-vector-db,
+        deploy-frontend,
+      ]
+    if: needs.deploy-backend-dbs-infra.result == 'failure' || needs.populate-db.result == 'failure' || needs.populate-vector-db.result == 'failure' || needs.deploy-frontend.result == 'failure'
     runs-on: ubuntu-latest
     steps:
       - name: Send failed notification
@@ -295,8 +310,15 @@ jobs:
 
   send-success-slack-notification:
     name: Send Success Slack Notification
-    needs: [extract-branch-names, deploy-backend-dbs-infra, populate-db, populate-vector-db, deploy-frontend]
-    if: success()
+    needs:
+      [
+        extract-branch-names,
+        deploy-backend-dbs-infra,
+        populate-db,
+        populate-vector-db,
+        deploy-frontend,
+      ]
+    if: needs.deploy-backend-dbs-infra.result == 'success' && needs.populate-db.result == 'success' && needs.populate-vector-db.result == 'success' && needs.deploy-frontend.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Send success notification
