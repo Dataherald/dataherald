@@ -109,14 +109,12 @@ class SQLGenerator(Component, ABC):
         for step in intermediate_steps:
             action = step[0]
             if type(action) == AgentAction and action.tool == "SqlDbQuery":
-                sql_query = self.format_sql_query(action.tool_input)
-                if "SELECT" in sql_query.upper():
+                if "SELECT" in self.format_sql_query(action.tool_input).upper():
                     sql_query = self.remove_markdown(sql_query)
         if sql_query == "":
             for step in intermediate_steps:
                 action = step[0]
-                sql_query = action.tool_input
-                if "SELECT" in sql_query.upper():
+                if "SELECT" in action.tool_input.upper():
                     sql_query = self.remove_markdown(sql_query)
         return sql_query
 
