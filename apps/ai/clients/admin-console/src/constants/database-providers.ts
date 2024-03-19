@@ -5,6 +5,11 @@ const DATABASE_PROVIDERS = [
     logoUrl: '/images/databases/postgresql.svg',
   },
   {
+    name: 'MS SQL Server',
+    driver: 'mssql+pymssql',
+    logoUrl: '/images/databases/sql-server.svg',
+  },
+  {
     name: 'Databricks',
     driver: 'databricks',
     logoUrl: '/images/databases/databricks.svg',
