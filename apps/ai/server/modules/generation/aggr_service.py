@@ -102,7 +102,7 @@ class AggrgationGenerationService:
             order=order,
             ascend=ascend,
             org_id=org_id,
-            search_term=search_term,
+            search_term=search_term.strip(),
             db_connection_id=db_connection_id,
         )
         db_connection_dict = {

@@ -174,12 +174,14 @@ class GenerationRepository:
         db_connection_id: str = None,
     ) -> list[PromptAggregation]:
         search_term = re.escape(search_term)
-        pipeline = [
+        match = [
             {
                 "$match": {
                     "metadata.dh_internal.organization_id": org_id,
                 }
-            },
+            }
+        ]
+        lookups = [
             {
                 "$lookup": {
                     "from": "sql_generations",
@@ -216,7 +218,9 @@ class GenerationRepository:
                     ],
                     "as": "sql_generation",
                 }
-            },
+            }
+        ]
+        unwinds = [
             {
                 "$unwind": {
                     "path": "$sql_generation",
@@ -229,6 +233,8 @@ class GenerationRepository:
                     "preserveNullAndEmptyArrays": True,  # Keep sql_generations even if no matching nl_generations
                 }
             },
+        ]
+        search = [
             {
                 "$match": {
                     "$or": [
@@ -243,11 +249,29 @@ class GenerationRepository:
                         },  # Or in sql_generations.sql
                     ]
                 }
-            },
+            }
+        ]
+        pagination = [
             {"$sort": {order: ASCENDING if ascend else DESCENDING}},
             {"$skip": skip},
             {"$limit": limit},
         ]
+        if search_term != "":
+            pipeline = [
+                *match,
+                *lookups,
+                *unwinds,
+                *search,
+                *pagination,
+            ]
+        else:
+            pipeline = [
+                *match,
+                *pagination,
+                *lookups,
+                *unwinds,
+                *search,
+            ]
 
         if db_connection_id:
             pipeline[0]["$match"]["db_connection_id"] = db_connection_id
