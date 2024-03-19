@@ -44,7 +44,6 @@ jobs:
           echo "branch=$branch" >> $GITHUB_OUTPUT
           echo "branch_name=$formatted_branch" >> $GITHUB_OUTPUT
           echo "db_name=$db_name" >> $GITHUB_OUTPUT
-
   start-self-hosted-runner:
     name: Start self-hosted EC2 runner
     runs-on: ubuntu-latest
@@ -69,13 +68,41 @@ jobs:
           subnet-id: subnet-047b3ad5f1945b456 # this is a private subnet, even though the mongo vpce is set for public subnet, it will work, probably because of the route table
           security-group-id: sg-0af2c0fe34e9184ad
 
-  init-infra:
-    name: Initialize Infrastructure
-    needs: [extract-branch-names]
+  build-engine:
+    name: Build Engine
+    needs: extract-branch-names
+    uses: ./.github/workflows/ai-build-docker.yml
+    with:
+      target_app: engine
+      target_env: branch
+      image_tag: ${{ needs.extract-branch-names.outputs.branch_name}}-${{ github.sha }}
+    secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  build-server:
+    name: Build Server
+    needs: extract-branch-names
+    uses: ./.github/workflows/ai-build-docker.yml
+    with:
+      target_app: server
+      target_env: branch
+      image_tag: ${{ needs.extract-branch-names.outputs.branch_name}}-${{ github.sha }}
+    secrets:
+      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  deploy-backend-dbs-infra:
+    name: Deploy Backend and DBs infrastructure
+    needs: [extract-branch-names, build-engine, build-server]
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./apps/ai/server/terraform
+    outputs:
+      api_url: ${{ steps.get-api-url.outputs.api_url }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -107,36 +134,27 @@ jobs:
           terraform init -upgrade -backend-config="key=${{ needs.extract-branch-names.outputs.branch_name }}"
           terraform plan
           terraform apply -auto-approve
+      - name: Get API URL
+        id: get-api-url
+        run: |
+          echo "api_url=https://${{ needs.extract-branch-names.outputs.branch_name }}.api.dataherald.ai" >> "$GITHUB_OUTPUT"
+      - name: Delete untagged images
+        run: |
+          # Get untagged images
+          UNTAGGED_CORE_IMAGES=$(aws ecr list-images --repository-name $ECR_CORE_REPOSITORY --filter tagStatus=UNTAGGED --query 'imageIds[*]' --region us-east-1 --output json --region us-east-1)
+          UNTAGGED_SERVER_IMAGES=$(aws ecr list-images --repository-name $ECR_SERVER_REPOSITORY --filter tagStatus=UNTAGGED --query 'imageIds[*]' --region us-east-1 --output json --region us-east-1)
 
-  build-engine:
-    name: Build Engine
-    needs: extract-branch-names
-    uses: ./.github/workflows/ai-build-docker.yml
-    with:
-      target_app: engine
-      target_env: branch
-      image_tag: ${{ needs.extract-branch-names.outputs.branch_name}}-${{ github.sha }}
-    secrets:
-      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-  build-server:
-    name: Build Server
-    needs: extract-branch-names
-    uses: ./.github/workflows/ai-build-docker.yml
-    with:
-      target_app: server
-      target_env: branch
-      image_tag: ${{ needs.extract-branch-names.outputs.branch_name}}-${{ github.sha }}
-    secrets:
-      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # Delete images
+          if [ -n "$UNTAGGED_CORE_IMAGES" ] && [ "$UNTAGGED_CORE_IMAGES" != "[]" ]; then
+            aws ecr batch-delete-image --repository-name $ECR_CORE_REPOSITORY --image-ids "$UNTAGGED_CORE_IMAGES" --region us-east-1
+          fi
+          if [ -n "$UNTAGGED_SERVER_IMAGES" ] && [ "$UNTAGGED_SERVER_IMAGES" != "[]" ]; then
+            aws ecr batch-delete-image --repository-name $ECR_SERVER_REPOSITORY --image-ids "$UNTAGGED_SERVER_IMAGES" --region us-east-1
+          fi
 
   populate-db:
     name: Populate MongoDB
-    needs: [extract-branch-names, start-self-hosted-runner, init-infra]
+    needs: [extract-branch-names, start-self-hosted-runner, deploy-backend-dbs-infra]
     runs-on: ${{ needs.start-self-hosted-runner.outputs.label }} # run the job on the newly created runner
     defaults:
       run:
@@ -201,79 +219,9 @@ jobs:
           pip3 install -r requirements.txt
           python3 -u script.py
 
-  deploy-backend:
-    name: Deploy Backend
-    needs: [extract-branch-names, build-engine, build-server, init-infra]
-    runs-on: ubuntu-latest
-    outputs:
-      api_url: ${{ steps.get-api-url.outputs.api_url }}
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
-    defaults:
-      run:
-        working-directory: ./apps/ai/server
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-          submodules: true
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Force ECS deployment
-        id: force-ecs-deployment
-        run: |
-          # Variables
-          cluster_name=ai
-          service_name=ai-backend-branch-${{ needs.extract-branch-names.outputs.branch_name }}
-
-          # Check if service exists
-          service_exists=$(aws ecs describe-services --cluster $cluster_name --services $service_name --query 'services' --output text)
-          if [ -z "$service_exists" ]; then
-            echo "Service does not exist."
-          else
-            # Check if service is active
-            service_status=$(aws ecs describe-services --cluster $cluster_name --services $service_name --query 'services[0].status' --output text)
-            if [ "$service_status" != "ACTIVE" ]; then
-              echo "Service is not active. Aborting deployment."
-            else
-              echo "Service exists and is active. Forcing a new deployment..."
-              # Force a new deployment by updating the service with the same task definition
-              aws ecs update-service --cluster $cluster_name --service $service_name --force-new-deployment
-              # Wait for the deployment to finish
-              echo "Waiting for deployment to finish..."
-              aws ecs wait services-stable --cluster $cluster_name --services $service_name
-            fi
-          fi
-
-      - name: Get API URL
-        id: get-api-url
-        run: |
-          echo "api_url=https://${{ needs.extract-branch-names.outputs.branch_name }}.api.dataherald.ai" >> "$GITHUB_OUTPUT"
-
-      - name: Delete untagged images
-        run: |
-          # Get untagged images
-          UNTAGGED_CORE_IMAGES=$(aws ecr list-images --repository-name $ECR_CORE_REPOSITORY --filter tagStatus=UNTAGGED --query 'imageIds[*]' --region us-east-1 --output json --region us-east-1)
-          UNTAGGED_SERVER_IMAGES=$(aws ecr list-images --repository-name $ECR_SERVER_REPOSITORY --filter tagStatus=UNTAGGED --query 'imageIds[*]' --region us-east-1 --output json --region us-east-1)
-
-          # Delete images
-          if [ -n "$UNTAGGED_CORE_IMAGES" ] && [ "$UNTAGGED_CORE_IMAGES" != "[]" ]; then
-            aws ecr batch-delete-image --repository-name $ECR_CORE_REPOSITORY --image-ids "$UNTAGGED_CORE_IMAGES" --region us-east-1
-          fi
-          if [ -n "$UNTAGGED_SERVER_IMAGES" ] && [ "$UNTAGGED_SERVER_IMAGES" != "[]" ]; then
-            aws ecr batch-delete-image --repository-name $ECR_SERVER_REPOSITORY --image-ids "$UNTAGGED_SERVER_IMAGES" --region us-east-1
-          fi
-
   deploy-frontend:
     name: Deploy Frontend
-    needs: [extract-branch-names, deploy-backend]
+    needs: [extract-branch-names, deploy-backend-dbs-infra]
     runs-on: ubuntu-latest
     outputs:
       url: ${{ steps.console_dns.outputs.url }}
@@ -294,10 +242,10 @@ jobs:
       - name: Deploy to Vercel and set custom domain alias
         run: |
           echo Deploying to Vercel with the following environment variables:
-          echo "NEXT_PUBLIC_API_URL=${{ needs.deploy-backend.outputs.api_url }}"
+          echo "NEXT_PUBLIC_API_URL=${{ needs.deploy-backend-dbs-infra.outputs.api_url }}"
           echo "AUTH0_BASE_URL=${{ steps.console_dns.outputs.url }}"
 
-          vercel deploy --yes --build-env NEXT_PUBLIC_API_URL=${{ needs.deploy-backend.outputs.api_url }} --env AUTH0_BASE_URL=${{ steps.console_dns.outputs.url }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }} >deployment-url.txt 2>error.txt
+          vercel deploy --yes --build-env NEXT_PUBLIC_API_URL=${{ needs.deploy-backend-dbs-infra.outputs.api_url }} --env AUTH0_BASE_URL=${{ steps.console_dns.outputs.url }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }} >deployment-url.txt 2>error.txt
 
           # check the exit code
           code=$?
@@ -313,7 +261,7 @@ jobs:
 
   send-cancelled-slack-notification:
     name: Send Cancelled Slack Notification
-    needs: [extract-branch-names, deploy-backend, deploy-frontend]
+    needs: [extract-branch-names, deploy-backend-dbs-infra, populate-db, populate-vector-db, deploy-frontend]
     if: cancelled()
     runs-on: ubuntu-latest
     steps:
@@ -330,7 +278,7 @@ jobs:
 
   send-failure-slack-notification:
     name: Send Failure Slack Notification
-    needs: [extract-branch-names, deploy-backend, deploy-frontend]
+    needs: [extract-branch-names, deploy-backend-dbs-infra, populate-db, populate-vector-db, deploy-frontend]
     if: failure()
     runs-on: ubuntu-latest
     steps:
@@ -347,7 +295,7 @@ jobs:
 
   send-success-slack-notification:
     name: Send Success Slack Notification
-    needs: [extract-branch-names, deploy-backend, deploy-frontend]
+    needs: [extract-branch-names, deploy-backend-dbs-infra, populate-db, populate-vector-db, deploy-frontend]
     if: success()
     runs-on: ubuntu-latest
     steps:
@@ -359,7 +307,7 @@ jobs:
             The branch environment deployment succeeded. Here are the details:
 
             *Branch*: `${{ needs.extract-branch-names.outputs.branch }}`
-            *API URL*: ${{ needs.deploy-backend.outputs.api_url }}
+            *API URL*: ${{ needs.deploy-backend-dbs-infra.outputs.api_url }}
             *Console URL*: ${{ needs.deploy-frontend.outputs.url }}
           SLACK_COLOR: success
 
