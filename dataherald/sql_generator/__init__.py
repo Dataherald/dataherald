@@ -8,6 +8,7 @@ from queue import Queue
 from typing import Any, Dict, List, Tuple
 
 import sqlparse
+from sql_metadata import Parser
 from langchain.agents.agent import AgentExecutor
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.schema import AgentAction, LLMResult
@@ -15,6 +16,7 @@ from langchain.schema.messages import BaseMessage
 from langchain_community.callbacks import get_openai_callback
 
 from dataherald.config import Component, System
+from dataherald.db_scanner.models.types import TableDescription
 from dataherald.model.chat_model import ChatModel
 from dataherald.repositories.sql_generations import (
     SQLGenerationRepository,
@@ -145,6 +147,31 @@ class SQLGenerator(Component, ABC):
             if len(obervarion) > max_length
             else obervarion
         )
+
+    def filter_tables_based_on_os(self, db_scan: List[TableDescription], question: str):
+        target_os_types = question.split("[OS]")[1].split("[/OS]")[0].strip().split(",")
+        filtered_db_scan = []
+        for table in db_scan:
+            if "os_versions" in table.metadata.get("akamai", {}):
+                os_versions = table.metadata["akamai"]["os_versions"]
+                if any(os_version in os_versions for os_version in target_os_types):
+                    filtered_db_scan.append(table)
+            else:
+                filtered_db_scan.append(table)
+        return filtered_db_scan
+
+    def filter_fewshot_sample_based_on_os(
+        self, db_scan: List[TableDescription], fewshot_samples: List[dict]
+    ):
+        filtered_fewshot_samples = []
+        for sample in fewshot_samples:
+            target_table_names = Parser(sample["sql"]).tables
+            if all(
+                target_table_name in [table.table_name for table in db_scan]
+                for target_table_name in target_table_names
+            ):
+                filtered_fewshot_samples.append(sample)
+        return filtered_fewshot_samples
 
     @abstractmethod
     def generate_response(

@@ -1,4 +1,5 @@
-AGENT_PREFIX = """You are an agent designed to interact with a SQL database to find a correct SQL query for the given question.
+AGENT_PREFIX = """You are an agent designed to interact with a OSQuery database to find a correct SQL query for the given question.
+Database stores information about the OS and its configurations.
 Given an input question, generate a syntactically correct {dialect} query, execute the query to make sure it is correct, and return the SQL query between ```sql and ``` tags.
 You have access to tools for interacting with the database. You can use tools using Action: <tool_name> and Action Input: <tool_input> format.
 Only use the below tools. Only use the information returned by the below tools to construct your final answer.
@@ -114,7 +115,8 @@ Question: {input}
 Thought: I should use the GenerateSql tool to generate a SQL query for the given question.
 {agent_scratchpad}"""
 
-FINETUNING_AGENT_PREFIX = """You are an agent designed to interact with a SQL database to find a correct SQL query for the given question.
+FINETUNING_AGENT_PREFIX = """You are an agent designed to interact with a OSQuery database to find a correct SQL query for the given question.
+Database stores information about the OS and its configurations.
 Given an input question, return a syntactically correct {dialect} query, always execute the query to make sure it is correct, and return the SQL query in ```sql and ``` format.
 
 Using `current_date()` or `current_datetime()` in SQL queries is banned, use SystemTime tool to get the exact time of the query execution.

@@ -670,7 +670,7 @@ class DataheraldSQLAgent(SQLGenerator):
             **(agent_executor_kwargs or {}),
         )
 
-    def augment_prompt(self, user_prompt: Prompt, storage: DB) -> None:
+    def augment_prompt(self, user_prompt: Prompt, storage: DB) -> None:  # noqa: C901
         vulnerabilities = VulnerabilityRepository(storage)
         cves = self.extract_cve_ids(user_prompt.text)
         extra_info = ""
@@ -697,12 +697,14 @@ class DataheraldSQLAgent(SQLGenerator):
                         extra_info += (
                             f"{cve} was published on {vulnerability.published_date}"
                         )
+                    if vulnerability.hotfix_ids:
+                        extra_info += f"{cve} is fixed in the following patches which can be found in patches.hotfix_id: {', '.join(vulnerability.hotfix_ids)}"  # noqa: E501
                     if vulnerability.source:
                         source = vulnerability.source
         return extra_info, source
 
     @override
-    def generate_response(  # noqa: C901
+    def generate_response(  # noqa: C901, PLR0915
         self,
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
@@ -741,8 +743,31 @@ class DataheraldSQLAgent(SQLGenerator):
         else:
             new_fewshot_examples = None
             number_of_samples = 0
+        if "[OS]" in user_prompt.text.upper() and "[/OS]" in user_prompt.text.upper():
+            db_scan = self.filter_tables_based_on_os(db_scan, user_prompt.text)
+            user_prompt.text = user_prompt.text.split("[/OS]")[1]
+            if new_fewshot_examples is not None:
+                new_fewshot_examples = self.filter_fewshot_sample_based_on_os(
+                    db_scan, new_fewshot_examples
+                )
+                number_of_samples = len(new_fewshot_examples)
         logger.info(f"Generating SQL response to question: {str(user_prompt.dict())}")
         self.database = SQLDatabase.get_sql_engine(database_connection)
+        """
+        if new_fewshot_examples is not None:
+            for example in new_fewshot_examples:
+                question = str(example["prompt_text"]).split("Question: ")[0].strip()
+                query = example["sql"].split("SQL: ")[0].strip()
+                if question == user_prompt.text.strip():
+                    return SQLGeneration(
+                        prompt_id=user_prompt.id,
+                        tokens_used=0,
+                        completed_at=datetime.datetime.now(),
+                        sql=query,
+                        status="VALID",
+                        metadata={},
+                    )
+        """
         toolkit = SQLDatabaseToolkit(
             db=self.database,
             context=context,

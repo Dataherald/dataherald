@@ -219,4 +219,5 @@ class Vulnerability(BaseModel):
     date_updated: str
     description: str
     affected_versions: str
+    hotfix_ids: list[str] | None = None
     source: str

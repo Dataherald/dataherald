@@ -521,7 +521,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
             **(agent_executor_kwargs or {}),
         )
 
-    def augment_prompt(self, user_prompt: Prompt, storage: DB) -> None:
+    def augment_prompt(self, user_prompt: Prompt, storage: DB) -> None:  # noqa: C901
         vulnerabilities = VulnerabilityRepository(storage)
         cves = self.extract_cve_ids(user_prompt.text)
         extra_info = ""
@@ -548,12 +548,14 @@ class DataheraldFinetuningAgent(SQLGenerator):
                         extra_info += (
                             f"{cve} was published on {vulnerability.published_date}"
                         )
+                    if vulnerability.hotfix_ids:
+                        extra_info += f"{cve} is fixed in the following patches which can be found in patches.hotfix_id: {', '.join(vulnerability.hotfix_ids)}"  # noqa: E501
                     if vulnerability.source:
                         source = vulnerability.source
         return extra_info, source
 
     @override
-    def generate_response(  # noqa: C901
+    def generate_response(  # noqa: C901, PLR0915
         self,
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
@@ -596,8 +598,15 @@ class DataheraldFinetuningAgent(SQLGenerator):
         if not db_scan:
             raise ValueError("No scanned tables found for database")
         few_shot_examples, instructions = context_store.retrieve_context_for_question(
-            user_prompt, number_of_samples=1
+            user_prompt, number_of_samples=5
         )
+        if "[OS]" in user_prompt.text.upper() and "[/OS]" in user_prompt.text.upper():
+            db_scan = self.filter_tables_based_on_os(db_scan, user_prompt.text)
+            user_prompt.text = user_prompt.text.split("[/OS]")[1]
+            if few_shot_examples:
+                few_shot_examples = self.filter_fewshot_sample_based_on_os(
+                    db_scan, few_shot_examples
+                )
         finetunings_repository = FinetuningsRepository(storage)
         finetuning = finetunings_repository.find_by_id(self.finetuning_id)
         openai_fine_tuning = OpenAIFineTuning(storage, finetuning)
@@ -608,6 +617,21 @@ class DataheraldFinetuningAgent(SQLGenerator):
                 f"Finetuning should have the status {FineTuningStatus.SUCCEEDED.value} to generate SQL queries."
             )
         self.database = SQLDatabase.get_sql_engine(database_connection)
+        """
+        if few_shot_examples is not None:
+            for example in few_shot_examples:
+                question = str(example["prompt_text"]).split("Question: ")[0].strip()
+                query = example["sql"].split("SQL: ")[0].strip()
+                if question == user_prompt.text.strip():
+                    return SQLGeneration(
+                        prompt_id=user_prompt.id,
+                        tokens_used=0,
+                        completed_at=datetime.datetime.now(),
+                        sql=query,
+                        status="VALID",
+                        metadata={},
+                    )
+        """
         toolkit = SQLDatabaseToolkit(
             db=self.database,
             instructions=instructions,
