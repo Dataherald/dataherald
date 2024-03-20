@@ -119,7 +119,7 @@ jobs:
     if: needs.check-changes.outputs.console_changed == 'true' && success()
     uses: ./.github/workflows/ai-deploy-frontend.yml
     with:
-      target_env: preview
+      target_env: ${{ inputs.target_env }}
     secrets:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_AI_CONSOLE_PROJECT_ID: ${{ secrets.VERCEL_AI_CONSOLE_PROJECT_ID }}
