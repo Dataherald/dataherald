@@ -37,6 +37,7 @@ jobs:
         with:
           filters: |
             engine:
+            - '.github/workflows/ai-deploy-env.yml'
             - '.github/workflows/ai-deploy-${{ inputs.target_env }}-env.yml'
             - 'apps/ai/server/.aws/task-definition-${{ inputs.target_env }}.json'
             - 'apps/ai/server/main.tf'
@@ -47,6 +48,7 @@ jobs:
         with:
           filters: |
             server:
+            - '.github/workflows/ai-deploy-env.yml'
             - '.github/workflows/ai-deploy-${{ inputs.target_env }}-env.yml'
             - 'apps/ai/server/.aws/task-definition-${{ inputs.target_env }}.json'
             - 'apps/ai/server/main.tf'
@@ -57,6 +59,7 @@ jobs:
         with:
           filters: |
             slackbot:
+            - '.github/workflows/ai-deploy-env.yml'
             - '.github/workflows/ai-deploy-${{ inputs.target_env }}-env.yml'
             - 'apps/ai/clients/slack/.aws/task-definition-${{ inputs.target_env }}.json'
             - 'apps/ai/clients/slack/**'
@@ -66,6 +69,7 @@ jobs:
         with:
           filters: |
             console:
+            - '.github/workflows/ai-deploy-env.yml'
             - '.github/workflows/ai-deploy-${{ inputs.target_env }}-env.yml'
             - 'apps/ai/clients/admin-console/**'
   set-changes:
