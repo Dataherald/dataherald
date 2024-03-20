@@ -101,7 +101,7 @@ jobs:
         with:
           mode: start
           github-token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-          ec2-image-id: ami-07c717106b75d6968
+          ec2-image-id: ami-00c9b698235d47d52
           ec2-instance-type: t2.micro
           subnet-id: subnet-047b3ad5f1945b456 # this is a private subnet, even though the mongo vpce is set for public subnet, it will work, probably because of the route table
           security-group-id: sg-0af2c0fe34e9184ad
