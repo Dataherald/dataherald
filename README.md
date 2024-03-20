@@ -123,9 +123,9 @@ ORG_ID =
 ENCRYPT_KEY = 
 
 # the variable that determines how many rows should be returned from a query to the agents, set it to small values to avoid high costs and long response times, default is 50
-UPPER_LIMIT_QUERY_RETURN_ROWS = 
+UPPER_LIMIT_QUERY_RETURN_ROWS = 50
 # the variable that force the engine to quit if the sql geneation takes more than the time set in this variable, default is None.
-DH_ENGINE_TIMEOUT =
+DH_ENGINE_TIMEOUT = 150
 ```
 
 While not strictly required, we also strongly suggest you change the MONGO username and password fields as well.
