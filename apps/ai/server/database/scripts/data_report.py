@@ -76,6 +76,10 @@ if __name__ == "__main__":
                     "original_sql_query": original_response["sql"],
                     "original_sql_status": original_response["status"],
                     "latest_sql_status": final_response["status"],
+                    "source": prompt["metadata"]["dh_internal"].get("source"),
+                    "query_status": prompt["metadata"]["dh_internal"].get(
+                        "generation_status"
+                    ),
                     "final_confidence": (
                         None
                         if len(sql_generations) == 1
@@ -89,14 +93,21 @@ if __name__ == "__main__":
                     ),
                     "was_the_original_correct": (
                         True
-                        if prompt["metadata"]["dh_internal"]["generation_status"]
-                        == "VERIFIED"
-                        and (
-                            len(sql_generations) == 1
-                            or (
-                                len(sql_generations) > 1
-                                and original_response["sql"] == final_response["sql"]
+                        if (
+                            prompt["metadata"]["dh_internal"]["generation_status"]
+                            == "VERIFIED"
+                            and (
+                                len(sql_generations) == 1
+                                or (
+                                    len(sql_generations) > 1
+                                    and original_response["sql"]
+                                    == final_response["sql"]
+                                )
                             )
+                        )
+                        or (
+                            prompt["metadata"]["dh_internal"].get("source") == "SLACK"
+                            and len(sql_generations) == 1
                         )
                         else False
                     ),
