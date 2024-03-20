@@ -40,8 +40,9 @@ provided in the .env.example file with the default values.
   
     ONLY_STORE_CSV_FILES_LOCALLY =
 
-    DH_ENGINE_TIMEOUT =
-    UPPER_LIMIT_QUERY_RETURN_ROWS =
+    AGENT_MAX_ITERATIONS = 15
+    DH_ENGINE_TIMEOUT = 150
+    UPPER_LIMIT_QUERY_RETURN_ROWS = 50
 
 
 .. csv-table::
