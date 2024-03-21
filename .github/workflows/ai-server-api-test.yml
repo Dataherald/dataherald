@@ -2,7 +2,7 @@ name: AI API tests using Postman CLI
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [ready_for_review]
     paths:
       - ".github/workflows/ai-server-api-test.yml" # this file
       - "apps/ai/server/**"
@@ -29,7 +29,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
           submodules: true
       - name: Create Docker network
         run: docker network create backendnetwork

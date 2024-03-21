@@ -2,17 +2,6 @@ name: AI Deploy Docker Image to ECS
 
 on:
   workflow_call:
-    secrets:
-      SUBMODULE_UPDATE_TOKEN:
-        description: "Token to update submodules"
-        required: true
-      AWS_ACCESS_KEY_ID:
-        description: "AWS Access Key ID"
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        description: "AWS Secret Access Key"
-        required: true
-
     inputs:
       docker_image:
         description: "Docker image"
@@ -46,7 +35,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
           submodules: true
 
       - name: Configure AWS credentials

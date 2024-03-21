@@ -8,29 +8,6 @@ on:
         required: true
         type: string
 
-    secrets:
-      SUBMODULE_UPDATE_TOKEN:
-        description: "The token to use to update the submodules"
-        required: true
-      AWS_ACCESS_KEY_ID:
-        description: "The AWS access key ID"
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        description: "The AWS secret access key"
-        required: true
-      GH_SLACK_WEBHOOK_URL:
-        description: "The Slack webhook URL"
-        required: true
-      VERCEL_ORG_ID:
-        description: "The Vercel organization ID"
-        required: true
-      VERCEL_AI_CONSOLE_PROJECT_ID:
-        description: "The Vercel project ID for the AI Console"
-        required: true
-      VERCEL_ACCESS_TOKEN:
-        description: "The Vercel access token"
-        required: true
-
 env:
   SLACK_WEBHOOK: ${{ secrets.GH_SLACK_WEBHOOK_URL }}
   SLACK_ICON: https://files.dataherald.com/random/github-actions.png
@@ -44,86 +21,91 @@ jobs:
     with:
       target_env: ${{ inputs.target_env }}
 
+  resolve-env-db-url:
+    runs-on: ubuntu-latest
+    name: Get Database URL
+    outputs:
+      db_url: ${{ steps.get-db-url.outputs.db_url }}
+    steps:
+      - name: Get DB URL
+        id: get-db-url
+        run: |
+          if [ ${{ inputs.target_env }} == 'stage' ]; then
+            echo "db_url=${{ vars.STAGING_MONGODB_URI}}/k2-stage-serverless" >> $GITHUB_OUTPUT
+          else 
+            echo "db_url=${{vars.PRODUCTION_MONGODB_URI}}/k2-serverless" >> $GITHUB_OUTPUT
+          fi
+
+  migrate-db:
+    name: Migrate Database
+    needs: [resolve-env-db-url]
+    uses: ./.github/workflows/ai-migrate-db.yml
+    secrets: inherit
+    with:
+      target_db_url: ${{ needs.resolve-env-db-url.outputs.db_url }}
+
   build-engine:
     name: Build Engine
     needs: check-changes
     if: needs.check-changes.outputs.engine_changed == 'true'
     uses: ./.github/workflows/ai-build-docker.yml
+    secrets: inherit
     with:
       target_app: engine
       target_env: ${{ inputs.target_env }}
       image_tag: ${{ github.sha }}
-    secrets:
-      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   build-server:
     name: Build Server
     needs: check-changes
     if: needs.check-changes.outputs.server_changed == 'true' && success()
     uses: ./.github/workflows/ai-build-docker.yml
+    secrets: inherit
     with:
       target_app: server
       target_env: ${{ inputs.target_env }}
       image_tag: ${{ github.sha }}
-    secrets:
-      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   deploy-backend:
     name: Deploy Backend
     needs: [build-engine, build-server]
     uses: ./.github/workflows/ai-deploy-backend.yml
+    secrets: inherit
     with:
       target_env: ${{ inputs.target_env }}
       engine_image: ${{ needs.build-engine.outputs.docker_image }}
       server_image: ${{ needs.build-server.outputs.docker_image }}
-    secrets:
-      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   build-slackbot:
     name: Build Slackbot
     needs: [check-changes]
     if: needs.check-changes.outputs.slackbot_changed == 'true' && success()
     uses: ./.github/workflows/ai-build-docker.yml
+    secrets: inherit
     with:
       target_app: slackbot
       target_env: ${{ inputs.target_env }}
       image_tag: ${{ github.sha }}
-    secrets:
-      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   deploy-slackbot:
     name: Deploy Slackbot
     needs: [build-slackbot, deploy-backend]
     uses: ./.github/workflows/ai-deploy-docker-ecs.yml
+    secrets: inherit
     with:
       docker_image: ${{ needs.build-slackbot.outputs.docker_image }}
       ecs_service_name: ai-slackbot-${{ inputs.target_env }}
       ecs_task_definition: ./apps/ai/clients/slack/.aws/task-definition-${{ inputs.target_env }}.json
       container_name: ai-slackbot-${{ inputs.target_env }}
-    secrets:
-      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   deploy-frontend:
     name: Deploy Console
     needs: [check-changes, deploy-backend]
     if: needs.check-changes.outputs.console_changed == 'true' && success()
     uses: ./.github/workflows/ai-deploy-frontend.yml
+    secrets: inherit
     with:
       target_env: ${{ inputs.target_env }}
-    secrets:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_AI_CONSOLE_PROJECT_ID: ${{ secrets.VERCEL_AI_CONSOLE_PROJECT_ID }}
-      VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
 
   slack-notification-env:
     name: Set Environment Messages
@@ -143,7 +125,13 @@ jobs:
   send-cancelled-slack-notification:
     name: Send Cancelled Slack Notification
     needs:
-      [slack-notification-env, deploy-backend, deploy-slackbot, deploy-frontend]
+      [
+        slack-notification-env,
+        migrate-db,
+        deploy-backend,
+        deploy-slackbot,
+        deploy-frontend,
+      ]
     if: cancelled()
     runs-on: ubuntu-latest
     steps:
@@ -160,8 +148,14 @@ jobs:
   send-failure-slack-notification:
     name: Send Failure Slack Notification
     needs:
-      [slack-notification-env, deploy-backend, deploy-slackbot, deploy-frontend]
-    if: needs.deploy-backend.result == 'failure' || needs.deploy-slackbot.result == 'failure' || needs.deploy-frontend.result == 'failure'
+      [
+        slack-notification-env,
+        migrate-db,
+        deploy-backend,
+        deploy-slackbot,
+        deploy-frontend,
+      ]
+    if: needs.migrate-db == 'failure' || needs.deploy-backend.result == 'failure' || needs.deploy-slackbot.result == 'failure' || needs.deploy-frontend.result == 'failure'
     runs-on: ubuntu-latest
     steps:
       - name: Send failed notification
@@ -177,8 +171,14 @@ jobs:
   send-success-slack-notification:
     name: Send Success Slack Notification
     needs:
-      [slack-notification-env, deploy-backend, deploy-slackbot, deploy-frontend]
-    if: needs.deploy-backend.result == 'success' && needs.deploy-slackbot.result == 'success' && needs.deploy-frontend.result == 'success'
+      [
+        slack-notification-env,
+        migrate-db,
+        deploy-backend,
+        deploy-slackbot,
+        deploy-frontend,
+      ]
+    if: needs.migrate-db == 'success' ||needs.deploy-backend.result == 'success' && needs.deploy-slackbot.result == 'success' && needs.deploy-frontend.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Setup URLs

@@ -1,0 +1,48 @@
+name: Migrate Database
+
+on:
+  workflow_call:
+    inputs:
+      target_db_url:
+        description: The target database URL
+        required: true
+        type: string
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  start-self-hosted-runner:
+    name: Start self-hosted EC2 runner
+    uses: ./.github/workflows/ai-start-self-hosted-runner.yml
+    secrets: inherit
+  migrate-db:
+    name: Migrate Database
+    needs: [start-self-hosted-runner]
+    runs-on: ${{ needs.start-self-hosted-runner.outputs.label }}
+    defaults:
+      run:
+        working-directory: ./apps/ai/server
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          submodules: true
+      - name: Run migration script # liquibase cli and mongo driver already installed in runner
+        env:
+          LIQUIBASE_COMMAND_USERNAME: ${{ secrets.MONGODB_USERNAME }}
+          LIQUIBASE_COMMAND_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
+          LIQUIBASE_COMMAND_URL: ${{ inputs.target_db_url }}
+        run: |
+          liquibase --changeLogFile=database/migrations/changelog.yaml update
+
+  stop-self-hosted-runner:
+    name: Stop self-hosted EC2 runner
+    needs: [start-self-hosted-runner, migrate-db]
+    uses: ./.github/workflows/ai-stop-self-hosted-runner.yml
+    if: always()
+    secrets: inherit
+    with:
+      label: ${{ needs.start-self-hosted-runner.outputs.label }}
+      ec2_instance_id: ${{ needs.start-self-hosted-runner.outputs.ec2_instance_id }}

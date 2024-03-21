@@ -1,6 +1,8 @@
 name: AI Server - Quality Checks
 on:
   push:
+    tags-ignore:
+      - "*"
     paths:
       - apps/ai/server/**
       - .github/workflows/ai-server-checks.yml # this file

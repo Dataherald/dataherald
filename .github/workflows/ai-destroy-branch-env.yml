@@ -58,7 +58,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
           submodules: true
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -84,55 +84,24 @@ jobs:
           aws ecr batch-delete-image --repository-name $ECR_CORE_REPOSITORY --image-ids imageTag=${{ needs.extract-branch-name.outputs.branch_name }} --region us-east-1
           aws ecr batch-delete-image --repository-name $ECR_SERVER_REPOSITORY --image-ids imageTag=${{ needs.extract-branch-name.outputs.branch_name }} --region us-east-1
   start-self-hosted-runner:
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Start EC2 runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
-        with:
-          mode: start
-          github-token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-          ec2-image-id: ami-00c9b698235d47d52
-          ec2-instance-type: t2.micro
-          subnet-id: subnet-047b3ad5f1945b456 # this is a private subnet, even though the mongo vpce is set for public subnet, it will work, probably because of the route table
-          security-group-id: sg-0af2c0fe34e9184ad
+    name: Start self-hosted EC2 runner
+    uses: ./.github/workflows/ai-start-self-hosted-runner.yml
+    secrets: inherit
+
   delete-database:
     name: Delete database
-    needs:
-      - extract-branch-name
-      - start-self-hosted-runner
-    runs-on: ${{ needs.start-self-hosted-runner.outputs.label }} # run the job on the newly created runner
+    needs: [extract-branch-name, start-self-hosted-runner]
+    runs-on: ${{ needs.start-self-hosted-runner.outputs.label }}
     steps:
       - name: Delete mongo database
         run: |
           mongosh --username ${{ secrets.MONGODB_USERNAME }} --password ${{ secrets.MONGODB_PASSWORD }} "${{ vars.EPHEMERAL_MONGODB_URI }}" --eval "db.getSiblingDB('${{ needs.extract-branch-name.outputs.db_name }}').dropDatabase()"
-  stop-runner:
+  stop-self-hosted-runner:
     name: Stop self-hosted EC2 runner
-    needs:
-      - start-self-hosted-runner # required to get output from the start-runner job
-      - delete-database
-    runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
-        with:
-          mode: stop
-          github-token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-          label: ${{ needs.start-self-hosted-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-self-hosted-runner.outputs.ec2-instance-id }}
+    needs: [start-self-hosted-runner, delete-database]
+    if: always()
+    uses: ./.github/workflows/ai-stop-self-hosted-runner.yml
+    secrets: inherit
+    with:
+      label: ${{ needs.start-self-hosted-runner.outputs.label }}
+      ec2_instance_id: ${{ needs.start-self-hosted-runner.outputs.ec2_instance_id }}

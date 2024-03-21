@@ -2,17 +2,6 @@ name: AI Build Docker Image
 
 on:
   workflow_call:
-    secrets:
-      SUBMODULE_UPDATE_TOKEN:
-        description: "Token to update submodules"
-        required: true
-      AWS_ACCESS_KEY_ID:
-        description: "AWS Access Key ID"
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        description: "AWS Secret Access Key"
-        required: true
-
     inputs:
       target_env:
         description: "The target environment to build the docker image for. Possible values are `branch`, `stage` or `prod`"
@@ -33,7 +22,6 @@ on:
         value: ${{ jobs.build-docker-image.outputs.docker_image }}
 
 env:
-  AWS_REGION: us-east-1
   ECR_REPOSITORY: ai-${{ inputs.target_app }}-${{ inputs.target_env }}
 
 jobs:
@@ -48,7 +36,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
           submodules: true
 
       - name: Use Node.js
@@ -60,7 +48,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr

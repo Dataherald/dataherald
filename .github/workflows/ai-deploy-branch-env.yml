@@ -1,12 +1,20 @@
 name: AI Deploy Branch Environment
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      option:
+        description: "Select Initial Database (if DB already exists this will be dismissed)"
+        required: true
+        type: choice
+        options:
+          - "stage"
+          - "sample"
+          - "empty"
 
 env:
-  AWS_REGION: us-east-1
   ECR_CORE_REPOSITORY: ai-engine-branch
   ECR_SERVER_REPOSITORY: ai-server-branch
-  SLACK_WEBHOOK: ${{ secrets.GH_SLACK_WEBHOOK_URL }}
   SLACK_ICON: https://files.dataherald.com/random/github-actions.png
   SLACK_USERNAME: GitHub Actions
   SLACK_CHANNEL: eng-notifications
@@ -44,55 +52,31 @@ jobs:
           echo "branch=$branch" >> $GITHUB_OUTPUT
           echo "branch_name=$formatted_branch" >> $GITHUB_OUTPUT
           echo "db_name=$db_name" >> $GITHUB_OUTPUT
+
   start-self-hosted-runner:
     name: Start self-hosted EC2 runner
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Start EC2 runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
-        with:
-          mode: start
-          github-token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-          ec2-image-id: ami-00c9b698235d47d52
-          ec2-instance-type: t2.micro
-          subnet-id: subnet-047b3ad5f1945b456 # this is a private subnet, even though the mongo vpce is set for public subnet, it will work, probably because of the route table
-          security-group-id: sg-0af2c0fe34e9184ad
+    uses: ./.github/workflows/ai-start-self-hosted-runner.yml
+    secrets: inherit
 
   build-engine:
     name: Build Engine
     needs: extract-branch-names
     uses: ./.github/workflows/ai-build-docker.yml
+    secrets: inherit
     with:
       target_app: engine
       target_env: branch
       image_tag: ${{ needs.extract-branch-names.outputs.branch_name}}-${{ github.sha }}
-    secrets:
-      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   build-server:
     name: Build Server
     needs: extract-branch-names
     uses: ./.github/workflows/ai-build-docker.yml
+    secrets: inherit
     with:
       target_app: server
       target_env: branch
       image_tag: ${{ needs.extract-branch-names.outputs.branch_name}}-${{ github.sha }}
-    secrets:
-      SUBMODULE_UPDATE_TOKEN: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   deploy-backend-dbs-infra:
     name: Deploy Backend and DBs infrastructure
@@ -107,14 +91,14 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
           submodules: true
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -154,9 +138,8 @@ jobs:
 
   populate-db:
     name: Populate MongoDB
-    needs:
-      [extract-branch-names, start-self-hosted-runner, deploy-backend-dbs-infra]
-    runs-on: ${{ needs.start-self-hosted-runner.outputs.label }} # run the job on the newly created runner
+    needs: [extract-branch-names, start-self-hosted-runner]
+    runs-on: ${{ needs.start-self-hosted-runner.outputs.label }}
     defaults:
       run:
         working-directory: ./apps/ai/server
@@ -164,7 +147,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
           submodules: true
 
       - name: Check if MongoDB database exists
@@ -177,15 +160,35 @@ jobs:
         shell: bash
 
       - name: Restore MongoDB from STAGE dump # ensure there's only one folder in the dump directory
-        if: steps.db_check.outputs.exists == 'false'
+        if: steps.db_check.outputs.exists == 'false' && github.event.inputs.option == 'stage'
         run: |
           echo "Previous step output: ${{ steps.db_check.outputs.exists }}"
           echo "Database does not exist. Restoring from STAGE dump..."
-          cd terraform
           mongodump --username ${{ secrets.MONGODB_USERNAME }} --password ${{ secrets.MONGODB_PASSWORD }} --uri="${{ vars.STAGING_MONGODB_URI }}"
           cd dump
           from_db=(*)
           mongorestore . --username ${{ secrets.MONGODB_USERNAME }} --password ${{ secrets.MONGODB_PASSWORD }} --nsFrom "$from_db.*" --nsTo "${{ needs.extract-branch-names.outputs.db_name }}.*" --uri="${{ vars.EPHEMERAL_MONGODB_URI }}"
+      - name: Restore MongoDB from sample db
+        if: steps.db_check.outputs.exists == 'false' && github.event.inputs.option == 'sample'
+        run: |
+          echo "Previous step output: ${{ steps.db_check.outputs.exists }}"
+          echo "Database does not exist. Restoring from SAMPLE dump..."
+          cd database/migrations/dump
+          from_db=(*)
+          mongorestore . --username ${{ secrets.MONGODB_USERNAME }} --password ${{ secrets.MONGODB_PASSWORD }} --nsFrom "$from_db.*" --nsTo "${{ needs.extract-branch-names.outputs.db_name }}.*" --uri="${{ vars.EPHEMERAL_MONGODB_URI }}"
+      - name: Create an empty MongoDB database
+        if: steps.db_check.outputs.exists == 'false' && github.event.inputs.option == 'empty'
+        run: |
+          echo "Previous step output: ${{ steps.db_check.outputs.exists }}"
+          echo "Database does not exist. Creating an empty database..."
+          mongosh --username ${{ secrets.MONGODB_USERNAME }} --password ${{ secrets.MONGODB_PASSWORD }} "${{ vars.EPHEMERAL_MONGODB_URI }}" --eval "db.getSiblingDB('${{ needs.extract-branch-names.outputs.db_name }}').createCollection('empty')"
+      - name: Run migration script # liquibase cli and mongo driver already installed in runner
+        env:
+          LIQUIBASE_COMMAND_USERNAME: ${{ secrets.MONGODB_USERNAME }}
+          LIQUIBASE_COMMAND_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
+          LIQUIBASE_COMMAND_URL: ${{ vars.EPHEMERAL_MONGODB_URI }}/${{ needs.extract-branch-names.outputs.db_name }}
+        run: |
+          liquibase --changeLogFile=database/migrations/changelog.yaml update
       - name: Delete DB if failure
         if: failure()
         run: |
@@ -193,8 +196,14 @@ jobs:
 
   populate-vector-db:
     name: Populate PineconeDB
-    needs: [extract-branch-names, start-self-hosted-runner, populate-db]
-    runs-on: ${{ needs.start-self-hosted-runner.outputs.label }} # run the job on the newly created runner
+    needs:
+      [
+        extract-branch-names,
+        start-self-hosted-runner,
+        populate-db,
+        deploy-backend-dbs-infra,
+      ]
+    runs-on: ${{ needs.start-self-hosted-runner.outputs.label }}
     defaults:
       run:
         working-directory: ./apps/ai/server
@@ -202,7 +211,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
           submodules: true
       - name: Populate PineconeDB
         env:
@@ -227,9 +236,9 @@ jobs:
     outputs:
       url: ${{ steps.console_dns.outputs.url }}
     env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_AI_CONSOLE_PROJECT_ID }}
-      VERCEL_TEAM_NAME: dataherald
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_AI_CONSOLE_PROJECT_ID }}
+      VERCEL_TEAM_NAME: ${{ vars.VERCEL_TEAM_NAME }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -276,6 +285,7 @@ jobs:
       - name: Send cancelled notification
         uses: rtCamp/action-slack-notify@v2
         env:
+          SLACK_WEBHOOK: ${{ secrets.GH_SLACK_WEBHOOK_URL }}
           SLACK_TITLE: Branch Deployment CANCELLED
           SLACK_MESSAGE: |
             The branch environment deployment was cancelled. Please check the GitHub Actions logs for more details.
@@ -300,6 +310,7 @@ jobs:
       - name: Send failed notification
         uses: rtCamp/action-slack-notify@v2
         env:
+          SLACK_WEBHOOK: ${{ secrets.GH_SLACK_WEBHOOK_URL }}
           SLACK_TITLE: Branch Deployment FAILED
           SLACK_MESSAGE: |
             The branch environment deployment failed. Please check the GitHub Actions logs for more details.
@@ -324,6 +335,7 @@ jobs:
       - name: Send success notification
         uses: rtCamp/action-slack-notify@v2
         env:
+          SLACK_WEBHOOK: ${{ secrets.GH_SLACK_WEBHOOK_URL }}
           SLACK_TITLE: Branch Deployment SUCCEEDED
           SLACK_MESSAGE: |
             The branch environment deployment succeeded. Here are the details:
@@ -336,19 +348,9 @@ jobs:
   stop-self-hosted-runner:
     name: Stop self-hosted EC2 runner
     needs: [start-self-hosted-runner, populate-db, populate-vector-db]
-    runs-on: ubuntu-latest
     if: always()
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
-        with:
-          mode: stop
-          github-token: ${{ secrets.SUBMODULE_UPDATE_TOKEN }}
-          label: ${{ needs.start-self-hosted-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-self-hosted-runner.outputs.ec2-instance-id }}
+    uses: ./.github/workflows/ai-stop-self-hosted-runner.yml
+    secrets: inherit
+    with:
+      label: ${{ needs.start-self-hosted-runner.outputs.label }}
+      ec2_instance_id: ${{ needs.start-self-hosted-runner.outputs.ec2_instance_id }}
