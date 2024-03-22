@@ -127,13 +127,17 @@ class SQLGenerator(Component, ABC):
                         thought=str(step[0].log).split("Action:")[0],
                         action=step[0].tool,
                         action_input=step[0].tool_input,
-                        observation=step[1],
+                        observation=self.truncate_observations(step[1]),
                     )
                 )
         formatted_intermediate_steps[0].thought = suffix.split("Thought: ")[1].split(
             "{agent_scratchpad}"
         )[0]
         return formatted_intermediate_steps
+
+    def truncate_observations(self, obervarion: str, max_length: int = 2000) -> str:
+        """Truncate the tool input."""
+        return obervarion[:max_length] + "... (truncated)" if len(obervarion) > max_length else obervarion
 
     @abstractmethod
     def generate_response(
