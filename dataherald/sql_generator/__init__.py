@@ -149,6 +149,7 @@ class SQLGenerator(Component, ABC):
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
+        metadata: dict = None,
     ) -> SQLGeneration:
         """Generates a response to a user question."""
         pass
@@ -160,10 +161,13 @@ class SQLGenerator(Component, ABC):
         response: SQLGeneration,
         sql_generation_repository: SQLGenerationRepository,
         queue: Queue,
+        metadata: dict = None,
     ):
         try:
             with get_openai_callback() as cb:
-                for chunk in agent_executor.stream({"input": question}):
+                for chunk in agent_executor.stream(
+                    {"input": question}, {"metadata": metadata}
+                ):
                     if "actions" in chunk:
                         for message in chunk["messages"]:
                             queue.put(message.content + "\n")
@@ -209,6 +213,7 @@ class SQLGenerator(Component, ABC):
         database_connection: DatabaseConnection,
         response: SQLGeneration,
         queue: Queue,
+        metadata: dict = None,
     ):
         """Streams a response to a user question."""
         pass

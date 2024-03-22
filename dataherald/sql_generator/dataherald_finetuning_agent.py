@@ -492,6 +492,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,  # noqa: ARG002
+        metadata: dict = None,
     ) -> SQLGeneration:
         """
         generate_response generates a response to a user question using a Finetuning model.
@@ -564,7 +565,9 @@ class DataheraldFinetuningAgent(SQLGenerator):
         agent_executor.handle_parsing_errors = ERROR_PARSING_MESSAGE
         with get_openai_callback() as cb:
             try:
-                result = agent_executor.invoke({"input": user_prompt.text})
+                result = agent_executor.invoke(
+                    {"input": user_prompt.text}, {"metadata": metadata}
+                )
                 result = self.check_for_time_out_or_tool_limit(result)
             except SQLInjectionError as e:
                 raise SQLInjectionError(e) from e
@@ -607,6 +610,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         database_connection: DatabaseConnection,
         response: SQLGeneration,
         queue: Queue,
+        metadata: dict = None,
     ):
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
@@ -669,6 +673,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
                 response,
                 sql_generation_repository,
                 queue,
+                metadata,
             ),
         )
         thread.start()
