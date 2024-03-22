@@ -67,6 +67,13 @@ HTTP 201 code response
             "llm_name": "gpt-4-turbo-preview",
             "api_base": "string"
         },
+        "intermediate_steps": [
+            {
+                "action": "string",
+                "action_input": "string",
+                "observation": "string"
+            }
+        ],
         "sql": "string",
         "tokens_used": 0,
         "confidence_score": 0,
@@ -113,6 +120,15 @@ HTTP 201 code response
             "llm_name": "mistralai/Mixtral-8x7B-Instruct-v0.1",
             "api_base": "https://tt5h145hsc119q-8000.proxy.runpod.net/v1"
         },
+        intermediate_steps": [
+            {
+            "thought": "I should Collect examples of Question/SQL pairs to check if there is a similar question among the examples.\n",
+            "action": "FewshotExamplesRetriever",
+            "action_input": "5",
+            "observation": "samples ... "
+            },
+            ...
+        ],
         "sql": "SELECT metric_value \nFROM renthub_median_rent \nWHERE period_type = 'monthly' \nAND geo_type = 'city' \nAND location_name = 'Miami' \nAND property_type = 'All Residential' \nAND period_end = (SELECT DATE_TRUNC('MONTH', CURRENT_DATE()) - INTERVAL '1 day')\nLIMIT 10",
         "tokens_used": 18115,
         "confidence_score": 0.95,

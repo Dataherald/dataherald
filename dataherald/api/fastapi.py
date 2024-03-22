@@ -731,7 +731,6 @@ class FastAPI(API):
             return error_response(
                 e, prompt_sql_generation_request.dict(), "sql_generation_not_created"
             )
-
         return SQLGenerationResponse(**sql_generation.dict())
 
     @override

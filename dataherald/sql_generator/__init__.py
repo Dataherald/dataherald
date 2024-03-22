@@ -22,7 +22,7 @@ from dataherald.repositories.sql_generations import (
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.sql_generator.create_sql_query_status import create_sql_query_status
-from dataherald.types import LLMConfig, Prompt, SQLGeneration
+from dataherald.types import IntermediateStep, LLMConfig, Prompt, SQLGeneration
 from dataherald.utils.strings import contains_line_breaks
 
 
@@ -74,20 +74,6 @@ class SQLGenerator(Component, ABC):
     ) -> SQLGeneration:
         return create_sql_query_status(db, query, sql_generation)
 
-    def format_intermediate_representations(
-        self, intermediate_representation: List[Tuple[AgentAction, str]]
-    ) -> List[str]:
-        """Formats the intermediate representation into a string."""
-        formatted_intermediate_representation = []
-        for item in intermediate_representation:
-            formatted_intermediate_representation.append(
-                f"Thought: '{str(item[0].log).split('Action:')[0]}'\n"
-                f"Action: '{item[0].tool}'\n"
-                f"Action Input: '{item[0].tool_input}'\n"
-                f"Observation: '{item[1]}'"
-            )
-        return formatted_intermediate_representation
-
     def format_sql_query(self, sql_query: str) -> str:
         comments = [
             match.group() for match in re.finditer(r"--.*$", sql_query, re.MULTILINE)
@@ -110,13 +96,52 @@ class SQLGenerator(Component, ABC):
             action = step[0]
             if type(action) == AgentAction and action.tool == "SqlDbQuery":
                 if "SELECT" in self.format_sql_query(action.tool_input).upper():
-                    sql_query = self.remove_markdown(sql_query)
+                    sql_query = self.remove_markdown(action.tool_input)
         if sql_query == "":
             for step in intermediate_steps:
                 action = step[0]
                 if "SELECT" in action.tool_input.upper():
-                    sql_query = self.remove_markdown(sql_query)
+                    sql_query = self.remove_markdown(action.tool_input)
+                    if not sql_query.upper().strip().startswith("SELECT"):
+                        sql_query = ""
         return sql_query
+
+    def construct_intermediate_steps(
+        self, intermediate_steps: List[Tuple[AgentAction, str]], suffix: str = ""
+    ) -> List[IntermediateStep]:
+        """Constructs the intermediate steps."""
+        formatted_intermediate_steps = []
+        for step in intermediate_steps:
+            if step[0].tool == "SqlDbQuery":
+                formatted_intermediate_steps.append(
+                    IntermediateStep(
+                        thought=str(step[0].log).split("Action:")[0],
+                        action=step[0].tool,
+                        action_input=step[0].tool_input,
+                        observation="QUERY RESULTS ARE NOT STORED FOR PRIVACY REASONS.",
+                    )
+                )
+            else:
+                formatted_intermediate_steps.append(
+                    IntermediateStep(
+                        thought=str(step[0].log).split("Action:")[0],
+                        action=step[0].tool,
+                        action_input=step[0].tool_input,
+                        observation=self.truncate_observations(step[1]),
+                    )
+                )
+        formatted_intermediate_steps[0].thought = suffix.split("Thought: ")[1].split(
+            "{agent_scratchpad}"
+        )[0]
+        return formatted_intermediate_steps
+
+    def truncate_observations(self, obervarion: str, max_length: int = 2000) -> str:
+        """Truncate the tool input."""
+        return (
+            obervarion[:max_length] + "... (truncated)"
+            if len(obervarion) > max_length
+            else obervarion
+        )
 
     @abstractmethod
     def generate_response(

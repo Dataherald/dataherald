@@ -30,6 +30,17 @@ HTTP 200 code response
             "finetuning_id": "string",
             "status": "string",
             "completed_at": "string",
+            "llm_config": {
+                "llm_name": "gpt-4-turbo-preview",
+                "api_base": "string"
+            },
+            "intermediate_steps": [
+                {
+                    "action": "string",
+                    "action_input": "string",
+                    "observation": "string"
+                }
+            ],
             "sql": "string",
             "tokens_used": 0,
             "confidence_score": 0,
@@ -58,6 +69,19 @@ HTTP 200 code response
             "finetuning_id": null,
             "status": "VALID",
             "completed_at": "2024-01-03 18:54:55.091000+00:00",
+            "llm_config": {
+                "llm_name": "gpt-4-turbo-preview",
+                "api_base": null
+            },
+            "intermediate_steps": [
+                {
+                    "thought": "I should Collect examples of Question/SQL pairs to check if there is a similar question among the examples.\n",
+                    "action": "FewshotExamplesRetriever",
+                    "action_input": "5",
+                    "observation": "Found 5 examples of similar questions."
+                    },
+                    ...
+            ],
             "sql": "\nSELECT metric_value -- Rent price\nFROM renthub_median_rent\nWHERE geo_type='city' -- Focusing on city-level data\n  AND dh_state_name = 'California' -- State is California\n  AND dh_place_name = 'Los Angeles' -- City is Los Angeles\n  AND period_start = '2023-06-01' -- Most recent data available\nORDER BY metric_value DESC -- In case there are multiple entries, order by price descending\nLIMIT 1; -- Only need the top result\n",
             "tokens_used": 9491,
             "confidence_score": null,
