@@ -315,6 +315,7 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
     Input: Column name and its corresponding table, and an entity.
     Output: cell-values found in the column similar to the given entity.
     Use this tool to get cell values similar to the given entity in the given column.
+    IF this tool returns no results, try to generate a SQL query regardless.
 
     Example Input: table1 -> column2, entity
     """

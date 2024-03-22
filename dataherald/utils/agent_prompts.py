@@ -19,7 +19,7 @@ PLAN_WITH_FEWSHOT_EXAMPLES_AND_INSTRUCTIONS = """1) Use the FewshotExamplesRetri
 4) Use the DbRelevantTablesSchema tool to obtain the schema of possibly relevant tables to identify the possibly relevant columns.
 5) Use the DbRelevantColumnsInfo tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
 6) [Optional based on the question] Use the SystemTime tool if the question has any mentions of time or dates.
-7) For string columns, always use the DbColumnEntityChecker tool to make sure the entity values are present in the relevant columns.
+7) For string columns, always use the DbColumnEntityChecker tool to make sure the entity values are present in the relevant columns. Even if the you couldn't find any similar entity values from this tool, you should still write a SQL query.
 8) Write a {dialect} query and always use SqlDbQuery tool the Execute the SQL query on the database to check if the results are correct.
 #
 Some tips to always keep in mind:
@@ -37,7 +37,7 @@ PLAN_WITH_INSTRUCTIONS = """1) Use the DbTablesWithRelevanceScores tool to find 
 2) Use the DbRelevantTablesSchema tool to obtain the schema of possibly relevant tables to identify the possibly relevant columns.
 4) Use the DbRelevantColumnsInfo tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
 5) [Optional based on the question] Use the SystemTime tool if the question has any mentions of time or dates.
-6) For string columns, always use the DbColumnEntityChecker tool to make sure the entity values are present in the relevant columns.
+6) For string columns, always use the DbColumnEntityChecker tool to make sure the entity values are present in the relevant columns. Even if the you couldn't find any similar entity values from this tool, you should still write a SQL query.
 7) Write a {dialect} query and always use SqlDbQuery tool the Execute the SQL query on the database to check if the results are correct.
 #
 Some tips to always keep in mind:
@@ -53,7 +53,7 @@ PLAN_WITH_FEWSHOT_EXAMPLES = """1) Use the FewshotExamplesRetriever tool to retr
 3) Use the DbRelevantTablesSchema tool to obtain the schema of possibly relevant tables to identify the possibly relevant columns.
 4) Use the DbRelevantColumnsInfo tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
 5) [Optional based on the question] Use the SystemTime tool if the question has any mentions of time or dates.
-6) For string columns, always use the DbColumnEntityChecker tool to make sure the entity values are present in the relevant columns.
+6) For string columns, always use the DbColumnEntityChecker tool to make sure the entity values are present in the relevant columns. Even if the you couldn't find any similar entity values from this tool, you should still write a SQL query.
 7) Write a {dialect} query and always use SqlDbQuery tool the Execute the SQL query on the database to check if the results are correct.
 #
 Some tips to always keep in mind:
@@ -69,7 +69,7 @@ PLAN_BASE = """1) Use the DbTablesWithRelevanceScores tool to find relevant tabl
 2) Use the DbRelevantTablesSchema tool to obtain the schema of possibly relevant tables to identify the possibly relevant columns.
 3) Use the DbRelevantColumnsInfo tool to gather more information about the possibly relevant columns, filtering them to find the relevant ones.
 4) [Optional based on the question] Use the SystemTime tool if the question has any mentions of time or dates.
-5) For string columns, always use the DbColumnEntityChecker tool to make sure the entity values are present in the relevant columns.
+5) For string columns, always use the DbColumnEntityChecker tool to make sure the entity values are present in the relevant columns. Even if the you couldn't find any similar entity values from this tool, you should still write a SQL query.
 6) Write a {dialect} query and always use SqlDbQuery tool the Execute the SQL query on the database to check if the results are correct.
 #
 Some tips to always keep in mind:
