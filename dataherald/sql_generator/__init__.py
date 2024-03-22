@@ -137,7 +137,11 @@ class SQLGenerator(Component, ABC):
 
     def truncate_observations(self, obervarion: str, max_length: int = 2000) -> str:
         """Truncate the tool input."""
-        return obervarion[:max_length] + "... (truncated)" if len(obervarion) > max_length else obervarion
+        return (
+            obervarion[:max_length] + "... (truncated)"
+            if len(obervarion) > max_length
+            else obervarion
+        )
 
     @abstractmethod
     def generate_response(
