@@ -43,9 +43,13 @@ class SQLGenerationService:
         sql_generation.error = error
         return self.sql_generation_repository.update(sql_generation)
 
-    def generate_response_with_timeout(self, sql_generator, user_prompt, db_connection):
+    def generate_response_with_timeout(
+        self, sql_generator, user_prompt, db_connection, metadata=None
+    ):
         return sql_generator.generate_response(
-            user_prompt=user_prompt, database_connection=db_connection
+            user_prompt=user_prompt,
+            database_connection=db_connection,
+            metadata=metadata,
         )
 
     def update_the_initial_sql_generation(
@@ -69,6 +73,11 @@ class SQLGenerationService:
             if sql_generation_request.llm_config
             else LLMConfig(),
             metadata=sql_generation_request.metadata,
+        )
+        langsmith_metadata = (
+            sql_generation_request.metadata.get("lang_smith", {})
+            if sql_generation_request.metadata
+            else {}
         )
         self.sql_generation_repository.insert(initial_sql_generation)
         prompt_repository = PromptRepository(self.storage)
@@ -134,6 +143,7 @@ class SQLGenerationService:
                         sql_generator,
                         prompt,
                         db_connection,
+                        metadata=langsmith_metadata,
                     )
                     try:
                         sql_generation = future.result(
@@ -178,6 +188,11 @@ class SQLGenerationService:
             if sql_generation_request.llm_config
             else LLMConfig(),
             metadata=sql_generation_request.metadata,
+        )
+        langsmith_metadata = (
+            sql_generation_request.metadata.get("lang_smith", {})
+            if sql_generation_request.metadata
+            else {}
         )
         self.sql_generation_repository.insert(initial_sql_generation)
         prompt_repository = PromptRepository(self.storage)
@@ -225,6 +240,7 @@ class SQLGenerationService:
                 database_connection=db_connection,
                 response=initial_sql_generation,
                 queue=queue,
+                metadata=langsmith_metadata,
             )
         except Exception as e:
             self.update_error(initial_sql_generation, str(e))
