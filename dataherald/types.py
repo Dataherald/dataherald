@@ -177,6 +177,13 @@ class LLMConfig(BaseModel):
     api_base: str | None = None
 
 
+class IntermediateStep(BaseModel):
+    thought: str
+    action: str
+    action_input: str
+    observation: str
+
+
 class SQLGeneration(BaseModel):
     id: str | None = None
     prompt_id: str
@@ -184,6 +191,7 @@ class SQLGeneration(BaseModel):
     low_latency_mode: bool = False
     llm_config: LLMConfig | None
     evaluate: bool = False
+    intermediate_steps: list[IntermediateStep] | None
     sql: str | None
     status: str = "INVALID"
     completed_at: datetime | None

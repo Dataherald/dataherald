@@ -736,6 +736,13 @@ class DataheraldSQLAgent(SQLGenerator):
         response.sql = replace_unprocessable_characters(sql_query)
         response.tokens_used = cb.total_tokens
         response.completed_at = datetime.datetime.now()
+        if number_of_samples > 0:
+            suffix = SUFFIX_WITH_FEW_SHOT_SAMPLES
+        else:
+            suffix = SUFFIX_WITHOUT_FEW_SHOT_SAMPLES
+        response.intermediate_steps = self.construct_intermediate_steps(
+            result["intermediate_steps"], suffix=suffix
+        )
         return self.create_sql_query_status(
             self.database,
             response.sql,

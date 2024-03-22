@@ -5,7 +5,7 @@ from pydantic import BaseModel, validator
 
 from dataherald.db_scanner.models.types import TableDescription
 from dataherald.sql_database.models.types import DatabaseConnection
-from dataherald.types import GoldenSQL, LLMConfig
+from dataherald.types import GoldenSQL, IntermediateStep, LLMConfig
 
 
 class BaseResponse(BaseModel):
@@ -33,6 +33,7 @@ class SQLGenerationResponse(BaseResponse):
     status: str
     completed_at: str | None
     llm_config: LLMConfig | None
+    intermediate_steps: list[IntermediateStep] | None
     sql: str | None
     tokens_used: int | None
     confidence_score: float | None
