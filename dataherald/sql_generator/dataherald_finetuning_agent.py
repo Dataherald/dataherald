@@ -228,7 +228,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
 class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for querying a SQL database."""
 
-    name = "ExecuteQuery"
+    name = "SqlDbQuery"
     description = """
     Input: SQL query.
     Output: Result from the database or an error message if the query is incorrect.
@@ -591,6 +591,9 @@ class DataheraldFinetuningAgent(SQLGenerator):
         response.sql = replace_unprocessable_characters(sql_query)
         response.tokens_used = cb.total_tokens
         response.completed_at = datetime.datetime.now()
+        response.intermediate_steps = self.construct_intermediate_steps(
+            result["intermediate_steps"], FINETUNING_AGENT_SUFFIX
+        )
         return self.create_sql_query_status(
             self.database,
             response.sql,

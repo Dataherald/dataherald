@@ -48,6 +48,17 @@ class SQLGenerationService:
             user_prompt=user_prompt, database_connection=db_connection
         )
 
+    def update_the_initial_sql_generation(
+        self, initial_sql_generation: SQLGeneration, sql_generation: SQLGeneration
+    ):
+        initial_sql_generation.sql = sql_generation.sql
+        initial_sql_generation.tokens_used = sql_generation.tokens_used
+        initial_sql_generation.completed_at = datetime.now()
+        initial_sql_generation.status = sql_generation.status
+        initial_sql_generation.error = sql_generation.error
+        initial_sql_generation.intermediate_steps = sql_generation.intermediate_steps
+        return self.sql_generation_repository.update(initial_sql_generation)
+
     def create(
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest
     ) -> SQLGeneration:
@@ -153,12 +164,9 @@ class SQLGenerationService:
             )
             initial_sql_generation.evaluate = sql_generation_request.evaluate
             initial_sql_generation.confidence_score = confidence_score
-        initial_sql_generation.sql = sql_generation.sql
-        initial_sql_generation.tokens_used = sql_generation.tokens_used
-        initial_sql_generation.completed_at = datetime.now()
-        initial_sql_generation.status = sql_generation.status
-        initial_sql_generation.error = sql_generation.error
-        return self.sql_generation_repository.update(initial_sql_generation)
+        return self.update_the_initial_sql_generation(
+            initial_sql_generation, sql_generation
+        )
 
     def start_streaming(
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest, queue: Queue
