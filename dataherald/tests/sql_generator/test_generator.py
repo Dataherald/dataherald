@@ -18,6 +18,7 @@ class TestGenerator(SQLGenerator):
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,  # noqa: ARG002
+        metadata: dict = None,  # noqa: ARG002
     ) -> SQLGeneration:
         return SQLGeneration(
             question_id="651f2d76275132d5b65175eb",
