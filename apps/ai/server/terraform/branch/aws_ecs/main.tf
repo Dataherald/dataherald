@@ -4,97 +4,19 @@ terraform {
       source  = "aws"
       version = "4.1.0"
     }
-
-    pinecone = {
-      source  = "skyscrapr/pinecone"
-      version = "0.5.1"
-    }
   }
-  backend "s3" {
-    bucket = "terraform-states2"
-    region = "us-east-1"
-  }
-}
-
-
-provider "aws" {
-  region = "us-east-1"
-}
-provider "pinecone" {}
-
-variable "branch_name" { type= string }
-
-variable "sha" { type= string }
-
-variable "pinecone_index_name" {
-  description = "pinecone_index_name"
-  type        = string
-}
-
-variable "mongodb_uri" {
-  description = "mongodb_uri"
-  type        = string
-}
-
-variable "mongodb_name" {
-  description = "mongodb_name"
-  type        = string
-}
-
-variable "mongodb_username" {
-  description = "mongodb_username"
-  type        = string
-}
-
-variable "mongodb_password" {
-  description = "mongodb_password"
-  type        = string
-}
-
-variable "subnet_1_id" {
-  description = "subnet_1_id"
-  type        = string
-  default = "subnet-076afb4a159204349"
-}
-
-variable "subnet_2_id" {
-  description = "subnet_2_id"
-  type        = string
-  default = "subnet-0b6b9dbf631131b09"
-}
-
-variable "ecs_security_group_id" {
-  description = "security_group_id"
-  type        = string
-  default = "sg-07fac199a96aa3b65"
-}
-
-resource "pinecone_index" "my_index" {
-  name = var.pinecone_index_name
-  dimension = 1536
-  metric = "cosine"
-  spec = {
-    serverless = {
-      cloud = "aws"
-      region = "us-west-2"
-    }
-  }
-}
-
-locals {
-  srv_connection_string = replace(var.mongodb_uri, "mongodb+srv://", "mongodb+srv://${var.mongodb_username}:${var.mongodb_password}@")
 }
 
 resource "aws_ecs_task_definition" "my_task_definition" {
-  family = "ai-backend-branch-${var.branch_name}"
-  task_role_arn = "arn:aws:iam::422486916789:role/ecsk2TaskExecutionRole"
-  execution_role_arn = "arn:aws:iam::422486916789:role/ecsk2TaskExecutionRole"
-  network_mode = "awsvpc"
+  family                   = "ai-backend-branch-${var.branch_name}"
+  task_role_arn            = "arn:aws:iam::422486916789:role/ecsk2TaskExecutionRole"
+  execution_role_arn       = "arn:aws:iam::422486916789:role/ecsk2TaskExecutionRole"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu = "2048"
-  memory = "4096"
-#  container_definitions = file("task_definition.json")
-  container_definitions =<<DEFINITION
+  cpu                      = "2048"
+  memory                   = "4096"
+  #  container_definitions = file("task_definition.json")
+  container_definitions = <<DEFINITION
 [
         {
             "name": "ai-engine-branch",
@@ -128,11 +50,11 @@ resource "aws_ecs_task_definition" "my_task_definition" {
               },
               {
                 "name": "MONGODB_URI",
-                "value": "${local.srv_connection_string}"
+                "value": "${var.mongodb_uri}"
               },
               {
                 "name": "GOLDEN_SQL_COLLECTION",
-                "value": "${var.pinecone_index_name}"
+                "value": "${var.index_name}"
               }
             ],
             "command": ["sh", "-c", "uvicorn dataherald.app:app --host 0.0.0.0 --port $CORE_PORT --log-config log_config.yml --log-level debug --reload"],
@@ -180,7 +102,7 @@ resource "aws_ecs_task_definition" "my_task_definition" {
               },
               {
                 "name": "MONGODB_URI",
-                "value": "${local.srv_connection_string}"
+                "value": "${var.mongodb_uri}"
               }
             ],
             "mountPoints": [],
@@ -200,19 +122,19 @@ resource "aws_ecs_task_definition" "my_task_definition" {
 }
 
 resource "aws_lb" "my_load_balancer" {
-  name               = "${var.branch_name}"
+  name               = var.branch_name
   internal           = false
   idle_timeout       = 300
   load_balancer_type = "application"
-  security_groups    = ["sg-07fac199a96aa3b65"]  # Replace with your security group ID
-  subnets            = ["subnet-076afb4a159204349", "subnet-0b6b9dbf631131b09"]  # Replace with your subnet IDs
+  security_groups    = [var.ecs_security_group_id]
+  subnets            = [var.subnet_1_id, var.subnet_2_id]
 }
 
 resource "aws_lb_target_group" "ecs_target_group" {
-  name        = "${var.branch_name}"
+  name        = var.branch_name
   port        = 80
   protocol    = "HTTP"
-  vpc_id      = "vpc-09c492a49b76fdf80"
+  vpc_id      = var.vpc_id
   target_type = "ip"
 
   health_check {
@@ -240,7 +162,7 @@ resource "aws_lb_listener" "https_listener" {
   load_balancer_arn = aws_lb.my_load_balancer.arn
   port              = 443
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"  # Choose an appropriate SSL policy for your application
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06" # Choose an appropriate SSL policy for your application
 
   default_action {
     type             = "forward"
@@ -250,11 +172,11 @@ resource "aws_lb_listener" "https_listener" {
 }
 
 resource "aws_ecs_service" "my_service" {
-  name            = "ai-backend-branch-${var.branch_name}"
-  cluster         = "arn:aws:ecs:us-east-1:422486916789:cluster/ai"
-  task_definition = aws_ecs_task_definition.my_task_definition.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
+  name                    = "ai-backend-branch-${var.branch_name}"
+  cluster                 = "arn:aws:ecs:us-east-1:422486916789:cluster/ai"
+  task_definition         = aws_ecs_task_definition.my_task_definition.arn
+  desired_count           = 1
+  launch_type             = "FARGATE"
   enable_ecs_managed_tags = true
   wait_for_steady_state   = true
 
@@ -265,15 +187,15 @@ resource "aws_ecs_service" "my_service" {
   }
 
   network_configuration {
-    subnets         = [var.subnet_1_id, var.subnet_2_id]
-    security_groups = [var.ecs_security_group_id]
+    subnets          = [var.subnet_1_id, var.subnet_2_id]
+    security_groups  = [var.ecs_security_group_id]
     assign_public_ip = true
   }
 }
 
 resource "aws_route53_record" "my_load_balancer_record" {
-  zone_id = "Z07539241TW7P7NHVR11T"  # Replace with your Route 53 hosted zone ID
-  name    = "${var.branch_name}.api.dataherald.ai"   # Replace with the desired domain name
+  zone_id = "Z07539241TW7P7NHVR11T"                # Replace with your Route 53 hosted zone ID
+  name    = "${var.branch_name}.api.dataherald.ai" # Replace with the desired domain name
   type    = "A"
   alias {
     name                   = aws_lb.my_load_balancer.dns_name

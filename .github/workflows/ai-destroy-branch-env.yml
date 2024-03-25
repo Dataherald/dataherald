@@ -52,7 +52,7 @@ jobs:
       PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
     defaults:
       run:
-        working-directory: ./apps/ai/server
+        working-directory: ./apps/ai/server/terraform/branch
 
     steps:
       - name: Check out code
@@ -75,7 +75,6 @@ jobs:
           TF_VAR_mongodb_password: ${{ secrets.MONGODB_PASSWORD }}
         timeout-minutes: 3
         run: |
-          cd terraform
           terraform init -upgrade -backend-config="key=${{ needs.extract-branch-name.outputs.branch_name }}"
           terraform destroy -auto-approve
       - name: Delete images

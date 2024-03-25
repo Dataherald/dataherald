@@ -18,6 +18,8 @@ env:
   SLACK_ICON: https://files.dataherald.com/random/github-actions.png
   SLACK_USERNAME: GitHub Actions
   SLACK_CHANNEL: eng-notifications
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
 
 jobs:
   extract-branch-names:
@@ -78,13 +80,13 @@ jobs:
       target_env: branch
       image_tag: ${{ needs.extract-branch-names.outputs.branch_name}}-${{ github.sha }}
 
-  deploy-backend-dbs-infra:
-    name: Deploy Backend and DBs infrastructure
+  deploy-backend:
+    name: Deploy Backend infrastructure
     needs: [extract-branch-names, build-engine, build-server]
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./apps/ai/server/terraform
+        working-directory: ./apps/ai/server/terraform/branch
     outputs:
       api_url: ${{ steps.get-api-url.outputs.api_url }}
     steps:
@@ -105,9 +107,12 @@ jobs:
           terraform_wrapper: false
       - name: Apply Terraform
         env:
-          PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
           TF_VAR_sha: ${{ github.sha }}
           TF_VAR_branch_name: ${{ needs.extract-branch-names.outputs.branch_name }}
+          TF_VAR_vpc_id: ${{ vars.VPC_ID }}
+          TF_VAR_subnet_1_id: ${{ vars.PRIVATE_SUBNET_1_ID }}
+          TF_VAR_subnet_2_id: ${{ vars.PRIVATE_SUBNET_2_ID }}
+          TF_VAR_ecs_security_group_id: ${{ vars.BRANCH_SECURITY_GROUP_ID }}
           TF_VAR_pinecone_index_name: ${{ needs.extract-branch-names.outputs.db_name }}
           TF_VAR_mongodb_uri: ${{ vars.EPHEMERAL_MONGODB_URI }}
           TF_VAR_mongodb_name: ${{ needs.extract-branch-names.outputs.db_name }}
@@ -116,8 +121,8 @@ jobs:
 
         run: |
           terraform init -upgrade -backend-config="key=${{ needs.extract-branch-names.outputs.branch_name }}"
-          terraform plan
-          terraform apply -auto-approve
+          terraform plan -target=module.aws_ecs
+          terraform apply -target=module.aws_ecs -auto-approve
       - name: Get API URL
         id: get-api-url
         run: |
@@ -135,7 +140,36 @@ jobs:
           if [ -n "$UNTAGGED_SERVER_IMAGES" ] && [ "$UNTAGGED_SERVER_IMAGES" != "[]" ]; then
             aws ecr batch-delete-image --repository-name $ECR_SERVER_REPOSITORY --image-ids "$UNTAGGED_SERVER_IMAGES" --region us-east-1
           fi
-
+  create-vector-db:
+    name: Create PineconeDB
+    needs: [extract-branch-names]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/ai/server/terraform/branch
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          submodules: true
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+      - name: Apply Terraform
+        env:
+          TF_VAR_pinecone_index_name: ${{ needs.extract-branch-names.outputs.db_name }}
+        run: |
+          terraform init -upgrade -backend-config="key=${{ needs.extract-branch-names.outputs.branch_name }}"
+          terraform plan -target=module.pinecone_index
+          terraform apply -target=module.pinecone_index -auto-approve
   populate-db:
     name: Populate MongoDB
     needs: [extract-branch-names, start-self-hosted-runner]
@@ -201,7 +235,7 @@ jobs:
         extract-branch-names,
         start-self-hosted-runner,
         populate-db,
-        deploy-backend-dbs-infra,
+        create-vector-db,
       ]
     runs-on: ${{ needs.start-self-hosted-runner.outputs.label }}
     defaults:
@@ -215,8 +249,6 @@ jobs:
           submodules: true
       - name: Populate PineconeDB
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
           PINECONE_INDEX_NAME: ${{ needs.extract-branch-names.outputs.db_name }}
           MONGODB_URI: ${{ vars.EPHEMERAL_MONGODB_URI }}
           MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME }}
@@ -231,7 +263,7 @@ jobs:
 
   deploy-frontend:
     name: Deploy Frontend
-    needs: [extract-branch-names, deploy-backend-dbs-infra]
+    needs: [extract-branch-names, deploy-backend]
     runs-on: ubuntu-latest
     outputs:
       url: ${{ steps.console_dns.outputs.url }}
@@ -252,10 +284,10 @@ jobs:
       - name: Deploy to Vercel and set custom domain alias
         run: |
           echo Deploying to Vercel with the following environment variables:
-          echo "NEXT_PUBLIC_API_URL=${{ needs.deploy-backend-dbs-infra.outputs.api_url }}"
+          echo "NEXT_PUBLIC_API_URL=${{ needs.deploy-backend.outputs.api_url }}"
           echo "AUTH0_BASE_URL=${{ steps.console_dns.outputs.url }}"
 
-          vercel deploy --yes --build-env NEXT_PUBLIC_API_URL=${{ needs.deploy-backend-dbs-infra.outputs.api_url }} --env AUTH0_BASE_URL=${{ steps.console_dns.outputs.url }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }} >deployment-url.txt 2>error.txt
+          vercel deploy --yes --build-env NEXT_PUBLIC_API_URL=${{ needs.deploy-backend.outputs.api_url }} --env AUTH0_BASE_URL=${{ steps.console_dns.outputs.url }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }} >deployment-url.txt 2>error.txt
 
           # check the exit code
           code=$?
@@ -274,7 +306,7 @@ jobs:
     needs:
       [
         extract-branch-names,
-        deploy-backend-dbs-infra,
+        deploy-backend,
         populate-db,
         populate-vector-db,
         deploy-frontend,
@@ -299,12 +331,12 @@ jobs:
     needs:
       [
         extract-branch-names,
-        deploy-backend-dbs-infra,
+        deploy-backend,
         populate-db,
         populate-vector-db,
         deploy-frontend,
       ]
-    if: needs.deploy-backend-dbs-infra.result == 'failure' || needs.populate-db.result == 'failure' || needs.populate-vector-db.result == 'failure' || needs.deploy-frontend.result == 'failure'
+    if: needs.deploy-backend.result == 'failure' || needs.populate-db.result == 'failure' || needs.populate-vector-db.result == 'failure' || needs.deploy-frontend.result == 'failure'
     runs-on: ubuntu-latest
     steps:
       - name: Send failed notification
@@ -324,12 +356,12 @@ jobs:
     needs:
       [
         extract-branch-names,
-        deploy-backend-dbs-infra,
+        deploy-backend,
         populate-db,
         populate-vector-db,
         deploy-frontend,
       ]
-    if: needs.deploy-backend-dbs-infra.result == 'success' && needs.populate-db.result == 'success' && needs.populate-vector-db.result == 'success' && needs.deploy-frontend.result == 'success'
+    if: needs.deploy-backend.result == 'success' && needs.populate-db.result == 'success' && needs.populate-vector-db.result == 'success' && needs.deploy-frontend.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Send success notification
@@ -341,7 +373,7 @@ jobs:
             The branch environment deployment succeeded. Here are the details:
 
             *Branch*: `${{ needs.extract-branch-names.outputs.branch }}`
-            *API URL*: ${{ needs.deploy-backend-dbs-infra.outputs.api_url }}
+            *API URL*: ${{ needs.deploy-backend.outputs.api_url }}
             *Console URL*: ${{ needs.deploy-frontend.outputs.url }}
           SLACK_COLOR: success
 
