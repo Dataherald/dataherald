@@ -25,6 +25,7 @@ from langchain_openai import OpenAIEmbeddings
 from openai import OpenAI
 from overrides import override
 from pydantic import BaseModel, Field
+from sql_metadata import Parser
 from sqlalchemy.exc import SQLAlchemyError
 
 from dataherald.context_store import ContextStore
@@ -163,6 +164,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """
     db_scan: List[TableDescription]
     embedding: OpenAIEmbeddings
+    few_shot_examples: List[dict] | None = Field(exclude=True, default=None)
 
     def get_embedding(
         self,
@@ -179,6 +181,18 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
 
     def cosine_similarity(self, a: List[float], b: List[float]) -> float:
         return round(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), 4)
+
+    def similart_tables_based_on_few_shot_examples(self, df: pd.DataFrame) -> List[str]:
+        most_similar_tables = set()
+        if self.few_shot_examples is not None:
+            for example in self.few_shot_examples:
+                try:
+                    tables = Parser(example["sql"]).tables
+                except Exception as e:
+                    logger.error(f"Error parsing SQL: {str(e)}")
+                most_similar_tables.update(tables)
+            df.drop(df[df.table_name.isin(most_similar_tables)].index, inplace=True)
+        return most_similar_tables
 
     @catch_exceptions()
     def _run(
@@ -210,11 +224,17 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         )
         df = df.sort_values(by="similarities", ascending=True)
         df = df.tail(TOP_TABLES)
+        most_similar_tables = self.similart_tables_based_on_few_shot_examples(df)
         table_relevance = ""
         for _, row in df.iterrows():
             table_relevance += (
                 f'Table: {row["table_name"]}, relevance score: {row["similarities"]}\n'
             )
+        if len(most_similar_tables) > 0:
+            for table in most_similar_tables:
+                table_relevance += (
+                    f"Table: {table}, relevance score: {max(df['similarities'])}\n"
+                )
         return table_relevance
 
     async def _arun(
@@ -389,6 +409,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     model_name: str = Field(exclude=True)
     openai_fine_tuning: OpenAIFineTuning = Field(exclude=True)
     embedding: OpenAIEmbeddings = Field(exclude=True)
+    few_shot_examples: List[dict] | None = Field(exclude=True, default=None)
 
     @property
     def dialect(self) -> str:
@@ -408,7 +429,10 @@ class SQLDatabaseToolkit(BaseToolkit):
             tools.append(SchemaSQLDatabaseTool(db=self.db, db_scan=self.db_scan))
             tools.append(
                 TablesSQLDatabaseTool(
-                    db=self.db, db_scan=self.db_scan, embedding=self.embedding
+                    db=self.db,
+                    db_scan=self.db_scan,
+                    embedding=self.embedding,
+                    few_shot_examples=self.few_shot_examples,
                 )
             )
         tools.append(QuerySQLDataBaseTool(db=self.db))
@@ -529,8 +553,8 @@ class DataheraldFinetuningAgent(SQLGenerator):
         )
         if not db_scan:
             raise ValueError("No scanned tables found for database")
-        _, instructions = context_store.retrieve_context_for_question(
-            user_prompt, number_of_samples=1
+        few_shot_examples, instructions = context_store.retrieve_context_for_question(
+            user_prompt, number_of_samples=5
         )
         finetunings_repository = FinetuningsRepository(storage)
         finetuning = finetunings_repository.find_by_id(self.finetuning_id)
@@ -545,6 +569,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         toolkit = SQLDatabaseToolkit(
             db=self.database,
             instructions=instructions,
+            few_shot_examples=few_shot_examples,
             db_scan=db_scan,
             api_key=database_connection.decrypt_api_key(),
             finetuning_model_id=finetuning.model_id,
