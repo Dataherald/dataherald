@@ -26,6 +26,7 @@ from langchain_community.callbacks import get_openai_callback
 from langchain_openai import OpenAIEmbeddings
 from overrides import override
 from pydantic import BaseModel, Field
+from sql_metadata import Parser
 from sqlalchemy import MetaData
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
@@ -224,6 +225,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """
     db_scan: List[TableDescription]
     embedding: OpenAIEmbeddings
+    few_shot_examples: List[dict] | None = Field(exclude=True, default=None)
 
     def get_embedding(
         self,
@@ -240,6 +242,18 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
 
     def cosine_similarity(self, a: List[float], b: List[float]) -> float:
         return round(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), 4)
+
+    def similart_tables_based_on_few_shot_examples(self, df: pd.DataFrame) -> List[str]:
+        most_similar_tables = set()
+        if self.few_shot_examples is not None:
+            for example in self.few_shot_examples:
+                try:
+                    tables = Parser(example["sql"]).tables
+                except Exception as e:
+                    logger.info(f"Error: {str(e)}")
+                most_similar_tables.update(tables)
+            df.drop(df[df.table_name.isin(most_similar_tables)].index, inplace=True)
+        return most_similar_tables
 
     @catch_exceptions()
     def _run(
@@ -271,11 +285,17 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         )
         df = df.sort_values(by="similarities", ascending=True)
         df = df.tail(TOP_TABLES)
+        most_similar_tables = self.similart_tables_based_on_few_shot_examples(df)
         table_relevance = ""
         for _, row in df.iterrows():
             table_relevance += (
                 f'Table: {row["table_name"]}, relevance score: {row["similarities"]}\n'
             )
+        if len(most_similar_tables) > 0:
+            for table in most_similar_tables:
+                table_relevance += (
+                    f"Table: {table}, relevance score: {max(df['similarities'])}\n"
+                )
         return table_relevance
 
     async def _arun(
@@ -547,6 +567,7 @@ class SQLDatabaseToolkit(BaseToolkit):
             context=self.context,
             db_scan=self.db_scan,
             embedding=self.embedding,
+            few_shot_examples=self.few_shot_examples,
         )
         tools.append(tables_sql_db_tool)
         schema_sql_db_tool = SchemaSQLDatabaseTool(
