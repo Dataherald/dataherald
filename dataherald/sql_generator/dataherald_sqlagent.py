@@ -250,7 +250,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
                 try:
                     tables = Parser(example["sql"]).tables
                 except Exception as e:
-                    logger.info(f"Error: {str(e)}")
+                    logger.error(f"Error parsing SQL: {str(e)}")
                 most_similar_tables.update(tables)
             df.drop(df[df.table_name.isin(most_similar_tables)].index, inplace=True)
         return most_similar_tables
