@@ -153,6 +153,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     Output: Result from the database or an error message if the query is incorrect.
     If an error occurs, rewrite the query and retry.
     Use this tool to execute SQL queries.
+    If the returned result is empty, mention as a comment in you final answer that the SQL query returned no results.
     """
 
     @catch_exceptions()
@@ -315,10 +316,10 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
     Input: Column name and its corresponding table, and an entity.
     Output: cell-values found in the column similar to the given entity.
     Use this tool to get cell values similar to the given entity in the given column.
-    IF this tool returns no results, try to generate a SQL query regardless.
+    If this tool returns no results, try to generate a SQL query regardless. Also mention as a comment in the SQL query that the entity was not found in the column.
 
     Example Input: table1 -> column2, entity
-    """
+    """  # noqa: E501
 
     def find_similar_strings(
         self, input_list: List[tuple], target_string: str, threshold=0.4

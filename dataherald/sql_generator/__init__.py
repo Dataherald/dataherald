@@ -8,12 +8,12 @@ from queue import Queue
 from typing import Any, Dict, List, Tuple
 
 import sqlparse
-from sql_metadata import Parser
 from langchain.agents.agent import AgentExecutor
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.schema import AgentAction, LLMResult
 from langchain.schema.messages import BaseMessage
 from langchain_community.callbacks import get_openai_callback
+from sql_metadata import Parser
 
 from dataherald.config import Component, System
 from dataherald.db_scanner.models.types import TableDescription

@@ -30,6 +30,7 @@ tip4) The Question/SQL pairs are labelled as correct pairs, so you can use them 
 tip5) If SQL results has None or NULL values, handle them by adding a WHERE clause to filter them out.
 tip6) The existance of the string values in the columns should always be checked using the DbColumnEntityChecker tool.
 tip7) You should always execute the SQL query by calling the SqlDbQuery tool to make sure the results are correct.
+tip8) If DBEntityChecker tool returns no entity values, you should still write a SQL query. But add a comment in the SQL query that the entity values were not found.
 """  # noqa: E501
 
 PLAN_WITH_INSTRUCTIONS = """1) Use the DbTablesWithRelevanceScores tool to find relevant tables.
@@ -46,6 +47,7 @@ tip2) Always call the GetAdminInstructions tool before generating the SQL query,
 tip3) If SQL results has None or NULL values, handle them by adding a WHERE clause to filter them out.
 tip4) The existance of the string values in the columns should always be checked using the DbColumnEntityChecker tool.
 tip5) You should always execute the SQL query by calling the SqlDbQuery tool to make sure the results are correct.
+tip6) If DBEntityChecker tool returns no entity values, you should still write a SQL query. But add a comment in the SQL query that the entity values were not found.
 """  # noqa: E501
 
 PLAN_WITH_FEWSHOT_EXAMPLES = """1) Use the FewshotExamplesRetriever tool to retrieve samples of Question/SQL pairs that are similar to the given question, if there is a similar question among the examples, use the SQL query from the example and modify it to fit the given question.
@@ -63,6 +65,7 @@ tip3) The Question/SQL pairs are labelled as correct pairs, so you can use them 
 tip4) If SQL results has None or NULL values, handle them by adding a WHERE clause to filter them out.
 tip5) The existance of the string values in the columns should always be checked using the DbColumnEntityChecker tool.
 tip6) You should always execute the SQL query by calling the SqlDbQuery tool to make sure the results are correct.
+tip7) If DBEntityChecker tool returns no entity values, you should still write a SQL query. But add a comment in the SQL query that the entity values were not found.
 """  # noqa: E501
 
 PLAN_BASE = """1) Use the DbTablesWithRelevanceScores tool to find relevant tables.

@@ -253,7 +253,8 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     description = """
     Input: SQL query.
     Output: Result from the database or an error message if the query is incorrect.
-    Use this tool to execute the SQL query on the database, and return the results.
+    Use this tool to execute the SQL query on the database.
+    If the returned result is empty, mention as a comment in you final answer that the SQL query returned no results.
     """
     args_schema: Type[BaseModel] = SQLInput
 

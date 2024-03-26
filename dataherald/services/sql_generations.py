@@ -61,6 +61,7 @@ class SQLGenerationService:
         initial_sql_generation.status = sql_generation.status
         initial_sql_generation.error = sql_generation.error
         initial_sql_generation.intermediate_steps = sql_generation.intermediate_steps
+        initial_sql_generation.metadata.update(sql_generation.metadata)
         return self.sql_generation_repository.update(initial_sql_generation)
 
     def create(
