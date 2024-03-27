@@ -499,7 +499,7 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
     Output: List of similar Question/SQL pairs related to the given question.
     Use this tool to fetch previously asked Question/SQL pairs as examples for improving SQL query generation.
     For complex questions, request more examples to gain a better understanding of tables and columns and the SQL keywords to use.
-    If the given question is very similar to one of the retrieved examples, it is recommended to use the same SQL query and modify it slightly to fit the given question.
+    If the given question is very similar to one of the retrieved examples, just return the SQL query from the example and avoid generating a new one.
     Always use this tool first and before any other tool!
     """  # noqa: E501
     few_shot_examples: List[dict]
@@ -516,9 +516,9 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
         else:
             return "Action input for the fewshot_examples_retriever tool should be an integer"
         returned_output = ""
-        for example in self.few_shot_examples[:number_of_samples]:
+        for example in reversed(self.few_shot_examples[:number_of_samples]):
             returned_output += (
-                f"Question: {example['prompt_text']} -> SQL: {example['sql']}\n"
+                f"Question: {example['prompt_text']}\nSQL: {example['sql']}\n###\n"
             )
         if returned_output == "":
             returned_output = "No previously asked Question/SQL pairs are available"
