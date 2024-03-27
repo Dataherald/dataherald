@@ -528,14 +528,7 @@ class FastAPI(dataherald.server.Server):
     def add_golden_sqls(
         self, golden_sqls: List[GoldenSQLRequest]
     ) -> List[GoldenSQLResponse]:
-        created_records = self._api.add_golden_sqls(golden_sqls)
-
-        # Return a JSONResponse with status code 201 and the location header.
-        golden_sqls_as_dicts = [record.dict() for record in created_records]
-
-        return JSONResponse(
-            content=golden_sqls_as_dicts, status_code=status.HTTP_201_CREATED
-        )
+        return self._api.add_golden_sqls(golden_sqls)
 
     def get_golden_sqls(
         self, db_connection_id: str = None, page: int = 1, limit: int = 10
