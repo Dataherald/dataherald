@@ -205,6 +205,10 @@ class API(Component, ABC):
         pass
 
     @abstractmethod
+    def export_finetuning_dataset(self, request: FineTuningRequest) -> io.StringIO:
+        pass
+
+    @abstractmethod
     def create_sql_generation(
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest
     ) -> SQLGenerationResponse:

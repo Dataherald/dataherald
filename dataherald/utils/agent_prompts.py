@@ -102,11 +102,10 @@ Thought: I should find the relevant tables.
 {agent_scratchpad}"""
 
 FINETUNING_SYSTEM_INFORMATION = """
-You are an assistant that is an expert in generating SQL queries.
-Having the access to database content, generate a correct SQL query for the given question.
-Always follow the instructions provided by the database administrator.
-
-# Database content:
+Given the following SQL tables, your job is to generate the {dialect} SQL query given the user's question.
+Put your answer inside the ```sql and ``` tags.
+Database Schema:
+{database_schema}
 """
 FINETUNING_AGENT_SUFFIX = """Begin!
 

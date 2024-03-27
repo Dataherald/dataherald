@@ -16,6 +16,7 @@ OPENAI_CONTEXT_WIDNOW_SIZES = {
     "gpt-3.5-turbo-1106": 16000,
 }
 OPENAI_FINETUNING_MODELS_WINDOW_SIZES = {
+    "codellama-7b": 4096,
     "gpt-3.5-turbo-1106": 16000,
     "gpt-3.5-turbo-0613": 4000,
     "gpt-3.5-turbo": 4000,

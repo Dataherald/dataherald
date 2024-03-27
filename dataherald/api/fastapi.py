@@ -700,6 +700,73 @@ class FastAPI(API):
         return model_repository.update(model)
 
     @override
+    def export_finetuning_dataset(self, request: FineTuningRequest) -> io.StringIO:
+        try:
+            db_connection_repository = DatabaseConnectionRepository(self.storage)
+
+            db_connection = db_connection_repository.find_by_id(
+                request.db_connection_id
+            )
+            if not db_connection:
+                raise DatabaseConnectionNotFoundError(
+                    f"Database connection not found, {request.db_connection_id}"
+                )
+
+            golden_sqls_repository = GoldenSQLRepository(self.storage)
+            golden_sqls = []
+            if request.golden_sqls:
+                for golden_sql_id in request.golden_sqls:
+                    golden_sql = golden_sqls_repository.find_by_id(golden_sql_id)
+                    if not golden_sql:
+                        raise GoldenSQLNotFoundError(
+                            f"Golden sql not found, {golden_sql_id}"
+                        )
+                    golden_sqls.append(golden_sql)
+            else:
+                golden_sqls = golden_sqls_repository.find_by(
+                    {"db_connection_id": str(request.db_connection_id)},
+                    page=0,
+                    limit=0,
+                )
+                if not golden_sqls:
+                    raise GoldenSQLNotFoundError(
+                        f"No golden sqls found for db_connection: {request.db_connection_id}"
+                    )
+            default_base_llm = BaseLLM(
+                model_provider="openai",
+                model_name="gpt-3.5-turbo-1106",
+            )
+            base_llm = (
+                request.base_llm
+                if request.base_llm
+                else default_base_llm
+            )
+            model_repository = FinetuningsRepository(self.storage)
+            model = model_repository.insert(
+                Finetuning(
+                    db_connection_id=request.db_connection_id,
+                    alias=request.alias
+                    if request.alias
+                    else f"{db_connection.alias}_{datetime.datetime.now().strftime('%Y%m%d%H')}",
+                    base_llm=base_llm,
+                    golden_sqls=[str(golden_sql.id) for golden_sql in golden_sqls],
+                    metadata=request.metadata,
+                )
+            )
+            openai_fine_tuning = OpenAIFineTuning(self.storage, model)
+            jsonl_stream = io.StringIO()
+            jsonl_dataframe = openai_fine_tuning.export_finetuning_dataset()
+            jsonl_dataframe.to_json(jsonl_stream, orient='records', lines=True, index=False)
+
+        except Exception as e:
+            return error_response(
+                e, request.dict(), "finetuning_not_created"
+            )
+        from ipdb import set_trace; set_trace()
+        jsonl_stream.seek(0)
+        return jsonl_stream
+
+    @override
     def create_sql_generation(
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest
     ) -> SQLGenerationResponse:

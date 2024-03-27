@@ -10,6 +10,7 @@ import tiktoken
 from langchain_openai import OpenAIEmbeddings
 from openai import OpenAI
 from overrides import override
+from pandas import DataFrame
 from sql_metadata import Parser
 from tiktoken import Encoding
 
@@ -19,6 +20,8 @@ from dataherald.finetuning import FinetuningModel
 from dataherald.repositories.database_connections import DatabaseConnectionRepository
 from dataherald.repositories.finetunings import FinetuningsRepository
 from dataherald.repositories.golden_sqls import GoldenSQLRepository
+from dataherald.sql_database.base import SQLDatabase
+from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import Finetuning, FineTuningStatus
 from dataherald.utils.agent_prompts import FINETUNING_SYSTEM_INFORMATION
 from dataherald.utils.models_context_window import OPENAI_FINETUNING_MODELS_WINDOW_SIZES
@@ -33,6 +36,7 @@ logger = logging.getLogger(__name__)
 class OpenAIFineTuning(FinetuningModel):
     encoding: Encoding
     fine_tuning_model: Finetuning
+    db_connection: DatabaseConnection
     storage: Any
     client: OpenAI
 
@@ -40,17 +44,17 @@ class OpenAIFineTuning(FinetuningModel):
         self.storage = storage
         self.fine_tuning_model = fine_tuning_model
         db_connection_repository = DatabaseConnectionRepository(storage)
-        db_connection = db_connection_repository.find_by_id(
+        self.db_connection = db_connection_repository.find_by_id(
             fine_tuning_model.db_connection_id
         )
         self.embedding = OpenAIEmbeddings(
-            openai_api_key=db_connection.decrypt_api_key(),
+            openai_api_key=self.db_connection.decrypt_api_key(),
             model=EMBEDDING_MODEL,
         )
         self.encoding = tiktoken.encoding_for_model(
             fine_tuning_model.base_llm.model_name
         )
-        self.client = OpenAI(api_key=db_connection.decrypt_api_key())
+        self.client = OpenAI(api_key=self.db_connection.decrypt_api_key())
 
     def cosine_similarity(self, a: List[float], b: List[float]) -> float:
         return round(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), 4)
@@ -191,6 +195,7 @@ class OpenAIFineTuning(FinetuningModel):
     def create_fintuning_dataset(self):
         db_connection_id = self.fine_tuning_model.db_connection_id
         repository = TableDescriptionRepository(self.storage)
+        dialect = SQLDatabase.get_sql_engine(self.db_connection).dialect
         db_scan = repository.get_all_tables_by_db(
             {
                 "db_connection_id": str(db_connection_id),
@@ -228,9 +233,12 @@ class OpenAIFineTuning(FinetuningModel):
                 - margin_tokens,
                 correct_tables=correct_tables,
             )
-            system_prompt = FINETUNING_SYSTEM_INFORMATION + database_schema
-            user_prompt = "User Question: " + question + "\n SQL: "
-            assistant_prompt = query + "\n"
+            system_prompt = FINETUNING_SYSTEM_INFORMATION.format(
+                database_schema=database_schema,
+                dialect = dialect
+            )
+            user_prompt = "User Question: " + question
+            assistant_prompt = "```sql\n" + query + "\n```\n"
             results.append(
                 {
                     "messages": [
@@ -261,6 +269,62 @@ class OpenAIFineTuning(FinetuningModel):
         ).id
         model_repository.update(model)
         os.remove(finetuning_dataset_path)
+
+    @override
+    def export_finetuning_dataset(self) -> DataFrame:
+        db_connection_id = self.fine_tuning_model.db_connection_id
+        repository = TableDescriptionRepository(self.storage)
+        dialect = SQLDatabase.get_sql_engine(self.db_connection).dialect
+        db_scan = repository.get_all_tables_by_db(
+            {
+                "db_connection_id": str(db_connection_id),
+                "status": TableDescriptionStatus.SCANNED.value,
+            }
+        )
+        golden_sqls_repository = GoldenSQLRepository(self.storage)
+        results = []
+        table_representations = []
+        for table in db_scan:
+            table_representations.append(self.create_table_representation(table))
+        table_embeddings = self.embedding.embed_documents(table_representations)
+        for index, golden_sql_id in enumerate(self.fine_tuning_model.golden_sqls):
+            logger.info(
+                f"Processing golden sql {index + 1} of {len(self.fine_tuning_model.golden_sqls)}"
+            )
+            golden_sql = golden_sqls_repository.find_by_id(golden_sql_id)
+            question = golden_sql.prompt_text
+            query = golden_sql.sql
+            margin_tokens = len(self.encoding.encode(question + query)) + 100
+            correct_tables_unformatted = Parser(query).tables
+            correct_tables = []
+            for table in correct_tables_unformatted:
+                correct_tables.append(table.split(".")[-1])
+            database_schema = self.format_dataset(
+                db_scan=list(db_scan),
+                table_embeddings=table_embeddings,
+                prompt=question,
+                token_limit=OPENAI_FINETUNING_MODELS_WINDOW_SIZES[
+                    self.fine_tuning_model.base_llm.model_name
+                ]
+                - margin_tokens,
+                correct_tables=correct_tables,
+            )
+            system_prompt = FINETUNING_SYSTEM_INFORMATION.format(
+                database_schema=database_schema,
+                dialect = dialect
+            )
+            user_prompt = "User Question: " + question
+            assistant_prompt = "```sql\n" + query + "\n```\n"
+            results.append(
+                {
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                        {"role": "assistant", "content": assistant_prompt},
+                    ]
+                }
+            )
+        return DataFrame(results)
 
     def check_file_status(self, file_id: str) -> bool:
         retrieve_file_attempt = 0

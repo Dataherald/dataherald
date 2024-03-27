@@ -358,6 +358,13 @@ class FastAPI(dataherald.server.Server):
         )
 
         self.router.add_api_route(
+            "/api/v1/finetuning/export-finetuning-dataset",
+            self.export_finetuning_dataset,
+            methods=["GET"],
+            tags=["Finetunings"],
+        )
+
+        self.router.add_api_route(
             "/api/v1/stream-sql-generation",
             self.stream_sql_generation,
             methods=["POST"],
@@ -609,6 +616,16 @@ class FastAPI(dataherald.server.Server):
     ) -> Finetuning:
         """Gets fine tuning jobs"""
         return self._api.update_finetuning_job(finetuning_id, update_metadata_request)
+
+    def export_finetuning_dataset(self, request: FineTuningRequest) -> StreamingResponse:
+        """Exports a JSONL file for the given db_connection_id"""
+        stream = self._api.export_finetuning_dataset(request)
+
+        response = StreamingResponse(iter([stream.getvalue()]), media_type="text/jsonl")
+        response.headers[
+            "Content-Disposition"
+        ] = f"attachment; filename=finetuning_dataset_{request.db_connection_id}.jsonl"
+        return response
 
     async def stream_sql_generation(
         self, request: StreamPromptSQLGenerationRequest

@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from pandas import DataFrame
+
 from dataherald.config import Component
 from dataherald.types import Finetuning
 
@@ -14,6 +16,10 @@ class FinetuningModel(Component, ABC):
 
     @abstractmethod
     def create_fintuning_dataset(self):
+        pass
+
+    @abstractmethod
+    def export_finetuning_dataset(self) -> DataFrame:
         pass
 
     @abstractmethod
