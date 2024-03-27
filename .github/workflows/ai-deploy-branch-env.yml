@@ -165,7 +165,7 @@ jobs:
           terraform_wrapper: false
       - name: Apply Terraform
         env:
-          TF_VAR_pinecone_index_name: ${{ needs.extract-branch-names.outputs.db_name }}
+          TF_VAR_index_name: ${{ needs.extract-branch-names.outputs.db_name }}
         run: |
           terraform init -upgrade -backend-config="key=${{ needs.extract-branch-names.outputs.branch_name }}"
           terraform plan -target=module.pinecone_index
