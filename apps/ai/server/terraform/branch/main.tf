@@ -29,8 +29,10 @@ module "aws_ecs" {
   mongodb_name          = var.mongodb_name
   index_name            = var.index_name
   vpc_id                = var.vpc_id
-  subnet_1_id           = var.subnet_1_id
-  subnet_2_id           = var.subnet_2_id
+  private_subnet_1_id   = var.private_subnet_1_id
+  private_subnet_2_id   = var.private_subnet_2_id
+  public_subnet_1_id    = var.public_subnet_1_id
+  public_subnet_2_id    = var.public_subnet_2_id
   ecs_security_group_id = var.ecs_security_group_id
 }
 

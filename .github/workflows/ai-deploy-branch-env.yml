@@ -110,8 +110,10 @@ jobs:
           TF_VAR_sha: ${{ github.sha }}
           TF_VAR_branch_name: ${{ needs.extract-branch-names.outputs.branch_name }}
           TF_VAR_vpc_id: ${{ vars.VPC_ID }}
-          TF_VAR_subnet_1_id: ${{ vars.PRIVATE_SUBNET_1_ID }}
-          TF_VAR_subnet_2_id: ${{ vars.PRIVATE_SUBNET_2_ID }}
+          TF_VAR_private_subnet_1_id: ${{ vars.PRIVATE_SUBNET_1_ID }}
+          TF_VAR_private_subnet_2_id: ${{ vars.PRIVATE_SUBNET_2_ID }}
+          TF_VAR_public_subnet_1_id: ${{ vars.PUBLIC_SUBNET_1_ID }}
+          TF_VAR_public_subnet_2_id: ${{ vars.PUBLIC_SUBNET_2_ID }}
           TF_VAR_ecs_security_group_id: ${{ vars.BRANCH_SECURITY_GROUP_ID }}
           TF_VAR_index_name: ${{ needs.extract-branch-names.outputs.db_name }}
           TF_VAR_mongodb_uri: ${{ vars.EPHEMERAL_MONGODB_URI }}

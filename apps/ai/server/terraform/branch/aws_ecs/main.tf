@@ -127,7 +127,7 @@ resource "aws_lb" "my_load_balancer" {
   idle_timeout       = 300
   load_balancer_type = "application"
   security_groups    = [var.ecs_security_group_id]
-  subnets            = [var.subnet_1_id, var.subnet_2_id]
+  subnets            = [var.public_subnet_1_id, var.public_subnet_1_id]
 }
 
 resource "aws_lb_target_group" "ecs_target_group" {
@@ -187,7 +187,7 @@ resource "aws_ecs_service" "my_service" {
   }
 
   network_configuration {
-    subnets          = [var.subnet_1_id, var.subnet_2_id]
+    subnets          = [var.private_subnet_1_id, var.private_subnet_2_id]
     security_groups  = [var.ecs_security_group_id]
     assign_public_ip = true
   }

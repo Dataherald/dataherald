@@ -4,22 +4,32 @@ variable "branch_name" {
 }
 
 variable "vpc_id" {
-  type = string
+  type    = string
   default = ""
 }
 
-variable "subnet_1_id" {
-  type = string
+variable "private_subnet_1_id" {
+  type    = string
   default = ""
 }
 
-variable "subnet_2_id" {
-  type = string
+variable "private_subnet_2_id" {
+  type    = string
+  default = ""
+}
+
+variable "public_subnet_1_id" {
+  type    = string
+  default = ""
+}
+
+variable "public_subnet_2_id" {
+  type    = string
   default = ""
 }
 
 variable "ecs_security_group_id" {
-  type = string
+  type    = string
   default = ""
 }
 

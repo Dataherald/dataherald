@@ -20,13 +20,23 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "subnet_1_id" {
-  description = "subnet_1_id"
+variable "private_subnet_1_id" {
+  description = "private_subnet_1_id"
   type        = string
 }
 
-variable "subnet_2_id" {
-  description = "subnet_2_id"
+variable "private_subnet_2_id" {
+  description = "private_subnet_2_id"
+  type        = string
+}
+
+variable "public_subnet_1_id" {
+  description = "public_subnet_1_id"
+  type        = string
+}
+
+variable "public_subnet_2_id" {
+  description = "public_subnet_2_id"
   type        = string
 }
 
