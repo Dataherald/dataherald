@@ -135,7 +135,7 @@ def get_api_key(api_key: str = Security(api_key_header)) -> str:
 
 
 def verify_token(token: dict = Security(token_auth_scheme)):
-    VerifyToken(token).verify()
+    VerifyToken(token.credentials).verify()
     return token
 
 

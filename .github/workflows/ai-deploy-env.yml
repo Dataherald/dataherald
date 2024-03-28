@@ -47,7 +47,7 @@ jobs:
   build-engine:
     name: Build Engine
     needs: check-changes
-    if: needs.check-changes.outputs.engine_changed == 'true'
+    if: needs.check-changes.outputs.engine_changed == 'true' || needs.check-changes.outputs.server_changed == 'true'
     uses: ./.github/workflows/ai-build-docker.yml
     secrets: inherit
     with:
@@ -58,7 +58,7 @@ jobs:
   build-server:
     name: Build Server
     needs: check-changes
-    if: needs.check-changes.outputs.server_changed == 'true' && success()
+    if: (needs.check-changes.outputs.engine_changed == 'true' || needs.check-changes.outputs.server_changed == 'true') && success()
     uses: ./.github/workflows/ai-build-docker.yml
     secrets: inherit
     with:
