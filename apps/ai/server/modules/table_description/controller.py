@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, Security, status
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Security, status
 
 from modules.table_description.models.requests import (
     ScanRequest,
@@ -11,7 +10,7 @@ from modules.table_description.models.responses import (
     TableDescriptionResponse,
 )
 from modules.table_description.service import TableDescriptionService
-from utils.auth import Authorize, VerifyToken, get_api_key
+from utils.auth import User, authenticate_user, get_api_key
 from utils.validation import ObjectIdString
 
 router = APIRouter(
@@ -24,9 +23,6 @@ ac_router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-
-token_auth_scheme = HTTPBearer()
-authorize = Authorize()
 table_description_service = TableDescriptionService()
 
 
@@ -75,9 +71,8 @@ async def update_table_description(
 async def ac_get_table_descriptions(
     db_connection_id: ObjectIdString,
     table_name: str = "",
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> list[ACTableDescriptionResponse]:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.get_table_descriptions(
         db_connection_id, table_name, user.organization_id
     )
@@ -85,9 +80,8 @@ async def ac_get_table_descriptions(
 
 @ac_router.get("/{id}")
 async def ac_get_table_description(
-    id: ObjectIdString, token: str = Depends(token_auth_scheme)
+    id: ObjectIdString, user: User = Security(authenticate_user)
 ) -> ACTableDescriptionResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.get_table_description(
         id, user.organization_id
     )
@@ -96,9 +90,8 @@ async def ac_get_table_description(
 # used for admin console, does not need api version endpoint
 @ac_router.get("/database/list")
 async def get_database_description_list(
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> list[DatabaseDescriptionResponse]:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.get_database_description_list(
         user.organization_id
     )
@@ -106,9 +99,8 @@ async def get_database_description_list(
 
 @ac_router.post("/sync-schemas", status_code=status.HTTP_201_CREATED)
 async def ac_sync_table_descriptions_schemas(
-    scan_requests: list[ScanRequest], token: str = Depends(token_auth_scheme)
+    scan_requests: list[ScanRequest], user: User = Security(authenticate_user)
 ) -> list[ACTableDescriptionResponse]:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.sync_databases_schemas(
         scan_requests, user.organization_id
     )
@@ -116,9 +108,8 @@ async def ac_sync_table_descriptions_schemas(
 
 @ac_router.post("/refresh-all", status_code=status.HTTP_201_CREATED)
 async def ac_refresh_table_descriptions(
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> list[DatabaseDescriptionResponse]:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.refresh_table_description(
         user.organization_id
     )
@@ -128,9 +119,8 @@ async def ac_refresh_table_descriptions(
 async def ac_update_table_description(
     id: ObjectIdString,
     table_description_request: TableDescriptionRequest,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> ACTableDescriptionResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return await table_description_service.update_table_description(
         id, table_description_request, user.organization_id
     )

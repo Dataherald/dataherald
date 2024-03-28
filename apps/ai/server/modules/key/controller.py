@@ -1,12 +1,11 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, status
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Security, status
 
 from modules.key.models.requests import KeyGenerationRequest
 from modules.key.models.responses import KeyPreviewResponse, KeyResponse
 from modules.key.service import KeyService
-from utils.auth import Authorize, VerifyToken
+from utils.auth import User, authenticate_user
 from utils.validation import ObjectIdString
 
 router = APIRouter(
@@ -14,26 +13,21 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-token_auth_scheme = HTTPBearer()
 key_service = KeyService()
-authorize = Authorize()
 
 
 @router.get("")
-def get_keys(token: str = Depends(token_auth_scheme)) -> List[KeyPreviewResponse]:
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
-    return key_service.get_keys(org_id)
+def get_keys(user: User = Security(authenticate_user)) -> List[KeyPreviewResponse]:
+    return key_service.get_keys(user.organization_id)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def add_key(
-    key_request: KeyGenerationRequest, token: str = Depends(token_auth_scheme)
+    key_request: KeyGenerationRequest, user: User = Security(authenticate_user)
 ) -> KeyResponse:
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
-    return key_service.add_key(key_request, org_id)
+    return key_service.add_key(key_request, user.organization_id)
 
 
 @router.delete("/{id}")
-async def revoke_key(id: ObjectIdString, token: str = Depends(token_auth_scheme)):
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
-    return key_service.revoke_key(id, org_id)
+async def revoke_key(id: ObjectIdString, user: User = Security(authenticate_user)):
+    return key_service.revoke_key(id, user.organization_id)

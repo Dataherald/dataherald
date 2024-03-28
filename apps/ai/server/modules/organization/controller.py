@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Security, status
 
 from modules.organization.models.entities import SlackInstallation
 from modules.organization.models.requests import (
@@ -8,7 +7,7 @@ from modules.organization.models.requests import (
 )
 from modules.organization.models.responses import OrganizationResponse
 from modules.organization.service import OrganizationService
-from utils.auth import Authorize, VerifyToken
+from utils.auth import Authorize, User, authenticate_user, verify_token
 from utils.validation import ObjectIdString
 
 router = APIRouter(
@@ -17,37 +16,32 @@ router = APIRouter(
 )
 
 authorize = Authorize()
-token_auth_scheme = HTTPBearer()
 org_service = OrganizationService()
 
 
 @router.get("")
 async def get_organizations(
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> list[OrganizationResponse]:
-    authorize.is_admin_user(authorize.user(VerifyToken(token.credentials).verify()))
+    authorize.is_admin_user(user)
     return org_service.get_organizations()
 
 
 @router.get("/{id}")
 async def get_organization(
-    id: ObjectIdString, token: str = Depends(token_auth_scheme)
+    id: ObjectIdString, user: User = Security(authenticate_user)
 ) -> OrganizationResponse:
-    user_id = authorize.user(VerifyToken(token.credentials).verify()).id
-    authorize.user_in_organization(user_id, id)
+    authorize.user_in_organization(user.id, id)
     return org_service.get_organization(id)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def add_organization(
-    org_request: OrganizationRequest, token: str = Depends(token_auth_scheme)
+    org_request: OrganizationRequest, user: User = Security(authenticate_user)
 ) -> OrganizationResponse:
-    session_user = authorize.user(VerifyToken(token.credentials).verify())
-    authorize.is_admin_user(session_user)
+    authorize.is_admin_user(user)
     return org_service.add_organization(
-        OrganizationRequest(
-            **org_request.dict(exclude={"owner"}), owner=session_user.id
-        )
+        OrganizationRequest(**org_request.dict(exclude={"owner"}), owner=user.id)
     )
 
 
@@ -55,18 +49,16 @@ async def add_organization(
 async def update_organization(
     id: ObjectIdString,
     org_request: OrganizationRequest,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> OrganizationResponse:
-    user_id = authorize.user(VerifyToken(token.credentials).verify()).id
-    authorize.user_in_organization(user_id, id)
+    authorize.user_in_organization(user.id, id)
     return org_service.update_organization(id, org_request)
 
 
 @router.delete("/{id}")
 async def delete_organization(
-    id: ObjectIdString, token: str = Depends(token_auth_scheme)
+    id: ObjectIdString, user: User = Security(authenticate_user)
 ):
-    user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_admin_user(user)
     authorize.is_not_self(user.organization_id, id)
     return org_service.delete_organization(id)
@@ -75,16 +67,14 @@ async def delete_organization(
 @router.post("/slack/installation", status_code=status.HTTP_201_CREATED)
 async def add_organization_by_slack_installation(
     slack_installation: SlackInstallationRequest,
-    token: str = Depends(token_auth_scheme),
+    token: dict = Security(verify_token),  # noqa: ARG001
 ) -> OrganizationResponse:
-    VerifyToken(token.credentials).verify()
     return org_service.add_organization_by_slack_installation(slack_installation)
 
 
 @router.get("/slack/installation", status_code=status.HTTP_200_OK)
 async def get_slack_installation_by_slack_workspace_id(
     workspace_id: str,
-    token: str = Depends(token_auth_scheme),
+    token: dict = Security(verify_token),  # noqa: ARG001
 ) -> SlackInstallation:
-    VerifyToken(token.credentials).verify()
     return org_service.get_slack_installation_by_slack_workspace_id(workspace_id)

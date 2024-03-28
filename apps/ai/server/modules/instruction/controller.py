@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, Security, status
-from fastapi.security import APIKeyHeader, HTTPBearer
+from fastapi import APIRouter, Security, status
 
 from modules.instruction.models.requests import InstructionRequest
 from modules.instruction.models.responses import (
@@ -7,7 +6,7 @@ from modules.instruction.models.responses import (
     InstructionResponse,
 )
 from modules.instruction.service import InstructionService
-from utils.auth import Authorize, VerifyToken, get_api_key
+from utils.auth import Authorize, User, authenticate_user, get_api_key
 from utils.validation import ObjectIdString
 
 router = APIRouter(
@@ -20,9 +19,6 @@ ac_router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-token_auth_scheme = HTTPBearer()
-
-api_key_header = APIKeyHeader(name="X-API-Key")
 authorize = Authorize()
 instruction_service = InstructionService()
 
@@ -76,18 +72,16 @@ async def delete_instruction(
 @ac_router.get("")
 async def ac_get_instructions(
     db_connection_id: ObjectIdString = None,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> list[ACInstructionResponse]:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return instruction_service.get_instructions(user.organization_id, db_connection_id)
 
 
 @ac_router.get("/first")
 async def ac_get_first_instruction(
     db_connection_id: ObjectIdString,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> ACInstructionResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return instruction_service.get_first_instruction(
         db_connection_id, user.organization_id
     )
@@ -96,18 +90,16 @@ async def ac_get_first_instruction(
 @ac_router.get("/{id}")
 async def ac_get_instruction(
     id: ObjectIdString,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> ACInstructionResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return instruction_service.get_instruction(id, user.organization_id)
 
 
 @ac_router.post("", status_code=status.HTTP_201_CREATED)
 async def ac_add_instructions(
     instruction_request: InstructionRequest,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> ACInstructionResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return await instruction_service.add_instruction(
         instruction_request, user.organization_id
     )
@@ -117,9 +109,8 @@ async def ac_add_instructions(
 async def ac_update_instruction(
     id: ObjectIdString,
     instruction_request: InstructionRequest,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> ACInstructionResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return await instruction_service.update_instruction(
         id, instruction_request, user.organization_id
     )
@@ -128,7 +119,6 @@ async def ac_update_instruction(
 @ac_router.delete("/{id}")
 async def ac_delete_instruction(
     id: ObjectIdString,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ):
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return await instruction_service.delete_instruction(id, user.organization_id)

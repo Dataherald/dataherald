@@ -2,7 +2,6 @@ name: AI API tests using Postman CLI
 
 on:
   pull_request:
-    types: [ready_for_review]
     paths:
       - ".github/workflows/ai-server-api-test.yml" # this file
       - "apps/ai/server/**"
@@ -20,7 +19,7 @@ jobs:
   automated-api-tests:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
-
+    environment: ai-api-test
     defaults:
       run:
         working-directory: ./apps/ai/server
@@ -35,8 +34,8 @@ jobs:
         run: docker network create backendnetwork
       - name: Create env files
         run: |
-          echo "${{ secrets.ENGINE_API_TEST_ENV_FILE }}" > ./dataherald/.env
-          echo "${{ secrets.ENTERPRISE_API_TEST_ENV_FILE }}" > .env
+          echo "${{ secrets.ENGINE_ENV_FILE }}" > ./dataherald/.env
+          echo "${{ secrets.ENTERPRISE_ENV_FILE }}" > .env
       - name: Run Engine container
         run: |
           docker compose -f ./dataherald/docker-compose.yml up --build -d

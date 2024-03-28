@@ -410,7 +410,8 @@
 													"const responseJson = pm.response.json();",
 													"pm.environment.set(\"prompt_id\", responseJson.id);"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -423,7 +424,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"text\": \"What is the average rent price in Chicago Jan 2023?\",\n  \"db_connection_id\": \"{{db_connection_id}}\",\n  \"metadata\": {\"note\":\"this is a note\"}\n}",
+											"raw": "{\n  \"text\": \"What was the home Sale numbers in Cleveland in Jan 2023?\",\n  \"db_connection_id\": \"{{db_connection_id}}\",\n  \"metadata\": {\"note\":\"this is a note\"}\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -666,7 +667,8 @@
 													"pm.environment.set(\"sql_generation_id\", responseJson.id);",
 													""
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -679,7 +681,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n   \"finetuning_id\":\"{{finetuning_id}}\",\n    \"prompt\": {\n        \"text\": \"What was the median home sale price in CA in May 2023?\",\n        \"db_connection_id\": \"{{db_connection_id}}\"\n    }\n}",
+											"raw": "{\n   \"finetuning_id\":\"{{finetuning_id}}\",\n    \"prompt\": {\n        \"text\": \"What was the home Sale numbers in Cleveland in Jan 2023?\",\n        \"db_connection_id\": \"{{db_connection_id}}\"\n    }\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -724,7 +726,8 @@
 													"pm.environment.set(\"sql_generation_id\", responseJson.id);",
 													""
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -737,7 +740,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"prompt\": {\n        \"text\": \"What was the median home sale price in CA in May 2023?\",\n        \"db_connection_id\": \"{{db_connection_id}}\"\n    }\n}",
+											"raw": "{\n    \"prompt\": {\n        \"text\": \"What was the home Sale numbers in Cleveland in Jan 2023?\",\n        \"db_connection_id\": \"{{db_connection_id}}\"\n    }\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2439,10 +2442,10 @@
 													"});",
 													"",
 													"utils.checkErrorCode(pm.response,'finetuning_not_found')",
-													"",
-													"postman.setNextRequest(\"heartbeat\")"
+													""
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -2849,12 +2852,13 @@
 												"id": "3c285f9a-5fd6-423d-95dd-d947e7d241e1",
 												"exec": [
 													"pm.test(\"Status code is 402\", function () {",
-													"    pm.response.to.have.status(402);",
+													"    pm.response.to.have.status(403);",
 													"});",
 													"",
 													"utils.checkErrorCode(pm.response, \"spending_limit_exceeded\")"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -2917,12 +2921,13 @@
 												"id": "1c828f23-2555-4dda-86db-f6fb66e6575d",
 												"exec": [
 													"pm.test(\"Status code is 400\", function () {",
-													"    pm.response.to.have.status(400);",
+													"    pm.response.to.have.status(403);",
 													"});",
 													"",
 													"utils.checkErrorCode(pm.response, \"last_payment_method\")"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -3488,98 +3493,11 @@
 			],
 			"id": "8a124d72-0491-4460-802f-757ee12bf41e",
 			"auth": {
-				"type": "oauth2",
-				"oauth2": [
+				"type": "bearer",
+				"bearer": [
 					{
-						"key": "tokenType",
-						"value": "Bearer",
-						"type": "string"
-					},
-					{
-						"key": "accessToken",
-						"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImZfQzJSVF80VDJHQlQya2RiRExfYSJ9.eyJodHRwczovL2F1dGguZGF0YWhlcmFsZC5jb20vZW1haWwiOiJwb3N0bWFuYXBpdGVzdEBkYXRhaGVyYWxkLmNvbSIsImh0dHBzOi8vYXV0aC5kYXRhaGVyYWxkLmNvbS91c2VyX2lkIjoiYXV0aDB8NjVkZTI5NTdmMzM0NzU0MDk2NzBlYWRmIiwiaHR0cHM6Ly9hdXRoLmRhdGFoZXJhbGQuY29tL2ltYWdlX3VybCI6Imh0dHBzOi8vcy5ncmF2YXRhci5jb20vYXZhdGFyL2UzMzZkNDliMDQ5ZGZlZjMwMDQxMWZjNjhkMWIwMzgyP3M9NDgwJnI9cGcmZD1odHRwcyUzQSUyRiUyRmNkbi5hdXRoMC5jb20lMkZhdmF0YXJzJTJGcG8ucG5nIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLmRhdGFoZXJhbGQuY29tLyIsInN1YiI6ImF1dGgwfDY1ZGUyOTU3ZjMzNDc1NDA5NjcwZWFkZiIsImF1ZCI6Imh0dHBzOi8vaGktZ2VvcmdlLnVzLmF1dGgwLmNvbS9hcGkvdjIvIiwiaWF0IjoxNzA5MzMzNzQ2LCJleHAiOjE3MDk0MjAxNDYsImF6cCI6IllTTjNtZVFyWlNldVQxTHRaaWZzN0UyZmpwSmwyakdHIiwic2NvcGUiOiJyZWFkOmN1cnJlbnRfdXNlciB1cGRhdGU6Y3VycmVudF91c2VyX21ldGFkYXRhIGRlbGV0ZTpjdXJyZW50X3VzZXJfbWV0YWRhdGEgY3JlYXRlOmN1cnJlbnRfdXNlcl9tZXRhZGF0YSBjcmVhdGU6Y3VycmVudF91c2VyX2RldmljZV9jcmVkZW50aWFscyBkZWxldGU6Y3VycmVudF91c2VyX2RldmljZV9jcmVkZW50aWFscyB1cGRhdGU6Y3VycmVudF91c2VyX2lkZW50aXRpZXMgb2ZmbGluZV9hY2Nlc3MiLCJndHkiOlsicmVmcmVzaF90b2tlbiIsInBhc3N3b3JkIl19.D5tqdYNhH64EJqQiHJYPMvTGm1YXGq8Vbe4XtdH1GuMh5jxGwEw0li69h1CdH2fticP-EuSbjNiCv54tzKRtaiDwUw_UUO2r4n0-LxXexe-byJaHSL6QNWhPaOPSm4-mSi3pJSz5ta0rjGpHg7HBdMgkjomBtP-uTte9l-BvH82Y-5GXYFEGKNLibmrF6gSj4Lis06FdEJdOd8T38AW1WRGsggNa-yQjB5DSI2rC5Liho3YTREI16aUjKjUrpT98m4mVgYcu8Wq18OFlxIbl0QSqqBYyOgKzlkvjrRvum-lu8iSV9p8CaS0EJTbzuXMe8XatbhKIpT2StiQg6xwTYw",
-						"type": "string"
-					},
-					{
-						"key": "scope",
-						"value": "offline_access",
-						"type": "string"
-					},
-					{
-						"key": "refreshTokenUrl",
-						"value": "https://auth.dataherald.com/oauth/token",
-						"type": "string"
-					},
-					{
-						"key": "username",
+						"key": "token",
 						"value": "{{user_email}}",
-						"type": "string"
-					},
-					{
-						"key": "password",
-						"value": "{{password}}",
-						"type": "string"
-					},
-					{
-						"key": "clientSecret",
-						"value": "{{auth0_client_secret}}",
-						"type": "string"
-					},
-					{
-						"key": "clientId",
-						"value": "{{auth0_client_id}}",
-						"type": "string"
-					},
-					{
-						"key": "tokenRequestParams",
-						"value": [
-							{
-								"key": "audience",
-								"value": "https://hi-george.us.auth0.com/api/v2/",
-								"enabled": true,
-								"send_as": "request_body"
-							}
-						],
-						"type": "any"
-					},
-					{
-						"key": "accessTokenUrl",
-						"value": "https://auth.dataherald.com/oauth/token",
-						"type": "string"
-					},
-					{
-						"key": "addTokenTo",
-						"value": "header",
-						"type": "string"
-					},
-					{
-						"key": "grant_type",
-						"value": "password_credentials",
-						"type": "string"
-					},
-					{
-						"key": "refreshRequestParams",
-						"value": [],
-						"type": "any"
-					},
-					{
-						"key": "authRequestParams",
-						"value": [],
-						"type": "any"
-					},
-					{
-						"key": "tokenName",
-						"value": "test token",
-						"type": "string"
-					},
-					{
-						"key": "challengeAlgorithm",
-						"value": "S256",
-						"type": "string"
-					},
-					{
-						"key": "client_authentication",
-						"value": "header",
 						"type": "string"
 					}
 				]
@@ -3588,7 +3506,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "d3c76c2a-52bb-4374-9a80-2370648a7726",
+						"id": "f9c56698-a623-41a9-892a-1780a349e8f3",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -3598,7 +3516,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "09d7122a-b4b9-46b7-9cf0-0f717251531c",
+						"id": "047f88b9-7850-4532-9f59-b14537adc466",
 						"type": "text/javascript",
 						"exec": [
 							""

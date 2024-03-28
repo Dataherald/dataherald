@@ -1,7 +1,9 @@
 import jwt
 from bson import ObjectId
 from fastapi import Security
-from fastapi.security import APIKeyHeader
+from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security.utils import get_authorization_scheme_param
+from starlette.requests import Request
 
 from config import (
     USER_COL,
@@ -21,14 +23,17 @@ from modules.auth.models.exceptions import (
 )
 from modules.key.service import KeyService
 from modules.organization.service import OrganizationService
-from modules.user.models.entities import Roles
+from modules.user.models.entities import Roles, User
 from modules.user.models.exceptions import UserNotFoundError
-from modules.user.models.responses import UserResponse
 from modules.user.service import UserService
 
 user_service = UserService()
 org_service = OrganizationService()
 key_service = KeyService()
+
+
+class User(User):
+    pass
 
 
 class VerifyToken:
@@ -74,7 +79,7 @@ class VerifyToken:
 
 
 class Authorize:
-    def user(self, payload: dict) -> UserResponse:
+    def user(self, payload: dict) -> User:
         email = payload[auth_settings.auth0_issuer + "email"]
         user = user_service.get_user_by_email(email)
         if not user:
@@ -88,7 +93,7 @@ class Authorize:
         ):
             raise UserNotFoundError(user_id, org_id)
 
-    def is_admin_user(self, user: UserResponse):
+    def is_admin_user(self, user: User):
         if user.role != Roles.admin:
             raise UnauthorizedOperationError(user_id=user.id)
 
@@ -103,7 +108,22 @@ class Authorize:
             raise UnauthorizedOperationError(user_id=user_a_id)
 
 
+class MockHTTPBearer(HTTPBearer):
+    def __init__(self, auto_error: bool = True):
+        super().__init__(
+            description="Mock HTTP Bearer authentication, use email as token",
+            auto_error=auto_error,
+        )
+
+    async def __call__(self, request: Request) -> HTTPAuthorizationCredentials:
+        authorization = request.headers.get("Authorization")
+        scheme, credentials = get_authorization_scheme_param(authorization)
+        return HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials)
+
+
 api_key_header = APIKeyHeader(name="X-API-Key")
+token_auth_scheme = HTTPBearer()
+mock_auth_scheme = MockHTTPBearer()
 
 
 def get_api_key(api_key: str = Security(api_key_header)) -> str:
@@ -112,3 +132,24 @@ def get_api_key(api_key: str = Security(api_key_header)) -> str:
         return validated_key
 
     raise InvalidOrRevokedAPIKeyError(key_id=api_key)
+
+
+def verify_token(token: dict = Security(token_auth_scheme)):
+    VerifyToken(token).verify()
+    return token
+
+
+def get_auth_scheme():
+    if auth_settings.auth_disabled:
+        print("Auth is disabled")
+        return mock_auth_scheme
+    return token_auth_scheme
+
+
+def authenticate_user(token=Security(get_auth_scheme())):
+    payload = (
+        {auth_settings.auth0_issuer + "email": token.credentials}
+        if auth_settings.auth_disabled
+        else VerifyToken(token.credentials).verify()
+    )
+    return Authorize().user(payload)

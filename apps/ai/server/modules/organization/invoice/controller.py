@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Security, status
 from starlette.requests import Request
 
 from modules.organization.invoice.models.requests import (
@@ -15,7 +14,7 @@ from modules.organization.invoice.models.responses import (
 )
 from modules.organization.invoice.service import InvoiceService
 from modules.organization.invoice.webhook import InvoiceWebhook
-from utils.auth import Authorize, VerifyToken
+from utils.auth import Authorize, User, authenticate_user
 
 router = APIRouter(
     prefix="/organizations",
@@ -28,17 +27,17 @@ invoice_webhook = InvoiceWebhook()
 
 
 @router.get("/{id}/invoices/pending")
-def get_pending_invoice(id: str, token: str = Depends(HTTPBearer())) -> InvoiceResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
+def get_pending_invoice(
+    id: str, user: User = Security(authenticate_user)
+) -> InvoiceResponse:
     authorize.is_self(user.organization_id, id)
     return invoice_service.get_pending_invoice(id)
 
 
 @router.get("/{id}/invoices/payment-methods")
 def get_payment_methods(
-    id: str, token: str = Depends(HTTPBearer())
+    id: str, user: User = Security(authenticate_user)
 ) -> list[PaymentMethodResponse]:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_self(user.organization_id, id)
     return invoice_service.get_payment_methods(id)
 
@@ -48,9 +47,8 @@ def attach_payment_method(
     id: str,
     payment_method_request: PaymentMethodRequest,
     default: bool = True,
-    token: str = Depends(HTTPBearer()),
+    user: User = Security(authenticate_user),
 ) -> PaymentMethodResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_self(user.organization_id, id)
     return invoice_service.attach_payment_method(id, payment_method_request, default)
 
@@ -59,29 +57,24 @@ def attach_payment_method(
 def set_default_payment_method(
     id: str,
     payment_method_request: PaymentMethodRequest,
-    token: str = Depends(HTTPBearer()),
+    user: User = Security(authenticate_user),
 ):
-    user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_self(user.organization_id, id)
     return invoice_service.set_default_payment_method(id, payment_method_request)
 
 
 @router.delete("/{id}/invoices/payment-methods/{payment_method_id}")
 def delete_payment_method(
-    id: str,
-    payment_method_id: str,
-    token: str = Depends(HTTPBearer()),
+    id: str, payment_method_id: str, user: User = Security(authenticate_user)
 ) -> PaymentMethodResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_self(user.organization_id, id)
     return invoice_service.detach_payment_method(id, payment_method_id)
 
 
 @router.get("/{id}/invoices/limits")
 def get_spending_limits(
-    id: str, token: str = Depends(HTTPBearer())
+    id: str, user: User = Security(authenticate_user)
 ) -> SpendingLimitResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_self(user.organization_id, id)
     return invoice_service.get_spending_limits(id)
 
@@ -90,20 +83,16 @@ def get_spending_limits(
 def update_spending_limit(
     id: str,
     spending_limit_request: SpendingLimitRequest,
-    token: str = Depends(HTTPBearer()),
+    user: User = Security(authenticate_user),
 ) -> SpendingLimitResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_self(user.organization_id, id)
     return invoice_service.update_spending_limit(id, spending_limit_request)
 
 
 @router.post("/{id}/invoices/credits", status_code=status.HTTP_201_CREATED)
 def add_credits(
-    id: str,
-    credit_request: CreditRequest,
-    token: str = Depends(HTTPBearer()),
+    id: str, credit_request: CreditRequest, user: User = Security(authenticate_user)
 ) -> CreditResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     authorize.is_admin_user(user)
     return invoice_service.add_credits(id, user.id, credit_request)
 

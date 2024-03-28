@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, Security, status
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Security, status
 
 from modules.finetuning.models.requests import FinetuningRequest
 from modules.finetuning.models.responses import (
@@ -9,7 +8,7 @@ from modules.finetuning.models.responses import (
 from modules.finetuning.service import FinetuningService
 from modules.organization.invoice.models.entities import UsageType
 from modules.organization.invoice.service import InvoiceService
-from utils.auth import Authorize, VerifyToken, get_api_key
+from utils.auth import User, authenticate_user, get_api_key
 from utils.validation import ObjectIdString
 
 router = APIRouter(
@@ -22,8 +21,6 @@ ac_router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-token_auth_scheme = HTTPBearer()
-authorize = Authorize()
 finetuning_service = FinetuningService()
 invoice_service = InvoiceService()
 
@@ -83,9 +80,8 @@ async def cancel_finetuning_job(
 @ac_router.get("")
 async def ac_get_finetuning_jobs(
     db_connection_id: str = None,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> list[ACFinetuningResponse]:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return await finetuning_service.get_finetuning_jobs(
         user.organization_id, db_connection_id
     )
@@ -93,18 +89,16 @@ async def ac_get_finetuning_jobs(
 
 @ac_router.get("/{id}")
 async def ac_get_finetuning_job(
-    id: ObjectIdString, token: str = Depends(token_auth_scheme)
+    id: ObjectIdString, user: User = Security(authenticate_user)
 ) -> ACFinetuningResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return await finetuning_service.get_finetuning_job(id, user.organization_id)
 
 
 @ac_router.post("", status_code=status.HTTP_201_CREATED)
 async def ac_create_finetuning_job(
     finetuning_request: FinetuningRequest,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> ACFinetuningResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     usage_type = (
         UsageType.FINETUNING_GPT_4
         if finetuning_service.is_gpt_4_model(finetuning_request.base_llm.model_name)
@@ -126,7 +120,6 @@ async def ac_create_finetuning_job(
 @ac_router.post("/{id}/cancel")
 async def ac_cancel_finetuning_job(
     id: ObjectIdString,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> ACFinetuningResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     return await finetuning_service.cancel_finetuning_job(id, user.organization_id)

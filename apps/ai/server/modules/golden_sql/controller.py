@@ -1,7 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, Security, status
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Security, status
 
 from modules.generation.models.entities import GenerationStatus
 from modules.golden_sql.models.requests import GoldenSQLRequest
@@ -10,7 +9,7 @@ from modules.golden_sql.models.responses import (
     GoldenSQLResponse,
 )
 from modules.golden_sql.service import GoldenSQLService
-from utils.auth import Authorize, VerifyToken, get_api_key
+from utils.auth import User, authenticate_user, get_api_key
 from utils.validation import ObjectIdString
 
 router = APIRouter(
@@ -23,9 +22,7 @@ ac_router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-token_auth_scheme = HTTPBearer()
 golden_sql_service = GoldenSQLService()
-authorize = Authorize()
 
 
 @router.get("")
@@ -80,15 +77,14 @@ async def ac_get_golden_sqls(
     ascend: bool = False,
     search_term: str = "",
     db_connection_id: str = None,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> list[ACGoldenSQLResponse]:
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return golden_sql_service.get_golden_sqls(
         page=page,
         page_size=page_size,
         order=order,
         ascend=ascend,
-        org_id=org_id,
+        org_id=user.organization_id,
         search_term=search_term,
         db_connection_id=db_connection_id,
     )
@@ -96,27 +92,25 @@ async def ac_get_golden_sqls(
 
 @ac_router.get("/{id}")
 async def ac_get_golden_sql(
-    id: ObjectIdString, token: str = Depends(token_auth_scheme)
+    id: ObjectIdString, user: User = Security(authenticate_user)
 ) -> ACGoldenSQLResponse:
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
-    return golden_sql_service.get_golden_sql(id, org_id)
+    return golden_sql_service.get_golden_sql(id, user.organization_id)
 
 
 @ac_router.post("", status_code=status.HTTP_201_CREATED)
 async def ac_add_user_upload_golden_sql(
-    golden_sql_requests: List[GoldenSQLRequest], token: str = Depends(token_auth_scheme)
+    golden_sql_requests: List[GoldenSQLRequest],
+    user: User = Security(authenticate_user),
 ) -> List[ACGoldenSQLResponse]:
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return await golden_sql_service.add_user_upload_golden_sql(
-        golden_sql_requests, org_id
+        golden_sql_requests, user.organization_id
     )
 
 
 @ac_router.delete("/{id}")
 async def ac_delete_golden_sql(
-    id: ObjectIdString, token: str = Depends(token_auth_scheme)
+    id: ObjectIdString, user: User = Security(authenticate_user)
 ):
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
     return await golden_sql_service.delete_golden_sql(
-        id, org_id, GenerationStatus.NOT_VERIFIED
+        id, user.organization_id, GenerationStatus.NOT_VERIFIED
     )

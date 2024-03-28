@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, Form, Security, UploadFile, status
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Form, Security, UploadFile, status
 from pydantic import Json
 
 from modules.db_connection.models.requests import DBConnectionRequest
 from modules.db_connection.models.responses import DBConnectionResponse
 from modules.db_connection.service import DBConnectionService
-from utils.auth import Authorize, VerifyToken, get_api_key
+from utils.auth import User, authenticate_user, get_api_key
 from utils.validation import ObjectIdString
 
 router = APIRouter(
@@ -18,8 +17,6 @@ ac_router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-token_auth_scheme = HTTPBearer()
-authorize = Authorize()
 db_connection_service = DBConnectionService()
 
 
@@ -61,28 +58,26 @@ async def update_db_connection(
 
 @ac_router.get("", status_code=status.HTTP_200_OK)
 async def ac_get_db_connections(
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> list[DBConnectionResponse]:
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
-    return db_connection_service.get_db_connections(org_id)
+    return db_connection_service.get_db_connections(user.organization_id)
 
 
 @ac_router.get("/{id}", status_code=status.HTTP_200_OK)
 async def ac_get_db_connection(
     id: ObjectIdString,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> DBConnectionResponse:
-    org_id = authorize.user(VerifyToken(token.credentials).verify()).organization_id
-    return db_connection_service.get_db_connection(id, org_id)
+
+    return db_connection_service.get_db_connection(id, user.organization_id)
 
 
 @ac_router.post("", status_code=status.HTTP_201_CREATED)
 async def ac_add_db_connection(
     db_connection_request_json: Json = Form(...),
     file: UploadFile = None,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> DBConnectionResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     db_connection_request = DBConnectionRequest(**db_connection_request_json)
     return await db_connection_service.add_db_connection(
         db_connection_request, user.organization_id, file
@@ -94,9 +89,8 @@ async def ac_update_db_connection(
     id: ObjectIdString,
     db_connection_request_json: Json = Form(...),
     file: UploadFile = None,
-    token: str = Depends(token_auth_scheme),
+    user: User = Security(authenticate_user),
 ) -> DBConnectionResponse:
-    user = authorize.user(VerifyToken(token.credentials).verify())
     db_connection_request = DBConnectionRequest(**db_connection_request_json)
     return await db_connection_service.update_db_connection(
         id, db_connection_request, user.organization_id, file

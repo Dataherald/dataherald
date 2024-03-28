@@ -28,11 +28,10 @@ class UserService:
     def get_user(self, user_id: str, org_id: str) -> UserResponse:
         return self.get_user_in_org(user_id, org_id)
 
-    def get_user_by_email(self, email: str) -> UserResponse:
+    def get_user_by_email(self, email: str) -> User:
+        """Helper function to get user by email."""
         user = self.repo.get_user_by_email(email)
-        if user:
-            return UserResponse(**user.dict())
-        return None
+        return user if user else None
 
     def add_user(self, user_request: UserRequest) -> UserResponse:
         self.check_user_exists(user_request.email, user_request.organization_id)

@@ -56,6 +56,8 @@ class AWSS3Settings(BaseSettings):
 class AuthSettings(BaseSettings):
     load_dotenv()
 
+    auth_disabled: bool = os.environ.get("AUTH_DISABLED", False)
+
     auth0_domain: str = os.environ.get("AUTH0_DOMAIN")
     auth0_algorithms: str = os.environ.get("AUTH0_ALGORITHMS", "RS256")
     auth0_audience: str = os.environ.get("AUTH0_API_AUDIENCE")
