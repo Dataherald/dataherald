@@ -682,22 +682,10 @@ class DataheraldSQLAgent(SQLGenerator):
                 vulnerability = vulnerabilities.find_by({"cve_id": cve})[0]
                 if vulnerability:
                     if vulnerability.description:
-                        extra_info = f"{cve} is {vulnerability.description}. "
+                        extra_info = f"{cve} is {vulnerability.description}.\n "
                     if vulnerability.affected_versions:
                         extra_info += (
-                            f"{cve} affect the {vulnerability.affected_versions}"
-                        )
-                    if vulnerability.date_reserved:
-                        extra_info += (
-                            f"{cve} was reserved on {vulnerability.date_reserved}"
-                        )
-                    if vulnerability.date_updated:
-                        extra_info += (
-                            f"{cve} was updated on {vulnerability.date_updated}"
-                        )
-                    if vulnerability.published_date:
-                        extra_info += (
-                            f"{cve} was published on {vulnerability.published_date}"
+                            f"{cve} affects the followig packages:\n {vulnerability.affected_versions}\n"
                         )
                     if vulnerability.hotfix_ids:
                         extra_info += f"{cve} is fixed in the following patches which can be found in patches.hotfix_id: {', '.join(vulnerability.hotfix_ids)}"  # noqa: E501
