@@ -684,9 +684,7 @@ class DataheraldSQLAgent(SQLGenerator):
                     if vulnerability.description:
                         extra_info = f"{cve} is {vulnerability.description}.\n "
                     if vulnerability.affected_versions:
-                        extra_info += (
-                            f"{cve} affects the followig packages:\n {vulnerability.affected_versions}\n"
-                        )
+                        extra_info += f"{cve} affects the followig packages:\n {vulnerability.affected_versions}\n"
                     if vulnerability.hotfix_ids:
                         extra_info += f"{cve} is fixed in the following patches which can be found in patches.hotfix_id: {', '.join(vulnerability.hotfix_ids)}"  # noqa: E501
                     if vulnerability.source:
