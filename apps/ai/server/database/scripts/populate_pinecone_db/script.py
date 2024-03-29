@@ -30,6 +30,7 @@ if __name__ == "__main__":
     embedding = OpenAIEmbeddings(openai_api_key=openai_api_key, model=EMBEDDING_MODEL)
     index = pinecone.Index(pinecone_index_name)
     batch_limit = 100
+    count = 0
     for limit_index in range(0, len(golden_sqls), batch_limit):
         golden_sql_batch = golden_sqls[limit_index : limit_index + batch_limit]
         embeds = embedding.embed_documents(
@@ -52,4 +53,6 @@ if __name__ == "__main__":
                     )
                 )
         index.upsert(vectors=records)
+        count += len(records)
     print("Indexing done!")
+    print(f"Indexed {count} records")
