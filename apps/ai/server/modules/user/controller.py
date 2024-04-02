@@ -44,7 +44,7 @@ async def update_user(
     session_user: User = Security(authenticate_user),
 ) -> UserResponse:
     authorize.user_in_organization(id, session_user.organization_id)
-    # TODO - check if the session_user is an admin or not -- currently we can't have several auth checks cause they're raising HTTP exceptions
+    # TODO - check if the session_user is an admin or not -- we can't have several auth checks cause they're raising HTTP exceptions
     return user_service.update_user(
         id,
         user_request,

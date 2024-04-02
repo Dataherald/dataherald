@@ -61,11 +61,13 @@ class Billing:
                 last_date_last_month.year,
                 last_date_last_month.month,
                 min(anchor_day, last_date_last_month.day),
+                tzinfo=timezone.utc,
             )
             end_date = datetime(
                 today.year,
                 today.month,
                 min(anchor_day, last_date_current_month.day),
+                tzinfo=timezone.utc,
             )
 
         else:
@@ -81,6 +83,7 @@ class Billing:
                 min(anchor_day, last_date_next_month.day),
                 tzinfo=timezone.utc,
             )
+        print(start_date, end_date)
         return (start_date, end_date)
 
     def create_subscription(self, customer_id: str) -> stripe.Subscription:

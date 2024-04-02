@@ -9,6 +9,8 @@ from utils.validation import ObjectIdString
 
 
 class TableDescriptionResponse(TableDescription):
+    metadata: dict | None
+
     def dict(self, **kwargs):
         dic = super().dict(**kwargs)
         if "metadata" in dic and dic["metadata"] and "dh_internal" in dic["metadata"]:
