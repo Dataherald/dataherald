@@ -13,7 +13,9 @@ if __name__ == "__main__":
     database_connections = storage.find_all("database_connections")
     for database_connection in database_connections:
         if not database_connection.get("dialect"):
-            decrypted_uri = fernet_encrypt.decrypt(database_connection["connection_uri"])
+            decrypted_uri = fernet_encrypt.decrypt(
+                database_connection["connection_uri"]
+            )
             dialect_prefix = DatabaseConnection.validate_uri(decrypted_uri)
             dialect = DatabaseConnection.set_dialect(dialect_prefix)
             storage.update_or_create(
