@@ -173,9 +173,9 @@ class SQLGenerator(Component, ABC):
                             queue.put(message.content + "\n")
                     elif "steps" in chunk:
                         for step in chunk["steps"]:
-                            queue.put(f"Observation: `{step.observation}`\n")
+                            queue.put(f"**Observation:**\n `{step.observation}`\n")
                     elif "output" in chunk:
-                        queue.put(f'Final Answer: {chunk["output"]}')
+                        queue.put(f'**Final Answer:**\n {chunk["output"]}')
                         if "```sql" in chunk["output"]:
                             response.sql = replace_unprocessable_characters(
                                 self.remove_markdown(chunk["output"])
