@@ -15,6 +15,7 @@ class TestDB(DB):
             {
                 "_id": ObjectId("64dfa0e103f5134086f7090c"),
                 "alias": "alias",
+                "dialect": "dialect",
                 "use_ssh": False,
                 "connection_uri": "gAAAAABkwD9Y9EpBxF1hRxhovjvedX1TeDNu-WaGqDebk_CJnpGjRlpXzDOl_puehMSbz9KDQ6OqPepl8XQpD0EchiV7he4j5tEXYE33eak87iORA7s8ko0=",  # noqa: E501
                 "ssh_settings": None,

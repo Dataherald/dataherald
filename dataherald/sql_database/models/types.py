@@ -121,8 +121,8 @@ class DatabaseConnection(BaseModel):
     def connection_uri_format(cls, value: str, values):
         fernet_encrypt = FernetEncrypt()
         try:
-            decrypted_value = fernet_encrypt.decrypt(value)
-            dialect_prefix = cls.validate_uri(decrypted_value)
+            decrypted_connection_uri = fernet_encrypt.decrypt(value)
+            dialect_prefix = cls.validate_uri(decrypted_connection_uri)
         except Exception:
             dialect_prefix = cls.validate_uri(value)
             value = fernet_encrypt.encrypt(value)
