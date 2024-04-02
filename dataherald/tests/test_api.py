@@ -19,6 +19,7 @@ def test_scan_all_tables():
         "/api/v1/table-descriptions/sync-schemas",
         json={"db_connection_id": "64dfa0e103f5134086f7090c"},
     )
+    print(response.json())
     assert response.status_code == HTTP_201_CODE
 
 
