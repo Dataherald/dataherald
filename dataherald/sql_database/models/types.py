@@ -121,12 +121,11 @@ class DatabaseConnection(BaseModel):
     def connection_uri_format(cls, value: str, values):
         fernet_encrypt = FernetEncrypt()
         try:
-            decrypted_connection_uri = fernet_encrypt.decrypt(value)
-            dialect_prefix = cls.validate_uri(decrypted_connection_uri)
+            fernet_encrypt.decrypt(value)
         except Exception:
             dialect_prefix = cls.validate_uri(value)
+            values["dialect"] = cls.set_dialect(dialect_prefix)
             value = fernet_encrypt.encrypt(value)
-        values["dialect"] = cls.set_dialect(dialect_prefix)
         return value
 
     @validator("llm_api_key", pre=True, always=True)
