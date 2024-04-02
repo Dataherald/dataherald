@@ -7,7 +7,7 @@ client = TestClient(app)
 HTTP_200_CODE = 200
 HTTP_201_CODE = 201
 HTTP_404_CODE = 404
-
+HTTP_400_CODE = 400
 
 def test_heartbeat():
     response = client.get("/api/v1/heartbeat")
