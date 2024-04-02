@@ -18,6 +18,7 @@ HTTP 200 code response
       {
         "id": "64dfa0e103f5134086f7090c",
         "alias": "databricks",
+        "dialect": "databricks",
         "use_ssh": false,
         "connection_uri": "foooAABk91Q4wjoR2h07GR7_72BdQnxi8Rm6i_EjyS-mzz_o2c3RAWaEqnlUvkK5eGD5kUfE5xheyivl1Wfbk_EM7CgV4SvdLmOOt7FJV-3kG4zAbar=",
         "path_to_credentials_file": null,
@@ -27,6 +28,7 @@ HTTP 200 code response
       {
         "id": "64e52c5f7d6dc4bc510d6d28",
         "alias": "postgres",
+        "dialect": "postgres",
         "use_ssh": true,
         "connection_uri": null,
         "path_to_credentials_file": "bar-LWxPdFcjQw9lU7CeK_2ELR3jGBq0G_uQ7E2rfPLk2RcFR4aDO9e2HmeAQtVpdvtrsQ_0zjsy9q7asdsadXExYJ0g==",

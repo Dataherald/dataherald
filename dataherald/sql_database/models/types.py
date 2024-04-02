@@ -1,6 +1,7 @@
 import os
 import re
 from datetime import datetime
+from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel, BaseSettings, Extra, Field, validator
@@ -75,9 +76,23 @@ class InvalidURIFormatError(Exception):
     pass
 
 
+class SupportedDialects(Enum):
+    POSTGRES = "postgresql"
+    MYSQL = "mysql"
+    MSSQL = "mssql"
+    DATABRICKS = "databricks"
+    SNOWFLAKE = "snowflake"
+    CLICKHOUSE = "clickhouse"
+    AWSATHENA = "awsathena"
+    DUCKDB = "duckdb"
+    BIGQUERY = "bigquery"
+    SQLITE = "sqlite"
+
+
 class DatabaseConnection(BaseModel):
     id: str | None
     alias: str
+    dialect: SupportedDialects | None
     use_ssh: bool = False
     connection_uri: str | None
     path_to_credentials_file: str | None
@@ -93,16 +108,25 @@ class DatabaseConnection(BaseModel):
         match = re.match(pattern, input_string)
         if not match:
             raise InvalidURIFormatError(f"Invalid URI format: {input_string}")
+        return match.group(1)
+
+    @classmethod
+    def set_dialect(cls, input_string):
+        for dialect in SupportedDialects:
+            if dialect.value in input_string:
+                return dialect.value
+        return None
 
     @validator("connection_uri", pre=True, always=True)
-    def connection_uri_format(cls, value: str):
+    def connection_uri_format(cls, value: str, values):
         fernet_encrypt = FernetEncrypt()
         try:
-            fernet_encrypt.decrypt(value)
-            return value
+            decrypted_value = fernet_encrypt.decrypt(value)
+            dialect_prefix = cls.validate_uri(decrypted_value)
         except Exception:
-            cls.validate_uri(value)
-            return fernet_encrypt.encrypt(value)
+            dialect_prefix = cls.validate_uri(value)
+            value = fernet_encrypt.encrypt(value)
+        values["dialect"] = cls.set_dialect(dialect_prefix)
         return value
 
     @validator("llm_api_key", pre=True, always=True)
