@@ -58,7 +58,7 @@ jobs:
   build-server:
     name: Build Server
     needs: check-changes
-    if: (needs.check-changes.outputs.engine_changed == 'true' || needs.check-changes.outputs.server_changed == 'true') && success()
+    if: needs.check-changes.outputs.engine_changed == 'true' || needs.check-changes.outputs.server_changed == 'true'
     uses: ./.github/workflows/ai-build-docker.yml
     secrets: inherit
     with:
@@ -79,7 +79,7 @@ jobs:
   build-slackbot:
     name: Build Slackbot
     needs: [check-changes]
-    if: needs.check-changes.outputs.slackbot_changed == 'true' && success()
+    if: needs.check-changes.outputs.slackbot_changed == 'true'
     uses: ./.github/workflows/ai-build-docker.yml
     secrets: inherit
     with:
@@ -90,6 +90,7 @@ jobs:
   deploy-slackbot:
     name: Deploy Slackbot
     needs: [build-slackbot, deploy-backend]
+    if: needs.build-slackbot.result != 'failure' && needs.deploy-backend.result != 'failure'
     uses: ./.github/workflows/ai-deploy-docker-ecs.yml
     secrets: inherit
     with:
@@ -101,7 +102,7 @@ jobs:
   deploy-frontend:
     name: Deploy Console
     needs: [check-changes, deploy-backend]
-    if: needs.check-changes.outputs.console_changed == 'true' && success()
+    if: needs.check-changes.outputs.console_changed == 'true' &&  needs.deploy-backend.result != 'failure'
     uses: ./.github/workflows/ai-deploy-frontend.yml
     secrets: inherit
     with:
