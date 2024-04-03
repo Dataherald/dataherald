@@ -178,7 +178,7 @@ jobs:
         deploy-slackbot,
         deploy-frontend,
       ]
-    if: needs.migrate-db == 'success' ||needs.deploy-backend.result == 'success' && needs.deploy-slackbot.result == 'success' && needs.deploy-frontend.result == 'success'
+    if: needs.migrate-db != 'failure' && needs.deploy-backend.result != 'failure' && needs.deploy-slackbot.result != 'failure' && needs.deploy-frontend.result != 'failure'
     runs-on: ubuntu-latest
     steps:
       - name: Setup URLs
