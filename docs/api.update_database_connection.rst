@@ -42,6 +42,7 @@ HTTP 200 code response
     {
       "id": "64f251ce9614e0e94b0520bc",
       "alias": "string_999",
+      "dialect": "sqlite",
       "use_ssh": false,
       "connection_uri": "gAAAAABk8lHQNAUn5XARb94Q8H1OfHpVzOtzP3b2LCpwxUsNCe7LGkwkN8FX-IF3t65oI5mTzgDMR0BY2lzvx55gO0rxlQxRDA==",
       "path_to_credentials_file": "string",
