@@ -9,7 +9,7 @@ class OrganizationRepository:
     def get_organizations(self) -> list[Organization]:
         return [
             Organization(id=str(organization["_id"]), **organization)
-            for organization in MongoDB.find(ORGANIZATION_COL, {})
+            for organization in MongoDB.find(ORGANIZATION_COL, {}).sort("name")
         ]
 
     def get_organization(self, org_id: str) -> Organization:
