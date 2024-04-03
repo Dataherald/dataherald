@@ -103,7 +103,7 @@ class DatabaseConnection(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
 
     @classmethod
-    def validate_uri(cls, input_string):
+    def get_dialect(cls, input_string):
         pattern = r"([^:/]+):/+([^/]+)/([^/]+)"
         match = re.match(pattern, input_string)
         if not match:
@@ -123,7 +123,7 @@ class DatabaseConnection(BaseModel):
         try:
             fernet_encrypt.decrypt(value)
         except Exception:
-            dialect_prefix = cls.validate_uri(value)
+            dialect_prefix = cls.get_dialect(value)
             values["dialect"] = cls.set_dialect(dialect_prefix)
             value = fernet_encrypt.encrypt(value)
         return value

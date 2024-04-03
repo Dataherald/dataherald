@@ -16,7 +16,7 @@ if __name__ == "__main__":
             decrypted_uri = fernet_encrypt.decrypt(
                 database_connection["connection_uri"]
             )
-            dialect_prefix = DatabaseConnection.validate_uri(decrypted_uri)
+            dialect_prefix = DatabaseConnection.get_dialect(decrypted_uri)
             dialect = DatabaseConnection.set_dialect(dialect_prefix)
             storage.update_or_create(
                 "database_connections",
