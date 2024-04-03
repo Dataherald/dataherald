@@ -90,6 +90,8 @@ def catch_exceptions():  # noqa: C901
                 return f"Google API returned an error: {e}"
             except SQLAlchemyError as e:
                 return f"Error: {e}"
+            except Exception as e:
+                return f"Error: {e}"
 
         return wrapper
 
