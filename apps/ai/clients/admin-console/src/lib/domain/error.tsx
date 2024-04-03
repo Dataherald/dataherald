@@ -6,8 +6,7 @@ export const isErrorResponse = (error: unknown): error is ErrorResponse => {
     typeof error === 'object' &&
     error !== null &&
     'message' in error &&
-    'error_code' in error &&
-    'trace_id' in error
+    'error_code' in error
   )
 }
 

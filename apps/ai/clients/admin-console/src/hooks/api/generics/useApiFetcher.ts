@@ -6,15 +6,43 @@ import { ErrorResponse } from '@/models/api'
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
 
-const useApiFetcher = () => {
+interface ApiFetcherArgs {
+  url: string
+  options?: RequestInit
+  retry?: boolean
+  params?: URLSearchParams
+}
+
+interface ApiFetcher {
+  apiFetcher: <T>(
+    url: string,
+    options?: RequestInit,
+    retry?: boolean,
+    params?: URLSearchParams,
+  ) => Promise<T>
+  apiFetcherV2: <T>(args: ApiFetcherArgs) => Promise<T>
+  cancelApiFetch: () => void
+  apiDownloadFile: (endpointUrl: string) => Promise<Blob | null>
+}
+
+const useApiFetcher = (): ApiFetcher => {
   const { token, fetchToken } = useAuth()
   const { setSubscriptionStatus } = useSubscription()
   const router = useRouter()
 
   const [controller, setController] = useState(new AbortController())
 
+  /**
+   * @deprecated Use apiFetcherV2 instead
+   * TODO -- migrate SWR default fetcher to use apiFetcherV2
+   */
   const apiFetcher = useCallback(
-    async <T>(url: string, options?: RequestInit, retry = true): Promise<T> => {
+    async <T>(
+      url: string,
+      options?: RequestInit,
+      retry = true,
+      params?: URLSearchParams,
+    ): Promise<T> => {
       if (!token) return Promise.resolve(null as unknown as T)
       const headers = {
         Authorization: `Bearer ${token}`,
@@ -22,6 +50,10 @@ const useApiFetcher = () => {
           ? { 'Content-Type': 'application/json' }
           : {}),
         ...(options?.headers || {}),
+      }
+
+      if (params) {
+        url += `?${params.toString()}`
       }
 
       const response = await fetch(url, {
@@ -68,6 +100,25 @@ const useApiFetcher = () => {
     [controller.signal, fetchToken, router, setSubscriptionStatus, token],
   )
 
+  /**
+   * Wrapper of the `apiFetcher` but with a different signature
+   * Object args signature is better for several optional parameters
+   */
+  const apiFetcherV2 = useCallback(
+    async <T>({
+      url,
+      options,
+      retry = true,
+      params,
+    }: {
+      url: string
+      options?: RequestInit
+      retry?: boolean
+      params?: URLSearchParams
+    }): Promise<T> => apiFetcher(url, options, retry, params),
+    [apiFetcher],
+  )
+
   const cancelApiFetch = useCallback(() => {
     controller.abort()
     setController(new AbortController())
@@ -92,7 +143,7 @@ const useApiFetcher = () => {
     }
   }
 
-  return { apiFetcher, cancelApiFetch, apiDownloadFile }
+  return { apiFetcher, apiFetcherV2, cancelApiFetch, apiDownloadFile }
 }
 
 export default useApiFetcher

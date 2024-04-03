@@ -17,7 +17,7 @@ export const sourceCode = Source_Code_Pro({
 })
 
 export const mainFont = Nunito_Sans({
-  weight: ['300', '400', '700', '900'],
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
   subsets: ['latin'],
   variable: '--font-main',
   display: 'swap',

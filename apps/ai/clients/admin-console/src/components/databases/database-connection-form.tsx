@@ -59,7 +59,7 @@ const SSHForm: FC<{
           </Link>{' '}
           and add it to the{' '}
           <span className="font-source-code text-xs bg-gray-100 border border-gray-400 text-gray-900 rounded py-0 px-1">
-            autorized_keys
+            authorized_keys
           </span>{' '}
           file from your server.
         </AlertDescription>

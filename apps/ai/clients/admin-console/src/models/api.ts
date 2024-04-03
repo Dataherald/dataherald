@@ -1,9 +1,9 @@
 import { UserProfile } from '@auth0/nextjs-auth0/client'
 
 export interface ErrorResponse {
-  trace_id: string
   message: string
   error_code: string
+  trace_id?: string
   description?: string
   detail?: Record<string, string>
 }
@@ -258,12 +258,28 @@ export interface SshSettings {
   password: string
 }
 
+export enum EDatabaseDialect {
+  postgresql = 'postgresql',
+  mysql = 'mysql',
+  mssql = 'mssql',
+  databricks = 'databricks',
+  snowflake = 'snowflake',
+  clickhouse = 'clickhouse',
+  awsathena = 'awsathena',
+  duckdb = 'duckdb',
+  bigquery = 'bigquery',
+  sqlite = 'sqlite',
+}
+
+export type DatabaseDialect = keyof typeof EDatabaseDialect
+
 export interface DatabaseConnection {
   id?: string
   alias: string
   use_ssh: boolean
   connection_uri: string
   ssh_settings?: SshSettings
+  dialect?: DatabaseDialect
 }
 
 export type DatabaseConnections = DatabaseConnection[]

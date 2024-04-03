@@ -1,8 +1,22 @@
 from datetime import datetime
+from enum import Enum
 
 from pydantic import BaseModel, Extra
 
 from utils.validation import ObjectIdString
+
+
+class DatabaseDialects(Enum):
+    POSTGRES = "postgresql"
+    MYSQL = "mysql"
+    MSSQL = "mssql"
+    DATABRICKS = "databricks"
+    SNOWFLAKE = "snowflake"
+    CLICKHOUSE = "clickhouse"
+    AWSATHENA = "awsathena"
+    DUCKDB = "duckdb"
+    BIGQUERY = "bigquery"
+    SQLITE = "sqlite"
 
 
 class SSHSettings(BaseModel):
@@ -41,6 +55,7 @@ class DBConnection(BaseDBConnection):
     created_at: datetime | None
     path_to_credentials_file: str | None
     ssh_settings: InternalSSHSettings | None
+    dialect: DatabaseDialects | None
 
 
 class Driver(BaseModel):

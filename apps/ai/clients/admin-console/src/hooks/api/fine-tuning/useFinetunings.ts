@@ -11,8 +11,12 @@ interface FineTuningModelsResponse {
   mutate: KeyedMutator<FineTuningModels>
 }
 
-const useFinetunings = (): FineTuningModelsResponse => {
-  const endpointUrl = `${API_URL}/finetunings`
+const useFinetunings = (
+  db_connection_id?: string,
+): FineTuningModelsResponse => {
+  const endpointUrl = `${API_URL}/finetunings${
+    db_connection_id ? `?db_connection_id=${db_connection_id}` : ''
+  }`
   const { token } = useAuth()
   const { data, isLoading, isValidating, error, mutate } =
     useSWR<FineTuningModels>(token ? endpointUrl : null)

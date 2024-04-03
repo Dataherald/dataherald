@@ -87,13 +87,15 @@ const TableResourceComponent: FC<TableResourceComponentProps> = ({
         className="space-y-6 grow flex flex-col"
       >
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-1">
-            {renderIcon(icon, {
-              size: 45,
-              strokeWidth: 1,
-            })}
+          <SheetTitle className="flex items-start gap-1">
+            <div>
+              {renderIcon(icon, {
+                size: 45,
+                strokeWidth: 1,
+              })}
+            </div>
             <div className="flex flex-col">
-              <span>{name}</span>
+              <div className="break-all">{name}</div>
               <div className="flex items-center gap-2 text-slate-500 text-xs">
                 ID {id}{' '}
                 <Button

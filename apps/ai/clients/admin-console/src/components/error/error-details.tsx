@@ -46,22 +46,30 @@ const ErrorDetails: FC<ErrorDetailsProps> = ({
       {...props}
     >
       {displayTitle && <span className="font-semibold">Error details</span>}
-      <div className="flex items-center gap-2">
-        <span className="font-semibold">Trace ID:</span>
-        <span>{error.trace_id}</span>
-        <Button
-          type="button"
-          variant="icon"
-          className="p-0 h-fit text-slate-500"
-          onClick={handleCopyErrorTraceId}
-        >
-          <Copy size={isSmall ? 12 : 14} strokeWidth={2} />
-        </Button>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="font-semibold">Description:</span>
+      {error.trace_id && (
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">Trace ID:</span>
+          <span>{error.trace_id}</span>
+          <Button
+            type="button"
+            variant="icon"
+            className="p-0 h-fit text-slate-500"
+            onClick={handleCopyErrorTraceId}
+          >
+            <Copy size={isSmall ? 12 : 14} strokeWidth={2} />
+          </Button>
+        </div>
+      )}
+      <div className="flex items-start gap-2">
+        <span className="font-semibold">Message:</span>
         <span>{error.message}</span>
       </div>
+      {error.description && (
+        <div className="flex items-start gap-2">
+          <span className="font-semibold">Message:</span>
+          <span>{error.description}</span>
+        </div>
+      )}
     </div>
   )
 }

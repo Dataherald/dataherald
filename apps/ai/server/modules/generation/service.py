@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import httpx
 from fastapi.responses import StreamingResponse
 
@@ -171,6 +173,37 @@ class GenerationService:
             self._track_sql_generation_created_event(org_id, sql_generation)
 
             return sql_generation
+
+    async def create_prompt_sql_generation_stream(
+        self, create_request: PromptSQLGenerationRequest, org_id: str
+    ):
+        reserved_key_in_metadata(create_request.prompt.metadata)
+        reserved_key_in_metadata(create_request.metadata)
+        self.db_connection_service.get_db_connection_in_org(
+            create_request.prompt.db_connection_id, org_id
+        )
+        create_request.metadata = SQLGenerationMetadata(
+            **create_request.metadata,
+            dh_internal=DHSQLGenerationMetadata(organization_id=org_id),
+        )
+        create_request.prompt.metadata = PromptMetadata(
+            **create_request.prompt.metadata,
+            dh_internal=self._initialize_prompt_dh_metadata(org_id),
+        )
+        created_at = datetime.now()
+        async with httpx.AsyncClient() as client:
+            async with client.stream(
+                "POST",
+                url=settings.engine_url + "/stream-sql-generation",
+                json=create_request.dict(exclude_unset=True),
+                timeout=settings.default_engine_timeout,
+            ) as response:
+                async for chunk in response.aiter_bytes():
+                    yield chunk
+
+        self._track_sql_generation_created_event(
+            org_id, SQLGeneration(created_at=created_at, completed_at=datetime.now())
+        )
 
     async def create_prompt_sql_nl_generation(
         self, create_request: PromptSQLNLGenerationRequest, org_id: str

@@ -126,25 +126,25 @@ async def ac_update_generation(
     )
 
 
-# playground endpoint
-@ac_router.post("/prompts/sql-generations", status_code=status.HTTP_201_CREATED)
-async def ac_create_prompt_sql_generation_result(
+@ac_router.post("/prompts/sql-generations/stream", status_code=status.HTTP_201_CREATED)
+async def ac_create_prompt_sql_generation_stream(
     request: SQLGenerationExecuteRequest,
     user: User = Security(authenticate_user),
-) -> GenerationResponse:
+) -> StreamingResponse:
     invoice_service.check_usage(
         user.organization_id, type=UsageType.SQL_GENERATION, quantity=1
-    )
-    response = await generation_service.create_prompt_sql_generation_result(
-        request, user.organization_id, user.name
     )
     invoice_service.record_usage(
         user.organization_id,
         type=UsageType.SQL_GENERATION,
         quantity=1,
-        description=f"from playground with prompt id {response.id}",
+        description="from playground",
     )
-    return response
+    return StreamingResponse(
+        generation_service.create_prompt_sql_generation_stream(
+            request, user.organization_id, user.name
+        )
+    )
 
 
 @ac_router.post("/{id}/sql-generations", status_code=status.HTTP_201_CREATED)

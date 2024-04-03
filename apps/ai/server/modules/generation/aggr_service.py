@@ -246,8 +246,7 @@ class AggrgationGenerationService:
                 ).total_seconds(),
             )
 
-    # playground endpoint
-    async def create_prompt_sql_generation_result(
+    async def create_prompt_sql_generation_stream(
         self, request: SQLGenerationExecuteRequest, org_id: str, username: str
     ):
         organization = self.org_service.get_organization(org_id)
@@ -258,7 +257,7 @@ class AggrgationGenerationService:
                 db_connection_id=request.db_connection_id,
                 metadata=PromptMetadata(
                     dh_internal=DHPromptMetadata(
-                        generation_status=GenerationStatus.INITIALIZED,
+                        generation_status=GenerationStatus.NOT_VERIFIED,
                         organization_id=organization.id,
                         display_id=display_id,
                         created_by=username,
@@ -272,45 +271,22 @@ class AggrgationGenerationService:
                 dh_internal=DHSQLGenerationMetadata(organization_id=organization.id)
             ),
         )
-        # ask Prompt to ai engine
+
+        created_at = datetime.now()
         async with httpx.AsyncClient() as client:
-            response = await client.post(
-                settings.engine_url + "/prompts/sql-generations",
+            async with client.stream(
+                "POST",
+                url=settings.engine_url + "/stream-sql-generation",
                 json=generation_request.dict(exclude_unset=True),
                 timeout=settings.default_engine_timeout,
-            )
-            raise_engine_exception(response, org_id=org_id)
+            ) as response:
+                async for chunk in response.aiter_bytes():
+                    yield chunk
 
-            sql_generation = SQLGeneration(**response.json())
-            self.repo.update_prompt_dh_metadata(
-                sql_generation.prompt_id,
-                DHPromptMetadata(
-                    generation_status=(
-                        GenerationStatus.NOT_VERIFIED
-                        if sql_generation.status == SQLGenerationStatus.VALID
-                        else GenerationStatus.ERROR
-                    ),
-                ),
-            )
-            prompt = self.repo.get_prompt(sql_generation.prompt_id, organization.id)
-
-            if sql_generation.status == SQLGenerationStatus.VALID:
-                response = await client.get(
-                    settings.engine_url
-                    + f"/sql-generations/{sql_generation.id}/execute",
-                    timeout=settings.default_engine_timeout,
-                )
-                raise_engine_exception(response, org_id=org_id)
-                sql_result = response.json()
-            else:
-                sql_result = None
-
-            self._track_sql_generation_created_event(
-                org_id, sql_generation, GenerationSource.PLAYGROUND
-            )
-
-        return self._get_mapped_generation_response(
-            prompt, sql_generation, None, sql_result=sql_result
+        self._track_sql_generation_created_event(
+            org_id,
+            SQLGeneration(created_at=created_at, completed_at=datetime.now()),
+            GenerationSource.PLAYGROUND,
         )
 
     async def update_generation(

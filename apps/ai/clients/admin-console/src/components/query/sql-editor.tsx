@@ -8,12 +8,14 @@ const Editor = dynamic(() => import('@monaco-editor/react'), {
 
 export interface SqlEditorProps {
   query: string
+  className?: string
   disabled?: boolean
   onValueChange?: (value: string) => void
 }
 
 const SqlEditor: FC<SqlEditorProps> = ({
   query,
+  className,
   onValueChange,
   disabled = false,
 }) => {
@@ -54,6 +56,7 @@ const SqlEditor: FC<SqlEditorProps> = ({
 
   return (
     <Editor
+      className={className}
       defaultLanguage="sql"
       value={query}
       language="sql"
