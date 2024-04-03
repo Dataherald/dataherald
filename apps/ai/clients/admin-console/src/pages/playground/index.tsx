@@ -410,7 +410,7 @@ const PlaygroundPage: FC = () => {
         <title>Playground - Dataherald AI API</title>
       </Head>
       <PageLayout>
-        {loadingDatabases && loadingModels ? (
+        {loadingDatabases || loadingModels ? (
           <div className="grow flex items-center justify-center gap-2">
             <TerminalSquare
               size={25}
@@ -486,77 +486,79 @@ const PlaygroundPage: FC = () => {
             </div>
             <div className="h-3/5 bg-slate-50 flex flex-col overflow-auto">
               <div className="overflow-auto p-4 h-full flex flex-col gap-2 grow-0 rounded-none border-b-0 border-s-0 border-e-0 border-t border-slate-200">
-                <div className="w-4/5 max-w-3xl grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={selectedDbConnectionId}
-                      onValueChange={handleDatabaseSelect}
-                      disabled={
-                        !!dbError ||
-                        loadingDatabases ||
-                        !dbConnectionOptions?.length ||
-                        isStreaming
-                      }
-                    >
-                      <SelectTrigger
-                        aria-label="Database"
-                        className="bg-white border-slate-300"
+                {dbConnectionOptions?.length && (
+                  <div className="w-4/5 max-w-3xl grid grid-cols-2 gap-3">
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={selectedDbConnectionId}
+                        onValueChange={handleDatabaseSelect}
+                        disabled={
+                          !!dbError ||
+                          loadingDatabases ||
+                          !dbConnectionOptions?.length ||
+                          isStreaming
+                        }
                       >
-                        <SelectValue
-                          placeholder={
-                            loadingDatabases
-                              ? 'Loading...'
-                              : 'Select a Database'
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {dbConnectionOptions?.map(
-                            ({ label, value, icon }, idx) => (
-                              <SelectItem key={label + idx} value={value}>
-                                <div className="flex items-center gap-2">
-                                  {icon}
-                                  {label}
-                                </div>
-                              </SelectItem>
-                            ),
-                          )}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={selectedModelId}
-                      onValueChange={handleModelSelect}
-                      disabled={
-                        !!modelsError || loadingDatabases || isStreaming
-                      }
-                    >
-                      <SelectTrigger
-                        aria-label="Model"
-                        className="bg-white border-slate-300"
+                        <SelectTrigger
+                          aria-label="Database"
+                          className="bg-white border-slate-300"
+                        >
+                          <SelectValue
+                            placeholder={
+                              loadingDatabases
+                                ? 'Loading...'
+                                : 'Select a Database'
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {dbConnectionOptions?.map(
+                              ({ label, value, icon }, idx) => (
+                                <SelectItem key={label + idx} value={value}>
+                                  <div className="flex items-center gap-2">
+                                    {icon}
+                                    {label}
+                                  </div>
+                                </SelectItem>
+                              ),
+                            )}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={selectedModelId}
+                        onValueChange={handleModelSelect}
+                        disabled={
+                          !!modelsError || loadingDatabases || isStreaming
+                        }
                       >
-                        <SelectValue placeholder="Select model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {finetuningModelOptions?.map(
-                            ({ label, value, icon }, idx) => (
-                              <SelectItem key={label + idx} value={value}>
-                                <div className="flex items-center gap-2">
-                                  {icon}
-                                  {label}
-                                </div>
-                              </SelectItem>
-                            ),
-                          )}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                        <SelectTrigger
+                          aria-label="Model"
+                          className="bg-white border-slate-300"
+                        >
+                          <SelectValue placeholder="Select model" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {finetuningModelOptions?.map(
+                              ({ label, value, icon }, idx) => (
+                                <SelectItem key={label + idx} value={value}>
+                                  <div className="flex items-center gap-2">
+                                    {icon}
+                                    {label}
+                                  </div>
+                                </SelectItem>
+                              ),
+                            )}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="grow overflow-auto flex flex-col gap-2">
                   {content}
                 </div>
