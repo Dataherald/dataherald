@@ -291,12 +291,12 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         table_relevance = ""
         for _, row in df.iterrows():
             table_relevance += (
-                f'Table: {row["table_name"]}, relevance score: {row["similarities"]}\n'
+                f'Table: `{row["table_name"]}`, relevance score: {row["similarities"]}\n'
             )
         if len(most_similar_tables) > 0:
             for table in most_similar_tables:
                 table_relevance += (
-                    f"Table: {table}, relevance score: {max(df['similarities'])}\n"
+                    f"Table: `{table}`, relevance score: {max(df['similarities'])}\n"
                 )
         return table_relevance
 
