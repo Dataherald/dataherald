@@ -104,7 +104,7 @@ class DatabaseConnection(BaseModel):
 
     @classmethod
     def get_dialect(cls, input_string):
-        pattern = r"([^:/]+):/+([^/]+)/([^/]+)"
+        pattern = r"([^:/]+):/+([^/]+)/?([^/]+)"
         match = re.match(pattern, input_string)
         if not match:
             raise InvalidURIFormatError(f"Invalid URI format: {input_string}")
