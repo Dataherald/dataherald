@@ -90,7 +90,7 @@ jobs:
   deploy-slackbot:
     name: Deploy Slackbot
     needs: [build-slackbot, deploy-backend]
-    if: needs.build-slackbot.result != 'failure' && needs.deploy-backend.result != 'failure'
+    if: ${{ !failure() }}
     uses: ./.github/workflows/ai-deploy-docker-ecs.yml
     secrets: inherit
     with:
@@ -102,7 +102,7 @@ jobs:
   deploy-frontend:
     name: Deploy Console
     needs: [check-changes, deploy-backend]
-    if: needs.check-changes.outputs.console_changed == 'true' &&  needs.deploy-backend.result != 'failure'
+    if: ${{ needs.check-changes.outputs.console_changed == 'true' && !failure() }}
     uses: ./.github/workflows/ai-deploy-frontend.yml
     secrets: inherit
     with:
@@ -156,7 +156,7 @@ jobs:
         deploy-slackbot,
         deploy-frontend,
       ]
-    if: needs.migrate-db == 'failure' || needs.deploy-backend.result == 'failure' || needs.deploy-slackbot.result == 'failure' || needs.deploy-frontend.result == 'failure'
+    if: failure()
     runs-on: ubuntu-latest
     steps:
       - name: Send failed notification
@@ -179,7 +179,7 @@ jobs:
         deploy-slackbot,
         deploy-frontend,
       ]
-    if: needs.migrate-db != 'failure' && needs.deploy-backend.result != 'failure' && needs.deploy-slackbot.result != 'failure' && needs.deploy-frontend.result != 'failure'
+    if: ${{ !failure() }}
     runs-on: ubuntu-latest
     steps:
       - name: Setup URLs
