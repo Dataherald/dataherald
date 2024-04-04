@@ -19,11 +19,12 @@ import {
   BookOpenText,
   Building2,
   Database,
-  HelpCircle,
+  ExternalLink,
   KeyRound,
   Landmark,
   LogOut,
   LucideIcon,
+  Mail,
   ShieldCheck,
   ShieldQuestion,
   SlidersIcon,
@@ -34,7 +35,9 @@ import {
 export interface MenuItem {
   text: string
   href: string
-  icon: LucideIcon
+  icon?: LucideIcon
+  imageURL?: string
+  external?: boolean
   hidden?: boolean
 }
 export type MenuItems = MenuItem[]
@@ -100,14 +103,22 @@ const SidebarNav = ({
 
   const BOTTOM_NAV_ITEMS: MenuItems = [
     {
-      text: 'Help',
-      href: 'https://www.dataherald.com/contact',
-      icon: HelpCircle,
+      text: 'Discord',
+      href: 'https://discord.gg/tmTpvw9U',
+      imageURL: '/images/discord.png',
+      external: true,
+    },
+    {
+      text: 'Billing support',
+      href: 'mailto:support@dataherald.com',
+      icon: Mail,
+      external: true,
     },
     {
       text: 'Documentation',
       href: 'https://docs.dataherald.com/',
       icon: BookOpenText,
+      external: true,
     },
   ]
 
@@ -127,11 +138,16 @@ const SidebarNav = ({
         'px-3',
       )}
     >
-      <item.icon
-        size={18}
-        strokeWidth={pathname?.includes(item.href) ? 2.5 : 1.8}
-      />
+      {item.icon ? (
+        <item.icon
+          size={18}
+          strokeWidth={pathname?.includes(item.href) ? 2.5 : 1.8}
+        />
+      ) : item.imageURL ? (
+        <Image src={item.imageURL} alt={item.text} width={18} height={18} />
+      ) : null}
       {item.text}
+      {item.external && <ExternalLink size={12} strokeWidth={1.8} />}
     </Link>
   )
 
