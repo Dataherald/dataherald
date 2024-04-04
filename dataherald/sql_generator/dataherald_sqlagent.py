@@ -402,10 +402,9 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
             replace_unprocessable_characters(table_name)
             for table_name in table_names_list
         ]
-        tables_schema = ""
+        tables_schema = "```sql\n"
         for table in self.db_scan:
             if table.table_name in table_names_list:
-                tables_schema += "```sql\n"
                 tables_schema += table.table_schema + "\n"
                 descriptions = []
                 if table.description is not None:
@@ -419,7 +418,7 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
                             )
                 if len(descriptions) > 0:
                     tables_schema += f"/*\n{''.join(descriptions)}*/\n"
-                tables_schema += "```\n"
+        tables_schema += "```\n"
         if tables_schema == "":
             tables_schema += "Tables not found in the database"
         return tables_schema
