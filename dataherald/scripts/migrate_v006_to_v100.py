@@ -31,7 +31,7 @@ if __name__ == "__main__":
     storage = system.instance(DB)
     # Refresh vector stores
     golden_sql_collection = os.environ.get(
-        "GOLDEN_RECORD_COLLECTION", "dataherald-staging"
+        "GOLDEN_RECORD_COLLECTION", "ai-stage"
     )
     vector_store = system.instance(VectorStore)
 

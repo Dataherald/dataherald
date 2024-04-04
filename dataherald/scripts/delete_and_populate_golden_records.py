@@ -12,7 +12,7 @@ if __name__ == "__main__":
     system.start()
     storage = system.instance(DB)
     golden_sql_collection = os.environ.get(
-        "GOLDEN_SQL_COLLECTION", "dataherald-staging"
+        "GOLDEN_SQL_COLLECTION", "ai-stage"
     )
 
     golden_sqls = storage.find_all("golden_sqls")
