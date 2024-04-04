@@ -17,9 +17,7 @@ class ContextStore(Component, ABC):
     def __init__(self, system: System):
         self.system = system
         self.db = self.system.instance(DB)
-        self.golden_sql_collection = os.environ.get(
-            "GOLDEN_SQL_COLLECTION", "dataherald-staging"
-        )
+        self.golden_sql_collection = os.environ.get("GOLDEN_SQL_COLLECTION", "ai-stage")
         self.vector_store = self.system.instance(VectorStore)
 
     @abstractmethod
