@@ -410,7 +410,7 @@ const PlaygroundPage: FC = () => {
         <title>Playground - Dataherald AI API</title>
       </Head>
       <PageLayout>
-        {loadingDatabases || loadingModels ? (
+        {loadingDatabases ? (
           <div className="grow flex items-center justify-center gap-2">
             <TerminalSquare
               size={25}
