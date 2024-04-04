@@ -90,7 +90,7 @@ jobs:
   deploy-slackbot:
     name: Deploy Slackbot
     needs: [build-slackbot, deploy-backend]
-    if: ${{ !failure() }}
+    if: ${{ needs.build-slackbot.result == 'success' && !failure() }}
     uses: ./.github/workflows/ai-deploy-docker-ecs.yml
     secrets: inherit
     with:
