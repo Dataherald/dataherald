@@ -227,9 +227,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         most_similar_tables = self.similart_tables_based_on_few_shot_examples(df)
         table_relevance = ""
         for _, row in df.iterrows():
-            table_relevance += (
-                f'Table: `{row["table_name"]}`, relevance score: {row["similarities"]}\n'
-            )
+            table_relevance += f'Table: `{row["table_name"]}`, relevance score: {row["similarities"]}\n'
         if len(most_similar_tables) > 0:
             for table in most_similar_tables:
                 table_relevance += (
