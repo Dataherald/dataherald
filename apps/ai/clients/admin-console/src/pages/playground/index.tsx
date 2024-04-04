@@ -55,12 +55,6 @@ const LOADING_MORE_FINE_TUNING_MODELS: SelectOption = {
   icon: <Loader size={16} className="animate-spin" />,
 }
 
-const NONE_DB_CONNECTIONS: SelectOption = {
-  label: '',
-  value: '',
-  icon: <Database size={16} />,
-}
-
 type SelectOption = {
   label: string
   value: string
@@ -82,7 +76,7 @@ const PlaygroundPage: FC = () => {
 
   useEffect(() => {
     if (!dbConnections || dbError) {
-      setDbConnectionOptions([NONE_DB_CONNECTIONS])
+      setDbConnectionOptions([])
       setSelectedDbConnectionId('')
     } else {
       if (dbConnections.length > 0) {
@@ -486,7 +480,7 @@ const PlaygroundPage: FC = () => {
             </div>
             <div className="h-3/5 bg-slate-50 flex flex-col overflow-auto">
               <div className="overflow-auto p-4 h-full flex flex-col gap-2 grow-0 rounded-none border-b-0 border-s-0 border-e-0 border-t border-slate-200">
-                {dbConnectionOptions?.length && (
+                {dbConnectionOptions && dbConnectionOptions.length > 0 && (
                   <div className="w-4/5 max-w-3xl grid grid-cols-2 gap-3">
                     <div className="flex items-center gap-2">
                       <Select
