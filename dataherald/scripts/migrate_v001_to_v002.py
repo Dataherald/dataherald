@@ -35,9 +35,7 @@ if __name__ == "__main__":
     add_db_connection_id("golden_records", storage)
     add_db_connection_id("nl_question", storage)
     # Refresh vector stores
-    golden_record_collection = os.environ.get(
-        "GOLDEN_SQL_COLLECTION", "dataherald-staging"
-    )
+    golden_record_collection = os.environ.get("GOLDEN_SQL_COLLECTION", "ai-stage")
     vector_store = system.instance(VectorStore)
     try:
         vector_store.delete_collection(golden_record_collection)
