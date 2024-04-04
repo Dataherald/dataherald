@@ -99,9 +99,9 @@ class SQLGenerator(Component, ABC):
                     sql_query = self.remove_markdown(action.tool_input)
         if sql_query == "":
             for step in intermediate_steps:
-                action = step[0]
-                if "SELECT" in action.tool_input.upper():
-                    sql_query = self.remove_markdown(action.tool_input)
+                thought = str(step[0].log).split("Action:")[0]
+                if "```sql" in thought:
+                    sql_query = self.remove_markdown(thought)
                     if not sql_query.upper().strip().startswith("SELECT"):
                         sql_query = ""
         return sql_query
