@@ -251,6 +251,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
     Input: A SQL query between ```sql and ``` tags.
     Output: Result from the database or an error message if the query is incorrect.
     Use this tool to execute the SQL query on the database, and return the results.
+    Add newline after both ```sql and ``` tags.
     """
     args_schema: Type[BaseModel] = SQLInput
 
