@@ -227,13 +227,11 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         most_similar_tables = self.similart_tables_based_on_few_shot_examples(df)
         table_relevance = ""
         for _, row in df.iterrows():
-            table_relevance += (
-                f'Table: {row["table_name"]}, relevance score: {row["similarities"]}\n'
-            )
+            table_relevance += f'Table: `{row["table_name"]}`, relevance score: {row["similarities"]}\n'
         if len(most_similar_tables) > 0:
             for table in most_similar_tables:
                 table_relevance += (
-                    f"Table: {table}, relevance score: {max(df['similarities'])}\n"
+                    f"Table: `{table}`, relevance score: {max(df['similarities'])}\n"
                 )
         return table_relevance
 
@@ -250,9 +248,10 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
 
     name = "SqlDbQuery"
     description = """
-    Input: SQL query.
+    Input: A SQL query between ```sql and ``` tags.
     Output: Result from the database or an error message if the query is incorrect.
     Use this tool to execute the SQL query on the database, and return the results.
+    Add newline after both ```sql and ``` tags.
     """
     args_schema: Type[BaseModel] = SQLInput
 
@@ -335,7 +334,8 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
                 {"role": "user", "content": user_prompt},
             ],
         )
-        return response.choices[0].message.content
+        returned_sql = response.choices[0].message.content
+        return f"```sql\n{returned_sql}```"
 
     async def _arun(
         self,
@@ -372,6 +372,7 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         tables_schema = ""
         for table in self.db_scan:
             if table.table_name in table_names_list:
+                tables_schema += "```sql\n"
                 tables_schema += table.table_schema + "\n"
                 descriptions = []
                 if table.description is not None:
@@ -385,6 +386,7 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
                             )
                 if len(descriptions) > 0:
                     tables_schema += f"/*\n{''.join(descriptions)}*/\n"
+                tables_schema += "```\n"
         if tables_schema == "":
             tables_schema += "Tables not found in the database"
         return tables_schema
