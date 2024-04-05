@@ -150,10 +150,11 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
 
     name = "SqlDbQuery"
     description = """
-    Input: SQL query.
+    Input: A SQL query between ```sql and ``` tags.
     Output: Result from the database or an error message if the query is incorrect.
     If an error occurs, rewrite the query and retry.
     Use this tool to execute SQL queries.
+    Add newline after both ```sql and ``` tags.
     """
 
     @catch_exceptions()
@@ -204,8 +205,8 @@ class GetUserInstructions(BaseSQLDatabaseTool, BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         response = "Admin: All of the generated SQL queries must follow the below instructions:\n"
-        for instruction in self.instructions:
-            response += f"{instruction['instruction']}\n"
+        for index, instruction in enumerate(self.instructions):
+            response += f"{index + 1}) {instruction['instruction']}\n"
         return response
 
     async def _arun(
@@ -290,13 +291,11 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         most_similar_tables = self.similart_tables_based_on_few_shot_examples(df)
         table_relevance = ""
         for _, row in df.iterrows():
-            table_relevance += (
-                f'Table: {row["table_name"]}, relevance score: {row["similarities"]}\n'
-            )
+            table_relevance += f'Table: `{row["table_name"]}`, relevance score: {row["similarities"]}\n'
         if len(most_similar_tables) > 0:
             for table in most_similar_tables:
                 table_relevance += (
-                    f"Table: {table}, relevance score: {max(df['similarities'])}\n"
+                    f"Table: `{table}`, relevance score: {max(df['similarities'])}\n"
                 )
         return table_relevance
 
@@ -404,7 +403,7 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
             replace_unprocessable_characters(table_name)
             for table_name in table_names_list
         ]
-        tables_schema = ""
+        tables_schema = "```sql\n"
         for table in self.db_scan:
             if table.table_name in table_names_list:
                 tables_schema += table.table_schema + "\n"
@@ -420,6 +419,7 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
                             )
                 if len(descriptions) > 0:
                     tables_schema += f"/*\n{''.join(descriptions)}*/\n"
+        tables_schema += "```\n"
         if tables_schema == "":
             tables_schema += "Tables not found in the database"
         return tables_schema
@@ -516,9 +516,8 @@ class GetFewShotExamples(BaseSQLDatabaseTool, BaseTool):
             return "Action input for the fewshot_examples_retriever tool should be an integer"
         returned_output = ""
         for example in self.few_shot_examples[:number_of_samples]:
-            returned_output += (
-                f"Question: {example['prompt_text']} -> SQL: {example['sql']}\n"
-            )
+            returned_output += f"Question: {example['prompt_text']} \n"
+            returned_output += f"```sql\n{example['sql']}\n```\n"
         if returned_output == "":
             returned_output = "No previously asked Question/SQL pairs are available"
         return returned_output
