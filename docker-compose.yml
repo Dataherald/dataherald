@@ -24,7 +24,7 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - ./initdb.d/:/docker-entrypoint-initdb.d/
+      - ./initdb.d/init-mongo.sh:/docker-entrypoint-initdb.d/init-mongo.sh:ro
       - ./dbdata/mongo_data/data:/data/db/
       - ./dbdata/mongo_data/db_config:/data/configdb/
     environment:

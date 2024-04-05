@@ -87,6 +87,21 @@ UPPER_LIMIT_QUERY_RETURN_ROWS = 50
 DH_ENGINE_TIMEOUT = 150
 ```
 
+In case you want to use models deployed in Azure OpenAI, you must set the following variables:
+```
+AZURE_API_KEY = "xxxxx"
+AZURE_OPENAI_API_KEY = "xxxxxx"
+API_BASE = "azure_openai_endpoint" 
+AZURE_OPENAI_ENDPOINT = "azure_openai_endpoint" 
+AZURE_API_VERSION = "version of the API to use"
+LLM_MODEL = "name_of_the_deployment"
+```
+In addition, an embedding model will be also used. There must be a deployment created with name "text-embedding-3-large".
+
+The existence of AZURE_API_KEY as environment variable indicates Azure models must be used. 
+
+Remember to remove comments beside the environment variables.
+
 While not strictly required, we also strongly suggest you change the MONGO username and password fields as well.
 
 Follow the next commands to generate an ENCRYPT_KEY and paste it in the .env file like 

@@ -576,7 +576,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
             use_finetuned_model_only=self.use_fintuned_model_only,
             model_name=finetuning.base_llm.model_name,
             openai_fine_tuning=openai_fine_tuning,
-            embedding=OpenAIEmbeddings(
+            embedding=OpenAIEmbeddings( #TODO AzureOpenAIEmbeddings when Azure
                 openai_api_key=database_connection.decrypt_api_key(),
                 model=EMBEDDING_MODEL,
             ),
@@ -678,7 +678,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
             use_finetuned_model_only=self.use_fintuned_model_only,
             model_name=finetuning.base_llm.model_name,
             openai_fine_tuning=openai_fine_tuning,
-            embedding=OpenAIEmbeddings(
+            embedding=OpenAIEmbeddings( #TODO AzureOpenAIEmbeddings when Azure
                 openai_api_key=database_connection.decrypt_api_key(),
                 model=EMBEDDING_MODEL,
             ),
