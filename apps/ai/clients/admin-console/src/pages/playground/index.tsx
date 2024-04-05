@@ -43,7 +43,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { FC, useEffect, useRef, useState } from 'react'
 
-const STREAM_CHUNK_SIZE = 2
+const STREAM_CHUNK_SIZE = 3
 
 const NONE_FINE_TUNING_MODEL: SelectOption = {
   label: 'None',
@@ -229,15 +229,23 @@ const PlaygroundPage: FC = () => {
     if (agentStopped) {
       setCompletion(streamText)
     } else {
-      if (completion && completion.length > streamText.length) {
-        const nextStreamChunk = completion.slice(
-          streamText.length,
-          completion.length - streamText.length > STREAM_CHUNK_SIZE
-            ? streamText.length + STREAM_CHUNK_SIZE
-            : completion.length,
-        )
-        setStreamText((stream) => stream + nextStreamChunk)
-      }
+      const streamTimeout = setTimeout(() => {
+        if (completion && completion.length > streamText.length) {
+          const remainingStreamingChars = completion.length - streamText.length
+          const completionSliceStart = streamText.length
+          const completionSliceEnd =
+            remainingStreamingChars > STREAM_CHUNK_SIZE
+              ? completionSliceStart + STREAM_CHUNK_SIZE
+              : undefined // if remaining chars are less than STREAM_CHUNK_SIZE, slice until the end
+
+          const nextStreamChunk = completion.slice(
+            completionSliceStart,
+            completionSliceEnd,
+          )
+          setStreamText((stream) => stream + nextStreamChunk)
+        }
+      }, 25)
+      return () => clearTimeout(streamTimeout)
     }
   }, [agentStopped, completion, setCompletion, streamText])
 
@@ -257,10 +265,14 @@ const PlaygroundPage: FC = () => {
       if (error.message.includes('error_code')) {
         setAgentError(JSON.parse(error.message))
       }
-    } else if (!isStreaming && streamText?.includes('error_code')) {
+    } else if (
+      !isStreaming &&
+      !agentStopped &&
+      streamText?.includes('error_code')
+    ) {
       setAgentError(JSON.parse(streamText))
     }
-  }, [streamText, error, isStreaming])
+  }, [streamText, error, isStreaming, agentStopped])
 
   // handle subscription status error
   useEffect(() => {
