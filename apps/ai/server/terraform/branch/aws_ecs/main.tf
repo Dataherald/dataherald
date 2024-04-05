@@ -15,7 +15,6 @@ resource "aws_ecs_task_definition" "my_task_definition" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = "2048"
   memory                   = "4096"
-  #  container_definitions = file("task_definition.json")
   container_definitions = <<DEFINITION
 [
         {
@@ -147,28 +146,32 @@ resource "aws_lb_target_group" "ecs_target_group" {
   }
 }
 
-resource "aws_lb_listener" "ecs_listener" {
-  load_balancer_arn = aws_lb.my_load_balancer.arn
-  port              = 80
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.ecs_target_group.arn
-  }
-}
-
 resource "aws_lb_listener" "https_listener" {
   load_balancer_arn = aws_lb.my_load_balancer.arn
   port              = 443
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06" # Choose an appropriate SSL policy for your application
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
 
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.ecs_target_group.arn
   }
   certificate_arn = "arn:aws:acm:us-east-1:422486916789:certificate/0159c510-ecbb-4607-bb4e-0df6be7b44ab"
+}
+
+resource "aws_lb_listener" "http_listener" {
+  load_balancer_arn = aws_lb.my_load_balancer.arn
+  port              = 80
+  protocol          = "HTTP"
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
 }
 
 resource "aws_ecs_service" "my_service" {
@@ -194,12 +197,89 @@ resource "aws_ecs_service" "my_service" {
 }
 
 resource "aws_route53_record" "my_load_balancer_record" {
-  zone_id = "Z07539241TW7P7NHVR11T"                # Replace with your Route 53 hosted zone ID
-  name    = "${var.branch_name}.api.dataherald.ai" # Replace with the desired domain name
+  zone_id = "Z07539241TW7P7NHVR11T"
+  name    = "${var.branch_name}.api.dataherald.ai"
   type    = "A"
   alias {
     name                   = aws_lb.my_load_balancer.dns_name
     zone_id                = aws_lb.my_load_balancer.zone_id
     evaluate_target_health = true
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "alb_error_alarm" {
+  alarm_name          = "${var.branch_name}-5xx-error"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "HTTPCode_Target_5XX_Count"
+  namespace           = "AWS/ApplicationELB"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 10
+  alarm_description   = "Alarm when target returns 5XX errors exceed threshold"
+  actions_enabled     = true
+
+  alarm_actions = [
+    "arn:aws:sns:us-east-1:422486916789:EngineeringSlackChannel"
+  ]
+
+  dimensions = {
+    LoadBalancer = aws_lb.my_load_balancer.arn_suffix
+  }
+
+  tags = {
+    Environment = "branch"
+  }
+}
+
+
+resource "aws_cloudwatch_metric_alarm" "alb_latency_alarm" {
+  alarm_name          = "${var.branch_name}-latency"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "TargetResponseTime"
+  namespace           = "AWS/ApplicationELB"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 120
+  alarm_description   = "Alarm when target times out longer than 150s threshold"
+  actions_enabled     = true
+
+  alarm_actions = [
+    "arn:aws:sns:us-east-1:422486916789:EngineeringSlackChannel"
+  ]
+
+  dimensions = {
+    LoadBalancer = aws_lb.my_load_balancer.arn_suffix
+  }
+
+  tags = {
+    Environment = "branch"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "alb_healthy_host_alarm" {
+  alarm_name          = "${var.branch_name}-healthy-host"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "HealthyHostCount"
+  namespace           = "AWS/ApplicationELB"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 1
+  alarm_description   = "Alarm when less than 1 healthy host for 5 minutes"
+  actions_enabled     = true
+
+  alarm_actions = [
+    "arn:aws:sns:us-east-1:422486916789:EngineeringSlackChannel"
+  ]
+
+  dimensions = {
+    LoadBalancer = aws_lb.my_load_balancer.arn_suffix
+    TargetGroup = aws_lb_target_group.ecs_target_group.arn_suffix
+  }
+
+  tags = {
+    Environment = "branch"
   }
 }
