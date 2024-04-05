@@ -301,7 +301,8 @@
 													"",
 													"utils.checkErrorCode(pm.response,'invalid_database_uri_format')"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -314,7 +315,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"alias\": \"bad database connection\",\n    \"connection_uri\": \"foo://foo\"\n}",
+											"raw": "{\n    \"alias\": \"bad database connection\",\n    \"connection_uri\": \"foobar\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"

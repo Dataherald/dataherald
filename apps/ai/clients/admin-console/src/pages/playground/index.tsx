@@ -43,6 +43,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { FC, useEffect, useRef, useState } from 'react'
 
+const STREAM_CHUNK_SIZE = 2
+
 const NONE_FINE_TUNING_MODEL: SelectOption = {
   label: 'None',
   value: '',
@@ -194,13 +196,11 @@ const PlaygroundPage: FC = () => {
   }
 
   // AI completion
-  const [previousCompletion, setPreviousCompletion] = useState('')
   const [streamText, setStreamText] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [agentStopped, setAgentStopped] = useState(false)
   const [agentError, setAgentError] = useState<ErrorResponse>()
   const streamEndRef = useRef<HTMLDivElement>(null)
-  const wordQueueRef = useRef<string[]>([])
 
   const { token } = useAuth()
   const {
@@ -224,35 +224,32 @@ const PlaygroundPage: FC = () => {
     },
   })
 
+  // handle streaming
   useEffect(() => {
-    const processNextWord = () => {
-      if (wordQueueRef.current.length > 0) {
-        const nextWord = wordQueueRef.current.shift()
-        setStreamText((currentText) => currentText + ' ' + nextWord)
-        const timer = setTimeout(processNextWord, 100)
-        return () => clearTimeout(timer)
+    if (agentStopped) {
+      setCompletion(streamText)
+    } else {
+      if (completion && completion.length > streamText.length) {
+        const nextStreamChunk = completion.slice(
+          streamText.length,
+          completion.length - streamText.length > STREAM_CHUNK_SIZE
+            ? streamText.length + STREAM_CHUNK_SIZE
+            : completion.length,
+        )
+        setStreamText((stream) => stream + nextStreamChunk)
       }
     }
-    if (completion) {
-      const newChunk = completion.replace(previousCompletion, '')
-      if (newChunk) {
-        const newWords = newChunk.split(' ')
-        wordQueueRef.current = wordQueueRef.current.concat(newWords)
-        processNextWord()
-      }
-      setPreviousCompletion(completion)
-    }
-  }, [completion, previousCompletion])
+  }, [agentStopped, completion, setCompletion, streamText])
 
   useEffect(() => {
     if (isLoading) {
       setIsStreaming(true)
     } else {
-      setIsStreaming(wordQueueRef.current.length > 0)
+      setIsStreaming(completion.length > streamText.length)
     }
   }, [completion, isLoading, streamText])
 
-  // Streaming error handling
+  // streaming error handling
   const { setSubscriptionStatus } = useSubscription()
 
   useEffect(() => {
@@ -265,6 +262,7 @@ const PlaygroundPage: FC = () => {
     }
   }, [streamText, error, isStreaming])
 
+  // handle subscription status error
   useEffect(() => {
     if (agentError && isSubscriptionErrorCode(agentError.error_code)) {
       setSubscriptionStatus(agentError.error_code)
@@ -291,27 +289,22 @@ const PlaygroundPage: FC = () => {
     setInput('')
     setCompletion('')
     setStreamText('')
-    setPreviousCompletion('')
     setAgentStopped(false)
     setAgentError(undefined)
-    wordQueueRef.current = []
   }
 
   const handleStop = () => {
     setAgentStopped(true)
     setAgentError(undefined)
     stop()
-    wordQueueRef.current = []
   }
 
   const handleGenerate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setStreamText('')
-    setPreviousCompletion('')
     setAgentStopped(false)
     setAgentError(undefined)
     handleSubmit(e)
-    wordQueueRef.current = []
   }
 
   let content = <div className="grow"></div>
