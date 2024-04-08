@@ -4,48 +4,38 @@ on:
   workflow_dispatch:
   pull_request:
     types: [closed]
+    branches:
+      - main
 
 env:
   AWS_REGION: us-east-1
   ECR_CORE_REPOSITORY: ai-engine-branch
   ECR_SERVER_REPOSITORY: ai-server-branch
+
 jobs:
-  extract-branch-name:
-    name: Extract branch name
-    outputs:
-      branch: ${{ steps.extract_branch.outputs.branch }}
-      branch_name: ${{ steps.extract_branch.outputs.branch_name }}
-      db_name: ${{ steps.extract_branch.outputs.db_name }}
+  extract-branch-names:
+    name: Extract Branch Names
+    uses: ./.github/workflows/ai-extract-branch-names.yml
+
+  can-destroy:
+    name: Check if branch environment can be destroyed
     runs-on: ubuntu-latest
+    needs: extract-branch-names
+    if: ${{ github.event_name == 'workflow_dispatch'  || !startsWith(needs.extract-branch-names.outputs.branch, 'customer/') }}
     steps:
-      - name: Extract branch name
-        id: extract_branch
-        shell: bash
+      - name: Debug output
         run: |
-          branch="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
-          formatted_branch=$(echo "$branch" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-zA-Z0-9]/-/g')
-          db_name=branch-$formatted_branch
+          echo "Original branch: ${{ needs.extract-branch-names.outputs.branch }}"
+          echo "Starts with 'customer/' prefix check: ${{ ! startsWith(needs.extract-branch-names.outputs.branch, 'customer/') }}"
+          echo "GitHub event name: ${{ github.event_name }}"
+          echo "Branch can be destroyed. It's either a manual trigger or not a customer branch."
+        shell: bash
 
-          RESOURCE_NAME_LENGHT=32
-
-          # Terraform resources name lenght limit is 32
-          # MongoDB database name length limit is 38
-          formatted_branch=${formatted_branch:0:$RESOURCE_NAME_LENGHT}
-          db_name=${db_name:0:$RESOURCE_NAME_LENGHT} 
-
-          # Ensure the last character is alphanumeric 
-          # Pinecone doesn't allow special characters for the last character
-          while [[ ! ${formatted_branch: -1} =~ [a-zA-Z0-9] ]]; do
-            formatted_branch=${formatted_branch:0:-1}
-          done
-
-          echo "branch=$branch" >> $GITHUB_OUTPUT
-          echo "branch_name=$formatted_branch" >> $GITHUB_OUTPUT
-          echo "db_name=$db_name" >> $GITHUB_OUTPUT
   destroy-branch-env:
     name: Destroy branch environment
     runs-on: ubuntu-latest
-    needs: extract-branch-name
+    needs: [extract-branch-names, can-destroy]
+    if: success()
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -67,8 +57,8 @@ jobs:
       - name: Destroy Terraform
         env:
           TF_VAR_sha: ${{ github.sha }}
-          TF_VAR_branch_name: ${{ needs.extract-branch-name.outputs.branch_name }}
-          TF_VAR_index_name: ${{ needs.extract-branch-name.outputs.db_name }}
+          TF_VAR_branch_name: ${{ needs.extract-branch-names.outputs.branch_name }}
+          TF_VAR_index_name: ${{ needs.extract-branch-names.outputs.db_name }}
           TF_VAR_vpc_id: ${{ vars.VPC_ID }}
           TF_VAR_private_subnet_1_id: ${{ vars.PRIVATE_SUBNET_1_ID }}
           TF_VAR_private_subnet_2_id: ${{ vars.PRIVATE_SUBNET_2_ID }}
@@ -76,37 +66,105 @@ jobs:
           TF_VAR_public_subnet_2_id: ${{ vars.PUBLIC_SUBNET_2_ID }}
           TF_VAR_ecs_security_group_id: ${{ vars.BRANCH_SECURITY_GROUP_ID }}
           TF_VAR_mongodb_uri: ${{ vars.EPHEMERAL_MONGODB_URI }}
-          TF_VAR_mongodb_name: ${{ needs.extract-branch-name.outputs.db_name }}
+          TF_VAR_mongodb_name: ${{ needs.extract-branch-names.outputs.db_name }}
           TF_VAR_mongodb_username: ${{ secrets.MONGODB_USERNAME }}
           TF_VAR_mongodb_password: ${{ secrets.MONGODB_PASSWORD }}
         timeout-minutes: 3
         run: |
-          terraform init -upgrade -backend-config="key=${{ needs.extract-branch-name.outputs.branch_name }}"
+          terraform init -upgrade -backend-config="key=${{ needs.extract-branch-names.outputs.branch_name }}"
           terraform destroy -auto-approve
       - name: Delete images
         run: |
           # Delete images
-          aws ecr batch-delete-image --repository-name $ECR_CORE_REPOSITORY --image-ids imageTag=${{ needs.extract-branch-name.outputs.branch_name }} --region us-east-1
-          aws ecr batch-delete-image --repository-name $ECR_SERVER_REPOSITORY --image-ids imageTag=${{ needs.extract-branch-name.outputs.branch_name }} --region us-east-1
+          aws ecr batch-delete-image --repository-name $ECR_CORE_REPOSITORY --image-ids imageTag=${{ needs.extract-branch-names.outputs.branch_name }} --region us-east-1
+          aws ecr batch-delete-image --repository-name $ECR_SERVER_REPOSITORY --image-ids imageTag=${{ needs.extract-branch-names.outputs.branch_name }} --region us-east-1
+
   start-self-hosted-runner:
     name: Start self-hosted EC2 runner
+    needs: [extract-branch-names, can-destroy]
+    if: success()
     uses: ./.github/workflows/ai-start-self-hosted-runner.yml
     secrets: inherit
 
   delete-database:
     name: Delete database
-    needs: [extract-branch-name, start-self-hosted-runner]
+    needs: [start-self-hosted-runner, extract-branch-names, can-destroy]
+    if: success()
     runs-on: ${{ needs.start-self-hosted-runner.outputs.label }}
     steps:
       - name: Delete mongo database
         run: |
-          mongosh --username ${{ secrets.MONGODB_USERNAME }} --password ${{ secrets.MONGODB_PASSWORD }} "${{ vars.EPHEMERAL_MONGODB_URI }}" --eval "db.getSiblingDB('${{ needs.extract-branch-name.outputs.db_name }}').dropDatabase()"
+          mongosh --username ${{ secrets.MONGODB_USERNAME }} --password ${{ secrets.MONGODB_PASSWORD }} "${{ vars.EPHEMERAL_MONGODB_URI }}" --eval "db.getSiblingDB('${{ needs.extract-branch-names.outputs.db_name }}').dropDatabase()"
+
   stop-self-hosted-runner:
     name: Stop self-hosted EC2 runner
     needs: [start-self-hosted-runner, delete-database]
-    if: always()
+    if: needs.start-self-hosted-runner.result == 'success'
     uses: ./.github/workflows/ai-stop-self-hosted-runner.yml
     secrets: inherit
     with:
       label: ${{ needs.start-self-hosted-runner.outputs.label }}
       ec2_instance_id: ${{ needs.start-self-hosted-runner.outputs.ec2_instance_id }}
+
+  send-cancelled-slack-notification:
+    name: Send Cancelled Slack Notification
+    needs:
+      [extract-branch-names, can-destroy, destroy-branch-env, delete-database]
+    if: cancelled()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send cancelled notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.GH_SLACK_WEBHOOK_URL }}
+          SLACK_TITLE: DESTROY branch environment CANCELLED
+          SLACK_MESSAGE: |
+            The branch environment destruction has been cancelled.
+
+            *Branch*: `${{ needs.extract-branch-names.outputs.branch }}`
+
+          SLACK_COLOR: cancelled
+
+  send-failure-slack-notification:
+    name: Send Failure Slack Notification
+    needs:
+      [
+        extract-branch-names,
+        can-destroy,
+        start-self-hosted-runner,
+        destroy-branch-env,
+        delete-database,
+        stop-self-hosted-runner,
+      ]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send failed notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.GH_SLACK_WEBHOOK_URL }}
+          SLACK_TITLE: DESTROY branch environment FAILED
+          SLACK_MESSAGE: |
+            The branch environment destruction failed. Please check the GitHub Actions logs for more details.
+
+            *Branch*: `${{ needs.extract-branch-names.outputs.branch }}`
+
+          SLACK_COLOR: failure
+
+  send-success-slack-notification:
+    name: Send Success Slack Notification
+    needs:
+      [extract-branch-names, can-destroy, destroy-branch-env, delete-database]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send success notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.GH_SLACK_WEBHOOK_URL }}
+          SLACK_TITLE: DESTROY Branch Environment SUCCEEDED
+          SLACK_MESSAGE: |
+            The branch environment has been successfully destroyed.
+
+            *Branch*: `${{ needs.extract-branch-names.outputs.branch }}`
+          SLACK_COLOR: success

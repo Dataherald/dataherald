@@ -1,6 +1,9 @@
 name: AI Deploy Branch Environment
 
 on:
+  push:
+    branches:
+      - customer/* ## Automatically trigger the workflow on push to customer branches
   workflow_dispatch:
     inputs:
       option:
@@ -23,37 +26,8 @@ env:
 
 jobs:
   extract-branch-names:
-    name: Setup Names From Branch
-    outputs:
-      branch: ${{ steps.extract_branch.outputs.branch }}
-      branch_name: ${{ steps.extract_branch.outputs.branch_name }}
-      db_name: ${{ steps.extract_branch.outputs.db_name }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract branch name
-        id: extract_branch
-        shell: bash
-        run: |
-          branch="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
-          formatted_branch=$(echo "$branch" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-zA-Z0-9]/-/g')
-          db_name=branch-$formatted_branch
-
-          RESOURCE_NAME_LENGHT=32
-
-          # Terraform resources name lenght limit is 32
-          # MongoDB database name length limit is 38
-          formatted_branch=${formatted_branch:0:$RESOURCE_NAME_LENGHT}
-          db_name=${db_name:0:$RESOURCE_NAME_LENGHT} 
-
-          # Ensure the last character is alphanumeric 
-          # Pinecone doesn't allow special characters for the last character
-          while [[ ! ${formatted_branch: -1} =~ [a-zA-Z0-9] ]]; do
-            formatted_branch=${formatted_branch:0:-1}
-          done
-
-          echo "branch=$branch" >> $GITHUB_OUTPUT
-          echo "branch_name=$formatted_branch" >> $GITHUB_OUTPUT
-          echo "db_name=$db_name" >> $GITHUB_OUTPUT
+    name: Extract Branch Names
+    uses: ./.github/workflows/ai-extract-branch-names.yml
 
   start-self-hosted-runner:
     name: Start self-hosted EC2 runner
@@ -78,7 +52,7 @@ jobs:
     with:
       target_app: server
       target_env: branch
-      image_tag: ${{ needs.extract-branch-names.outputs.branch_name}}-${{ github.sha }}
+      image_tag: ${{ needs.extract-branch-names.outputs.branch_name }}-${{ github.sha }}
 
   deploy-backend:
     name: Deploy Backend infrastructure
@@ -192,7 +166,6 @@ jobs:
           exists=$(mongosh --username ${{ secrets.MONGODB_USERNAME }} --password ${{ secrets.MONGODB_PASSWORD }} "${{ vars.EPHEMERAL_MONGODB_URI }}" --quiet --eval "db.getMongo().getDBNames().includes('${{ needs.extract-branch-names.outputs.db_name }}') ? 'true' : 'false';" | grep -o true || echo "false")
           echo "Branch Database exists: $exists"
           echo "exists=$exists" >> $GITHUB_OUTPUT
-
         shell: bash
 
       - name: Restore MongoDB from STAGE dump # ensure there's only one folder in the dump directory
@@ -382,7 +355,7 @@ jobs:
   stop-self-hosted-runner:
     name: Stop self-hosted EC2 runner
     needs: [start-self-hosted-runner, populate-db, populate-vector-db]
-    if: always()
+    if: needs.start-self-hosted-runner.result == 'success'
     uses: ./.github/workflows/ai-stop-self-hosted-runner.yml
     secrets: inherit
     with:

@@ -19,7 +19,6 @@ jobs:
   stop-self-hosted-runner:
     name: Stop self-hosted EC2 runner
     runs-on: ubuntu-latest
-    if: always()
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

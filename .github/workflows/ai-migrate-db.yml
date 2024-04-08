@@ -41,7 +41,7 @@ jobs:
     name: Stop self-hosted EC2 runner
     needs: [start-self-hosted-runner, migrate-db]
     uses: ./.github/workflows/ai-stop-self-hosted-runner.yml
-    if: always()
+    if: needs.start-self-hosted-runner.result == 'success'
     secrets: inherit
     with:
       label: ${{ needs.start-self-hosted-runner.outputs.label }}
