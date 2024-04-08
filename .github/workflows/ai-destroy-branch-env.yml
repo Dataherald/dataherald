@@ -11,6 +11,10 @@ env:
   AWS_REGION: us-east-1
   ECR_CORE_REPOSITORY: ai-engine-branch
   ECR_SERVER_REPOSITORY: ai-server-branch
+  SLACK_WEBHOOK: ${{ secrets.GH_SLACK_WEBHOOK_URL }}
+  SLACK_ICON: https://files.dataherald.com/random/github-actions.png
+  SLACK_USERNAME: GitHub Actions
+  SLACK_CHANNEL: eng-notifications
 
 jobs:
   extract-branch-names:
