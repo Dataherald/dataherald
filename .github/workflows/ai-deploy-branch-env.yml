@@ -9,6 +9,7 @@ on:
       option:
         description: "Select Initial Database (if DB already exists this will be dismissed)"
         required: true
+        default: "sample"
         type: choice
         options:
           - "stage"
