@@ -6,9 +6,9 @@ terraform {
     }
 
     pinecone = {
-      source  = "skyscrapr/pinecone"
-      version = "0.5.1"
+      source = "pinecone-io/pinecone"
     }
+    
   }
   backend "s3" {
     bucket = "terraform-states2"
