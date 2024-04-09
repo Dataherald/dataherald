@@ -1,8 +1,7 @@
 terraform {
   required_providers {
     pinecone = {
-      source  = "skyscrapr/pinecone"
-      version = "0.5.1"
+      source = "pinecone-io/pinecone"
     }
   }
 }
