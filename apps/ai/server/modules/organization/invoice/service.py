@@ -244,6 +244,7 @@ class InvoiceService:
         quantity: int = 0,
         description: str = None,
     ):
+        self.check_usage(org_id, type, quantity)
         organization = self.org_repo.get_organization(org_id)
         if organization.invoice_details.plan == PaymentPlan.ENTERPRISE:
             return
