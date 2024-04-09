@@ -1,6 +1,8 @@
 import PageErrorMessage from '@/components/error/page-error-message'
 import PageLayout from '@/components/layout/page-layout'
 import PaymentMethodsList from '@/components/organization/payment-methods-list'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Toaster } from '@/components/ui/toaster'
@@ -15,8 +17,9 @@ import useUsage from '@/hooks/api/billing/useUsage'
 import { isEnterprise } from '@/lib/domain/billing'
 import { toDateCycle, toDollars } from '@/lib/utils'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
-import { Info } from 'lucide-react'
+import { ArrowUpRight, BadgeInfo, Info } from 'lucide-react'
 import Head from 'next/head'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 
@@ -89,6 +92,22 @@ const BillingPage: FC = () => {
               {`You'll be billed at the end of your billing cycle for the usage during that cycle.`}
             </span>
           </div>
+          <Alert className="max-w-2xl text-slate-700 flex items-center gap-2">
+            <div>
+              <BadgeInfo size={24} />
+            </div>
+            <AlertDescription>
+              <span>
+                To increase hard limits or to get support, please{' '}
+                <Link href="mailto:support@dataherald.com" target="_blank">
+                  <Button variant="link" className="p-0">
+                    contact us <ArrowUpRight className="pb-0.5" size={12} />
+                  </Button>
+                </Link>
+                .
+              </span>
+            </AlertDescription>
+          </Alert>
         </div>
         <ContentBox className="max-w-2xl">
           <PaymentMethodsList />

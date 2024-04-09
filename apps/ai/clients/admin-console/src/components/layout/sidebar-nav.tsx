@@ -15,16 +15,16 @@ import { useAppContext } from '@/contexts/app-context'
 import { isEnterprise } from '@/lib/domain/billing'
 import { cn } from '@/lib/utils'
 import {
+  ArrowUpRightIcon,
   BarChart2,
   BookOpenText,
   Building2,
   Database,
-  ExternalLink,
   KeyRound,
   Landmark,
   LogOut,
   LucideIcon,
-  Mail,
+  MessagesSquare,
   ShieldCheck,
   ShieldQuestion,
   SlidersIcon,
@@ -103,15 +103,9 @@ const SidebarNav = ({
 
   const BOTTOM_NAV_ITEMS: MenuItems = [
     {
-      text: 'Discord',
+      text: 'Community',
       href: 'https://discord.gg/tmTpvw9U',
-      imageURL: '/images/discord.png',
-      external: true,
-    },
-    {
-      text: 'Billing support',
-      href: 'mailto:support@dataherald.com',
-      icon: Mail,
+      icon: MessagesSquare,
       external: true,
     },
     {
@@ -134,7 +128,6 @@ const SidebarNav = ({
           : 'hover:bg-slate-200',
         'text-sm',
         'justify-start',
-        'gap-2',
         'px-3',
       )}
     >
@@ -146,8 +139,10 @@ const SidebarNav = ({
       ) : item.imageURL ? (
         <Image src={item.imageURL} alt={item.text} width={18} height={18} />
       ) : null}
-      {item.text}
-      {item.external && <ExternalLink size={12} strokeWidth={1.8} />}
+      <span className="ml-2">{item.text}</span>
+      {item.external && (
+        <ArrowUpRightIcon className="pb-0.5" size={12} strokeWidth={1.8} />
+      )}
     </Link>
   )
 
