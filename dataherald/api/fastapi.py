@@ -224,20 +224,18 @@ class FastAPI(API):
         try:
             sql_database = SQLDatabase.get_sql_engine(db_connection, True)
             tables = sql_database.get_tables_and_views()
+
+            # Get tables and views and create missing table-descriptions as NOT_SCANNED and update DEPRECATED
+            scanner_repository = TableDescriptionRepository(self.storage)
+            scanner = self.system.instance(Scanner)
+            return [
+                TableDescriptionResponse(**record.dict())
+                for record in scanner.refresh_tables(
+                    tables, str(db_connection.id), scanner_repository
+                )
+            ]
         except Exception as e:
-            raise HTTPException(  # noqa: B904
-                status_code=400,
-                detail=f"{e}",
-            )
-        # Get tables and views and create missing table-descriptions as NOT_SCANNED and update DEPRECATED
-        scanner_repository = TableDescriptionRepository(self.storage)
-        scanner = self.system.instance(Scanner)
-        return [
-            TableDescriptionResponse(**record.dict())
-            for record in scanner.refresh_tables(
-                tables, str(db_connection.id), scanner_repository
-            )
-        ]
+            return error_response(e, refresh_table_description.dict(), "refresh_failed")
 
     @override
     def list_database_connections(self) -> list[DatabaseConnectionResponse]:
