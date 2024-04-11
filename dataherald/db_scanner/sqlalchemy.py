@@ -22,6 +22,7 @@ from dataherald.db_scanner.services.base_scanner import BaseScanner
 from dataherald.db_scanner.services.big_query_scanner import BigQueryScanner
 from dataherald.db_scanner.services.click_house_scanner import ClickHouseScanner
 from dataherald.db_scanner.services.postgre_sql_scanner import PostgreSqlScanner
+from dataherald.db_scanner.services.redshift_scanner import RedshiftScanner
 from dataherald.db_scanner.services.snowflake_scanner import SnowflakeScanner
 from dataherald.db_scanner.services.sql_server_scanner import SqlServerScanner
 from dataherald.sql_database.base import SQLDatabase
@@ -283,13 +284,14 @@ class SqlAlchemyScanner(Scanner):
         services = {
             "snowflake": SnowflakeScanner,
             "bigquery": BigQueryScanner,
-            "psycopg2": PostgreSqlScanner,
-            "pymssql": SqlServerScanner,
-            "http": ClickHouseScanner,
+            "postgresql": PostgreSqlScanner,
+            "mssql": SqlServerScanner,
+            "clickhouse": ClickHouseScanner,
+            "redshift": RedshiftScanner,
         }
         scanner_service = BaseScanner()
-        if db_engine.engine.driver in services.keys():
-            scanner_service = services[db_engine.engine.driver]()
+        if db_engine.engine.dialect.name in services.keys():
+            scanner_service = services[db_engine.engine.dialect.name]()
 
         inspector = inspect(db_engine.engine)
         meta = MetaData(bind=db_engine.engine)
