@@ -254,6 +254,17 @@ Example::
 
 "connection_uri": snowflake://jon:123456@foo-bar/my-database/public
 
+Redshift
+^^^^^^^^^^^^
+
+Uri structure::
+
+"connection_uri": redshift+psycopg2://<user>:<password>@<host>:<port>/<database>
+
+Example::
+
+"connection_uri": redshift+psycopg2://jon:123456@host.amazonaws.com:5439/my-database
+
 ClickHouse
 ^^^^^^^^^^^^
 
