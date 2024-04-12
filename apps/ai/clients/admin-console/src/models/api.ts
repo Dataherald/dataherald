@@ -264,6 +264,7 @@ export enum EDatabaseDialect {
   mssql = 'mssql',
   databricks = 'databricks',
   snowflake = 'snowflake',
+  redshift = 'redshift',
   clickhouse = 'clickhouse',
   awsathena = 'awsathena',
   duckdb = 'duckdb',

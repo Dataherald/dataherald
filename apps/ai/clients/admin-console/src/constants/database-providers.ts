@@ -33,6 +33,12 @@ const DATABASE_PROVIDERS: DatabaseProviderOption[] = [
     logoUrl: '/images/databases/snowflake.svg',
   },
   {
+    name: 'Redshift',
+    driver: 'redshift+psycopg2',
+    dialect: EDatabaseDialect.redshift,
+    logoUrl: '/images/databases/redshift.svg',
+  },
+  {
     name: 'BigQuery',
     driver: 'bigquery',
     dialect: EDatabaseDialect.bigquery,
