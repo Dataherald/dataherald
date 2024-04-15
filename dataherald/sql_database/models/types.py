@@ -87,6 +87,7 @@ class SupportedDialects(Enum):
     DUCKDB = "duckdb"
     BIGQUERY = "bigquery"
     SQLITE = "sqlite"
+    REDSHIFT = "redshift"
 
 
 class DatabaseConnection(BaseModel):
