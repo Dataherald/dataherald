@@ -17,6 +17,7 @@ class DatabaseDialects(Enum):
     DUCKDB = "duckdb"
     BIGQUERY = "bigquery"
     SQLITE = "sqlite"
+    REDSHIFT = "redshift"
 
 
 class SSHSettings(BaseModel):
