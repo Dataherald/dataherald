@@ -68,7 +68,10 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={cn('py-1.5 pl-8 pr-2 text-sm font-semibold', className)}
+    className={cn(
+      'py-1.5 px-2 text-xs font-semibold text-slate-500',
+      className,
+    )}
     {...props}
   />
 ))
@@ -102,6 +105,12 @@ const SelectSeparator = React.forwardRef<
   />
 ))
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName
+
+export interface SelectOption {
+  label: string
+  value: string
+  icon: JSX.Element
+}
 
 export {
   Select,

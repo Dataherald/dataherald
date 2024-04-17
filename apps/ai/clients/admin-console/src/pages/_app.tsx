@@ -4,6 +4,7 @@ import WithMobileRedirect from '@/components/hoc/WithMobileRedirect'
 import WithSubscription from '@/components/hoc/WithSubscription'
 import { AppContextProvider } from '@/contexts/app-context'
 import { AuthProvider } from '@/contexts/auth-context'
+import { SelfServeProvider } from '@/contexts/self-serve-context'
 import { SubscriptionProvider } from '@/contexts/subscription-context'
 import { cn } from '@/lib/utils'
 import '@/styles/globals.css'
@@ -32,15 +33,17 @@ export default function App({ Component, pageProps }: AppProps) {
             <AppContextProvider>
               <WithAnalytics>
                 <WithApiFetcher>
-                  <div
-                    className={cn(
-                      sourceCode.variable,
-                      mainFont.variable,
-                      'font-main',
-                    )}
-                  >
-                    <Component {...pageProps} />
-                  </div>
+                  <SelfServeProvider>
+                    <div
+                      className={cn(
+                        sourceCode.variable,
+                        mainFont.variable,
+                        'font-main',
+                      )}
+                    >
+                      <Component {...pageProps} />
+                    </div>
+                  </SelfServeProvider>
                 </WithApiFetcher>
               </WithAnalytics>
             </AppContextProvider>

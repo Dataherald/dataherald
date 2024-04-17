@@ -35,7 +35,7 @@ jobs:
           LIQUIBASE_COMMAND_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
           LIQUIBASE_COMMAND_URL: ${{ inputs.target_db_url }}
         run: |
-          liquibase --changeLogFile=database/migrations/changelog.yaml update
+          liquibase --changeLogFile=database/migrations/changelog.json update
 
   stop-self-hosted-runner:
     name: Stop self-hosted EC2 runner

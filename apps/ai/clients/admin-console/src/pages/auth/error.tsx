@@ -71,7 +71,7 @@ const AuthErrorPage: FC<{
   return (
     <BackgroundPageLayout>
       <Head>
-        <title>Authentication error - Dataherald AI API</title>
+        <title>Authentication error - Dataherald API</title>
       </Head>
       <div className="bg-white shadow-lg w-full max-w-none h-screen rounded-none sm:rounded-2xl sm:h-fit p-8 sm:max-w-lg">
         <h1 className="text-xl font-bold mb-4 text-secondary-dark flex items-center gap-3">

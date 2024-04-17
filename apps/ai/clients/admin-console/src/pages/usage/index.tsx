@@ -22,7 +22,7 @@ const UsagePage: FC = () => {
   return (
     <PageLayout>
       <Head>
-        <title>Usage - Dataherald AI API</title>
+        <title>Usage - Dataherald API</title>
       </Head>
       <div className="flex flex-col gap-5 p-6">
         <ContentBox className="max-w-2xl h-[600px]">

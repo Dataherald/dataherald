@@ -285,6 +285,16 @@ export interface DatabaseConnection {
 
 export type DatabaseConnections = DatabaseConnection[]
 
+export interface SampleDatabaseConnection {
+  id: string
+  alias: string
+  description: string
+  example_prompts: string[]
+  dialect: DatabaseDialect
+}
+
+export type SampleDatabaseConnections = SampleDatabaseConnection[]
+
 export enum EFineTuningStatus {
   QUEUED = 'queued',
   RUNNING = 'running',

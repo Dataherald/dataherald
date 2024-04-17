@@ -43,7 +43,7 @@ const BillingPage: FC = () => {
   return (
     <PageLayout>
       <Head>
-        <title>Billing - Dataherald AI API</title>
+        <title>Billing - Dataherald API</title>
       </Head>
       <div className="flex flex-col gap-10 p-6">
         <div className="flex flex-col gap-5 max-w-2xl">
@@ -92,15 +92,15 @@ const BillingPage: FC = () => {
               {`You'll be billed at the end of your billing cycle for the usage during that cycle.`}
             </span>
           </div>
-          <Alert className="max-w-2xl text-slate-700 flex items-center gap-2">
+          <Alert className="max-w-2xl text-slate-700 border-slate-700 flex items-center gap-2">
             <div>
-              <BadgeInfo size={24} />
+              <BadgeInfo size={24} strokeWidth={1.5} />
             </div>
             <AlertDescription>
               <span>
                 To increase hard limits or to get support, please{' '}
                 <Link href="mailto:support@dataherald.com" target="_blank">
-                  <Button variant="link" className="p-0">
+                  <Button variant="external-link" className="p-0">
                     contact us <ArrowUpRight className="pb-0.5" size={12} />
                   </Button>
                 </Link>

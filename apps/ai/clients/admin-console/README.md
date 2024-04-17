@@ -1,6 +1,6 @@
-# Admin Console - Dataherald AI
+# Admin Console - Dataherald
 
-The admin console is a front-end application for Data teams to access to their Dataherald AI (DH AI) resources. The main goal is to enable the Data teams to check and verify all the questions made to DH AI by the users within their organization. Also, the users of this application will be able to connect SQL databases and context stores.
+The admin console is a front-end application for Data teams to access to their Dataherald (DH AI) resources. The main goal is to enable the Data teams to check and verify all the questions made to DH AI by the users within their organization. Also, the users of this application will be able to connect SQL databases and context stores.
 
 ## Technologies
 

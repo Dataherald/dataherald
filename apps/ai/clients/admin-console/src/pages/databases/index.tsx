@@ -6,7 +6,7 @@ import PageErrorMessage from '@/components/error/page-error-message'
 import PageLayout from '@/components/layout/page-layout'
 import { ContentBox } from '@/components/ui/content-box'
 import { GlobalTreeSelectionProvider } from '@/components/ui/tree-view-global-context'
-import useDatabases from '@/hooks/api/useDatabases'
+import useDatabases from '@/hooks/api/database-connection/useDatabases'
 import { Databases } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import Head from 'next/head'
@@ -98,7 +98,7 @@ const DatabasesPage: FC = () => {
     <PageLayout>
       <>
         <Head>
-          <title>Databases - Dataherald AI API</title>
+          <title>Databases - Dataherald API</title>
         </Head>
         {pageContent}
       </>

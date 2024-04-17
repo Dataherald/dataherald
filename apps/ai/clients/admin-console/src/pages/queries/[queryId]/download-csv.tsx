@@ -114,7 +114,7 @@ const DownloadCsvPage: FC = () => {
   return (
     <div className="flex items-center justify-center min-h-screen relative">
       <Head>
-        <title>Download CSV - Dataherald AI API</title>
+        <title>Download CSV - Dataherald API</title>
       </Head>
       <Image
         src="https://hi-george.s3.amazonaws.com/DataheraldAI/Dark+Background.png"

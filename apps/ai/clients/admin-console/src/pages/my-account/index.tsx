@@ -17,7 +17,7 @@ const MyAccountPage: FC = () => {
   return (
     <PageLayout>
       <Head>
-        <title>My account - Dataherald AI API</title>
+        <title>My account - Dataherald API</title>
       </Head>
       {user && (
         <div className="m-6">

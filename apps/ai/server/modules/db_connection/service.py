@@ -14,18 +14,23 @@ from modules.db_connection.models.exceptions import (
     DBConnectionAliasExistsError,
     DBConnectionNotFoundError,
 )
-from modules.db_connection.models.requests import DBConnectionRequest
-from modules.db_connection.models.responses import DBConnectionResponse
+from modules.db_connection.models.requests import DBConnectionRequest, SampleDBRequest
+from modules.db_connection.models.responses import (
+    DBConnectionResponse,
+    SampleDBConnectionResponse,
+)
 from modules.db_connection.repository import DBConnectionRepository
 from utils.analytics import Analytics, EventName, EventType
 from utils.misc import reserved_key_in_metadata
 from utils.s3 import S3
+from utils.sample_db import SampleDB
 
 
 class DBConnectionService:
     def __init__(self):
         self.repo = DBConnectionRepository()
         self.analytics = Analytics()
+        self.sample_db = SampleDB()
 
     def get_db_connections(self, org_id: str) -> list[DBConnectionResponse]:
         return sorted(self.repo.get_db_connections(org_id), key=lambda x: x.alias)
@@ -142,6 +147,27 @@ class DBConnectionService:
             )
             raise_engine_exception(response, org_id=org_id)
             return DBConnectionResponse(**response.json())
+
+    async def add_sample_db_connection(
+        self, sample_request: SampleDBRequest, org_id: str
+    ) -> DBConnectionResponse:
+
+        sample_db_dict = await self.sample_db.add_sample_db(
+            sample_request.sample_db_id, org_id
+        )
+
+        return self.get_db_connection_in_org(sample_db_dict.db_connection_id, org_id)
+
+    def get_sample_db_connections(self) -> list[SampleDBConnectionResponse]:
+        sample_dbs = self.sample_db.get_sample_dbs()
+        return [
+            SampleDBConnectionResponse(
+                dialect=sdb.database_connection["dialect"],
+                alias=sdb.name,
+                **sdb.dict(exclude_unset=True),
+            )
+            for sdb in sample_dbs
+        ]
 
     def get_db_connection_in_org(
         self, db_connection_id: str, org_id: str

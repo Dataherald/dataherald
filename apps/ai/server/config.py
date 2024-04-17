@@ -20,6 +20,8 @@ KEY_COL = "keys"
 USAGE_COL = "usages"
 CREDIT_COL = "credits"
 
+SAMPLE_DATABASE_COL = "sample_databases"
+
 
 class Settings(BaseSettings):
     load_dotenv()

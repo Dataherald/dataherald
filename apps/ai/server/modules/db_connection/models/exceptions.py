@@ -29,7 +29,10 @@ class DBConnectionNotFoundError(DBConnectionError):
     def __init__(self, db_connection_id: str, org_id: str) -> None:
         super().__init__(
             error_code=DBConnectionErrorCode.db_connection_not_found.name,
-            detail={"db_connection_id": db_connection_id, "organization_id": org_id},
+            detail={
+                "db_connection_id": db_connection_id,
+                "organization_id": org_id,
+            },
         )
 
 

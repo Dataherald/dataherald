@@ -1,7 +1,7 @@
-from modules.db_connection.models.entities import (
-    DBConnection,
-    Driver,
-)
+from pydantic import BaseModel
+
+from modules.db_connection.models.entities import DatabaseDialects, DBConnection
+from utils.validation import ObjectIdString
 
 
 class DBConnectionResponse(DBConnection):
@@ -14,5 +14,9 @@ class DBConnectionResponse(DBConnection):
         return dic
 
 
-class DriverResponse(Driver):
-    pass
+class SampleDBConnectionResponse(BaseModel):
+    id: ObjectIdString | None
+    alias: str | None
+    dialect: DatabaseDialects | None
+    description: str | None
+    example_prompts: list[str] | None

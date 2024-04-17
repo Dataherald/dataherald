@@ -22,7 +22,7 @@ class InstructionMetadata(BaseModel):
 
 
 class Instruction(BaseInstruction):
-    id: ObjectIdString
+    id: ObjectIdString | None
     created_at: datetime | None
     metadata: InstructionMetadata | None
 

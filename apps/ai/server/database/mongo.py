@@ -23,6 +23,10 @@ class MongoDB:
         return cls._data_store[collection].insert_one(obj).inserted_id
 
     @classmethod
+    def insert_many(cls, collection: str, objs: list[dict]) -> list[ObjectId]:
+        return cls._data_store[collection].insert_many(objs).inserted_ids
+
+    @classmethod
     def update_one(cls, collection: str, query: dict, obj: dict) -> int:
         return (
             cls._data_store[collection].update_one(query, {"$set": obj}).matched_count

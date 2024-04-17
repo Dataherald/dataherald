@@ -51,14 +51,14 @@ const SidebarNav = ({
 
   const FIRST_NAV_ITEMS: MenuItems = [
     {
-      text: 'Playground',
-      href: '/playground',
-      icon: TerminalSquare,
-    },
-    {
       text: 'Databases',
       href: '/databases',
       icon: Database,
+    },
+    {
+      text: 'Playground',
+      href: '/playground',
+      icon: TerminalSquare,
     },
     {
       text: 'Queries',
@@ -154,7 +154,7 @@ const SidebarNav = ({
         <Image
           priority
           src="/images/dh_ai_logo.svg"
-          alt="Dataherald AI Logo"
+          alt="Dataherald Logo"
           width={150}
           height={50}
           className="w-full px-3 py-5"

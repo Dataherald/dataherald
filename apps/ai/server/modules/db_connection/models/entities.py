@@ -6,7 +6,7 @@ from pydantic import BaseModel, Extra
 from utils.validation import ObjectIdString
 
 
-class DatabaseDialects(Enum):
+class DatabaseDialects(str, Enum):
     POSTGRES = "postgresql"
     MYSQL = "mysql"
     MSSQL = "mssql"
@@ -57,8 +57,3 @@ class DBConnection(BaseDBConnection):
     path_to_credentials_file: str | None
     ssh_settings: InternalSSHSettings | None
     dialect: DatabaseDialects | None
-
-
-class Driver(BaseModel):
-    name: str | None
-    driver: str

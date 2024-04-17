@@ -9,7 +9,7 @@ const ApiKeysPage: FC = () => {
   return (
     <PageLayout>
       <Head>
-        <title>API keys - Dataherald AI API</title>
+        <title>API keys - Dataherald API</title>
       </Head>
       <div className="flex flex-col gap-4 m-6 max-w-2xl">
         <div className="flex flex-col gap-3">

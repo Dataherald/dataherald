@@ -17,7 +17,7 @@ import { useGlobalTreeSelection } from '@/components/ui/tree-view-global-context
 import { toast } from '@/components/ui/use-toast'
 import useSynchronizeSchemas, {
   ScanRequest,
-} from '@/hooks/api/useSynchronizeSchemas'
+} from '@/hooks/api/database-connection/useSynchronizeSchemas'
 import { cn } from '@/lib/utils'
 import { Databases, ETableSyncStatus, ErrorResponse } from '@/models/api'
 import { Loader, RefreshCw, ScanText } from 'lucide-react'

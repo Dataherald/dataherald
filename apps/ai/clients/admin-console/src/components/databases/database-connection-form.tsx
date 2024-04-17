@@ -33,10 +33,10 @@ const SSHForm: FC<{
 }> = ({ form }) => (
   <>
     <div className="grid grid-cols-2 gap-4">
-      <div className="max-w-full overflow-hidden col-span-2 pt-3 flex items-center justify-evenly gap-2">
-        <Separator className="grow" />
+      <div className="max-w-full overflow-hidden text-slate-500 col-span-2 pt-3 flex items-center justify-evenly gap-2">
+        <Separator className="bg-slate-500" />
         <div className="min-w-fit font-semibold">SSH settings</div>
-        <Separator className="grow" />
+        <Separator className="bg-slate-500" />
       </div>
       <Alert variant="info" className="col-span-2 flex items-center gap-2">
         <div>
@@ -177,7 +177,6 @@ const DatabaseConnectionForm: FC<{
                                   alt={selectedDatabaseProvider.name}
                                   width={18}
                                   height={18}
-                                  style={{ objectFit: 'contain' }}
                                 />
                                 {selectedDatabaseProvider.name}
                               </div>
@@ -200,11 +199,6 @@ const DatabaseConnectionForm: FC<{
                               alt={option.name}
                               width={18}
                               height={18}
-                              style={{
-                                width: 18,
-                                height: 18,
-                                objectFit: 'contain',
-                              }}
                             />
                             {option.name}
                           </div>

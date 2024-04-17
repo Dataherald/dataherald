@@ -41,7 +41,7 @@ const FineTuningPage: FC = () => {
   return (
     <PageLayout>
       <Head>
-        <title>Fine-tuning - Dataherald AI API</title>
+        <title>Fine-tuning - Dataherald API</title>
       </Head>
       <div className="gap-4 m-6">
         <ContentBox className="w-100 max-w-3xl min-h-[50vh]">

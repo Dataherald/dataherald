@@ -6,7 +6,7 @@ from pydantic import BaseModel, Extra
 from utils.validation import ObjectIdString
 
 
-class SchemaStatus(Enum):
+class SchemaStatus(str, Enum):
     NOT_SCANNED = "NOT_SCANNED"
     SYNCHRONIZING = "SYNCHRONIZING"
     SCANNED = "SCANNED"
@@ -41,6 +41,7 @@ class BaseTableDescription(BaseModel):
     db_connection_id: ObjectIdString
     description: str | None
     columns: list[ColumnDescription] | None
+    table_schema: str | None
     examples: list | None
     status: SchemaStatus | None
     last_schema_sync: datetime | None

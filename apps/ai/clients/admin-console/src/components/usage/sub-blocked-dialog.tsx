@@ -138,7 +138,7 @@ const SubscriptionBlockedDialog: FC<SubscriptionBlockedDialogProps> = ({
             <Image
               priority
               src="/images/dh_ai_logo.svg"
-              alt="Dataherald AI Logo"
+              alt="Dataherald Logo"
               width={250}
               height={50}
             />

@@ -133,7 +133,7 @@ const GoldenSQLPage: FC = () => {
   return (
     <PageLayout>
       <Head>
-        <title>Golden SQL - Dataherald AI API</title>
+        <title>Golden SQL - Dataherald API</title>
       </Head>
       <div className="grow flex flex-col gap-4 m-6">
         <div className="flex flex-col gap-3 max-w-5xl">

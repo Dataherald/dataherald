@@ -108,7 +108,7 @@ const QueriesPage: FC = () => {
   return (
     <PageLayout>
       <Head>
-        <title>Queries - Dataherald AI API</title>
+        <title>Queries - Dataherald API</title>
       </Head>
       <div className="grow flex flex-col gap-4 m-6">
         <div className="flex flex-col gap-3 max-w-5xl">

@@ -29,7 +29,7 @@ const MarkdownRenderer: FC<MarkdownRendererProps> = ({
               style={{
                 backgroundColor: '#44475a',
                 color: '#f8f8f2',
-                padding: '3px 8px',
+                padding: '4px',
                 margin: '0 1px',
                 borderRadius: '0.3em',
                 tabSize: 4,
@@ -41,7 +41,7 @@ const MarkdownRenderer: FC<MarkdownRendererProps> = ({
               }}
               {...props}
             >
-              {children}
+              {String(children).replace(/\n$/, '')}
             </code>
           )
         }

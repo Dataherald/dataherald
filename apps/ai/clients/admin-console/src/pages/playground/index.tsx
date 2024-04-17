@@ -8,17 +8,22 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectOption,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { API_URL } from '@/config'
-import DATABASE_PROVIDERS from '@/constants/database-providers'
 import LLM_MODELS from '@/constants/llm-models'
 import { useAuth } from '@/contexts/auth-context'
+import { useSelfServePlayground } from '@/contexts/self-serve-context'
 import { useSubscription } from '@/contexts/subscription-context'
+import useDatabaseConnections from '@/hooks/api/database-connection/useDatabaseConnections'
 import useFinetunings from '@/hooks/api/fine-tuning/useFinetunings'
-import useDatabaseConnections from '@/hooks/api/useDatabaseConnections'
+import useDatabaseOptions, {
+  DBConnectionOptionData,
+} from '@/hooks/database/useDatabaseOptions'
 import { isSubscriptionErrorCode } from '@/lib/domain/error'
 import { ErrorResponse } from '@/models/api'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
@@ -28,7 +33,6 @@ import {
   AlertOctagon,
   Bot,
   CircleSlash,
-  Database,
   DatabaseZap,
   Loader,
   PlayCircle,
@@ -43,7 +47,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { FC, useEffect, useRef, useState } from 'react'
 
-const STREAM_CHUNK_SIZE = 3
+const STREAM_CHUNK_SIZE = 5
 
 const NONE_FINE_TUNING_MODEL: SelectOption = {
   label: 'None',
@@ -57,13 +61,8 @@ const LOADING_MORE_FINE_TUNING_MODELS: SelectOption = {
   icon: <Loader size={16} className="animate-spin" />,
 }
 
-type SelectOption = {
-  label: string
-  value: string
-  icon: JSX.Element
-}
-
 const PlaygroundPage: FC = () => {
+  const submitBtnRef = useRef<HTMLButtonElement>(null)
   const {
     dbConnections,
     isLoading: loadingDatabases,
@@ -73,46 +72,10 @@ const PlaygroundPage: FC = () => {
   // Database connections
   const [selectedDbConnectionId, setSelectedDbConnectionId] =
     useState<string>('')
-  const [dbConnectionOptions, setDbConnectionOptions] =
-    useState<SelectOption[]>()
 
-  useEffect(() => {
-    if (!dbConnections || dbError) {
-      setDbConnectionOptions([])
-      setSelectedDbConnectionId('')
-    } else {
-      if (dbConnections.length > 0) {
-        setDbConnectionOptions(
-          dbConnections.map(({ id, alias, dialect }) => {
-            const dbProviderLogoUrl = DATABASE_PROVIDERS.find(
-              (provider) => provider.dialect === dialect,
-            )?.logoUrl
-            return {
-              label: (alias || id) as string,
-              value: id as string,
-              icon: dbProviderLogoUrl ? (
-                <Image
-                  priority
-                  src={dbProviderLogoUrl}
-                  alt={alias + ' logo'}
-                  width={18}
-                  height={18}
-                  style={{
-                    width: 18,
-                    height: 18,
-                    objectFit: 'contain',
-                  }}
-                />
-              ) : (
-                <Database size={16} />
-              ),
-            }
-          }),
-        )
-      }
-    }
-  }, [dbConnections, dbError])
-
+  const dbConnectionOptions: SelectOption[] = useDatabaseOptions(
+    dbConnections as DBConnectionOptionData[],
+  )
   useEffect(() => {
     if (!dbConnectionOptions) return
     if (dbConnectionOptions.length > 0) {
@@ -167,13 +130,8 @@ const PlaygroundPage: FC = () => {
                       priority
                       src={llm_model.logoUrl}
                       alt={model.base_llm?.model_name || ''}
-                      width={16}
-                      height={16}
-                      style={{
-                        width: 16,
-                        height: 16,
-                        objectFit: 'contain',
-                      }}
+                      width={18}
+                      height={18}
                     />
                   ) : null,
                 )
@@ -244,7 +202,7 @@ const PlaygroundPage: FC = () => {
           )
           setStreamText((stream) => stream + nextStreamChunk)
         }
-      }, 25)
+      }, 15)
       return () => clearTimeout(streamTimeout)
     }
   }, [agentStopped, completion, setCompletion, streamText])
@@ -253,7 +211,7 @@ const PlaygroundPage: FC = () => {
     if (isLoading) {
       setIsStreaming(true)
     } else {
-      setIsStreaming(completion.length > streamText.length)
+      setIsStreaming(completion?.length > streamText.length)
     }
   }, [completion, isLoading, streamText])
 
@@ -296,6 +254,47 @@ const PlaygroundPage: FC = () => {
       }
     }
   }, [isStreaming, streamText])
+
+  // Self Serve flow
+  const [isSubmitButtonReady, setIsSubmitButtonReady] = useState(false)
+  const {
+    dbConnectionId: selfServeDBConnectionId,
+    examplePrompt: selfServeExamplePrompt,
+    clearSelfServePlaygroundData,
+  } = useSelfServePlayground()
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (submitBtnRef.current && submitBtnRef.current.disabled === false) {
+        setIsSubmitButtonReady(true)
+        clearInterval(interval)
+      }
+    }, 100)
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    if (selfServeDBConnectionId && selfServeExamplePrompt) {
+      if (selfServeDBConnectionId !== selectedDbConnectionId) {
+        setSelectedDbConnectionId(selfServeDBConnectionId)
+      }
+      if (selfServeExamplePrompt !== input) {
+        setInput(selfServeExamplePrompt)
+      }
+      if (isSubmitButtonReady) {
+        submitBtnRef.current?.click()
+        clearSelfServePlaygroundData()
+      }
+    }
+  }, [
+    clearSelfServePlaygroundData,
+    input,
+    isSubmitButtonReady,
+    selectedDbConnectionId,
+    selfServeDBConnectionId,
+    selfServeExamplePrompt,
+    setInput,
+  ])
 
   const handleClear = () => {
     setInput('')
@@ -406,7 +405,7 @@ const PlaygroundPage: FC = () => {
   return (
     <>
       <Head>
-        <title>Playground - Dataherald AI API</title>
+        <title>Playground - Dataherald API</title>
       </Head>
       <PageLayout>
         {loadingDatabases ? (
@@ -463,6 +462,7 @@ const PlaygroundPage: FC = () => {
                     </Button>
                   )}
                   <Button
+                    ref={submitBtnRef}
                     className="w-44 py-1 h-fit"
                     disabled={
                       isStreaming || !dbConnectionOptions?.length || !input
@@ -512,6 +512,7 @@ const PlaygroundPage: FC = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
+                            <SelectLabel>Databases</SelectLabel>
                             {dbConnectionOptions?.map(
                               ({ label, value, icon }, idx) => (
                                 <SelectItem key={label + idx} value={value}>
@@ -542,6 +543,7 @@ const PlaygroundPage: FC = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
+                            <SelectLabel>Fine-tuning models</SelectLabel>
                             {finetuningModelOptions?.map(
                               ({ label, value, icon }, idx) => (
                                 <SelectItem key={label + idx} value={value}>

@@ -18,7 +18,7 @@ import {
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
 import { toast } from '@/components/ui/use-toast'
-import usePostDatabaseConnection from '@/hooks/api/usePostDatabaseConnection'
+import usePostDatabaseConnection from '@/hooks/api/database-connection/usePostDatabaseConnection'
 import { formatDriver } from '@/lib/domain/database'
 import { DatabaseConnection, Databases, ErrorResponse } from '@/models/api'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -133,10 +133,12 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
     <>
       <Dialog onOpenChange={handleDialogOpenChange}>
         <DialogTrigger asChild>
-          <Button className={isFirstConnection ? 'px-6 py-2 h-fit' : ''}>
+          <Button
+            className={isFirstConnection ? 'px-4 py-1.5 h-fit w-full' : ''}
+          >
             {isFirstConnection ? (
               <>
-                <Plug className="mr-2" size={18} />
+                <Plug className="mr-2" size={20} strokeWidth={1.5} />
                 Connect your Database
               </>
             ) : (
@@ -158,8 +160,8 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
                   <div className="flex flex-row items-center gap-2">
                     <CheckCircle />
                     {isFirstConnection
-                      ? 'Database Connected'
-                      : 'Database Added'}
+                      ? 'Database connected'
+                      : 'Database added'}
                   </div>
                 </DialogTitle>
               </DialogHeader>

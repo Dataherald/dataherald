@@ -59,7 +59,7 @@ const SelectOrganizationPage: FC = () => {
   return (
     <BackgroundPageLayout>
       <Head>
-        <title>Change Organization - Dataherald AI API</title>
+        <title>Change Organization - Dataherald API</title>
       </Head>
       <div className="bg-white shadow-lg w-full max-w-none h-screen rounded-none sm:rounded-2xl sm:h-fit p-8 sm:max-w-lg">
         <div className="flex flex-col items-center gap-5 h-[60vh] sm:max-h-[60vh]">

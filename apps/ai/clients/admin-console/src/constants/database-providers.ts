@@ -1,13 +1,13 @@
 import { DatabaseDialect, EDatabaseDialect } from '@/models/api'
 
-interface DatabaseProviderOption {
+export interface DatabaseProvider {
   name: string
   driver: string
   dialect: DatabaseDialect
   logoUrl: string
 }
 
-const DATABASE_PROVIDERS: DatabaseProviderOption[] = [
+const DATABASE_PROVIDERS: DatabaseProvider[] = [
   {
     name: 'PostgreSQL',
     driver: 'postgresql+psycopg2',
@@ -18,7 +18,7 @@ const DATABASE_PROVIDERS: DatabaseProviderOption[] = [
     name: 'MS SQL Server',
     driver: 'mssql+pymssql',
     dialect: EDatabaseDialect.mssql,
-    logoUrl: '/images/databases/sql-server.svg',
+    logoUrl: '/images/databases/sql-server.png',
   },
   {
     name: 'Databricks',
@@ -36,7 +36,7 @@ const DATABASE_PROVIDERS: DatabaseProviderOption[] = [
     name: 'Redshift',
     driver: 'redshift+psycopg2',
     dialect: EDatabaseDialect.redshift,
-    logoUrl: '/images/databases/redshift.svg',
+    logoUrl: '/images/databases/redshift.png',
   },
   {
     name: 'BigQuery',
