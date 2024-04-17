@@ -87,6 +87,7 @@ class DatabaseConnectionRequest(BaseModel):
     alias: str
     use_ssh: bool = False
     connection_uri: str
+    schemas: list[str] | None
     path_to_credentials_file: str | None
     llm_api_key: str | None
     ssh_settings: SSHSettings | None

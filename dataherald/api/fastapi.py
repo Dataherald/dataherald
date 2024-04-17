@@ -70,6 +70,9 @@ from dataherald.sql_database.base import (
     SQLInjectionError,
 )
 from dataherald.sql_database.models.types import DatabaseConnection
+from dataherald.sql_database.services.database_connection import (
+    DatabaseConnectionService,
+)
 from dataherald.types import (
     BaseLLM,
     CancelFineTuningRequest,
@@ -173,27 +176,9 @@ class FastAPI(API):
         self, database_connection_request: DatabaseConnectionRequest
     ) -> DatabaseConnectionResponse:
         try:
-            db_connection = DatabaseConnection(
-                alias=database_connection_request.alias,
-                connection_uri=database_connection_request.connection_uri.strip(),
-                path_to_credentials_file=database_connection_request.path_to_credentials_file,
-                llm_api_key=database_connection_request.llm_api_key,
-                use_ssh=database_connection_request.use_ssh,
-                ssh_settings=database_connection_request.ssh_settings,
-                file_storage=database_connection_request.file_storage,
-                metadata=database_connection_request.metadata,
-            )
-            sql_database = SQLDatabase.get_sql_engine(db_connection, True)
-
-            # Get tables and views and create table-descriptions as NOT_SCANNED
-            db_connection_repository = DatabaseConnectionRepository(self.storage)
-
-            scanner_repository = TableDescriptionRepository(self.storage)
             scanner = self.system.instance(Scanner)
-
-            tables = sql_database.get_tables_and_views()
-            db_connection = db_connection_repository.insert(db_connection)
-            scanner.create_tables(tables, str(db_connection.id), scanner_repository)
+            db_connection_service = DatabaseConnectionService(scanner, self.storage)
+            db_connection = db_connection_service.create(database_connection_request)
         except Exception as e:
             # Encrypt sensible values
             fernet_encrypt = FernetEncrypt()
@@ -209,7 +194,6 @@ class FastAPI(API):
             return error_response(
                 e, database_connection_request.dict(), "invalid_database_connection"
             )
-
         return DatabaseConnectionResponse(**db_connection.dict())
 
     @override

@@ -44,6 +44,7 @@ class SqlAlchemyScanner(Scanner):
         self,
         tables: list[str],
         db_connection_id: str,
+        schema: str,
         repository: TableDescriptionRepository,
         metadata: dict = None,
     ) -> None:
@@ -51,6 +52,7 @@ class SqlAlchemyScanner(Scanner):
             repository.save_table_info(
                 TableDescription(
                     db_connection_id=db_connection_id,
+                    schema_name=schema,
                     table_name=table,
                     status=TableDescriptionStatus.NOT_SCANNED.value,
                     metadata=metadata,

@@ -96,6 +96,7 @@ class DatabaseConnection(BaseModel):
     dialect: SupportedDialects | None
     use_ssh: bool = False
     connection_uri: str | None
+    schemas: list[str] | None
     path_to_credentials_file: str | None
     llm_api_key: str | None = None
     ssh_settings: SSHSettings | None = None

@@ -34,6 +34,7 @@ class Scanner(Component, ABC):
         self,
         tables: list[str],
         db_connection_id: str,
+        schema: str,
         repository: TableDescriptionRepository,
         metadata: dict = None,
     ) -> None:
