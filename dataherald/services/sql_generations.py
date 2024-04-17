@@ -61,6 +61,8 @@ class SQLGenerationService:
         initial_sql_generation.status = sql_generation.status
         initial_sql_generation.error = sql_generation.error
         initial_sql_generation.intermediate_steps = sql_generation.intermediate_steps
+        initial_sql_generation.tokens = sql_generation.tokens
+        initial_sql_generation.probs = sql_generation.probs
         return self.sql_generation_repository.update(initial_sql_generation)
 
     def create(
@@ -173,6 +175,9 @@ class SQLGenerationService:
                 database_connection=db_connection,
             )
             initial_sql_generation.evaluate = sql_generation_request.evaluate
+            initial_sql_generation.evaluation_quantile = (
+                sql_generation_request.evaluation_quantile
+            )
             initial_sql_generation.confidence_score = confidence_score
         return self.update_the_initial_sql_generation(
             initial_sql_generation, sql_generation

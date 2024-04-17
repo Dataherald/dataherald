@@ -14,6 +14,7 @@ class SQLGenerationRequest(BaseModel):
     low_latency_mode: bool = False
     llm_config: LLMConfig | None
     evaluate: bool = False
+    evaluation_quantile: int = 25
     sql: str | None
     metadata: dict | None
 

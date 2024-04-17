@@ -43,6 +43,9 @@ from dataherald.sql_database.models.types import (
     DatabaseConnection,
 )
 from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
+from dataherald.sql_generator.log_probs_callback_handler import (
+    OpenAILogProbsCallbackHandler,
+)
 from dataherald.types import Prompt, SQLGeneration
 from dataherald.utils.agent_prompts import (
     AGENT_PREFIX,
@@ -679,6 +682,7 @@ class DataheraldSQLAgent(SQLGenerator):
         metadata: dict = None,
     ) -> SQLGeneration:
         context_store = self.system.instance(ContextStore)
+        log_prob_callback = OpenAILogProbsCallbackHandler()
         storage = self.system.instance(DB)
         response = SQLGeneration(
             prompt_id=user_prompt.id,
@@ -688,6 +692,7 @@ class DataheraldSQLAgent(SQLGenerator):
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
+            callbacks=BaseCallbackManager([log_prob_callback]),
             model_name=self.llm_config.llm_name,
             api_base=self.llm_config.api_base,
         )
@@ -748,6 +753,8 @@ class DataheraldSQLAgent(SQLGenerator):
                     completed_at=datetime.datetime.now(),
                     sql="",
                     status="INVALID",
+                    tokens=log_prob_callback.tokens,
+                    probs=log_prob_callback.probs,
                     error=str(e),
                 )
         sql_query = ""
@@ -761,6 +768,8 @@ class DataheraldSQLAgent(SQLGenerator):
         response.sql = replace_unprocessable_characters(sql_query)
         response.tokens_used = cb.total_tokens
         response.completed_at = datetime.datetime.now()
+        response.tokens = log_prob_callback.tokens
+        response.probs = log_prob_callback.probs
         if number_of_samples > 0:
             suffix = SUFFIX_WITH_FEW_SHOT_SAMPLES
         else:

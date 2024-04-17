@@ -191,6 +191,7 @@ class SQLGeneration(BaseModel):
     low_latency_mode: bool = False
     llm_config: LLMConfig | None
     evaluate: bool = False
+    evaluation_quantile: int = 0
     intermediate_steps: list[IntermediateStep] | None
     sql: str | None
     status: str = "INVALID"
@@ -199,6 +200,8 @@ class SQLGeneration(BaseModel):
     confidence_score: float | None
     error: str | None
     created_at: datetime = Field(default_factory=datetime.now)
+    tokens: list[str] | None
+    probs: list[float] | None
     metadata: dict | None
 
 

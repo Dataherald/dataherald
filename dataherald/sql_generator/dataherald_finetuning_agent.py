@@ -42,6 +42,9 @@ from dataherald.sql_database.models.types import (
     DatabaseConnection,
 )
 from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
+from dataherald.sql_generator.log_probs_callback_handler import (
+    OpenAILogProbsCallbackHandler,
+)
 from dataherald.types import FineTuningStatus, Prompt, SQLGeneration
 from dataherald.utils.agent_prompts import (
     ERROR_PARSING_MESSAGE,
@@ -533,6 +536,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
             Response: The response to the user question.
         """
         context_store = self.system.instance(ContextStore)
+        log_prob_callback = OpenAILogProbsCallbackHandler()
         storage = self.system.instance(DB)
         response = SQLGeneration(
             prompt_id=user_prompt.id,
@@ -543,6 +547,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         self.llm = self.model.get_model(
             database_connection=database_connection,
             temperature=0,
+            callbacks=BaseCallbackManager([log_prob_callback]),
             model_name=self.llm_config.llm_name,
             api_base=self.llm_config.api_base,
         )
@@ -608,6 +613,8 @@ class DataheraldFinetuningAgent(SQLGenerator):
                     completed_at=datetime.datetime.now(),
                     sql="",
                     status="INVALID",
+                    tokens=log_prob_callback.tokens,
+                    probs=log_prob_callback.probs,
                     error=str(e),
                 )
         sql_query = ""
@@ -621,6 +628,8 @@ class DataheraldFinetuningAgent(SQLGenerator):
         response.sql = replace_unprocessable_characters(sql_query)
         response.tokens_used = cb.total_tokens
         response.completed_at = datetime.datetime.now()
+        response.tokens = log_prob_callback.tokens
+        response.probs = log_prob_callback.probs
         response.intermediate_steps = self.construct_intermediate_steps(
             result["intermediate_steps"], FINETUNING_AGENT_SUFFIX
         )
