@@ -17,7 +17,9 @@ class DatabaseConnectionService:
         self.scanner = scanner
         self.storage = storage
 
-    def get_current_schema(self, database_connection: DatabaseConnection) -> list[str]:
+    def get_current_schema(
+        self, database_connection: DatabaseConnection
+    ) -> list[str] | None:
         sql_database = SQLDatabase.get_sql_engine(database_connection, True)
         inspector = inspect(sql_database.engine)
         if inspector.default_schema_name and database_connection.dialect not in [
@@ -37,7 +39,7 @@ class DatabaseConnectionService:
             match = re.search(pattern, str(sql_database.engine.url))
             if match:
                 return [match.group(1)]
-        return ["default"]
+        return None
 
     def remove_schema_in_uri(self, connection_uri: str, dialect: str) -> str:
         if dialect in ["snowflake"]:
@@ -99,6 +101,9 @@ class DatabaseConnectionService:
                 )
                 sql_database = SQLDatabase.get_sql_engine(database_connection, True)
                 schemas_and_tables[schema] = sql_database.get_tables_and_views()
+        else:
+            sql_database = SQLDatabase.get_sql_engine(database_connection, True)
+            schemas_and_tables[None] = sql_database.get_tables_and_views()
 
         # Connect db
         db_connection_repository = DatabaseConnectionRepository(self.storage)
