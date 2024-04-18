@@ -188,7 +188,9 @@ class SQLGenerator(Component, ABC):
                             )
                     elif "steps" in chunk:
                         for step in chunk["steps"]:
-                            queue.put(f"\n**Observation:**\n {step.observation}\n")
+                            queue.put(
+                                f"\n**Observation:**\n {self.format_sql_query_intermediate_steps(step.observation)}\n"
+                            )
                     elif "output" in chunk:
                         queue.put(
                             f'\n**Final Answer:**\n {self.format_sql_query_intermediate_steps(chunk["output"])}'
