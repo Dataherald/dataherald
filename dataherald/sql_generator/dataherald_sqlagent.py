@@ -150,12 +150,11 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
 
     name = "SqlDbQuery"
     description = """
-    Input: A one line SQL query between ```sql and ``` tags.
+    Input: A Well-formed Multi-line SQL query between ```sql and ``` tags.
     Output: Result from the database or an error message if the query is incorrect.
     If an error occurs, rewrite the query and retry.
     Use this tool to execute SQL queries.
     Add newline after both ```sql and ``` tags.
-    SQL query should not have 
     """
 
     @catch_exceptions()
