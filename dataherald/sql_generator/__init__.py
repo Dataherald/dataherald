@@ -64,7 +64,13 @@ class SQLGenerator(Component, ABC):
 
     def format_sql_query_intermediate_steps(self, step: str) -> str:
         pattern = r"```sql(.*?)```"
-        return re.sub(pattern, self.format_sql_query, step)
+
+        def formatter(match):
+            original_sql = match.group(1)
+            formatted_sql = self.format_sql_query(original_sql)
+            return "```sql\n" + formatted_sql + "\n```"
+
+        return re.sub(pattern, formatter, step, flags=re.DOTALL)
 
     @classmethod
     def get_upper_bound_limit(cls) -> int:
