@@ -27,6 +27,7 @@ class ChatModel(LLMModel):
                 model_name=model_name,
                 openai_api_key=api_key,
                 openai_api_base=api_base,
+                seed=0,
                 **kwargs
             )
         if model_family == "anthropic":
