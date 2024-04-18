@@ -89,7 +89,7 @@ class TestDBConnectionAPI(TestCase):
     # @patch(
     #     "modules.organization.service.OrganizationService.update_db_connection_id",
     # def test_add_db_connection(self):
-    #         "db_connection_request_json": json.dumps(
+    #         "request_json": json.dumps(
     #         self.url,
 
     # @patch(
@@ -97,5 +97,5 @@ class TestDBConnectionAPI(TestCase):
     # @patch(
     #     "modules.db_connection.repository.DBConnectionRepository.get_db_connection",
     # def test_update_db_connection(self):
-    #         "db_connection_request_json": json.dumps(
+    #         "request_json": json.dumps(
     #         self.url + "/0123456789ab0123456789ab",

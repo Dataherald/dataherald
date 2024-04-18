@@ -14,10 +14,7 @@ const usePostDatabaseConnection = () => {
         formData.append('file', file, file.name)
       }
 
-      formData.append(
-        'db_connection_request_json',
-        JSON.stringify(dbConnection),
-      )
+      formData.append('request_json', JSON.stringify(dbConnection))
 
       return apiFetcher<DatabaseConnection>(`${API_URL}/database-connections`, {
         method: 'POST',
