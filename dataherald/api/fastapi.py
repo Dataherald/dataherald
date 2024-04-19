@@ -195,18 +195,30 @@ class FastAPI(API):
         db_connection = db_connection_repository.find_by_id(
             refresh_table_description.db_connection_id
         )
-
+        scanner = self.system.instance(Scanner)
+        database_connection_service = DatabaseConnectionService(scanner, self.storage)
         try:
-            sql_database = SQLDatabase.get_sql_engine(db_connection, True)
-            tables = sql_database.get_tables_and_views()
+            data = {}
+            if db_connection.schemas:
+                for schema in db_connection.schemas:
+                    sql_database = database_connection_service.get_sql_database(
+                        db_connection, schema
+                    )
+                    if schema not in data.keys():
+                        data[schema] = []
+                    data[schema] = sql_database.get_tables_and_views()
+            else:
+                sql_database = database_connection_service.get_sql_database(
+                    db_connection
+                )
+                data[None] = sql_database.get_tables_and_views()
 
-            # Get tables and views and create missing table-descriptions as NOT_SCANNED and update DEPRECATED
             scanner_repository = TableDescriptionRepository(self.storage)
-            scanner = self.system.instance(Scanner)
+
             return [
                 TableDescriptionResponse(**record.dict())
                 for record in scanner.refresh_tables(
-                    tables, str(db_connection.id), scanner_repository
+                    data, str(db_connection.id), scanner_repository
                 )
             ]
         except Exception as e:

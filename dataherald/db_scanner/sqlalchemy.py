@@ -62,34 +62,38 @@ class SqlAlchemyScanner(Scanner):
     @override
     def refresh_tables(
         self,
-        tables: list[str],
+        schemas_and_tables: dict[str, list],
         db_connection_id: str,
         repository: TableDescriptionRepository,
         metadata: dict = None,
     ) -> list[TableDescription]:
-        stored_tables = repository.find_by({"db_connection_id": str(db_connection_id)})
-        stored_tables_list = [table.table_name for table in stored_tables]
-
         rows = []
-        for table_description in stored_tables:
-            if table_description.table_name not in tables:
-                table_description.status = TableDescriptionStatus.DEPRECATED.value
-                rows.append(repository.save_table_info(table_description))
-            else:
-                rows.append(TableDescription(**table_description.dict()))
+        for schema, tables in schemas_and_tables.items():
+            stored_tables = repository.find_by(
+                {"db_connection_id": str(db_connection_id), "schema": schema}
+            )
+            stored_tables_list = [table.table_name for table in stored_tables]
 
-        for table in tables:
-            if table not in stored_tables_list:
-                rows.append(
-                    repository.save_table_info(
-                        TableDescription(
-                            db_connection_id=db_connection_id,
-                            table_name=table,
-                            status=TableDescriptionStatus.NOT_SCANNED.value,
-                            metadata=metadata,
+            for table_description in stored_tables:
+                if table_description.table_name not in tables:
+                    table_description.status = TableDescriptionStatus.DEPRECATED.value
+                    rows.append(repository.save_table_info(table_description))
+                else:
+                    rows.append(TableDescription(**table_description.dict()))
+
+            for table in tables:
+                if table not in stored_tables_list:
+                    rows.append(
+                        repository.save_table_info(
+                            TableDescription(
+                                db_connection_id=db_connection_id,
+                                table_name=table,
+                                status=TableDescriptionStatus.NOT_SCANNED.value,
+                                metadata=metadata,
+                                schema_name=schema,
+                            )
                         )
                     )
-                )
         return rows
 
     @override

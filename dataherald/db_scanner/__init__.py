@@ -42,7 +42,7 @@ class Scanner(Component, ABC):
     @abstractmethod
     def refresh_tables(
         self,
-        tables: list[str],
+        schemas_and_tables: dict[str, list],
         db_connection_id: str,
         repository: TableDescriptionRepository,
         metadata: dict = None,
