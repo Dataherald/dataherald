@@ -17,6 +17,20 @@ class DatabaseConnectionService:
         self.scanner = scanner
         self.storage = storage
 
+    def get_sql_database(
+        self, database_connection: DatabaseConnection, schema: str = None
+    ) -> SQLDatabase:
+        fernet_encrypt = FernetEncrypt()
+        if schema:
+            database_connection.connection_uri = fernet_encrypt.encrypt(
+                self.add_schema_in_uri(
+                    fernet_encrypt.decrypt(database_connection.connection_uri),
+                    schema,
+                    database_connection.dialect.value,
+                )
+            )
+        return SQLDatabase.get_sql_engine(database_connection, True)
+
     def get_current_schema(
         self, database_connection: DatabaseConnection
     ) -> list[str] | None:

@@ -78,9 +78,18 @@ class SupportedDatabase(Enum):
     BIGQUERY = "BIGQUERY"
 
 
-class ScannerRequest(DBConnectionValidation):
-    table_names: list[str] | None
+class ScannerRequest(BaseModel):
+    ids: list[str] | None
     metadata: dict | None
+
+    @validator("ids")
+    def ids_validation(cls, ids: list = None):
+        try:
+            for id in ids:
+                ObjectId(id)
+        except InvalidId:
+            raise ValueError("Must be a valid ObjectId")  # noqa: B904
+        return ids
 
 
 class DatabaseConnectionRequest(BaseModel):

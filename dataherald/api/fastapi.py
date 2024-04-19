@@ -97,11 +97,10 @@ logger = logging.getLogger(__name__)
 MAX_ROWS_TO_CREATE_CSV_FILE = 50
 
 
-def async_scanning(scanner, database, scanner_request, storage):
+def async_scanning(scanner, database, table_descriptions, storage):
     scanner.scan(
         database,
-        scanner_request.db_connection_id,
-        scanner_request.table_names,
+        table_descriptions,
         TableDescriptionRepository(storage),
         QueryHistoryRepository(storage),
     )
@@ -133,43 +132,35 @@ class FastAPI(API):
         self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
     ) -> list[TableDescriptionResponse]:
         """Takes a db_connection_id and scan all the tables columns"""
-        try:
-            db_connection_repository = DatabaseConnectionRepository(self.storage)
+        scanner_repository = TableDescriptionRepository(self.storage)
+        data = {}
+        for id in scanner_request.ids:
+            table_description = scanner_repository.find_by_id(id)
+            if not table_description:
+                raise Exception("Table description not found")
+            if table_description.schema_name not in data.keys():
+                data[table_description.schema_name] = []
+            data[table_description.schema_name].append(table_description)
 
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        scanner = self.system.instance(Scanner)
+        database_connection_service = DatabaseConnectionService(scanner, self.storage)
+        for schema, table_descriptions in data.items():
             db_connection = db_connection_repository.find_by_id(
-                scanner_request.db_connection_id
+                table_descriptions[0].db_connection_id
+            )
+            database = database_connection_service.get_sql_database(
+                db_connection, schema
             )
 
-            if not db_connection:
-                raise DatabaseConnectionNotFoundError(
-                    f"Database connection {scanner_request.db_connection_id} not found"
-                )
-
-            database = SQLDatabase.get_sql_engine(db_connection, True)
-            all_tables = database.get_tables_and_views()
-
-            if scanner_request.table_names:
-                for table in scanner_request.table_names:
-                    if table not in all_tables:
-                        raise HTTPException(
-                            status_code=404,
-                            detail=f"Table named: {table} doesn't exist",
-                        )  # noqa: B904
-            else:
-                scanner_request.table_names = all_tables
-
-            scanner = self.system.instance(Scanner)
-            rows = scanner.synchronizing(
-                scanner_request,
-                TableDescriptionRepository(self.storage),
+            background_tasks.add_task(
+                async_scanning, scanner, database, table_descriptions, self.storage
             )
-        except Exception as e:
-            return error_response(e, scanner_request.dict(), "invalid_database_sync")
-
-        background_tasks.add_task(
-            async_scanning, scanner, database, scanner_request, self.storage
-        )
-        return [TableDescriptionResponse(**row.dict()) for row in rows]
+        return [
+            TableDescriptionResponse(**row.dict())
+            for _, table_descriptions in data.items()
+            for row in table_descriptions
+        ]
 
     @override
     def create_database_connection(

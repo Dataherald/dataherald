@@ -278,8 +278,7 @@ class SqlAlchemyScanner(Scanner):
     def scan(
         self,
         db_engine: SQLDatabase,
-        db_connection_id: str,
-        table_names: list[str] | None,
+        table_descriptions: list[TableDescription],
         repository: TableDescriptionRepository,
         query_history_repository: QueryHistoryRepository,
     ) -> None:
@@ -295,32 +294,24 @@ class SqlAlchemyScanner(Scanner):
         if db_engine.engine.dialect.name in services.keys():
             scanner_service = services[db_engine.engine.dialect.name]()
 
-        inspector = inspect(db_engine.engine)
+        inspect(db_engine.engine)
         meta = MetaData(bind=db_engine.engine)
         MetaData.reflect(meta, views=True)
-        tables = inspector.get_table_names() + inspector.get_view_names()
-        if table_names:
-            table_names = [table.lower() for table in table_names]
-            tables = [
-                table for table in tables if table and table.lower() in table_names
-            ]
-        if len(tables) == 0:
-            raise ValueError("No table found")
 
-        for table in tables:
+        for table in table_descriptions:
             try:
                 self.scan_single_table(
                     meta=meta,
-                    table=table,
+                    table=table.table_name,
                     db_engine=db_engine,
-                    db_connection_id=db_connection_id,
+                    db_connection_id=table.db_connection_id,
                     repository=repository,
                     scanner_service=scanner_service,
                 )
             except Exception as e:
                 repository.save_table_info(
                     TableDescription(
-                        db_connection_id=db_connection_id,
+                        db_connection_id=table.db_connection_id,
                         table_name=table,
                         status=TableDescriptionStatus.FAILED.value,
                         error_message=f"{e}",
@@ -329,7 +320,7 @@ class SqlAlchemyScanner(Scanner):
             try:
                 logger.info(f"Get logs table: {table}")
                 query_history = scanner_service.get_logs(
-                    table, db_engine, db_connection_id
+                    table.table_name, db_engine, table.db_connection_id
                 )
                 if len(query_history) > 0:
                     for query in query_history:

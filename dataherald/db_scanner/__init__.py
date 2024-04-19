@@ -14,8 +14,7 @@ class Scanner(Component, ABC):
     def scan(
         self,
         db_engine: SQLDatabase,
-        db_connection_id: str,
-        table_names: list[str] | None,
+        table_descriptions: list[TableDescription],
         repository: TableDescriptionRepository,
         query_history_repository: QueryHistoryRepository,
     ) -> None:
