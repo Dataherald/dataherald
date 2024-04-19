@@ -78,34 +78,6 @@ export const getColumns: (actions: {
       format(new Date(row.getValue('created_at')), 'yyyy-MM-dd hh:mm a'),
   },
   {
-    id: 'source',
-    header: 'Source',
-    headerFilterDisplay: 'Source',
-    accessorFn: ({
-      metadata: {
-        dh_internal: { source },
-      },
-    }) => formatKey(source),
-    cell: ({ row }) => {
-      const { source, prompt_id } = row.original.metadata.dh_internal
-      const badge =
-        source === EGoldenSqlSource.VERIFIED_QUERY ? (
-          <Link
-            className={badgeVariants({ variant: 'success' })}
-            href={`/queries/${prompt_id as string}`}
-          >
-            <span className="mr-1">{row.getValue('source')}</span>
-            <div>
-              <ExternalLink size={14} strokeWidth={2.5} />
-            </div>
-          </Link>
-        ) : (
-          <Badge variant="sky">{row.getValue('source')}</Badge>
-        )
-      return <div className="capitalize">{badge}</div>
-    },
-  },
-  {
     id: 'delete',
     size: 20,
     enableHiding: false,
