@@ -10,6 +10,11 @@ from dataherald.sql_database.base import SQLDatabase
 from dataherald.sql_database.models.types import DatabaseConnection
 from dataherald.types import DatabaseConnectionRequest
 from dataherald.utils.encrypt import FernetEncrypt
+from dataherald.utils.error_codes import CustomError
+
+
+class SchemaNotSupportedError(CustomError):
+    pass
 
 
 class DatabaseConnectionService:
@@ -98,6 +103,18 @@ class DatabaseConnectionService:
             file_storage=database_connection_request.file_storage,
             metadata=database_connection_request.metadata,
         )
+        if database_connection.schemas and database_connection.dialect in [
+            "redshift",
+            "awsathena",
+            "mssql",
+            "mysql",
+            "clickhouse",
+            "duckdb",
+        ]:
+            raise SchemaNotSupportedError(
+                "Schema not supported for this db",
+                description=f"The {database_connection.dialect} dialect doesn't support schemas",
+            )
         if not database_connection.schemas:
             database_connection.schemas = self.get_current_schema(database_connection)
 

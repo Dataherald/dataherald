@@ -19,6 +19,7 @@ ERROR_MAPPING = {
     "SQLGenerationNotFoundError": "sql_generation_not_found",
     "NLGenerationError": "nl_generation_not_created",
     "MalformedGoldenSQLError": "invalid_golden_sql",
+    "SchemaNotSupportedError": "schema_not_supported",
 }
 
 
