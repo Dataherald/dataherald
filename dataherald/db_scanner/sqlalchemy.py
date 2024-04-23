@@ -102,14 +102,14 @@ class SqlAlchemyScanner(Scanner):
         scanner_request: ScannerRequest,
         repository: TableDescriptionRepository,
     ) -> list[TableDescription]:
-        # persist tables to be scanned
         rows = []
-        for table in scanner_request.table_names:
+        for id in scanner_request.ids:
+            table_description = repository.find_by_id(id)
             rows.append(
                 repository.save_table_info(
                     TableDescription(
-                        db_connection_id=scanner_request.db_connection_id,
-                        table_name=table,
+                        db_connection_id=table_description.db_connection_id,
+                        table_name=table_description.table_name,
                         status=TableDescriptionStatus.SYNCHRONIZING.value,
                         metadata=scanner_request.metadata,
                     )

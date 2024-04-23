@@ -144,6 +144,10 @@ class FastAPI(API):
 
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         scanner = self.system.instance(Scanner)
+        rows = scanner.synchronizing(
+            scanner_request,
+            TableDescriptionRepository(self.storage),
+        )
         database_connection_service = DatabaseConnectionService(scanner, self.storage)
         for schema, table_descriptions in data.items():
             db_connection = db_connection_repository.find_by_id(
@@ -156,11 +160,7 @@ class FastAPI(API):
             background_tasks.add_task(
                 async_scanning, scanner, database, table_descriptions, self.storage
             )
-        return [
-            TableDescriptionResponse(**row.dict())
-            for _, table_descriptions in data.items()
-            for row in table_descriptions
-        ]
+        return [TableDescriptionResponse(**row.dict()) for row in rows]
 
     @override
     def create_database_connection(
