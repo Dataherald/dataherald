@@ -138,9 +138,18 @@ class FastAPI(API):
             table_description = scanner_repository.find_by_id(id)
             if not table_description:
                 raise Exception("Table description not found")
-            if table_description.schema_name not in data.keys():
-                data[table_description.schema_name] = []
-            data[table_description.schema_name].append(table_description)
+            if table_description.db_connection_id not in data.keys():
+                data[table_description.db_connection_id] = {}
+            if (
+                table_description.schema_name
+                not in data[table_description.db_connection_id].keys()
+            ):
+                data[table_description.db_connection_id][
+                    table_description.schema_name
+                ] = []
+            data[table_description.db_connection_id][
+                table_description.schema_name
+            ].append(table_description)
 
         db_connection_repository = DatabaseConnectionRepository(self.storage)
         scanner = self.system.instance(Scanner)
@@ -149,17 +158,16 @@ class FastAPI(API):
             TableDescriptionRepository(self.storage),
         )
         database_connection_service = DatabaseConnectionService(scanner, self.storage)
-        for schema, table_descriptions in data.items():
-            db_connection = db_connection_repository.find_by_id(
-                table_descriptions[0].db_connection_id
-            )
-            database = database_connection_service.get_sql_database(
-                db_connection, schema
-            )
+        for db_connection_id, schemas_and_table_descriptions in data.items():
+            for schema, table_descriptions in schemas_and_table_descriptions.items():
+                db_connection = db_connection_repository.find_by_id(db_connection_id)
+                database = database_connection_service.get_sql_database(
+                    db_connection, schema
+                )
 
-            background_tasks.add_task(
-                async_scanning, scanner, database, table_descriptions, self.storage
-            )
+                background_tasks.add_task(
+                    async_scanning, scanner, database, table_descriptions, self.storage
+                )
         return [TableDescriptionResponse(**row.dict()) for row in rows]
 
     @override
