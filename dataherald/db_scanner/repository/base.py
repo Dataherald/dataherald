@@ -59,6 +59,7 @@ class TableDescriptionRepository:
                 {
                     "db_connection_id": table_info_dict["db_connection_id"],
                     "table_name": table_info_dict["table_name"],
+                    "schema_name": table_info_dict["schema_name"],
                 },
                 table_info_dict,
             )

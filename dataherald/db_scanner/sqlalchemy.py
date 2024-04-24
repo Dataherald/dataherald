@@ -112,6 +112,7 @@ class SqlAlchemyScanner(Scanner):
                         table_name=table_description.table_name,
                         status=TableDescriptionStatus.SYNCHRONIZING.value,
                         metadata=scanner_request.metadata,
+                        schema_name=table_description.schema_name,
                     )
                 )
             )
@@ -241,6 +242,7 @@ class SqlAlchemyScanner(Scanner):
         db_connection_id: str,
         repository: TableDescriptionRepository,
         scanner_service: AbstractScanner,
+        schema: str | None = None,
     ) -> TableDescription:
         print(f"Scanning table: {table}")
         inspector = inspect(db_engine.engine)
@@ -273,6 +275,7 @@ class SqlAlchemyScanner(Scanner):
             last_schema_sync=datetime.now(),
             error_message="",
             status=TableDescriptionStatus.SCANNED.value,
+            schema_name=schema,
         )
 
         repository.save_table_info(object)
@@ -311,6 +314,7 @@ class SqlAlchemyScanner(Scanner):
                     db_connection_id=table.db_connection_id,
                     repository=repository,
                     scanner_service=scanner_service,
+                    schema=table.schema_name,
                 )
             except Exception as e:
                 repository.save_table_info(
@@ -319,6 +323,7 @@ class SqlAlchemyScanner(Scanner):
                         table_name=table,
                         status=TableDescriptionStatus.FAILED.value,
                         error_message=f"{e}",
+                        schema_name=table.schema_name,
                     )
                 )
             try:
