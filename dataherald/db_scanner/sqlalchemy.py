@@ -70,7 +70,7 @@ class SqlAlchemyScanner(Scanner):
         rows = []
         for schema, tables in schemas_and_tables.items():
             stored_tables = repository.find_by(
-                {"db_connection_id": str(db_connection_id), "schema": schema}
+                {"db_connection_id": str(db_connection_id), "schema_name": schema}
             )
             stored_tables_list = [table.table_name for table in stored_tables]
 
