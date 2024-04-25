@@ -11,7 +11,7 @@ openapi-schema-pydantic==1.2.4
 overrides==7.3.1
 packaging==23.2
 psycopg2==2.9.6
-pydantic==1.10.9
+pydantic==1.10.13
 pymongo==4.4.0
 python-dotenv==1.0.0
 requests==2.31.0
