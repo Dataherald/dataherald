@@ -6,6 +6,7 @@ from dataherald.types import LLMConfig
 class PromptRequest(BaseModel):
     text: str
     db_connection_id: str
+    schemas: list[str] | None
     metadata: dict | None
 
 

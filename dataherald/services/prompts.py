@@ -4,6 +4,7 @@ from dataherald.repositories.database_connections import (
     DatabaseConnectionRepository,
 )
 from dataherald.repositories.prompts import PromptNotFoundError, PromptRepository
+from dataherald.sql_database.services.database_connection import SchemaNotSupportedError
 from dataherald.types import Prompt
 
 
@@ -22,9 +23,16 @@ class PromptService:
                 f"Database connection {prompt_request.db_connection_id} not found"
             )
 
+        if not db_connection.schemas and prompt_request.schemas:
+            raise SchemaNotSupportedError(
+                "Schema not supported for this db",
+                description=f"The {db_connection.dialect} dialect doesn't support schemas",
+            )
+
         prompt = Prompt(
             text=prompt_request.text,
             db_connection_id=prompt_request.db_connection_id,
+            schemas=prompt_request.schemas,
             metadata=prompt_request.metadata,
         )
         return self.prompt_repository.insert(prompt)
