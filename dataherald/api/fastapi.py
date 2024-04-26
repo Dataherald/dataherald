@@ -91,6 +91,10 @@ from dataherald.types import (
 )
 from dataherald.utils.encrypt import FernetEncrypt
 from dataherald.utils.error_codes import error_response, stream_error_response
+from dataherald.utils.sql_utils import (
+    filter_golden_records_based_on_schema,
+    validate_finetuning_schema,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -564,7 +568,6 @@ class FastAPI(API):
     ) -> Finetuning:
         try:
             db_connection_repository = DatabaseConnectionRepository(self.storage)
-
             db_connection = db_connection_repository.find_by_id(
                 fine_tuning_request.db_connection_id
             )
@@ -572,7 +575,7 @@ class FastAPI(API):
                 raise DatabaseConnectionNotFoundError(
                     f"Database connection not found, {fine_tuning_request.db_connection_id}"
                 )
-
+            validate_finetuning_schema(fine_tuning_request, db_connection)
             golden_sqls_repository = GoldenSQLRepository(self.storage)
             golden_sqls = []
             if fine_tuning_request.golden_sqls:
@@ -593,6 +596,9 @@ class FastAPI(API):
                     raise GoldenSQLNotFoundError(
                         f"No golden sqls found for db_connection: {fine_tuning_request.db_connection_id}"
                     )
+            golden_sqls = filter_golden_records_based_on_schema(
+                golden_sqls, fine_tuning_request.schemas
+            )
             default_base_llm = BaseLLM(
                 model_provider="openai",
                 model_name="gpt-3.5-turbo-1106",
@@ -606,6 +612,7 @@ class FastAPI(API):
             model = model_repository.insert(
                 Finetuning(
                     db_connection_id=fine_tuning_request.db_connection_id,
+                    schemas=fine_tuning_request.schemas,
                     alias=fine_tuning_request.alias
                     if fine_tuning_request.alias
                     else f"{db_connection.alias}_{datetime.datetime.now().strftime('%Y%m%d%H')}",

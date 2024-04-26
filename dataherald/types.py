@@ -150,6 +150,7 @@ class Finetuning(BaseModel):
     id: str | None = None
     alias: str | None = None
     db_connection_id: str | None = None
+    schemas: list[str] | None
     status: str = "QUEUED"
     error: str | None = None
     base_llm: BaseLLM | None = None
@@ -163,6 +164,7 @@ class Finetuning(BaseModel):
 
 class FineTuningRequest(BaseModel):
     db_connection_id: str
+    schemas: list[str] | None
     alias: str | None = None
     base_llm: BaseLLM | None = None
     golden_sqls: list[str] | None = None
