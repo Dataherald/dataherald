@@ -122,12 +122,13 @@ class SampleDB:
                 collection=DATABASE_CONNECTION_COL,
             )
 
-        table_descriptions = [
+        table_descriptions: list[TableDescription] = [
             TableDescription(
-                **td,
+                **{k: v for k, v in td.items() if k != "last_schema_sync"},
                 db_connection_id=new_db_id,
                 created_at=datetime.now(),
                 metadata=engine_metadata,
+                last_schema_sync=datetime.now(),
             ).dict(exclude={"id"})
             for td in sample_db.table_descriptions
         ]
