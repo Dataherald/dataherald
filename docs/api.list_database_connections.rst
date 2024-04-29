@@ -21,6 +21,7 @@ HTTP 200 code response
         "dialect": "databricks",
         "use_ssh": false,
         "connection_uri": "foooAABk91Q4wjoR2h07GR7_72BdQnxi8Rm6i_EjyS-mzz_o2c3RAWaEqnlUvkK5eGD5kUfE5xheyivl1Wfbk_EM7CgV4SvdLmOOt7FJV-3kG4zAbar=",
+        "schemas": null,
         "path_to_credentials_file": null,
         "llm_api_key": null,
         "ssh_settings": null
@@ -31,6 +32,7 @@ HTTP 200 code response
         "dialect": "postgres",
         "use_ssh": true,
         "connection_uri": null,
+        "schemas": null,
         "path_to_credentials_file": "bar-LWxPdFcjQw9lU7CeK_2ELR3jGBq0G_uQ7E2rfPLk2RcFR4aDO9e2HmeAQtVpdvtrsQ_0zjsy9q7asdsadXExYJ0g==",
         "llm_api_key": "gAAAAABlCz5TeU0ym4hW3bf9u21dz7B9tlnttOGLRDt8gq2ykkblNvpp70ZjT9FeFcoyMv-Csvp3GNQfw66eYvQBrcBEPsLokkLO2Jc2DD-Q8Aw6g_8UahdOTxJdT4izA6MsiQrf7GGmYBGZqbqsjTdNmcq661wF9Q==",
         "ssh_settings": {

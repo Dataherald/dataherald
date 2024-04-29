@@ -10,7 +10,6 @@ from typing import Any, Callable, Dict, List
 import numpy as np
 import openai
 import pandas as pd
-import sqlalchemy
 from google.api_core.exceptions import GoogleAPIError
 from langchain.agents.agent import AgentExecutor
 from langchain.agents.agent_toolkits.base import BaseToolkit
@@ -27,9 +26,7 @@ from langchain_openai import OpenAIEmbeddings
 from overrides import override
 from pydantic import BaseModel, Field
 from sql_metadata import Parser
-from sqlalchemy import MetaData
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.sql import func
 
 from dataherald.context_store import ContextStore
 from dataherald.db import DB
@@ -254,12 +251,20 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
                     tables = Parser(example["sql"]).tables
                 except Exception as e:
                     logger.error(f"Error parsing SQL: {str(e)}")
-                most_similar_tables.update(tables)
-            df.drop(df[df.table_name.isin(most_similar_tables)].index, inplace=True)
+                for table in tables:
+                    found_tables = df[df.table_name == table]
+                    for _, row in found_tables.iterrows():
+                        most_similar_tables.add((row["schema_name"], row["table_name"]))
+            df.drop(
+                df[
+                    df.table_name.isin([table[1] for table in most_similar_tables])
+                ].index,
+                inplace=True,
+            )
         return most_similar_tables
 
     @catch_exceptions()
-    def _run(
+    def _run(  # noqa: PLR0912
         self,
         user_question: str,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
@@ -278,9 +283,12 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
                 table_rep = f"Table {table.table_name} contain columns: [{col_rep}], this tables has: {table.description}"
             else:
                 table_rep = f"Table {table.table_name} contain columns: [{col_rep}]"
-            table_representations.append([table.table_name, table_rep])
+            table_representations.append(
+                [table.schema_name, table.table_name, table_rep]
+            )
         df = pd.DataFrame(
-            table_representations, columns=["table_name", "table_representation"]
+            table_representations,
+            columns=["schema_name", "table_name", "table_representation"],
         )
         df["table_embedding"] = self.get_docs_embedding(df.table_representation)
         df["similarities"] = df.table_embedding.apply(
@@ -291,12 +299,20 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         most_similar_tables = self.similar_tables_based_on_few_shot_examples(df)
         table_relevance = ""
         for _, row in df.iterrows():
-            table_relevance += f'Table: `{row["table_name"]}`, relevance score: {row["similarities"]}\n'
+            if row["schema_name"] is not None:
+                table_name = row["schema_name"] + "." + row["table_name"]
+            else:
+                table_name = row["table_name"]
+            table_relevance += (
+                f'Table: `{table_name}`, relevance score: {row["similarities"]}\n'
+            )
         if len(most_similar_tables) > 0:
             for table in most_similar_tables:
-                table_relevance += (
-                    f"Table: `{table}`, relevance score: {max(df['similarities'])}\n"
-                )
+                if table[0] is not None:
+                    table_name = table[0] + "." + table[1]
+                else:
+                    table_name = table[1]
+                table_relevance += f"Table: `{table_name}`, relevance score: {max(df['similarities'])}\n"
         return table_relevance
 
     async def _arun(
@@ -318,6 +334,8 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
 
     Example Input: table1 -> column2, entity
     """
+    db_scan: List[TableDescription]
+    is_multiple_schema: bool
 
     def find_similar_strings(
         self, input_list: List[tuple], target_string: str, threshold=0.4
@@ -341,21 +359,25 @@ class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
         try:
             schema, entity = tool_input.split(",")
             table_name, column_name = schema.split("->")
+            table_name = replace_unprocessable_characters(table_name)
+            column_name = replace_unprocessable_characters(column_name).strip()
+            if "." not in table_name and self.is_multiple_schema:
+                raise Exception(
+                    "Table name should be in the format schema_name.table_name"
+                )
         except ValueError:
             return "Invalid input format, use following format: table_name -> column_name, entity (entity should be a string without ',')"
         search_pattern = f"%{entity.strip().lower()}%"
-        meta = MetaData(bind=self.db.engine)
-        table = sqlalchemy.Table(table_name.strip(), meta, autoload=True)
+        search_query = f"SELECT DISTINCT {column_name} FROM {table_name} WHERE {column_name} ILIKE :search_pattern"  # noqa: S608
         try:
-            search_query = sqlalchemy.select(
-                [func.distinct(table.c[column_name.strip()])]
-            ).where(func.lower(table.c[column_name.strip()]).like(search_pattern))
-            search_results = self.db.engine.execute(search_query).fetchall()
+            search_results = self.db.engine.execute(
+                search_query, {"search_pattern": search_pattern}
+            ).fetchall()
             search_results = search_results[:25]
         except SQLAlchemyError:
             search_results = []
-        distinct_query = sqlalchemy.select(
-            [func.distinct(table.c[column_name.strip()])]
+        distinct_query = (
+            f"SELECT DISTINCT {column_name} FROM {table_name}"  # noqa: S608
         )
         results = self.db.engine.execute(distinct_query).fetchall()
         results = self.find_similar_strings(results, entity)
@@ -392,26 +414,31 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     db_scan: List[TableDescription]
 
     @catch_exceptions()
-    def _run(
+    def _run(  # noqa: C901
         self,
         table_names: str,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Get the schema for tables in a comma-separated list."""
         table_names_list = table_names.split(", ")
-        table_names_list = [
-            replace_unprocessable_characters(table_name)
-            for table_name in table_names_list
-        ]
+        processed_table_names = []
+        for table in table_names_list:
+            formatted_table = replace_unprocessable_characters(table)
+            if "." in formatted_table:
+                processed_table_names.append(formatted_table.split(".")[1])
+            else:
+                processed_table_names.append(formatted_table)
         tables_schema = "```sql\n"
         for table in self.db_scan:
-            if table.table_name in table_names_list:
+            if table.table_name in processed_table_names:
                 tables_schema += table.table_schema + "\n"
                 descriptions = []
                 if table.description is not None:
-                    descriptions.append(
-                        f"Table `{table.table_name}`: {table.description}\n"
-                    )
+                    if table.schema_name:
+                        table_name = f"{table.schema_name}.{table.table_name}"
+                    else:
+                        table_name = table.table_name
+                    descriptions.append(f"Table `{table_name}`: {table.description}\n")
                     for column in table.columns:
                         if column.description is not None:
                             descriptions.append(
@@ -446,7 +473,7 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
     db_scan: List[TableDescription]
 
     @catch_exceptions()
-    def _run(  # noqa: C901
+    def _run(  # noqa: C901, PLR0912
         self,
         column_names: str,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
@@ -457,6 +484,8 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
         for item in items_list:
             if " -> " in item:
                 table_name, column_name = item.split(" -> ")
+                if "." in table_name:
+                    table_name = table_name.split(".")[1]
                 table_name = replace_unprocessable_characters(table_name)
                 column_name = replace_unprocessable_characters(column_name)
                 found = False
@@ -474,7 +503,11 @@ class InfoRelevantColumns(BaseSQLDatabaseTool, BaseTool):
                             for row in table.examples:
                                 col_info += row[column_name] + ", "
                             col_info = col_info[:-2]
-                            column_full_info += f"Table: {table_name}, column: {column_name}, additional info: {col_info}\n"
+                            if table.schema_name:
+                                schema_table = f"{table.schema_name}.{table.table_name}"
+                            else:
+                                schema_table = table.table_name
+                            column_full_info += f"Table: {schema_table}, column: {column_name}, additional info: {col_info}\n"
             else:
                 return "Malformed input, input should be in the following format Example Input: table1 -> column1, table1 -> column2, table2 -> column1"  # noqa: E501
             if not found:
@@ -539,6 +572,7 @@ class SQLDatabaseToolkit(BaseToolkit):
     instructions: List[dict] | None = Field(exclude=True, default=None)
     db_scan: List[TableDescription] = Field(exclude=True)
     embedding: OpenAIEmbeddings = Field(exclude=True)
+    is_multiple_schema: bool = False
 
     @property
     def dialect(self) -> str:
@@ -579,7 +613,12 @@ class SQLDatabaseToolkit(BaseToolkit):
             db=self.db, context=self.context, db_scan=self.db_scan
         )
         tools.append(info_relevant_tool)
-        column_sample_tool = ColumnEntityChecker(db=self.db, context=self.context)
+        column_sample_tool = ColumnEntityChecker(
+            db=self.db,
+            context=self.context,
+            db_scan=self.db_scan,
+            is_multiple_schema=self.is_multiple_schema,
+        )
         tools.append(column_sample_tool)
         if self.few_shot_examples is not None:
             get_fewshot_examples_tool = GetFewShotExamples(
@@ -700,6 +739,9 @@ class DataheraldSQLAgent(SQLGenerator):
         )
         if not db_scan:
             raise ValueError("No scanned tables found for database")
+        db_scan = SQLGenerator.filter_tables_by_schema(
+            db_scan=db_scan, prompt=user_prompt
+        )
         few_shot_examples, instructions = context_store.retrieve_context_for_question(
             user_prompt, number_of_samples=self.max_number_of_examples
         )
@@ -716,6 +758,7 @@ class DataheraldSQLAgent(SQLGenerator):
             context=context,
             few_shot_examples=new_fewshot_examples,
             instructions=instructions,
+            is_multiple_schema=True if user_prompt.schemas else False,
             db_scan=db_scan,
             embedding=OpenAIEmbeddings(
                 openai_api_key=database_connection.decrypt_api_key(),
@@ -802,6 +845,9 @@ class DataheraldSQLAgent(SQLGenerator):
         )
         if not db_scan:
             raise ValueError("No scanned tables found for database")
+        db_scan = SQLGenerator.filter_tables_by_schema(
+            db_scan=db_scan, prompt=user_prompt
+        )
         few_shot_examples, instructions = context_store.retrieve_context_for_question(
             user_prompt, number_of_samples=self.max_number_of_examples
         )
@@ -818,6 +864,7 @@ class DataheraldSQLAgent(SQLGenerator):
             context=[{}],
             few_shot_examples=new_fewshot_examples,
             instructions=instructions,
+            is_multiple_schema=True if user_prompt.schemas else False,
             db_scan=db_scan,
             embedding=OpenAIEmbeddings(
                 openai_api_key=database_connection.decrypt_api_key(),

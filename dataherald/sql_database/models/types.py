@@ -96,6 +96,7 @@ class DatabaseConnection(BaseModel):
     dialect: SupportedDialects | None
     use_ssh: bool = False
     connection_uri: str | None
+    schemas: list[str] | None
     path_to_credentials_file: str | None
     llm_api_key: str | None = None
     ssh_settings: SSHSettings | None = None
@@ -105,7 +106,7 @@ class DatabaseConnection(BaseModel):
 
     @classmethod
     def get_dialect(cls, input_string):
-        pattern = r"([^:/]+):/+([^/]+)/?([^/]+)"
+        pattern = r"([^:/]+)://"
         match = re.match(pattern, input_string)
         if not match:
             raise InvalidURIFormatError(f"Invalid URI format: {input_string}")

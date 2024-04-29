@@ -78,15 +78,25 @@ class SupportedDatabase(Enum):
     BIGQUERY = "BIGQUERY"
 
 
-class ScannerRequest(DBConnectionValidation):
-    table_names: list[str] | None
+class ScannerRequest(BaseModel):
+    ids: list[str] | None
     metadata: dict | None
+
+    @validator("ids")
+    def ids_validation(cls, ids: list = None):
+        try:
+            for id in ids:
+                ObjectId(id)
+        except InvalidId:
+            raise ValueError("Must be a valid ObjectId")  # noqa: B904
+        return ids
 
 
 class DatabaseConnectionRequest(BaseModel):
     alias: str
     use_ssh: bool = False
     connection_uri: str
+    schemas: list[str] | None
     path_to_credentials_file: str | None
     llm_api_key: str | None
     ssh_settings: SSHSettings | None
@@ -140,6 +150,7 @@ class Finetuning(BaseModel):
     id: str | None = None
     alias: str | None = None
     db_connection_id: str | None = None
+    schemas: list[str] | None
     status: str = "QUEUED"
     error: str | None = None
     base_llm: BaseLLM | None = None
@@ -153,6 +164,7 @@ class Finetuning(BaseModel):
 
 class FineTuningRequest(BaseModel):
     db_connection_id: str
+    schemas: list[str] | None
     alias: str | None = None
     base_llm: BaseLLM | None = None
     golden_sqls: list[str] | None = None
@@ -168,6 +180,7 @@ class Prompt(BaseModel):
     id: str | None = None
     text: str
     db_connection_id: str
+    schemas: list[str] | None
     created_at: datetime = Field(default_factory=datetime.now)
     metadata: dict | None
 

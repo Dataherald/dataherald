@@ -33,6 +33,7 @@ HTTP 200 code response
         "table_schema": "string",
         "status": "NOT_SCANNED | SYNCHRONIZING | DEPRECATED | SCANNED | FAILED"
         "error_message": "string",
+        "table_schema": "string",
         "columns": [
           {
             "name": "string",

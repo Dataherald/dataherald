@@ -13,6 +13,7 @@ from dataherald.repositories.database_connections import (
 from dataherald.repositories.golden_sqls import GoldenSQLRepository
 from dataherald.repositories.instructions import InstructionRepository
 from dataherald.types import GoldenSQL, GoldenSQLRequest, Prompt
+from dataherald.utils.sql_utils import extract_the_schemas_from_sql
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +86,18 @@ class DefaultContextStore(ContextStore):
                 raise DatabaseConnectionNotFoundError(
                     f"Database connection not found, {record.db_connection_id}"
                 )
+
+            if db_connection.schemas:
+                schema_not_found = True
+                used_schemas = extract_the_schemas_from_sql(record.sql)
+                for schema in db_connection.schemas:
+                    if schema in used_schemas:
+                        schema_not_found = False
+                        break
+                if schema_not_found:
+                    raise MalformedGoldenSQLError(
+                        f"SQL {record.sql} does not contain any of the schemas {db_connection.schemas}"
+                    )
 
             prompt_text = record.prompt_text
             golden_sql = GoldenSQL(

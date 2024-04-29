@@ -45,6 +45,9 @@ Request this ``POST`` endpoint to create a SQL query and a NL response for a giv
         "prompt": {
             "text": "string",
             "db_connection_id": "string",
+            "schemas": [
+                "string"
+            ],
             "metadata": {}
         }
     }

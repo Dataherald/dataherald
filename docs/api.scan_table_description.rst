@@ -9,7 +9,7 @@ which consist of historical queries associated with each database table. These r
 query_history collection. The historical queries retrieved encompass data from the past three months and are grouped
 based on query and user.
 
-It can scan all db tables or if you specify a `table_names` then It will only scan those tables.
+The `ids` param is used to set the table description ids that you want to scan.
 
 The process is carried out through Background Tasks, ensuring that even if it operates slowly, taking several minutes, the HTTP response remains swift.
 
@@ -23,7 +23,7 @@ Request this ``POST`` endpoint::
 
    {
       "db_connection_id": "string",
-      "table_names": ["string"] # Optional
+      "ids": ["string"]
     }
 
 **Responses**
@@ -36,7 +36,6 @@ HTTP 201 code response
 
 **Request example**
 
-To scan all the tables in a db don't specify a `table_names`
 
 .. code-block:: rst
 
@@ -45,5 +44,6 @@ To scan all the tables in a db don't specify a `table_names`
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
       -d '{
-      "db_connection_id": "db_connection_id"
+      "db_connection_id": "db_connection_id",
+      "ids": ["14e52c5f7d6dc4bc510d6d27", "15e52c5f7d6dc4bc510d6d34"]
     }'

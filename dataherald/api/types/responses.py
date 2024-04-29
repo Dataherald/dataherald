@@ -25,6 +25,7 @@ class BaseResponse(BaseModel):
 class PromptResponse(BaseResponse):
     text: str
     db_connection_id: str
+    schemas: list[str] | None
 
 
 class SQLGenerationResponse(BaseResponse):
