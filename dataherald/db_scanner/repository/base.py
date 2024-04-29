@@ -53,13 +53,18 @@ class TableDescriptionRepository:
         table_info_dict = {
             k: v for k, v in table_info_dict.items() if v is not None and v != []
         }
+
+        query = {
+            "db_connection_id": table_info_dict["db_connection_id"],
+            "table_name": table_info_dict["table_name"],
+        }
+        if "schema_name" in table_info_dict:
+            query["schema_name"] = table_info_dict["schema_name"]
+
         table_info.id = str(
             self.storage.update_or_create(
                 DB_COLLECTION,
-                {
-                    "db_connection_id": table_info_dict["db_connection_id"],
-                    "table_name": table_info_dict["table_name"],
-                },
+                query,
                 table_info_dict,
             )
         )

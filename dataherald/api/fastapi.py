@@ -70,6 +70,9 @@ from dataherald.sql_database.base import (
     SQLInjectionError,
 )
 from dataherald.sql_database.models.types import DatabaseConnection
+from dataherald.sql_database.services.database_connection import (
+    DatabaseConnectionService,
+)
 from dataherald.types import (
     BaseLLM,
     CancelFineTuningRequest,
@@ -88,17 +91,20 @@ from dataherald.types import (
 )
 from dataherald.utils.encrypt import FernetEncrypt
 from dataherald.utils.error_codes import error_response, stream_error_response
+from dataherald.utils.sql_utils import (
+    filter_golden_records_based_on_schema,
+    validate_finetuning_schema,
+)
 
 logger = logging.getLogger(__name__)
 
 MAX_ROWS_TO_CREATE_CSV_FILE = 50
 
 
-def async_scanning(scanner, database, scanner_request, storage):
+def async_scanning(scanner, database, table_descriptions, storage):
     scanner.scan(
         database,
-        scanner_request.db_connection_id,
-        scanner_request.table_names,
+        table_descriptions,
         TableDescriptionRepository(storage),
         QueryHistoryRepository(storage),
     )
@@ -130,42 +136,42 @@ class FastAPI(API):
         self, scanner_request: ScannerRequest, background_tasks: BackgroundTasks
     ) -> list[TableDescriptionResponse]:
         """Takes a db_connection_id and scan all the tables columns"""
-        try:
-            db_connection_repository = DatabaseConnectionRepository(self.storage)
+        scanner_repository = TableDescriptionRepository(self.storage)
+        data = {}
+        for id in scanner_request.ids:
+            table_description = scanner_repository.find_by_id(id)
+            if not table_description:
+                raise Exception("Table description not found")
+            if table_description.db_connection_id not in data.keys():
+                data[table_description.db_connection_id] = {}
+            if (
+                table_description.schema_name
+                not in data[table_description.db_connection_id].keys()
+            ):
+                data[table_description.db_connection_id][
+                    table_description.schema_name
+                ] = []
+            data[table_description.db_connection_id][
+                table_description.schema_name
+            ].append(table_description)
 
-            db_connection = db_connection_repository.find_by_id(
-                scanner_request.db_connection_id
-            )
-
-            if not db_connection:
-                raise DatabaseConnectionNotFoundError(
-                    f"Database connection {scanner_request.db_connection_id} not found"
+        db_connection_repository = DatabaseConnectionRepository(self.storage)
+        scanner = self.system.instance(Scanner)
+        rows = scanner.synchronizing(
+            scanner_request,
+            TableDescriptionRepository(self.storage),
+        )
+        database_connection_service = DatabaseConnectionService(scanner, self.storage)
+        for db_connection_id, schemas_and_table_descriptions in data.items():
+            for schema, table_descriptions in schemas_and_table_descriptions.items():
+                db_connection = db_connection_repository.find_by_id(db_connection_id)
+                database = database_connection_service.get_sql_database(
+                    db_connection, schema
                 )
 
-            database = SQLDatabase.get_sql_engine(db_connection, True)
-            all_tables = database.get_tables_and_views()
-
-            if scanner_request.table_names:
-                for table in scanner_request.table_names:
-                    if table not in all_tables:
-                        raise HTTPException(
-                            status_code=404,
-                            detail=f"Table named: {table} doesn't exist",
-                        )  # noqa: B904
-            else:
-                scanner_request.table_names = all_tables
-
-            scanner = self.system.instance(Scanner)
-            rows = scanner.synchronizing(
-                scanner_request,
-                TableDescriptionRepository(self.storage),
-            )
-        except Exception as e:
-            return error_response(e, scanner_request.dict(), "invalid_database_sync")
-
-        background_tasks.add_task(
-            async_scanning, scanner, database, scanner_request, self.storage
-        )
+                background_tasks.add_task(
+                    async_scanning, scanner, database, table_descriptions, self.storage
+                )
         return [TableDescriptionResponse(**row.dict()) for row in rows]
 
     @override
@@ -173,27 +179,9 @@ class FastAPI(API):
         self, database_connection_request: DatabaseConnectionRequest
     ) -> DatabaseConnectionResponse:
         try:
-            db_connection = DatabaseConnection(
-                alias=database_connection_request.alias,
-                connection_uri=database_connection_request.connection_uri.strip(),
-                path_to_credentials_file=database_connection_request.path_to_credentials_file,
-                llm_api_key=database_connection_request.llm_api_key,
-                use_ssh=database_connection_request.use_ssh,
-                ssh_settings=database_connection_request.ssh_settings,
-                file_storage=database_connection_request.file_storage,
-                metadata=database_connection_request.metadata,
-            )
-            sql_database = SQLDatabase.get_sql_engine(db_connection, True)
-
-            # Get tables and views and create table-descriptions as NOT_SCANNED
-            db_connection_repository = DatabaseConnectionRepository(self.storage)
-
-            scanner_repository = TableDescriptionRepository(self.storage)
             scanner = self.system.instance(Scanner)
-
-            tables = sql_database.get_tables_and_views()
-            db_connection = db_connection_repository.insert(db_connection)
-            scanner.create_tables(tables, str(db_connection.id), scanner_repository)
+            db_connection_service = DatabaseConnectionService(scanner, self.storage)
+            db_connection = db_connection_service.create(database_connection_request)
         except Exception as e:
             # Encrypt sensible values
             fernet_encrypt = FernetEncrypt()
@@ -209,7 +197,6 @@ class FastAPI(API):
             return error_response(
                 e, database_connection_request.dict(), "invalid_database_connection"
             )
-
         return DatabaseConnectionResponse(**db_connection.dict())
 
     @override
@@ -220,18 +207,30 @@ class FastAPI(API):
         db_connection = db_connection_repository.find_by_id(
             refresh_table_description.db_connection_id
         )
-
+        scanner = self.system.instance(Scanner)
+        database_connection_service = DatabaseConnectionService(scanner, self.storage)
         try:
-            sql_database = SQLDatabase.get_sql_engine(db_connection, True)
-            tables = sql_database.get_tables_and_views()
+            data = {}
+            if db_connection.schemas:
+                for schema in db_connection.schemas:
+                    sql_database = database_connection_service.get_sql_database(
+                        db_connection, schema
+                    )
+                    if schema not in data.keys():
+                        data[schema] = []
+                    data[schema] = sql_database.get_tables_and_views()
+            else:
+                sql_database = database_connection_service.get_sql_database(
+                    db_connection
+                )
+                data[None] = sql_database.get_tables_and_views()
 
-            # Get tables and views and create missing table-descriptions as NOT_SCANNED and update DEPRECATED
             scanner_repository = TableDescriptionRepository(self.storage)
-            scanner = self.system.instance(Scanner)
+
             return [
                 TableDescriptionResponse(**record.dict())
                 for record in scanner.refresh_tables(
-                    tables, str(db_connection.id), scanner_repository
+                    data, str(db_connection.id), scanner_repository
                 )
             ]
         except Exception as e:
@@ -569,7 +568,6 @@ class FastAPI(API):
     ) -> Finetuning:
         try:
             db_connection_repository = DatabaseConnectionRepository(self.storage)
-
             db_connection = db_connection_repository.find_by_id(
                 fine_tuning_request.db_connection_id
             )
@@ -577,7 +575,7 @@ class FastAPI(API):
                 raise DatabaseConnectionNotFoundError(
                     f"Database connection not found, {fine_tuning_request.db_connection_id}"
                 )
-
+            validate_finetuning_schema(fine_tuning_request, db_connection)
             golden_sqls_repository = GoldenSQLRepository(self.storage)
             golden_sqls = []
             if fine_tuning_request.golden_sqls:
@@ -598,6 +596,9 @@ class FastAPI(API):
                     raise GoldenSQLNotFoundError(
                         f"No golden sqls found for db_connection: {fine_tuning_request.db_connection_id}"
                     )
+            golden_sqls = filter_golden_records_based_on_schema(
+                golden_sqls, fine_tuning_request.schemas
+            )
             default_base_llm = BaseLLM(
                 model_provider="openai",
                 model_name="gpt-3.5-turbo-1106",
@@ -611,6 +612,7 @@ class FastAPI(API):
             model = model_repository.insert(
                 Finetuning(
                     db_connection_id=fine_tuning_request.db_connection_id,
+                    schemas=fine_tuning_request.schemas,
                     alias=fine_tuning_request.alias
                     if fine_tuning_request.alias
                     else f"{db_connection.alias}_{datetime.datetime.now().strftime('%Y%m%d%H')}",

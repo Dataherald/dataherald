@@ -17,6 +17,9 @@ Request this ``POST`` endpoint to create a finetuning job::
    {
         "text": "string",
         "db_connection_id": "string",
+        "schemas": [
+            "string"
+        ],
         "metadata": {}
     }
 
@@ -31,7 +34,10 @@ HTTP 201 code response
         "metadata": {},
         "created_at": "string",
         "text": "string",
-        "db_connection_id": "string"
+        "db_connection_id": "string",
+        "schemas": [
+            "string"
+        ]
     }
 
 **Request example**
