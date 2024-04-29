@@ -1,4 +1,3 @@
-import DatabaseConnectionFormDialog from '@/components/databases/database-connection-form-dialog'
 import DatabaseDetails from '@/components/databases/database-details'
 import FirstDatabaseConnection from '@/components/databases/first-database-connection'
 import LoadingDatabases from '@/components/databases/loading'
@@ -77,19 +76,14 @@ const DatabasesPage: FC = () => {
   } else if (databases && databases.length > 0) {
     pageContent = (
       <GlobalTreeSelectionProvider>
-        <div className="grow flex flex-col gap-4 m-6">
-          <div>
-            <DatabaseConnectionFormDialog onConnected={handleRefresh} />
-          </div>
-          <ContentBox className="grow">
-            <DatabaseDetails
-              databases={databases as Databases}
-              isRefreshing={isRefreshing}
-              onRefresh={handleRefresh}
-              onUpdateDatabasesData={updateDatabases}
-            />
-          </ContentBox>
-        </div>
+        <ContentBox className="grow m-6 gap-1">
+          <DatabaseDetails
+            databases={databases as Databases}
+            isRefreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            onUpdateDatabasesData={updateDatabases}
+          />
+        </ContentBox>
       </GlobalTreeSelectionProvider>
     )
   }

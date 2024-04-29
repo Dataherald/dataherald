@@ -1,14 +1,15 @@
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useTree } from '@/components/ui/tree-view-context'
 import { cn } from '@/lib/utils'
-import { ChevronDown, ChevronRight, LucideIcon } from 'lucide-react'
-import { FC, HTMLAttributes, useEffect, useState } from 'react'
+import { ChevronDown, ChevronRight, Edit } from 'lucide-react'
+import { FC, HTMLAttributes, MouseEvent, useEffect, useState } from 'react'
 
 export interface TreeNode {
   id: string
   name: string
   type: string
-  icon: LucideIcon
+  icon: JSX.Element
   children?: TreeNode[]
   defaultOpen?: boolean
   selectable?: boolean
@@ -28,7 +29,7 @@ const TreeNodeComponent: FC<TreeProps> = ({
 }: TreeProps) => {
   const {
     selectedNodes,
-    findSelectionNodeByName,
+    findSelectionNodeById,
     handleNodeSelectionChange,
     setClickedRow,
   } = useTree()
@@ -39,9 +40,7 @@ const TreeNodeComponent: FC<TreeProps> = ({
     false,
   )
 
-  const selectionNode = node.selectable
-    ? findSelectionNodeByName(node.name)
-    : null
+  const selectionNode = node.selectable ? findSelectionNodeById(node.id) : null
 
   useEffect(() => {
     if (!selectedNodes.size) {
@@ -52,10 +51,10 @@ const TreeNodeComponent: FC<TreeProps> = ({
     if (!selectionNode) return
     if (selectionNode.children?.length) {
       const allChildrenSelected = !selectionNode.children.some(
-        (child) => !selectedNodes.has(child.name),
+        (child) => !selectedNodes.has(child.id),
       )
       const someChildrenSelected = selectionNode.children.some((child) =>
-        selectedNodes.has(child.name),
+        selectedNodes.has(child.id),
       )
 
       if (allChildrenSelected) {
@@ -67,7 +66,7 @@ const TreeNodeComponent: FC<TreeProps> = ({
       }
     } else {
       // Directly set the state for leaf nodes
-      setCheckboxState(selectedNodes.has(selectionNode.name))
+      setCheckboxState(selectedNodes.has(selectionNode.id))
     }
   }, [selectedNodes, selectionNode, setCheckboxState])
 
@@ -75,26 +74,34 @@ const TreeNodeComponent: FC<TreeProps> = ({
     handleNodeSelectionChange(selectionNode)
   }
 
-  const handleRowClick = () => {
+  const handleRowClick = (e: MouseEvent) => {
+    e.stopPropagation()
     if (node.clickable) {
       setClickedRow(node)
     }
   }
 
   return (
-    <div className={isRoot ? 'pl-0' : 'pl-7'}>
-      <div
+    <div className={cn('flex flex-col gap-1', isRoot ? 'pl-0 my-0.5' : 'pl-7')}>
+      <Button
+        variant="ghost"
         className={cn(
-          checkboxState === true && 'bg-sky-100',
-          node.clickable && 'cursor-pointer',
-          'w-full flex items-center justify-between gap-2 rounded-lg hover:bg-slate-200 my-1 text-sm',
+          !nodeHasChildren &&
+            !node.clickable &&
+            !node.selectable &&
+            'pointer-events-none',
+          !nodeHasChildren && 'cursor-default',
+          checkboxState !== false
+            ? 'bg-sky-100 hover:bg-sky-100'
+            : 'hover:bg-slate-200',
+          'h-fit px-3 py-0 grow flex items-center justify-between gap-2 rounded-lg text-sm ',
         )}
-        onClick={handleRowClick}
+        onClick={(e) => {
+          setIsOpen(!isOpen)
+          e.stopPropagation()
+        }}
       >
-        <div
-          className="flex items-center w-full px-3 py-2 "
-          aria-expanded={isOpen}
-        >
+        <div className="grow flex items-center" aria-expanded={isOpen}>
           {selectionNode ? (
             <Checkbox
               className="mr-2 h-4 w-4"
@@ -103,46 +110,49 @@ const TreeNodeComponent: FC<TreeProps> = ({
               onClick={(e) => e.stopPropagation()}
             />
           ) : (
-            !isRoot && <div className="w-7"></div>
+            !isRoot && <div className="w-6"></div>
           )}
-          <div
-            className={cn(
-              'w-4',
-              nodeHasChildren ? 'cursor-pointer' : 'cursor-default',
-            )}
-            onClick={(e) => {
-              setIsOpen(!isOpen)
-              e.stopPropagation()
-            }}
-          >
+          <div className="w-6 flex justify-center">
             {nodeHasChildren &&
               (isOpen ? (
-                <ChevronDown size={16} strokeWidth={1.5} />
+                <ChevronDown size={16} strokeWidth={1.8} />
               ) : (
-                <ChevronRight size={16} strokeWidth={1.5} />
+                <ChevronRight size={16} strokeWidth={1.8} />
               ))}
           </div>
-          <div className="mx-2">
-            <node.icon size={16} strokeWidth={1.5} />
-          </div>
-          <div className="flex items-end gap-2">
-            <span className="break-all">{node.name}</span>
-            {node.showId && (
-              <span className="break-all text-2xs text-slate-500">
-                {node.id}
-              </span>
+          <div className="mx-1.5">{node.icon}</div>
+          <Button
+            variant="icon"
+            className={cn(
+              'flex items-center gap-5 group pl-2 py-0',
+              !node.clickable && 'pointer-events-none',
             )}
-          </div>
+            onClick={handleRowClick}
+          >
+            <div className={cn('flex items-end gap-2')}>
+              <span className="break-all">{node.name}</span>
+              {node.showId && (
+                <span className="break-all text-2xs text-slate-500">
+                  {node.id}
+                </span>
+              )}
+            </div>
+            {node.clickable && (
+              <Edit
+                className="invisible group-hover:visible"
+                size={14}
+                strokeWidth={2}
+              />
+            )}
+          </Button>
         </div>
         <div className="min-w-fit">{node.slot}</div>
-      </div>
-      {isOpen && nodeHasChildren && (
-        <div className="transition-all duration-300">
-          {node.children?.map((childNode, idx) => (
-            <TreeNodeComponent key={idx} node={childNode} />
-          ))}
-        </div>
-      )}
+      </Button>
+      {isOpen &&
+        nodeHasChildren &&
+        node.children?.map((childNode, idx) => (
+          <TreeNodeComponent key={idx} node={childNode} />
+        ))}
     </div>
   )
 }

@@ -70,6 +70,7 @@ const ApiKeysList = () => {
         </div>
         <Button
           variant="ghost"
+          size="icon"
           disabled={isLoading || isValidating}
           onClick={handleRefresh}
         >

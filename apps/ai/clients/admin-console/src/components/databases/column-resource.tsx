@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { toast } from '@/components/ui/use-toast'
-import { cn, copyToClipboard, renderIcon } from '@/lib/utils'
+import { cn, copyToClipboard } from '@/lib/utils'
 import { ColumnResource } from '@/models/domain'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Brackets, Copy, Loader, Lock, LucideIcon, Unlock } from 'lucide-react'
@@ -88,12 +88,7 @@ const ColumnResourceComponent: FC<ColumnResourceComponentProps> = ({
       >
         <SheetHeader>
           <SheetTitle className="flex items-start gap-1">
-            <div>
-              {renderIcon(icon, {
-                size: 45,
-                strokeWidth: 1,
-              })}
-            </div>
+            <icon.type {...icon.props} size={45} strokeWidth={1} />
             <div className="flex flex-col">
               <div className="break-all">{name}</div>
               <div className="flex items-center gap-2 text-slate-500 text-xs">

@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import httpx
 
 from config import settings
@@ -104,6 +106,7 @@ class TableDescriptionService:
                         BasicTableDescriptionResponse(
                             id=td.id,
                             name=td.table_name,
+                            schema_name=td.schema_name,
                             columns=[c.name for c in td.columns],
                             sync_status=td.status,
                             last_sync=(
@@ -121,6 +124,8 @@ class TableDescriptionService:
                     DatabaseDescriptionResponse(
                         db_connection_id=db_connection.id,
                         db_connection_alias=db_connection.alias,
+                        dialect=db_connection.dialect,
+                        schemas=db_connection.schemas,
                         tables=tables,
                     )
                 )
@@ -150,6 +155,7 @@ class TableDescriptionService:
                         id=td.id,
                         name=td.table_name,
                         columns=[c.name for c in td.columns],
+                        schema_name=td.schema_name,
                         sync_status=td.status,
                         last_sync=(
                             str(td.last_schema_sync) if td.last_schema_sync else None
@@ -161,39 +167,41 @@ class TableDescriptionService:
                     DatabaseDescriptionResponse(
                         db_connection_id=db_connection.id,
                         db_connection_alias=db_connection.alias,
+                        dialect=db_connection.dialect,
+                        schemas=db_connection.schemas,
                         tables=tables,
                     )
                 )
         return database_description_list
 
     async def sync_databases_schemas(
-        self, scan_requests: list[ScanRequest], org_id: str
+        self, scan_request: ScanRequest, org_id: str
     ) -> list[AggrTableDescription]:
-        sync_result = []
-        for scan_request in scan_requests:
-            reserved_key_in_metadata(scan_request.metadata)
+        reserved_key_in_metadata(scan_request.metadata)
+        db_connection_group = (
+            self.repo.get_table_description_grouped_by_db_connection_id(
+                scan_request.ids
+            )
+        )
+        for db_dic in db_connection_group:
             self.db_connection_service.get_db_connection_in_org(
-                scan_request.db_connection_id, org_id
+                str(db_dic["_id"]), org_id
             )
-
-            scan_request.metadata = TableDescriptionMetadata(
-                **scan_request.metadata,
-                dh_internal=DHTableDescriptionMetadata(organization_id=org_id),
+        scan_request.metadata = TableDescriptionMetadata(
+            **scan_request.metadata,
+            dh_internal=DHTableDescriptionMetadata(organization_id=org_id),
+        )
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                settings.engine_url + "/table-descriptions/sync-schemas",
+                json=scan_request.dict(exclude_unset=True),
+                timeout=settings.default_engine_timeout,
             )
-
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    settings.engine_url + "/table-descriptions/sync-schemas",
-                    json=scan_request.dict(exclude_unset=True),
-                    timeout=settings.default_engine_timeout,
-                )
-                raise_engine_exception(response, org_id=org_id)
-                table_descriptions = [
-                    AggrTableDescription(**table_description)
-                    for table_description in response.json()
-                ]
-                sync_result += table_descriptions
-        return sync_result
+            raise_engine_exception(response, org_id=org_id)
+            return [
+                AggrTableDescription(**table_description)
+                for table_description in response.json()
+            ]
 
     async def update_table_description(
         self,

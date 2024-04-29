@@ -421,7 +421,7 @@ const PlaygroundPage: FC = () => {
           </div>
         ) : (
           <>
-            <div className="h-2/5 p-4 flex flex-col gap-3">
+            <div className="h-2/5 p-6 flex flex-col gap-3">
               <div className="flex gap-1 items-start text-slate-500">
                 <Sparkles size={14} strokeWidth={1.75} />
                 <Label className="font-semibold">Natural Language Prompt</Label>
@@ -484,7 +484,7 @@ const PlaygroundPage: FC = () => {
               </form>
             </div>
             <div className="h-3/5 bg-slate-50 flex flex-col overflow-auto">
-              <div className="overflow-auto p-4 h-full flex flex-col gap-2 grow-0 rounded-none border-b-0 border-s-0 border-e-0 border-t border-slate-200">
+              <div className="overflow-auto p-6 h-full flex flex-col gap-2 grow-0 rounded-none border-b-0 border-s-0 border-e-0 border-t border-slate-200">
                 {dbConnectionOptions && dbConnectionOptions.length > 0 && (
                   <div className="w-4/5 max-w-3xl grid grid-cols-2 gap-3">
                     <div className="flex items-center gap-2">

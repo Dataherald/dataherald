@@ -26,17 +26,17 @@ export const buildSelectionTree = (
   return isRoot ? newSelectableNode : newSelectableNode || parentNode
 }
 
-export const findNodeByName = (
-  nodeName: string,
-  node: TreeNode | SelectionTreeNode | null,
+export const findNodeById = (
+  nodeId: string,
+  rootSearch: TreeNode | SelectionTreeNode | null,
 ): SelectionTreeNode | null => {
-  if (!node) return null
-  if (node.name === nodeName) {
-    return node
+  if (!rootSearch) return null
+  if (rootSearch.id === nodeId) {
+    return rootSearch
   }
 
-  for (const child of node.children || []) {
-    const found = findNodeByName(nodeName, child)
+  for (const child of rootSearch.children || []) {
+    const found = findNodeById(nodeId, child)
     if (found) {
       return found
     }

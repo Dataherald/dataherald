@@ -101,7 +101,7 @@ const OrganizationSettingsPage: FC = () => {
             {renderDetails(ORGANIZATION_DETAILS_DISPLAY)}
           </div>
         </ContentBox>
-        <ContentBox className="grow max-w-2xl">
+        <ContentBox className="grow max-w-2xl gap-0">
           <div className="flex items-start gap-2">
             <UsersRound size={20} strokeWidth={2.5} />
             <h1 className="font-semibold">Team</h1>

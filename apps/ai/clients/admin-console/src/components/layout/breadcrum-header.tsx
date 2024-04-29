@@ -19,7 +19,7 @@ const BreadcrumbHeader: FC<BreadcrumbHeaderProps> = ({ className }) => {
   }
 
   return (
-    <header className={cn(className, 'w-full px-6 py-4')}>
+    <header className={cn(className, 'w-full px-6 py-4 shadow')}>
       <nav aria-label="Breadcrumb">
         <ol className="list-none p-0 inline-flex">
           {pathSegments.map((segment, idx) => {

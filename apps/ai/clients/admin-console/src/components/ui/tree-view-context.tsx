@@ -3,7 +3,7 @@ import { useGlobalTreeSelection } from '@/components/ui/tree-view-global-context
 import {
   buildSelectionTree,
   findLeafNodes,
-  findNodeByName,
+  findNodeById,
 } from '@/components/ui/tree-view.helpers'
 import React, {
   ReactNode,
@@ -25,7 +25,7 @@ interface TreeContextProps {
   clickedRow: TreeNode | null
   setClickedRow: React.Dispatch<React.SetStateAction<TreeNode | null>>
   selectedNodes: Set<string>
-  findSelectionNodeByName: (nodeName: string) => SelectionTreeNode | null
+  findSelectionNodeById: (nodeName: string) => SelectionTreeNode | null
   resetSelection: () => void
   handleNodeSelectionChange: (node: SelectionTreeNode | null) => void
 }
@@ -49,21 +49,21 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
     const newSelectedNodes = new Set(selectedNodes)
 
     if (node.children?.length === 0) {
-      if (newSelectedNodes.has(node.name)) {
-        newSelectedNodes.delete(node.name)
+      if (newSelectedNodes.has(node.id)) {
+        newSelectedNodes.delete(node.id)
       } else {
-        newSelectedNodes.add(node.name)
+        newSelectedNodes.add(node.id)
       }
     } else {
       const leafNodes = findLeafNodes(node)
       const allSelected = !leafNodes.some(
-        (leaf) => !newSelectedNodes.has(leaf.name),
+        (leaf) => !newSelectedNodes.has(leaf.id),
       )
 
       if (allSelected) {
-        leafNodes.forEach((leaf) => newSelectedNodes.delete(leaf.name))
+        leafNodes.forEach((leaf) => newSelectedNodes.delete(leaf.id))
       } else {
-        leafNodes.forEach((leaf) => newSelectedNodes.add(leaf.name))
+        leafNodes.forEach((leaf) => newSelectedNodes.add(leaf.id))
       }
     }
 
@@ -73,8 +73,8 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
 
   const resetSelection = () => setSelectedNodes(new Set())
 
-  const findSelectionNodeByName = (nodeName: string) =>
-    findNodeByName(nodeName, selectionRootNode)
+  const findSelectionNodeById = (nodeId: string) =>
+    findNodeById(nodeId, selectionRootNode)
 
   useEffect(() => {
     if (rootNode) {
@@ -90,7 +90,7 @@ export const TreeProvider: React.FC<{ children: ReactNode }> = ({
     selectedNodes,
     clickedRow,
     setClickedRow,
-    findSelectionNodeByName,
+    findSelectionNodeById,
     resetSelection,
     handleNodeSelectionChange,
   }

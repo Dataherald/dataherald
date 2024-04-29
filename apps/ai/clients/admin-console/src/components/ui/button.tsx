@@ -21,6 +21,8 @@ const buttonVariants = cva(
         ['destructive-outline']:
           'bg-white text-destructive border-destructive hover:bg-destructive/10',
         ghost: 'hover:bg-slate-200 text-slate-900',
+        'ghost-outline':
+          'bg-transparent border border-slate-200 hover:bg-slate-200 text-slate-900',
         link: 'text-primary underline-offset-4 hover:underline',
         ['external-link']:
           'font-semibold text-blue-700 hover:text-blue-900 text-sm hover:no-underline p-0',
@@ -30,7 +32,7 @@ const buttonVariants = cva(
         default: 'h-8 px-4 py-2',
         sm: 'h-9 rounded-md px-3 text-sm',
         lg: 'h-11 rounded-md px-8',
-        icon: 'h-8 w-8',
+        icon: 'h-fit p-2',
       },
     },
     defaultVariants: {

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+from modules.db_connection.models.entities import DatabaseDialects
 from modules.table_description.models.entities import (
     AggrTableDescription,
     SchemaStatus,
@@ -25,6 +26,7 @@ class ACTableDescriptionResponse(AggrTableDescription):
 class BasicTableDescriptionResponse(BaseModel):
     id: ObjectIdString | None
     name: str | None
+    schema_name: str | None
     columns: list[str] | None
     sync_status: SchemaStatus | None
     last_sync: str | None
@@ -33,4 +35,6 @@ class BasicTableDescriptionResponse(BaseModel):
 class DatabaseDescriptionResponse(BaseModel):
     db_connection_id: ObjectIdString
     db_connection_alias: str | None
+    dialect: DatabaseDialects | None
+    schemas: list[str] | None
     tables: list[BasicTableDescriptionResponse]

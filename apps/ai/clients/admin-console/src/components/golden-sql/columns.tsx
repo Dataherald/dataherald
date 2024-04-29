@@ -10,12 +10,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Badge, badgeVariants } from '@/components/ui/badge'
-import { formatKey } from '@/lib/utils'
 import { EGoldenSqlSource, GoldenSqlListItem } from '@/models/api'
 import { format } from 'date-fns'
-import { ExternalLink, Trash2 } from 'lucide-react'
-import Link from 'next/link'
+import { Trash2 } from 'lucide-react'
 
 export const getColumns: (actions: {
   deleteAction: (id: string) => void

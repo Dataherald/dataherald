@@ -6,6 +6,7 @@ import { AppContextProvider } from '@/contexts/app-context'
 import { AuthProvider } from '@/contexts/auth-context'
 import { SelfServeProvider } from '@/contexts/self-serve-context'
 import { SubscriptionProvider } from '@/contexts/subscription-context'
+import { UIProvider } from '@/contexts/ui-context'
 import { cn } from '@/lib/utils'
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
@@ -28,27 +29,29 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
       <WithMobileRedirect>
-        <SubscriptionProvider>
-          <WithSubscription>
-            <AppContextProvider>
-              <WithAnalytics>
-                <WithApiFetcher>
-                  <SelfServeProvider>
-                    <div
-                      className={cn(
-                        sourceCode.variable,
-                        mainFont.variable,
-                        'font-main',
-                      )}
-                    >
-                      <Component {...pageProps} />
-                    </div>
-                  </SelfServeProvider>
-                </WithApiFetcher>
-              </WithAnalytics>
-            </AppContextProvider>
-          </WithSubscription>
-        </SubscriptionProvider>
+        <UIProvider>
+          <SubscriptionProvider>
+            <WithSubscription>
+              <AppContextProvider>
+                <WithAnalytics>
+                  <WithApiFetcher>
+                    <SelfServeProvider>
+                      <div
+                        className={cn(
+                          sourceCode.variable,
+                          mainFont.variable,
+                          'font-main',
+                        )}
+                      >
+                        <Component {...pageProps} />
+                      </div>
+                    </SelfServeProvider>
+                  </WithApiFetcher>
+                </WithAnalytics>
+              </AppContextProvider>
+            </WithSubscription>
+          </SubscriptionProvider>
+        </UIProvider>
       </WithMobileRedirect>
     </AuthProvider>
   )

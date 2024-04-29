@@ -40,6 +40,7 @@ class BaseTableDescription(BaseModel):
     table_name: str | None
     db_connection_id: ObjectIdString
     description: str | None
+    schema_name: str | None
     columns: list[ColumnDescription] | None
     table_schema: str | None
     examples: list | None

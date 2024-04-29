@@ -44,6 +44,7 @@ class BaseDBConnection(BaseModel):
     use_ssh: bool = False
     connection_uri: str
     ssh_settings: SSHSettings | None
+    schemas: list[str] | None
     metadata: DBConnectionMetadata | None
 
 

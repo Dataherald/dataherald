@@ -1,3 +1,4 @@
+import DatabaseConnectionFormDialog from '@/components/databases/database-connection-form-dialog'
 import DatabasesTree from '@/components/databases/databases-tree'
 import {
   AlertDialog,
@@ -11,16 +12,22 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { ToastAction } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toaster'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+} from '@/components/ui/tooltip'
 import { useGlobalTreeSelection } from '@/components/ui/tree-view-global-context'
 import { toast } from '@/components/ui/use-toast'
 import useSynchronizeSchemas, {
   ScanRequest,
 } from '@/hooks/api/database-connection/useSynchronizeSchemas'
-import { cn } from '@/lib/utils'
 import { Databases, ETableSyncStatus, ErrorResponse } from '@/models/api'
-import { Loader, RefreshCw, ScanText } from 'lucide-react'
+import { TooltipTrigger } from '@radix-ui/react-tooltip'
+import { Loader, Plus, RefreshCcw, ScanText } from 'lucide-react'
 import { FC, useState } from 'react'
 
 interface DatabaseDetailsProps {
@@ -49,7 +56,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
             ...db,
             tables: db.tables.map((t) => ({
               ...t,
-              ...(globalSelection[db.db_connection_id].has(t.name)
+              ...(globalSelection[db.db_connection_id].has(t.id)
                 ? {
                     sync_status: ETableSyncStatus.QUEUING_FOR_SCAN,
                     last_sync: null,
@@ -67,7 +74,7 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
             ...db,
             tables: db.tables.map((t) => ({
               ...t,
-              ...(globalSelection[db.db_connection_id].has(t.name)
+              ...(globalSelection[db.db_connection_id].has(t.id)
                 ? {
                     sync_status: ETableSyncStatus.SYNCHRONIZING,
                     last_sync: null,
@@ -79,17 +86,16 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
         : db
     })
     try {
-      const scanRequestPayload: ScanRequest = Object.keys(globalSelection)
-        .filter((dbId) => globalSelection[dbId]?.size > 0)
-        .map((dbId) => ({
-          db_connection_id: dbId,
-          table_names: Array.from(globalSelection[dbId]),
-        }))
+      const scanRequestPayload: ScanRequest = {
+        ids: Object.values(globalSelection).flatMap((selectedTables) =>
+          Array.from(selectedTables.values()),
+        ),
+      }
       await synchronizeSchemas(scanRequestPayload)
       toast({
         variant: 'success',
         title: 'Scanning queued',
-        description: `${globalSelectionSize} table schemas were succesfully queued for scanning.`,
+        description: `${globalSelectionSize} tables were succesfully queued for scanning.`,
       })
       triggerReset()
       setIsSynchronizing(false)
@@ -133,83 +139,117 @@ const DatabaseDetails: FC<DatabaseDetailsProps> = ({
 
   return (
     <>
-      <div className="flex items-center justify-between bg-slate-50 py-0">
-        <h1 className="font-bold">Connected Databases</h1>
-        <div className="flex gap-3">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                disabled={
-                  isSynchronizing || isRefreshing || globalSelectionSize === 0
-                }
-              >
-                {isSynchronizing ? (
-                  <>
-                    <Loader size={16} className="mr-2 animate-spin" />
-                    Preparing scan queue
-                  </>
-                ) : (
-                  <>
-                    <ScanText size={16} className="mr-2" />
-                    {`Scan ${
-                      globalSelectionSize === 0
-                        ? 'table schemas'
-                        : `${globalSelectionSize} table ${
-                            globalSelectionSize === 1 ? 'schema' : 'schemas'
-                          }`
-                    }`}
-                  </>
-                )}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle className="flex items-center gap-2">
-                  <ScanText size={16} />
-                  Scan Databases
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  You are about to add{' '}
-                  {`${globalSelectionSize} ${
-                    globalSelectionSize === 1
-                      ? 'table schema'
-                      : 'tables schemas'
-                  }`}{' '}
-                  to the scanning queue. This asynchronous process could take a
-                  while to complete.
-                </AlertDialogDescription>
-                <AlertDialogDescription>
-                  Do you wish to continue?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleSynchronization}>
-                  {isSynchronizing ? (
-                    <>
-                      <Loader size={16} className="mr-2 animate-spin" />
-                      Scanning
-                    </>
-                  ) : (
-                    'Scan'
+      <TooltipProvider>
+        <div className="flex items-center justify-between bg-slate-50 py-0">
+          <h1 className="font-semibold">Connected Databases</h1>
+          <div className="flex gap-1">
+            <div className="flex items-center text-xs">
+              {isSynchronizing ? (
+                <div className="flex items-center gap-2 text-sky-500">
+                  <Loader size={16} className="animate-spin" />
+                  Preparing scan queue
+                </div>
+              ) : (
+                <span className="text-slate-500">
+                  {globalSelectionSize === 0
+                    ? 'No tables selected'
+                    : globalSelectionSize === 1
+                    ? '1 table selected'
+                    : `${globalSelectionSize} tables selected`}
+                </span>
+              )}
+            </div>
+            <AlertDialog>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={
+                        isSynchronizing ||
+                        isRefreshing ||
+                        globalSelectionSize === 0
+                      }
+                    >
+                      <ScanText size={18} />
+                    </Button>
+                  </AlertDialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Scan selected tables</TooltipContent>
+              </Tooltip>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <ScanText size={16} />
+                    Scan Databases
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    You are about to add{' '}
+                    {`${globalSelectionSize} ${
+                      globalSelectionSize === 1
+                        ? 'table schema'
+                        : 'tables schemas'
+                    }`}{' '}
+                    to the scanning queue. This asynchronous process could take
+                    a while to complete.
+                  </AlertDialogDescription>
+                  <AlertDialogDescription>
+                    Do you wish to continue?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleSynchronization}>
+                    {isSynchronizing ? (
+                      <>
+                        <Loader size={16} className="mr-2 animate-spin" />
+                        Scanning
+                      </>
+                    ) : (
+                      'Scan'
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <div className="mx-2 flex items-center">
+              <Separator orientation="vertical" className="bg-slate-400 h-5" />
+            </div>
+            <div className="flex gap-0">
+              <Tooltip delayDuration={100}>
+                <DatabaseConnectionFormDialog
+                  onConnected={onRefresh}
+                  renderTrigger={() => (
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Plus size={16} strokeWidth={2} />
+                      </Button>
+                    </TooltipTrigger>
                   )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <Button
-            variant="ghost"
-            disabled={isRefreshing || isSynchronizing}
-            onClick={() => onRefresh()}
-          >
-            <RefreshCw
-              size={14}
-              className={cn('mr-2', isRefreshing ? 'animate-spin' : '')}
-            />
-            {isRefreshing ? 'Refreshing' : 'Refresh'}
-          </Button>
+                />
+                <TooltipContent>Add Database</TooltipContent>
+              </Tooltip>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={isRefreshing || isSynchronizing}
+                    onClick={() => onRefresh()}
+                  >
+                    <RefreshCcw
+                      size={16}
+                      className={isRefreshing ? 'animate-spin' : ''}
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Refresh</TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
         </div>
-      </div>
+      </TooltipProvider>
 
       <DatabasesTree databases={databases} />
 

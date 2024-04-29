@@ -132,6 +132,7 @@ const PaymentMethodsList = () => {
                           >
                             <Button
                               variant="ghost"
+                              size="icon"
                               onClick={() =>
                                 setSelectedPaymentMethodForDeletion(pm)
                               }

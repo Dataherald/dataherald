@@ -67,10 +67,8 @@ const QueriesPage: FC = () => {
           <Info size={18} className="text-slate-600" />
         </TooltipTrigger>
         <TooltipContent>
-          <p>
-            Search queries by <strong>question</strong> or{' '}
-            <strong>generated SQL</strong> fields.
-          </p>
+          Search queries by <strong>question</strong> or{' '}
+          <strong>generated SQL</strong> fields.
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -110,16 +108,7 @@ const QueriesPage: FC = () => {
       <Head>
         <title>Queries - Dataherald API</title>
       </Head>
-      <div className="grow flex flex-col gap-4 m-6">
-        <div className="flex flex-col gap-3 max-w-5xl">
-          <p>
-            Explore the list of queries sourced from our API or Slack
-            interactions. Select any query to validate its response in the query
-            editor.
-          </p>
-        </div>
-        <ContentBox>{pageContent}</ContentBox>
-      </div>
+      <ContentBox className="m-6">{pageContent}</ContentBox>
     </PageLayout>
   )
 }

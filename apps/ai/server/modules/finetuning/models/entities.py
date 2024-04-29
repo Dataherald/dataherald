@@ -39,6 +39,7 @@ class BaseFinetuning(BaseModel):
     status: str = FineTuningStatus.QUEUED
     error: str | None
     base_llm: BaseLLM | None
+    schemas: list[str] | None
     finetuning_file_id: str | None
     finetuning_job_id: str | None
     model_id: str | None

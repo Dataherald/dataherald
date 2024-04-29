@@ -34,7 +34,7 @@ if __name__ == "__main__":
     finetuning_id = ObjectId("659c57d1d648d1d3a6d96373")
     api_key = "dh-016e428d9f0c1c42458fcf4f5b407584a777b2fbf8d453670c2b8fc877511035"
     user_email = "postmanapitest@dataherald.com"
-    initial_credits = 500
+    initial_credits = 600
 
     insert_or_update(
         data_store,

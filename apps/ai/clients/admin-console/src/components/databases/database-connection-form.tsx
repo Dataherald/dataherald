@@ -1,5 +1,6 @@
 import { DatabaseConnectionFormValues } from '@/components/databases/form-schema'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -21,11 +22,11 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import DATABASE_PROVIDERS from '@/constants/database-providers'
-import { formatDriver } from '@/lib/domain/database'
-import { AlertCircle, FileKey2 } from 'lucide-react'
+import { formatDriver, supportsSchemas } from '@/lib/domain/database'
+import { AlertCircle, Eraser, FileKey2, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { FC, useEffect } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
 const SSHForm: FC<{
@@ -33,7 +34,7 @@ const SSHForm: FC<{
 }> = ({ form }) => (
   <>
     <div className="grid grid-cols-2 gap-4">
-      <div className="max-w-full overflow-hidden text-slate-500 col-span-2 pt-3 flex items-center justify-evenly gap-2">
+      <div className="max-w-full overflow-hidden text-slate-500 col-span-2 pt-1 flex items-center justify-evenly gap-2">
         <Separator className="bg-slate-500" />
         <div className="min-w-fit font-semibold">SSH settings</div>
         <Separator className="bg-slate-500" />
@@ -127,32 +128,57 @@ const SSHForm: FC<{
 const DatabaseConnectionForm: FC<{
   form: UseFormReturn<DatabaseConnectionFormValues>
 }> = ({ form }) => {
-  const useSsh = form.watch('use_ssh')
+  const { setValue, watch } = form
+  const useSsh = watch('use_ssh')
+  const dataWarehouse = watch('data_warehouse')
+  const schemas = watch('schemas')
   const selectedDatabaseProvider = DATABASE_PROVIDERS.find(
-    (dp) => dp.driver === form.watch('data_warehouse'),
+    (dp) => dp.driver === dataWarehouse,
   )
+  const [schemaInput, setSchemaInput] = useState('')
 
   useEffect(() => {
+    setValue('schemas', [], { shouldValidate: true })
     if (selectedDatabaseProvider?.driver === 'bigquery') {
-      form.setValue('use_ssh', false, { shouldValidate: true })
+      setValue('use_ssh', false, { shouldValidate: true })
     } else {
-      form.setValue('file', undefined, { shouldValidate: true })
+      setValue('file', undefined, { shouldValidate: true })
     }
-  }, [form, selectedDatabaseProvider])
+  }, [selectedDatabaseProvider, setValue])
 
   useEffect(() => {
     if (useSsh !== true) {
-      form.setValue('ssh_settings', {}, { shouldValidate: true })
+      setValue('ssh_settings', {}, { shouldValidate: true })
     }
-    form.setValue('file', undefined, { shouldValidate: true })
-  }, [form, useSsh])
+    setValue('file', undefined, { shouldValidate: true })
+  }, [setValue, useSsh])
+
+  const handleSchemaEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      if (!schemaInput) return
+      const newSchemas = [...(schemas || []), schemaInput]
+      updateSchemas(newSchemas)
+      setSchemaInput('')
+    }
+  }
+
+  const removeSchema = (schema: string) => {
+    if (!schemas) return
+    const newSchemas = schemas.filter((s) => s !== schema)
+    updateSchemas(newSchemas)
+  }
+
+  const updateSchemas = (newSchemas: string[]) => {
+    setValue('schemas', newSchemas, { shouldValidate: true })
+  }
 
   return (
     <Form {...form}>
       <form>
         <fieldset
           disabled={form.formState.isSubmitting}
-          className="flex flex-col gap-2"
+          className="flex flex-col gap-3"
         >
           <div className="grid grid-cols-2 gap-4">
             <FormField
@@ -281,6 +307,61 @@ const DatabaseConnectionForm: FC<{
               </FormItem>
             )}
           />
+          {supportsSchemas(selectedDatabaseProvider?.dialect) && (
+            <FormField
+              control={form.control}
+              name="schemas"
+              render={() => (
+                <FormItem>
+                  <FormLabel className="flex items-start gap-3">
+                    Schemas
+                    <FormDescription className="text-2xs h-fit">
+                      Press Enter to add a schema
+                    </FormDescription>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      value={schemaInput}
+                      onKeyDown={handleSchemaEnter}
+                      onChange={(e) => setSchemaInput(e.target.value)}
+                      placeholder="Enter the schemas you want to connect to"
+                    />
+                  </FormControl>
+
+                  <div className="flex items-center flex-wrap gap-2">
+                    {schemas?.map((schema, idx) => (
+                      <Badge
+                        key={idx}
+                        className="text-sm py-0.5 px-2 bg-slate-200 flex gap-1 font-medium"
+                      >
+                        {schema}
+                        <Button
+                          type="button"
+                          variant="icon"
+                          size="sm"
+                          className="p-0 pl-1 h-fit"
+                          onClick={() => removeSchema(schema)}
+                        >
+                          <X size={10} strokeWidth={3} />
+                        </Button>
+                      </Badge>
+                    ))}
+                    {!!schemas?.length && (
+                      <Button
+                        variant="ghost"
+                        className="text-xs px-2 py-1 h-fit flex items-center gap-2"
+                        onClick={() => updateSchemas([])}
+                      >
+                        <Eraser size={12} />
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           {selectedDatabaseProvider?.driver === 'bigquery' && (
             <FormField
               control={form.control}
@@ -297,7 +378,7 @@ const DatabaseConnectionForm: FC<{
                       onChange={(e) => {
                         const files = e.target.files
                         if (files) {
-                          form.setValue('file', files[0], {
+                          setValue('file', files[0], {
                             shouldValidate: true,
                           })
                         }

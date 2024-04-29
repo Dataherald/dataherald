@@ -135,6 +135,7 @@ const MonthlyUsage: FC<HTMLAttributes<HTMLDivElement>> = ({ className }) => {
         </div>
         <Button
           variant="ghost"
+          size="icon"
           disabled={isLoading || isValidating}
           onClick={() => mutateUsage()}
         >

@@ -11,7 +11,14 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useAppContext } from '@/contexts/app-context'
+import { useUI } from '@/contexts/ui-context'
 import { isEnterprise } from '@/lib/domain/billing'
 import { cn } from '@/lib/utils'
 import {
@@ -19,6 +26,8 @@ import {
   BarChart2,
   BookOpenText,
   Building2,
+  ChevronsLeft,
+  ChevronsRight,
   Database,
   KeyRound,
   Landmark,
@@ -31,6 +40,7 @@ import {
   TerminalSquare,
   UserRound,
 } from 'lucide-react'
+import { Fragment } from 'react'
 
 export interface MenuItem {
   text: string
@@ -48,6 +58,8 @@ const SidebarNav = ({
 }: React.HTMLAttributes<HTMLElement>) => {
   const pathname = usePathname()
   const { user, organization, logout } = useAppContext()
+  const { sidebarOpen: isSidebarOpen, setSidebarOpen: setIsSidebarOpen } =
+    useUI()
 
   const FIRST_NAV_ITEMS: MenuItems = [
     {
@@ -116,111 +128,190 @@ const SidebarNav = ({
     },
   ]
 
-  const renderMenuItem = (item: MenuItem, newTab = false) => (
+  const withTooltip = (
+    menuItem: JSX.Element,
+    tooltipContent: JSX.Element,
+  ): JSX.Element => (
+    <Tooltip delayDuration={100}>
+      <TooltipTrigger asChild>{menuItem}</TooltipTrigger>
+      <TooltipContent>{tooltipContent}</TooltipContent>
+    </Tooltip>
+  )
+
+  const renderMenuItem = (item: MenuItem): JSX.Element => (
     <Link
-      key={item.href}
       href={item.href}
-      {...(newTab && { target: '_blank', rel: 'noopener noreferrer' })}
+      {...(item.external && { target: '_blank', rel: 'noopener noreferrer' })}
       className={cn(
-        buttonVariants({ variant: 'ghost' }),
-        pathname?.includes(item.href)
-          ? 'bg-slate-300 hover:bg-slate-300 text-slate-900 font-semibold'
-          : 'hover:bg-slate-200',
-        'text-sm',
-        'justify-start',
-        'px-3',
+        buttonVariants({ variant: 'ghost', size: 'icon' }),
+        pathname?.includes(item.href) &&
+          'bg-slate-300 hover:bg-slate-300 text-slate-900 font-semibold',
+        isSidebarOpen && 'justify-stretch',
+        'h-8 text-sm group items-stretch',
       )}
     >
       {item.icon ? (
         <item.icon
           size={18}
           strokeWidth={pathname?.includes(item.href) ? 2.5 : 1.8}
+          className="shrink-0 group-hover:scale-110 transition-transform duration-300 ease-in-out"
         />
       ) : item.imageURL ? (
         <Image src={item.imageURL} alt={item.text} width={18} height={18} />
       ) : null}
-      <span className="ml-2">{item.text}</span>
-      {item.external && (
-        <ArrowUpRightIcon className="pb-0.5" size={12} strokeWidth={1.8} />
-      )}
+      <>
+        <span
+          className={cn(
+            'ml-2 group-hover:font-semibold whitespace-nowrap',
+            isSidebarOpen ? 'flex' : 'hidden',
+          )}
+        >
+          {item.text}
+        </span>
+        {item.external && isSidebarOpen && (
+          <ArrowUpRightIcon className="pb-0.5" size={12} strokeWidth={1.8} />
+        )}
+      </>
     </Link>
+  )
+
+  const renderMenuItems = (items: MenuItems): JSX.Element => (
+    <>
+      {items
+        .filter((i) => !i.hidden)
+        .map((item, idx) => (
+          <Fragment key={idx}>
+            {isSidebarOpen
+              ? renderMenuItem(item)
+              : withTooltip(
+                  renderMenuItem(item),
+                  <div className="flex items-center">
+                    <span>{item.text}</span>
+                    {item.external && (
+                      <div>
+                        <ArrowUpRightIcon
+                          size={14}
+                          strokeWidth={1.8}
+                          className="pb-1"
+                        />
+                      </div>
+                    )}
+                  </div>,
+                )}
+          </Fragment>
+        ))}
+    </>
   )
 
   const handleLogout = logout
 
   return (
-    <aside className="min-w-[200px] pt-1 flex flex-col justify-between bg-slate-50 border-r shadow-sm">
-      <div className="flex flex-col gap-5">
-        <Image
-          priority
-          src="/images/dh_ai_logo.svg"
-          alt="Dataherald Logo"
-          width={150}
-          height={50}
-          className="w-full px-3 py-5"
-        ></Image>
-        <nav className={cn('flex flex-col', className)} {...props}>
-          {FIRST_NAV_ITEMS.filter((i) => !i.hidden).map((item) =>
-            renderMenuItem(item),
-          )}
-          <Separator className="my-3" />
-          {SECOND_NAV_ITEMS.filter((i) => !i.hidden).map((item) =>
-            renderMenuItem(item),
-          )}
-        </nav>
-      </div>
-      <div className="flex flex-col">
-        {BOTTOM_NAV_ITEMS.filter((i) => !i.hidden).map((item) =>
-          renderMenuItem(item, true),
+    <TooltipProvider>
+      <aside
+        className={cn(
+          'flex flex-col items-center justify-between bg-slate-50 border-r shadow py-2 px-1',
+          isSidebarOpen
+            ? 'items-stretch w-52 transition-width duration-200 ease-in-out'
+            : 'w-11',
         )}
-
-        {user && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <div className="flex flex-col items-center  gap-3 p-3 m-2 border rounded-xl bg-white cursor-pointer">
-                <div className="w-full flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <UserPicture pictureUrl={user.picture} />
-                    <div className="flex flex-col break-all">
-                      <span className="text-xs">{organization?.name}</span>{' '}
-                      <span className="font-semibold text-sm">{user.name}</span>
-                    </div>
+      >
+        <div className={cn('flex flex-col items-stretch gap-8')}>
+          <div className={cn('h-12', isSidebarOpen ? 'w-[150px]' : 'w-6')}>
+            <Image
+              priority
+              src="/images/dh-logo-color.svg"
+              alt="Dataherald Logo"
+              width={150}
+              height={50}
+              className={cn(
+                'w-full px-1 py-3',
+                isSidebarOpen ? 'd-block' : 'hidden',
+              )}
+            ></Image>
+            <Image
+              priority
+              src="/images/dh-logo-symbol-color.svg"
+              alt="Dataherald Symbol Logo"
+              width={22}
+              height={22}
+              className={cn('mx-1 my-3', isSidebarOpen ? 'hidden' : 'd-block')}
+            ></Image>
+          </div>
+          <nav className={cn('flex flex-col gap-0.5', className)} {...props}>
+            {renderMenuItems(FIRST_NAV_ITEMS)}
+            <Separator className="my-3" />
+            {renderMenuItems(SECOND_NAV_ITEMS)}
+          </nav>
+        </div>
+        <div
+          className={cn(
+            'flex flex-col items-center',
+            isSidebarOpen && 'items-stretch',
+          )}
+        >
+          {isSidebarOpen ? (
+            <Button variant="ghost" onClick={() => setIsSidebarOpen(false)}>
+              <ChevronsLeft size={18} strokeWidth={1.8} />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <ChevronsRight size={18} strokeWidth={1.8} />
+            </Button>
+          )}
+          {renderMenuItems(BOTTOM_NAV_ITEMS)}
+          {user && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="icon"
+                  size={isSidebarOpen ? 'default' : 'icon'}
+                  className={cn('p-1 flex items-center justify-stretch w-full')}
+                >
+                  <UserPicture size={24} pictureUrl={user.picture} />
+                  {isSidebarOpen && (
+                    <span className="ml-2 font-medium text-sm whitespace-nowrap">
+                      {user.name}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="flex flex-col gap-2 ml-3 p-3 w-[250px] max-w-sm text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <div className="flex flex-col items-center mt-1.5 break-all">
+                    <span className="text-xs text-slate-500">{user.email}</span>
+                    <span className="text-sm text-slate-900">
+                      {organization?.name}
+                    </span>
                   </div>
                 </div>
-              </div>
-            </PopoverTrigger>
-            <PopoverContent className="flex flex-col gap-2 ml-3 p-3 w-[250px] max-w-sm text-center">
-              <div className="flex items-center justify-center gap-2">
-                <div className="flex flex-col items-center mt-1.5 break-all">
-                  <span className="text-xs text-slate-500">{user.email}</span>
-                  <span className="text-sm text-slate-900">
-                    {organization?.name}
-                  </span>
+                <div className="flex flex-col items-center justify-center gap-2 p-1">
+                  <h1>Hi, {user.name}!</h1>
+                  <UserPicture pictureUrl={user.picture} size={75} />
                 </div>
-              </div>
-              <div className="flex flex-col items-center justify-center gap-2 p-1">
-                <h1>Hi, {user.name}!</h1>
-                <UserPicture pictureUrl={user.picture} size={75} />
-              </div>
-              <Link href="/my-account">
-                <Button variant="ghost" size="sm" className="w-full">
-                  <UserRound className="mr-2" size={18} /> My account
+                <Link href="/my-account">
+                  <Button variant="ghost" size="sm" className="w-full">
+                    <UserRound className="mr-2" size={18} /> My account
+                  </Button>
+                </Link>
+                <Separator />
+                <Button
+                  variant="destructive-outline"
+                  size="sm"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2" size={18} />
+                  Sign out
                 </Button>
-              </Link>
-              <Separator />
-              <Button
-                variant="destructive-outline"
-                size="sm"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2" size={18} />
-                Sign out
-              </Button>
-            </PopoverContent>
-          </Popover>
-        )}
-      </div>
-    </aside>
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
+      </aside>
+    </TooltipProvider>
   )
 }
 

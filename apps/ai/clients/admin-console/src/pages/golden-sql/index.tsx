@@ -79,10 +79,8 @@ const GoldenSQLPage: FC = () => {
           <Info size={18} className="text-slate-600" />
         </TooltipTrigger>
         <TooltipContent>
-          <p>
-            Search Golden SQL queries by <strong>question</strong> or{' '}
-            <strong>SQL</strong> fields.
-          </p>
+          Search Golden SQL queries by <strong>question</strong> or{' '}
+          <strong>SQL</strong> fields.
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

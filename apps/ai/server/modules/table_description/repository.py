@@ -40,3 +40,21 @@ class TableDescriptionRepository:
             if table_description
             else None
         )
+
+    def get_table_description_grouped_by_db_connection_id(
+        self, tables_description_ids: list[str]
+    ) -> list[dict]:
+        ids = [ObjectId(id) for id in tables_description_ids]
+
+        pipeline = [
+            {"$match": {"_id": {"$in": ids}}},  # Filter documents by _id
+            {
+                "$group": {
+                    "_id": "$db_connection_id",
+                    "count": {"$sum": 1},
+                    "documents": {"$push": "$$ROOT"},
+                }
+            },
+        ]
+
+        return list(MongoDB.aggregate(TABLE_DESCRIPTION_COL, pipeline))

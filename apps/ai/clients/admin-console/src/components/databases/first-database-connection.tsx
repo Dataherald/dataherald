@@ -1,8 +1,10 @@
 import DatabaseConnectionFormDialog from '@/components/databases/database-connection-form-dialog'
 import SampleDatabaseConnectionDialog from '@/components/databases/sample-database-connection-dialog'
+import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
 import { Separator } from '@/components/ui/separator'
 import DATABASE_PROVIDERS from '@/constants/database-providers'
+import { Plug } from 'lucide-react'
 import Image from 'next/image'
 import { FC } from 'react'
 
@@ -39,6 +41,12 @@ const FirstDatabaseConnection: FC<{
           isFirstConnection
           onConnected={onConnected}
           onFinish={onFinish}
+          renderTrigger={() => (
+            <Button className={'px-4 py-1.5 h-fit w-full'}>
+              <Plug className="mr-2" size={20} strokeWidth={1.5} />
+              Connect your Database
+            </Button>
+          )}
         />
       </div>
       <p className="text-xs font-semibold text-slate-500">

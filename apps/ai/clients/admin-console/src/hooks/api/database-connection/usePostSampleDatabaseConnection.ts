@@ -1,6 +1,6 @@
 import { API_URL } from '@/config'
+import usePost from '@/hooks/api/generics/usePost'
 import { DatabaseConnection } from '@/models/api'
-import usePost from '../generics/usePost'
 
 type PostSampleDBRequest = { sample_db_id: string }
 

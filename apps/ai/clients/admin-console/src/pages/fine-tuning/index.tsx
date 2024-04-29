@@ -52,6 +52,7 @@ const FineTuningPage: FC = () => {
             </div>
             <Button
               variant="ghost"
+              size="icon"
               disabled={isLoading || isValidating}
               onClick={() => mutate()}
             >

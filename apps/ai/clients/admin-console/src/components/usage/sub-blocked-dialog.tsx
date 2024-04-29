@@ -137,7 +137,7 @@ const SubscriptionBlockedDialog: FC<SubscriptionBlockedDialogProps> = ({
           <div className="p-8 bg-slate-100 rounded-ss-lg rounded-es-lg flex items-center justify-center">
             <Image
               priority
-              src="/images/dh_ai_logo.svg"
+              src="/images/dh-logo-color.svg"
               alt="Dataherald Logo"
               width={250}
               height={50}

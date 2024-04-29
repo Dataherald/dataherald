@@ -1,5 +1,4 @@
 import { ClassValue } from 'clsx'
-import { LucideIcon } from 'lucide-react'
 
 export enum EDomainQueryConfidence {
   LOW_CONFIDENCE = 'LOW_CONFIDENCE',
@@ -43,7 +42,7 @@ export type DatabaseResourceType = 'database' | 'table' | 'column'
 interface DatabaseResourceBase {
   id: string
   type: DatabaseResourceType
-  icon: LucideIcon
+  icon: JSX.Element
   name: string
 }
 

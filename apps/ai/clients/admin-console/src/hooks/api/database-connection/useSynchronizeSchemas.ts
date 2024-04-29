@@ -3,9 +3,8 @@ import useApiFetcher from '@/hooks/api/generics/useApiFetcher'
 import { useCallback } from 'react'
 
 export type ScanRequest = {
-  db_connection_id: string
-  table_names: string[]
-}[]
+  ids: string[]
+}
 
 const useSynchronizeSchemas = () => {
   const { apiFetcher } = useApiFetcher()

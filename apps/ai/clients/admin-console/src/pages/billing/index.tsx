@@ -56,11 +56,9 @@ const BillingPage: FC = () => {
                   <TooltipTrigger asChild>
                     <Info size={14} />
                   </TooltipTrigger>
-                  <TooltipContent className="bg-slate-600 border-slate-600">
-                    <span className="text-white">
-                      {`This is your current billing cycle's API usage, minus any
+                  <TooltipContent>
+                    {`This is your current billing cycle's API usage, minus any
                       credits granted to you.`}
-                    </span>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -88,11 +86,11 @@ const BillingPage: FC = () => {
                 )
               )}
             </div>
-            <span className="text-slate-700">
+            <span className="text-slate-500">
               {`You'll be billed at the end of your billing cycle for the usage during that cycle.`}
             </span>
           </div>
-          <Alert className="max-w-2xl text-slate-700 border-slate-700 flex items-center gap-2">
+          <Alert className="max-w-2xl text-slate-500 border-slate-300 flex items-center gap-2">
             <div>
               <BadgeInfo size={24} strokeWidth={1.5} />
             </div>

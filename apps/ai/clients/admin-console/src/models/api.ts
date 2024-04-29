@@ -237,16 +237,26 @@ export type ColumnDescription = {
   categories: string[]
 }
 
+export interface BasicTableDescription {
+  id: string
+  name: string
+  schema_name?: string
+  columns: string[]
+  sync_status: TableSyncStatus
+  last_sync: string | null
+}
+
+export interface DatabaseSchema {
+  name: string
+  tables: BasicTableDescription[]
+}
+
 export interface Database {
   db_connection_id: string
   db_connection_alias: string
-  tables: {
-    id: string
-    name: string
-    columns: string[]
-    sync_status: TableSyncStatus
-    last_sync: string | null
-  }[]
+  dialect?: DatabaseDialect
+  schemas?: string[]
+  tables: BasicTableDescription[]
 }
 
 export type Databases = Database[]
@@ -274,11 +284,19 @@ export enum EDatabaseDialect {
 
 export type DatabaseDialect = keyof typeof EDatabaseDialect
 
+export const SCHEMA_SUPPORTED_DIALECTS: Set<DatabaseDialect> = new Set([
+  EDatabaseDialect.bigquery,
+  EDatabaseDialect.snowflake,
+  EDatabaseDialect.databricks,
+  EDatabaseDialect.postgresql,
+])
+
 export interface DatabaseConnection {
   id?: string
   alias: string
   use_ssh: boolean
   connection_uri: string
+  schemas?: string[]
   ssh_settings?: SshSettings
   dialect?: DatabaseDialect
 }

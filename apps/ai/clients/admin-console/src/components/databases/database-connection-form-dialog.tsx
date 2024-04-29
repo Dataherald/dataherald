@@ -22,16 +22,9 @@ import usePostDatabaseConnection from '@/hooks/api/database-connection/usePostDa
 import { formatDriver } from '@/lib/domain/database'
 import { DatabaseConnection, Databases, ErrorResponse } from '@/models/api'
 import { yupResolver } from '@hookform/resolvers/yup'
-import {
-  AlertCircle,
-  ArrowUpRight,
-  CheckCircle,
-  Loader,
-  Plug,
-  Plus,
-} from 'lucide-react'
+import { AlertCircle, ArrowUpRight, CheckCircle, Loader } from 'lucide-react'
 import Link from 'next/link'
-import { FC, useState } from 'react'
+import { FC, ReactNode, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 const mapDatabaseConnectionFormValues = (
@@ -43,12 +36,14 @@ const mapDatabaseConnectionFormValues = (
         use_ssh: false,
         connection_uri:
           formatDriver(formValues.data_warehouse) + formValues.connection_uri,
+        schemas: formValues.schemas,
       }
     : {
         alias: formValues.alias,
         use_ssh: true,
         connection_uri:
           formatDriver(formValues.data_warehouse) + formValues.connection_uri,
+        schemas: formValues.schemas,
         ssh_settings: {
           host: formValues.ssh_settings.host as string,
           port: formValues.ssh_settings.port as string,
@@ -59,12 +54,14 @@ const mapDatabaseConnectionFormValues = (
 
 interface DatabaseConnectionFormDialogProps {
   isFirstConnection?: boolean
+  renderTrigger: () => ReactNode
   onConnected: (newDatabases?: Databases, refresh?: boolean) => void
   onFinish?: () => void
 }
 
 const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
   isFirstConnection = false,
+  renderTrigger,
   onConnected,
   onFinish,
 }) => {
@@ -74,6 +71,7 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
       use_ssh: false,
       alias: '',
       connection_uri: '',
+      schemas: [],
       file: null,
       ssh_settings: {
         host: '',
@@ -132,23 +130,7 @@ const DatabaseConnectionFormDialog: FC<DatabaseConnectionFormDialogProps> = ({
   return (
     <>
       <Dialog onOpenChange={handleDialogOpenChange}>
-        <DialogTrigger asChild>
-          <Button
-            className={isFirstConnection ? 'px-4 py-1.5 h-fit w-full' : ''}
-          >
-            {isFirstConnection ? (
-              <>
-                <Plug className="mr-2" size={20} strokeWidth={1.5} />
-                Connect your Database
-              </>
-            ) : (
-              <>
-                <Plus className="mr-2" size={16} />
-                Add Database
-              </>
-            )}
-          </Button>
-        </DialogTrigger>
+        <DialogTrigger asChild>{renderTrigger()}</DialogTrigger>
         <DialogContent
           className="max-w-[70vw] lg:max-w-[750px] h-[90vh] flex flex-col"
           onInteractOutside={(e) => e.preventDefault()}

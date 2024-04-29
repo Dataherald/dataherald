@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCcw } from 'lucide-react'
 import { FC } from 'react'
 
 export interface LastUpdatedProps {
@@ -14,7 +14,7 @@ const QueryLastUpdated: FC<LastUpdatedProps> = ({ responsible, date }) => (
   >
     Last updated at {format(date, 'yyyy/dd/MM HH:mm a')}{' '}
     {responsible && `by ${responsible}`}
-    <RefreshCw size={14} />
+    <RefreshCcw size={14} />
   </div>
 )
 

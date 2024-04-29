@@ -13,6 +13,7 @@ export const dbConnectionFormSchema = Yup.object({
   connection_uri: Yup.string()
     .required("The database connection URI can't be empty")
     .max(250, 'The database connection URI is too long'),
+  schemas: Yup.array().of(Yup.string().required('Schema cannot be empty')),
   file: Yup.mixed()
     .nullable()
     .when(['data_warehouse'], ([data_warehouse], schema) => {

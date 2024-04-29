@@ -124,7 +124,7 @@ export function DataTable<TData, TValue>({
   }, [sorting, columnVisibility, LOCAL_STORAGE_KEY])
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-1">
       {onRefresh && (
         <div
           className={cn(
@@ -133,9 +133,10 @@ export function DataTable<TData, TValue>({
           )}
         >
           {isSearchEnabled && (
-            <div className="w-full flex items-center gap-3 max-w-sm py-3">
+            <div className="w-full flex items-center gap-3 max-w-sm">
               <SearchInput
                 placeholder="Search..."
+                className="h-fit"
                 value={searchText}
                 onChange={(e) => onSearchTextChange(e.target.value)}
                 onClear={onSearchTextClear}
@@ -154,7 +155,7 @@ export function DataTable<TData, TValue>({
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    className="h-10 py-2 border-input hover:bg-white text-sm"
+                    className="border-input hover:bg-white text-sm"
                   >
                     <Columns3 size={14} className="mr-2" />
                     Select visible columns
@@ -193,6 +194,7 @@ export function DataTable<TData, TValue>({
             )}
             <Button
               variant="ghost"
+              size="icon"
               disabled={isRefreshing || isLoadingMore}
               onClick={onRefresh}
             >
@@ -312,8 +314,7 @@ export const SortHeader = <T,>({ text, column }: SortHeaderProps<T>) => {
       : ArrowDown
   return (
     <Button
-      variant="ghost"
-      className="p-0 hover:bg-transparent uppercase"
+      variant="icon"
       onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
     >
       {text}

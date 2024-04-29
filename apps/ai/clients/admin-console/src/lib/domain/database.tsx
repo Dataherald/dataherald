@@ -1,15 +1,25 @@
+import DATABASE_PROVIDERS, {
+  DatabaseProvider,
+} from '@/constants/database-providers'
 import { capitalizeFirstLetter } from '@/lib/utils'
-import { ETableSyncStatus, TableSyncStatus } from '@/models/api'
+import {
+  DatabaseDialect,
+  ETableSyncStatus,
+  SCHEMA_SUPPORTED_DIALECTS,
+  TableSyncStatus,
+} from '@/models/api'
 import { ColorClasses, ResourceColors } from '@/models/domain'
 import {
   Check,
   CircleSlash,
+  Database,
   Loader,
   LucideIcon,
   RefreshCcw,
   ShieldAlert,
   XCircle,
 } from 'lucide-react'
+import Image from 'next/image'
 
 export const DOMAIN_TABLE_SYNC_STATUS_COLORS: ResourceColors<TableSyncStatus> =
   {
@@ -78,3 +88,28 @@ export const isDatabaseResource = (type?: string): boolean =>
   type === 'database'
 export const isTableResource = (type?: string): boolean => type === 'table'
 export const isColumnResource = (type?: string): boolean => type === 'column'
+
+export const supportsSchemas = (
+  dialect?: DatabaseDialect,
+): boolean | undefined => dialect && SCHEMA_SUPPORTED_DIALECTS.has(dialect)
+
+export const getDatabaseLogo = (database: {
+  id: string
+  alias?: string
+  dialect?: DatabaseDialect
+}): JSX.Element => {
+  const provider: DatabaseProvider | undefined = DATABASE_PROVIDERS.find(
+    (provider) => provider.dialect === database.dialect,
+  )
+  return provider && provider.logoUrl ? (
+    <Image
+      priority
+      src={provider.logoUrl}
+      alt={`${database.alias || database.id} logo`}
+      width={18}
+      height={18}
+    />
+  ) : (
+    <Database size={16} />
+  )
+}

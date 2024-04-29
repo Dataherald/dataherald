@@ -16,6 +16,9 @@ module.exports = {
       },
     },
     extend: {
+      transitionProperty: {
+        width: 'width',
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

@@ -25,7 +25,7 @@ const SwitchLargerDevicePage: FC = () => {
           <Image
             priority
             className="my-2"
-            src="/images/dh_ai_logo.svg"
+            src="/images/dh-logo-color.svg"
             alt="Background"
             width={250}
             height={50}
