@@ -315,6 +315,7 @@ export const SortHeader = <T,>({ text, column }: SortHeaderProps<T>) => {
   return (
     <Button
       variant="icon"
+      className="uppercase"
       onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
     >
       {text}
