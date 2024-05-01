@@ -50,6 +50,7 @@ class AWSS3Settings(BaseSettings):
 
     s3_aws_access_key_id: str = os.environ.get("S3_AWS_ACCESS_KEY_ID")
     s3_aws_secret_access_key: str = os.environ.get("S3_AWS_SECRET_ACCESS_KEY")
+    s3_bucket_name: str = os.environ.get("S3_BUCKET_NAME", "k2-core")
 
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)

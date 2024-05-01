@@ -31,7 +31,7 @@ class S3:
         return self._upload_file(file_location, file_name)
 
     def _upload_file(self, file_location: str, file_name: str) -> str:
-        bucket_name = "k2-core"
+        bucket_name = aws_s3_settings.s3_bucket_name
         # Upload the file
         s3_client = boto3.client(
             "s3",
