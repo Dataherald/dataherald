@@ -8,7 +8,7 @@ interface CreditCardLogoProps {
 
 const CreditCardLogo: FC<CreditCardLogoProps> = ({ brand }) => (
   <Image
-    src={`https://hi-george.s3.amazonaws.com/DataheraldAI/Payment%20Processor%20Logos/${brand}.svg`}
+    src={`/images/billing/${brand}.svg`}
     alt={brand}
     width={35}
     height={35}

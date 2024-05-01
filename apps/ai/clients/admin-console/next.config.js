@@ -11,11 +11,6 @@ const nextConfig = {
         protocol: 'https',
         hostname: 's.gravatar.com',
       },
-      {
-        protocol: 'https',
-        hostname: 'hi-george.s3.amazonaws.com',
-        pathname: '/DataheraldAI/**',
-      },
     ],
   },
   async redirects() {

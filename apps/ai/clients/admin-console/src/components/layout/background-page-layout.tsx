@@ -8,7 +8,7 @@ interface BackgroundPageLayoutProps {
 const BackgroundPageLayout: FC<BackgroundPageLayoutProps> = ({ children }) => (
   <div className="flex items-center justify-center min-h-screen relative">
     <Image
-      src="https://hi-george.s3.amazonaws.com/DataheraldAI/Dark+Background.png"
+      src="/images/dh_background.png"
       alt="Background"
       fill
       style={{ objectFit: 'cover', objectPosition: 'center' }}

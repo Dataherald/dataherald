@@ -117,7 +117,7 @@ const DownloadCsvPage: FC = () => {
         <title>Download CSV - Dataherald API</title>
       </Head>
       <Image
-        src="https://hi-george.s3.amazonaws.com/DataheraldAI/Dark+Background.png"
+        src="/images/dh_background.png"
         alt="Background"
         fill
         style={{ objectFit: 'cover', objectPosition: 'center' }}
