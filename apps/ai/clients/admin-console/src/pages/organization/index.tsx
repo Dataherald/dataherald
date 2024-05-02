@@ -1,5 +1,6 @@
 import PageLayout from '@/components/layout/page-layout'
 import EditOrganizationDialog from '@/components/organization/edit-organization-dialog'
+import LlmApiKeyConfig from '@/components/organization/llm-api-key'
 import { Button } from '@/components/ui/button'
 import { ContentBox } from '@/components/ui/content-box'
 import { toast } from '@/components/ui/use-toast'
@@ -21,7 +22,7 @@ type OrganizationDisplayDetails = {
 }
 
 const OrganizationSettingsPage: FC = () => {
-  const { user, organization } = useAppContext()
+  const { user, organization, updateOrganization } = useAppContext()
 
   if (!organization) return null
 
@@ -92,22 +93,27 @@ const OrganizationSettingsPage: FC = () => {
             </Button>
           </Link>
         )}
-        <ContentBox className="grow-0 max-w-2xl">
-          <div className="flex items-start gap-2">
-            <Building2 size={20} strokeWidth={2.5} />
-            <h1 className="font-semibold">Details</h1>
-          </div>
-          <div className="flex flex-col gap-4 pt-3">
-            {renderDetails(ORGANIZATION_DETAILS_DISPLAY)}
-          </div>
-        </ContentBox>
-        <ContentBox className="grow max-w-2xl gap-0">
-          <div className="flex items-start gap-2">
-            <UsersRound size={20} strokeWidth={2.5} />
-            <h1 className="font-semibold">Team</h1>
-          </div>
-          <UserList />
-        </ContentBox>
+        <div className="grow grid grid-cols-2 grid-rows-[auto,1fr] gap-6 max-w-4xl">
+          <ContentBox>
+            <div className="flex items-start gap-2">
+              <Building2 size={20} strokeWidth={2.5} />
+              <h1 className="font-semibold">Details</h1>
+            </div>
+            <div className="flex flex-col gap-4 pt-3">
+              {renderDetails(ORGANIZATION_DETAILS_DISPLAY)}
+            </div>
+          </ContentBox>
+          <ContentBox>
+            <LlmApiKeyConfig onOrganizationUpdate={updateOrganization} />
+          </ContentBox>
+          <ContentBox className="col-span-2">
+            <div className="flex items-start gap-2">
+              <UsersRound size={20} strokeWidth={2.5} />
+              <h1 className="font-semibold">Team</h1>
+            </div>
+            <UserList />
+          </ContentBox>
+        </div>
       </div>
     </PageLayout>
   )

@@ -106,10 +106,10 @@ const LlmApiKeyConfig: FC<LlmApiKeyConfigProps> = ({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(updateLlmApiKey)}
-          className="grow space-y-6 flex flex-col"
+          className="mt-3 grow space-y-4 flex flex-col"
         >
           <FormDescription>
-            Connect your own OpenAI API key to our platform
+            Connect your own OpenAI API key to the platform
           </FormDescription>
           <FormField
             control={form.control}
@@ -118,7 +118,7 @@ const LlmApiKeyConfig: FC<LlmApiKeyConfigProps> = ({
               <FormItem>
                 <div className="flex items-center justify-between gap-2">
                   <FormLabel>
-                    {editEnabled ? 'Enter you API key' : 'API Key'}
+                    {editEnabled ? 'Enter your API key' : 'API Key'}
                   </FormLabel>
                   <Button
                     variant="link"
@@ -169,10 +169,10 @@ const LlmApiKeyConfig: FC<LlmApiKeyConfigProps> = ({
                       size={20}
                       strokeWidth={2.5}
                     />{' '}
-                    Saving key
+                    Saving
                   </>
                 ) : (
-                  'Save API key'
+                  'Save'
                 )}
               </Button>
             </div>
