@@ -68,14 +68,10 @@ cp .env.example .env
 
 Specifically the following fields must be manually set before the engine is started.
 
-LLM_MODEL is employed by the engine to generate SQL from natural language. You can use the default model (gpt-4-turbo-preview) or use your own deployed model.
-
 ```
 #OpenAI credentials and model 
 # mainly used for embedding models and finetunung 
 OPENAI_API_KEY = 
-# Used for the reasoning LLM or the main LLM which chooses the tools to generate SQL
-LLM_MODEL = 
 ORG_ID =
 
 #Encryption key for storing DB connection data in Mongo
