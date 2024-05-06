@@ -121,6 +121,7 @@ class OrganizationService:
             self.repo.update_organization(org_id, organization.dict(exclude_unset=True))
             == 1
         ):
+            self.repo.insert_or_replace_llm_api_key(org_id, org_request.llm_api_key)
             return self.repo.get_organization(org_id)
 
         raise CannotUpdateOrganizationError(org_id)

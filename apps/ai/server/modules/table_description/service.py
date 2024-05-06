@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 import httpx
 
 from config import settings

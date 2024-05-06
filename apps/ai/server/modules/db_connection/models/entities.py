@@ -54,6 +54,7 @@ class InternalSSHSettings(SSHSettings):
 
 class DBConnection(BaseDBConnection):
     id: ObjectIdString | None
+    llm_api_key: str | None = None
     created_at: datetime | None
     path_to_credentials_file: str | None
     ssh_settings: InternalSSHSettings | None

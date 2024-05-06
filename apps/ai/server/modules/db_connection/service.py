@@ -20,7 +20,9 @@ from modules.db_connection.models.responses import (
     SampleDBConnectionResponse,
 )
 from modules.db_connection.repository import DBConnectionRepository
+from modules.organization.service import OrganizationService
 from utils.analytics import Analytics, EventName, EventType
+from utils.encrypt import FernetEncrypt
 from utils.misc import reserved_key_in_metadata
 from utils.s3 import S3
 from utils.sample_db import SampleDB
@@ -31,6 +33,7 @@ class DBConnectionService:
         self.repo = DBConnectionRepository()
         self.analytics = Analytics()
         self.sample_db = SampleDB()
+        self.org_service = OrganizationService()
 
     def get_db_connections(self, org_id: str) -> list[DBConnectionResponse]:
         return sorted(self.repo.get_db_connections(org_id), key=lambda x: x.alias)
@@ -61,6 +64,7 @@ class DBConnectionService:
         file: UploadFile | None = None,
     ) -> DBConnectionResponse:
         reserved_key_in_metadata(db_connection_request.metadata)
+        organization = self.org_service.get_organization(org_id)
         db_connection = self.repo.get_db_connection_by_alias(
             db_connection_request.alias, org_id
         )
@@ -78,6 +82,9 @@ class DBConnectionService:
         db_connection_internal_request.path_to_credentials_file = self.upload_file(
             db_connection_request, file
         )
+
+        if organization.llm_api_key:
+            db_connection_internal_request.llm_api_key = FernetEncrypt().decrypt(organization.llm_api_key)
 
         if db_connection_request.use_ssh:
             db_connection_internal_request.ssh_settings.private_key_password = (
@@ -118,6 +125,7 @@ class DBConnectionService:
         file: UploadFile | None = None,
     ) -> DBConnectionResponse:
         reserved_key_in_metadata(db_connection_request.metadata)
+        organization = self.org_service.get_organization(org_id)
         db_connection_internal_request = DBConnection(
             **db_connection_request.dict(exclude_unset=True)
         )
@@ -130,6 +138,10 @@ class DBConnectionService:
         db_connection_internal_request.path_to_credentials_file = self.upload_file(
             db_connection_request, file
         )
+
+        if organization.llm_api_key:
+            db_connection_internal_request.llm_api_key = FernetEncrypt().decrypt(organization.llm_api_key)
+
 
         if db_connection_request.use_ssh:
             db_connection_internal_request.ssh_settings.private_key_password = (
