@@ -1,50 +1,4 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-# Dataherald Monorepo
-
-Welcome to the Dataherald Monorepo. This repository hosts all of our company's applications located in the `/apps` directory. Each application has its own dedicated folder and specific pipeline for building and deployment.
-
-## Structure
-
-The `/apps` directory hosts all the individual applications. Each application has its own directory and should contain its own README file with specific instructions about how to use, build and deploy.
-
-Structure example:
-
-```bash
-.
-└── apps
-    ├── app1
-    ├── app2
-    ├── app3
-    └── ...
-└── libs
-    ├── lib1
-    ├── lib2
-    ├── lib3
-    └── ...
-```
-
-## Continuous Integration/Continuous Delivery
-
-Our CI/CD pipelines are handled through GitHub Actions. These workflows build Docker images of the applications and deploy them to AWS or Vercel depending on the specific application requirements.
-
-GitHub Actions have been configured to optimise the build process. Each action will only be triggered if there are changes in the relevant directories. This ensures that we are only running actions when necessary, saving on build time and resources.
-
-## Git Workflow
-
-Our Git workflow consists of working on the `main` branch. Any merge to `main` triggers a deployment to our staging environments.
-
-Release is done through git tags. When a new tag is created, it triggers the pipeline for production deployment.
-
-### Local Development
-
-When developing locally, the strategy is to `rebase` from `main` to keep your feature branch up to date. After your feature has been developed and tested, you can open a Pull Request against the `main` branch. Merge to `main` can be done with a merge commit.
-<<<<<<< HEAD
-=======
-# dataherald
-=======
-# Dataherald Monorepo
->>>>>>> e45f91c1 (DH-5770 engine cleanup)
+# dataherald monorepo
 
 <p align="center">
   <a href="https://dataherald.com"><img src="https://files.dataherald.com/logos/dataherald.png" alt="Dataherald logo"></a>
@@ -75,45 +29,16 @@ Dataherald is a natural language-to-SQL engine built for enterprise-level questi
 - Enable Q+A from your production DBs inside your SaaS application
 - Create a ChatGPT plug-in from your proprietary data
 
-This respository hosts 4 projects total: 
+This repository hosts four natural language-to-SQL components under `/services`:
 
-1. Admin Console: The front-end component for dataherald. It requires Enterprise and Engine both to be running in order to work.
+1. engine: The core component for natural language-to-SQL. If you would like to use the dataherald API only, then you will not need to run other componenets.
+2. enterprise: The enterprise component of dataherald. It adds authentication, organizations and users, and other business log to dataherald. Requires engine to run.
+3. admin-console: The front-end component of dataherald, you will need to run both engine and enterprise and point the backend to enterprise in order for admin-console to work.
+4. slack: A slackbot which allows users from a slack channel to interact with dataherald. Requires both engine and enterprise to run.
 
-2. Engine: The core component for language-to-SQL engine. If you just want to use the language-to-SQL API, then only the Engine is needed.
-
-3. Enterprise: A wrapper for the Engine component with business logic. It adds authentication, organizations, users, usage based payment, and other logic on top of the Engine. It requires Engine to be running in order to work
-
-3. Slackbot: A slack bot that allows interactions to the language-to-SQL engine via Slack channel messages. It requires Enterprise and Engine both to be running in order to work.
-
-Each project is deployable via docker image. If you want to connect different projects together, you will need to setup the environment variables with the project url.
-
-For more details about each individual project, please check the their `README.md` files for more information.
+For more information on each component, please take a look at their `README.md` files.
 
 ## Contributing
 As an open-source project in a rapidly developing field, we are open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.
 
 For detailed information on how to contribute, see [here](CONTRIBUTING.md).
-=======
-
-### Update a submodule
-To update all the submodules run the next command
-```
-git submodule update --recursive --remote
-```
-or just for a specific submodule
-```
-git submodule update  --remote apps/ai/server/dataherald
-```
-
-This should take all submodule changes, and if you check the changes `git status` you should see something like this:
-```
-modified:   apps/ai/server/dataherald (new commits)
-modified:   apps/bariloche/app-server (new commits)
-```
-If you only want to update one module change then instead of using `git add .` in root, you can move at the project location or 
-just specifying the project change like this:
-```
-git add apps/ai/server/dataherald
-```
-Then you can commit, push and finally merge.
->>>>>>> 8d95a857 (DH-4587 Document how to update monorepo submodules (#149))
