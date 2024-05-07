@@ -1,4 +1,4 @@
-set -e
+# set -e
 
 mongosh <<EOF
 use $MONGO_INITDB_DATABASE
