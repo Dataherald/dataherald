@@ -1,7 +1,7 @@
 from typing import Any
 
 from langchain_community.chat_models import ChatAnthropic, ChatCohere, ChatGooglePalm
-from langchain_openai import ChatOpenAI, AzureChatOpenAI
+from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from overrides import override
 
 from dataherald.model import LLMModel
@@ -22,16 +22,16 @@ class ChatModel(LLMModel):
         **kwargs: Any
     ) -> Any:
         api_key = database_connection.decrypt_api_key()
-        if self.system.settings['azure_api_key'] != None:
-            model_family = 'azure'
+        if self.system.settings["azure_api_key"] is not None:
+            model_family = "azure"
         if model_family == "azure":
-            if api_base.endswith("/"): #TODO check where final "/" is added to api_base
+            if api_base.endswith("/"):  # check where final "/" is added to api_base
                 api_base = api_base[:-1]
             return AzureChatOpenAI(
                 deployment_name=model_name,
                 openai_api_key=api_key,
-                azure_endpoint= api_base, 
-                api_version=self.system.settings['azure_api_version'],
+                azure_endpoint=api_base,
+                api_version=self.system.settings["azure_api_version"],
                 **kwargs
             )
         if model_family == "openai":
