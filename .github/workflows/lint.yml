@@ -3,6 +3,9 @@ on: [push]
 jobs:
   lint:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./services/engine
     steps:
       - uses: actions/checkout@v3
       - uses: chartboost/ruff-action@v1
