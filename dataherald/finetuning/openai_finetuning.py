@@ -69,6 +69,12 @@ class OpenAIFineTuning(FinetuningModel):
             return FineTuningStatus.QUEUED.value
         return mapped_statuses[status]
 
+    @staticmethod
+    def _filter_tables_by_schema(db_scan: List[TableDescription], schemas: List[str]):
+        if schemas:
+            return [table for table in db_scan if table.schema_name in schemas]
+        return db_scan
+
     def format_columns(
         self, table: TableDescription, top_k: int = CATEGORICAL_COLUMNS_THRESHOLD
     ) -> str:
@@ -197,6 +203,7 @@ class OpenAIFineTuning(FinetuningModel):
                 "status": TableDescriptionStatus.SCANNED.value,
             }
         )
+        db_scan = self._filter_tables_by_schema(db_scan, self.fine_tuning_model.schemas)
         golden_sqls_repository = GoldenSQLRepository(self.storage)
         finetuning_dataset_path = f"tmp/{str(uuid.uuid4())}.jsonl"
         model_repository = FinetuningsRepository(self.storage)

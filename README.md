@@ -68,14 +68,10 @@ cp .env.example .env
 
 Specifically the following fields must be manually set before the engine is started.
 
-LLM_MODEL is employed by the engine to generate SQL from natural language. You can use the default model (gpt-4-turbo-preview) or use your own deployed model.
-
 ```
 #OpenAI credentials and model 
 # mainly used for embedding models and finetunung 
 OPENAI_API_KEY = 
-# Used for the reasoning LLM or the main LLM which chooses the tools to generate SQL
-LLM_MODEL = 
 ORG_ID =
 
 #Encryption key for storing DB connection data in Mongo
@@ -175,7 +171,7 @@ Once the engine is running, you will want to use it by:
 3. Querying the data in natural language
 
 ### Connecting to your data warehouses
-We currently support connections to Postgres, DuckDB, BigQuery, ClickHouse, Databricks, Snowflake and AWS Athena. You can create connections to these warehouses through the API or at application start-up using the envars.
+We currently support connections to Postgres, DuckDB, BigQuery, ClickHouse, Databricks, Snowflake, MySQL/MariaDB, MS SQL Server, Redshift and AWS Athena. You can create connections to these warehouses through the API or at application start-up using the envars.
 
 #### Connecting through the API
 
@@ -190,6 +186,24 @@ curl -X 'POST' \
   "alias": "my_db_alias",
   "use_ssh": false,
   "connection_uri": snowflake://<user>:<password>@<organization>-<account-name>/<database>/<schema>"
+}'
+```
+
+##### Connecting multi-schemas
+You can connect many schemas using one db connection if you want to create SQL joins between schemas.
+Currently only `BigQuery`, `Snowflake`, `Databricks` and `Postgres` support this feature.
+To use multi-schemas instead of sending the `schema` in the `connection_uri` set it in the `schemas` param, like this:
+
+```
+curl -X 'POST' \
+  '<host>/api/v1/database-connections' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "alias": "my_db_alias",
+  "use_ssh": false,
+  "connection_uri": snowflake://<user>:<password>@<organization>-<account-name>/<database>",
+  "schemas": ["schema_1", "schema_2", ...]
 }'
 ```
 
@@ -209,7 +223,8 @@ While only the Database scan part is required to start generating SQL, adding ve
 #### Scanning the Database
 The database scan is used to gather information about the database including table and column names and identifying low cardinality columns and their values to be stored in the context store and used in the prompts to the LLM.
 In addition, it retrieves logs, which consist of historical queries associated with each database table. These records are then stored within the query_history collection. The historical queries retrieved encompass data from the past three months and are grouped based on query and user.
-db_connection_id is the id of the database connection you want to scan, which is returned when you create a database connection.
+The db_connection_id param is the id of the database connection you want to scan, which is returned when you create a database connection.
+The ids param is the table_description_id that you want to scan.
 You can trigger a scan of a database from the `POST /api/v1/table-descriptions/sync-schemas` endpoint. Example below
 
 
@@ -220,11 +235,11 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
     "db_connection_id": "db_connection_id",
-    "table_names": ["table_name"]
+    "ids": ["<table_description_id_1>", "<table_description_id_2>", ...]
   }'
 ```
 
-Since the endpoint identifies low cardinality columns (and their values) it can take time to complete. Therefore while it is possible to trigger a scan on the entire DB by not specifying the `table_names`, we recommend against it for large databases. 
+Since the endpoint identifies low cardinality columns (and their values) it can take time to complete. 
 
 #### Get logs per db connection
 Once a database was scanned you can use this endpoint to retrieve the tables logs

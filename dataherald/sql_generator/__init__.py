@@ -11,10 +11,10 @@ import sqlparse
 from langchain.agents.agent import AgentExecutor
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.schema import AgentAction, LLMResult
-from langchain.schema.messages import BaseMessage
 from langchain_community.callbacks import get_openai_callback
 
 from dataherald.config import Component, System
+from dataherald.db_scanner.models.types import TableDescription
 from dataherald.model.chat_model import ChatModel
 from dataherald.repositories.sql_generations import (
     SQLGenerationRepository,
@@ -61,6 +61,31 @@ class SQLGenerator(Component, ABC):
         if matches:
             return matches[0].strip()
         return query
+
+    @staticmethod
+    def get_table_schema(table_name: str, db_scan: List[TableDescription]) -> str:
+        for table in db_scan:
+            if table.table_name == table_name:
+                return table.schema_name
+        return ""
+
+    @staticmethod
+    def filter_tables_by_schema(
+        db_scan: List[TableDescription], prompt: Prompt
+    ) -> List[TableDescription]:
+        if prompt.schemas:
+            return [table for table in db_scan if table.schema_name in prompt.schemas]
+        return db_scan
+
+    def format_sql_query_intermediate_steps(self, step: str) -> str:
+        pattern = r"```sql(.*?)```"
+
+        def formatter(match):
+            original_sql = match.group(1)
+            formatted_sql = self.format_sql_query(original_sql)
+            return "```sql\n" + formatted_sql + "\n```"
+
+        return re.sub(pattern, formatter, step, flags=re.DOTALL)
 
     @classmethod
     def get_upper_bound_limit(cls) -> int:
@@ -170,12 +195,21 @@ class SQLGenerator(Component, ABC):
                 ):
                     if "actions" in chunk:
                         for message in chunk["messages"]:
-                            queue.put(message.content + "\n")
+                            queue.put(
+                                self.format_sql_query_intermediate_steps(
+                                    message.content
+                                )
+                                + "\n"
+                            )
                     elif "steps" in chunk:
                         for step in chunk["steps"]:
-                            queue.put(f"**Observation:**\n `{step.observation}`\n")
+                            queue.put(
+                                f"\n**Observation:**\n {self.format_sql_query_intermediate_steps(step.observation)}\n"
+                            )
                     elif "output" in chunk:
-                        queue.put(f'**Final Answer:**\n {chunk["output"]}')
+                        queue.put(
+                            f'\n**Final Answer:**\n {self.format_sql_query_intermediate_steps(chunk["output"])}'
+                        )
                         if "```sql" in chunk["output"]:
                             response.sql = replace_unprocessable_characters(
                                 self.remove_markdown(chunk["output"])

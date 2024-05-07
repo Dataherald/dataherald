@@ -31,6 +31,7 @@ class TableDescriptionStatus(Enum):
 class TableDescription(BaseModel):
     id: str | None
     db_connection_id: str
+    schema_name: str | None
     table_name: str
     description: str | None
     table_schema: str | None

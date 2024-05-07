@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
+from sql_metadata import Parser
 
 from dataherald.types import LLMConfig
 
@@ -6,6 +7,7 @@ from dataherald.types import LLMConfig
 class PromptRequest(BaseModel):
     text: str
     db_connection_id: str
+    schemas: list[str] | None
     metadata: dict | None
 
 
@@ -16,6 +18,14 @@ class SQLGenerationRequest(BaseModel):
     evaluate: bool = False
     sql: str | None
     metadata: dict | None
+
+    @validator("sql")
+    def validate_model_name(cls, v: str | None):
+        try:
+            Parser(v).tables  # noqa: B018
+        except Exception as e:
+            raise ValueError(f"SQL {v} is malformed. Please check the syntax.") from e
+        return v
 
 
 class StreamSQLGenerationRequest(BaseModel):

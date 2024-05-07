@@ -22,6 +22,7 @@ from dataherald.db_scanner.services.base_scanner import BaseScanner
 from dataherald.db_scanner.services.big_query_scanner import BigQueryScanner
 from dataherald.db_scanner.services.click_house_scanner import ClickHouseScanner
 from dataherald.db_scanner.services.postgre_sql_scanner import PostgreSqlScanner
+from dataherald.db_scanner.services.redshift_scanner import RedshiftScanner
 from dataherald.db_scanner.services.snowflake_scanner import SnowflakeScanner
 from dataherald.db_scanner.services.sql_server_scanner import SqlServerScanner
 from dataherald.sql_database.base import SQLDatabase
@@ -43,6 +44,7 @@ class SqlAlchemyScanner(Scanner):
         self,
         tables: list[str],
         db_connection_id: str,
+        schema: str,
         repository: TableDescriptionRepository,
         metadata: dict = None,
     ) -> None:
@@ -50,6 +52,7 @@ class SqlAlchemyScanner(Scanner):
             repository.save_table_info(
                 TableDescription(
                     db_connection_id=db_connection_id,
+                    schema_name=schema,
                     table_name=table,
                     status=TableDescriptionStatus.NOT_SCANNED.value,
                     metadata=metadata,
@@ -59,34 +62,38 @@ class SqlAlchemyScanner(Scanner):
     @override
     def refresh_tables(
         self,
-        tables: list[str],
+        schemas_and_tables: dict[str, list],
         db_connection_id: str,
         repository: TableDescriptionRepository,
         metadata: dict = None,
     ) -> list[TableDescription]:
-        stored_tables = repository.find_by({"db_connection_id": str(db_connection_id)})
-        stored_tables_list = [table.table_name for table in stored_tables]
-
         rows = []
-        for table_description in stored_tables:
-            if table_description.table_name not in tables:
-                table_description.status = TableDescriptionStatus.DEPRECATED.value
-                rows.append(repository.save_table_info(table_description))
-            else:
-                rows.append(TableDescription(**table_description.dict()))
+        for schema, tables in schemas_and_tables.items():
+            stored_tables = repository.find_by(
+                {"db_connection_id": str(db_connection_id), "schema_name": schema}
+            )
+            stored_tables_list = [table.table_name for table in stored_tables]
 
-        for table in tables:
-            if table not in stored_tables_list:
-                rows.append(
-                    repository.save_table_info(
-                        TableDescription(
-                            db_connection_id=db_connection_id,
-                            table_name=table,
-                            status=TableDescriptionStatus.NOT_SCANNED.value,
-                            metadata=metadata,
+            for table_description in stored_tables:
+                if table_description.table_name not in tables:
+                    table_description.status = TableDescriptionStatus.DEPRECATED.value
+                    rows.append(repository.save_table_info(table_description))
+                else:
+                    rows.append(TableDescription(**table_description.dict()))
+
+            for table in tables:
+                if table not in stored_tables_list:
+                    rows.append(
+                        repository.save_table_info(
+                            TableDescription(
+                                db_connection_id=db_connection_id,
+                                table_name=table,
+                                status=TableDescriptionStatus.NOT_SCANNED.value,
+                                metadata=metadata,
+                                schema_name=schema,
+                            )
                         )
                     )
-                )
         return rows
 
     @override
@@ -95,16 +102,17 @@ class SqlAlchemyScanner(Scanner):
         scanner_request: ScannerRequest,
         repository: TableDescriptionRepository,
     ) -> list[TableDescription]:
-        # persist tables to be scanned
         rows = []
-        for table in scanner_request.table_names:
+        for id in scanner_request.ids:
+            table_description = repository.find_by_id(id)
             rows.append(
                 repository.save_table_info(
                     TableDescription(
-                        db_connection_id=scanner_request.db_connection_id,
-                        table_name=table,
+                        db_connection_id=table_description.db_connection_id,
+                        table_name=table_description.table_name,
                         status=TableDescriptionStatus.SYNCHRONIZING.value,
                         metadata=scanner_request.metadata,
+                        schema_name=table_description.schema_name,
                     )
                 )
             )
@@ -234,6 +242,7 @@ class SqlAlchemyScanner(Scanner):
         db_connection_id: str,
         repository: TableDescriptionRepository,
         scanner_service: AbstractScanner,
+        schema: str | None = None,
     ) -> TableDescription:
         print(f"Scanning table: {table}")
         inspector = inspect(db_engine.engine)
@@ -266,6 +275,7 @@ class SqlAlchemyScanner(Scanner):
             last_schema_sync=datetime.now(),
             error_message="",
             status=TableDescriptionStatus.SCANNED.value,
+            schema_name=schema,
         )
 
         repository.save_table_info(object)
@@ -275,57 +285,51 @@ class SqlAlchemyScanner(Scanner):
     def scan(
         self,
         db_engine: SQLDatabase,
-        db_connection_id: str,
-        table_names: list[str] | None,
+        table_descriptions: list[TableDescription],
         repository: TableDescriptionRepository,
         query_history_repository: QueryHistoryRepository,
     ) -> None:
         services = {
             "snowflake": SnowflakeScanner,
             "bigquery": BigQueryScanner,
-            "psycopg2": PostgreSqlScanner,
-            "pymssql": SqlServerScanner,
-            "http": ClickHouseScanner,
+            "postgresql": PostgreSqlScanner,
+            "mssql": SqlServerScanner,
+            "clickhouse": ClickHouseScanner,
+            "redshift": RedshiftScanner,
         }
         scanner_service = BaseScanner()
-        if db_engine.engine.driver in services.keys():
-            scanner_service = services[db_engine.engine.driver]()
+        if db_engine.engine.dialect.name in services.keys():
+            scanner_service = services[db_engine.engine.dialect.name]()
 
-        inspector = inspect(db_engine.engine)
+        inspect(db_engine.engine)
         meta = MetaData(bind=db_engine.engine)
         MetaData.reflect(meta, views=True)
-        tables = inspector.get_table_names() + inspector.get_view_names()
-        if table_names:
-            table_names = [table.lower() for table in table_names]
-            tables = [
-                table for table in tables if table and table.lower() in table_names
-            ]
-        if len(tables) == 0:
-            raise ValueError("No table found")
 
-        for table in tables:
+        for table in table_descriptions:
             try:
                 self.scan_single_table(
                     meta=meta,
-                    table=table,
+                    table=table.table_name,
                     db_engine=db_engine,
-                    db_connection_id=db_connection_id,
+                    db_connection_id=table.db_connection_id,
                     repository=repository,
                     scanner_service=scanner_service,
+                    schema=table.schema_name,
                 )
             except Exception as e:
                 repository.save_table_info(
                     TableDescription(
-                        db_connection_id=db_connection_id,
+                        db_connection_id=table.db_connection_id,
                         table_name=table,
                         status=TableDescriptionStatus.FAILED.value,
                         error_message=f"{e}",
+                        schema_name=table.schema_name,
                     )
                 )
             try:
                 logger.info(f"Get logs table: {table}")
                 query_history = scanner_service.get_logs(
-                    table, db_engine, db_connection_id
+                    table.table_name, db_engine, table.db_connection_id
                 )
                 if len(query_history) > 0:
                     for query in query_history:

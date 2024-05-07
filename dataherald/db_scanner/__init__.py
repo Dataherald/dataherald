@@ -14,8 +14,7 @@ class Scanner(Component, ABC):
     def scan(
         self,
         db_engine: SQLDatabase,
-        db_connection_id: str,
-        table_names: list[str] | None,
+        table_descriptions: list[TableDescription],
         repository: TableDescriptionRepository,
         query_history_repository: QueryHistoryRepository,
     ) -> None:
@@ -34,6 +33,7 @@ class Scanner(Component, ABC):
         self,
         tables: list[str],
         db_connection_id: str,
+        schema: str,
         repository: TableDescriptionRepository,
         metadata: dict = None,
     ) -> None:
@@ -42,7 +42,7 @@ class Scanner(Component, ABC):
     @abstractmethod
     def refresh_tables(
         self,
-        tables: list[str],
+        schemas_and_tables: dict[str, list],
         db_connection_id: str,
         repository: TableDescriptionRepository,
         metadata: dict = None,

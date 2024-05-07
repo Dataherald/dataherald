@@ -26,6 +26,9 @@ Once the database connection is established, it retrieves the table names and cr
     "alias": "string",
     "use_ssh": false,
     "connection_uri": "string",
+    "schemas": [
+      "string"
+    ],
     "path_to_credentials_file": "string",
     "llm_api_key": "string",
     "ssh_settings": {
@@ -189,7 +192,7 @@ Connections to supported Data warehouses
 -----------------------------------------
 
 The format of the ``connection_uri`` parameter in the API call will depend on the data warehouse type you are connecting to. 
-You can find samples and how to generate them :ref:<below >. 
+You can find samples and how to generate them below.
 
 Postgres
 ^^^^^^^^^^^^
@@ -254,6 +257,17 @@ Example::
 
 "connection_uri": snowflake://jon:123456@foo-bar/my-database/public
 
+Redshift
+^^^^^^^^^^^^
+
+Uri structure::
+
+"connection_uri": redshift+psycopg2://<user>:<password>@<host>:<port>/<database>
+
+Example::
+
+"connection_uri": redshift+psycopg2://jon:123456@host.amazonaws.com:5439/my-database
+
 ClickHouse
 ^^^^^^^^^^^^
 
@@ -313,3 +327,23 @@ Example::
 "connection_uri": bigquery://v2-real-estate/K2
 
 
+**Connecting multi-schemas**
+
+You can connect many schemas using one db connection if you want to create SQL joins between schemas.
+Currently only `BigQuery`, `Snowflake`, `Databricks` and `Postgres` support this feature.
+To use multi-schemas instead of sending the `schema` in the `connection_uri` set it in the `schemas` param, like this:
+
+**Example**
+
+.. code-block:: rst
+
+   curl -X 'POST' \
+      '<host>/api/v1/database-connections' \
+      -H 'accept: application/json' \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "alias": "my_db_alias_identifier",
+      "use_ssh": false,
+      "connection_uri": "snowflake://<user>:<password>@<organization>-<account-name>/<database>",
+      "schemas": ["foo", "bar"]
+    }'

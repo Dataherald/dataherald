@@ -182,7 +182,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     def cosine_similarity(self, a: List[float], b: List[float]) -> float:
         return round(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), 4)
 
-    def similart_tables_based_on_few_shot_examples(self, df: pd.DataFrame) -> List[str]:
+    def similar_tables_based_on_few_shot_examples(self, df: pd.DataFrame) -> List[str]:
         most_similar_tables = set()
         if self.few_shot_examples is not None:
             for example in self.few_shot_examples:
@@ -190,12 +190,20 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
                     tables = Parser(example["sql"]).tables
                 except Exception as e:
                     logger.error(f"Error parsing SQL: {str(e)}")
-                most_similar_tables.update(tables)
-            df.drop(df[df.table_name.isin(most_similar_tables)].index, inplace=True)
+                for table in tables:
+                    found_tables = df[df.table_name == table]
+                    for _, row in found_tables.iterrows():
+                        most_similar_tables.add((row["schema_name"], row["table_name"]))
+            df.drop(
+                df[
+                    df.table_name.isin([table[1] for table in most_similar_tables])
+                ].index,
+                inplace=True,
+            )
         return most_similar_tables
 
     @catch_exceptions()
-    def _run(
+    def _run(  # noqa: PLR0912
         self,
         user_question: str,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
@@ -214,9 +222,12 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
                 table_rep = f"Table {table.table_name} contain columns: [{col_rep}], this tables has: {table.description}"
             else:
                 table_rep = f"Table {table.table_name} contain columns: [{col_rep}]"
-            table_representations.append([table.table_name, table_rep])
+            table_representations.append(
+                [table.schema_name, table.table_name, table_rep]
+            )
         df = pd.DataFrame(
-            table_representations, columns=["table_name", "table_representation"]
+            table_representations,
+            columns=["schema_name", "table_name", "table_representation"],
         )
         df["table_embedding"] = self.get_docs_embedding(df.table_representation)
         df["similarities"] = df.table_embedding.apply(
@@ -224,17 +235,23 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         )
         df = df.sort_values(by="similarities", ascending=True)
         df = df.tail(TOP_TABLES)
-        most_similar_tables = self.similart_tables_based_on_few_shot_examples(df)
+        most_similar_tables = self.similar_tables_based_on_few_shot_examples(df)
         table_relevance = ""
         for _, row in df.iterrows():
+            if row["schema_name"] is not None:
+                table_name = row["schema_name"] + "." + row["table_name"]
+            else:
+                table_name = row["table_name"]
             table_relevance += (
-                f'Table: {row["table_name"]}, relevance score: {row["similarities"]}\n'
+                f'Table: `{table_name}`, relevance score: {row["similarities"]}\n'
             )
         if len(most_similar_tables) > 0:
             for table in most_similar_tables:
-                table_relevance += (
-                    f"Table: {table}, relevance score: {max(df['similarities'])}\n"
-                )
+                if table[0] is not None:
+                    table_name = table[0] + "." + table[1]
+                else:
+                    table_name = table[1]
+                table_relevance += f"Table: `{table_name}`, relevance score: {max(df['similarities'])}\n"
         return table_relevance
 
     async def _arun(
@@ -250,9 +267,10 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
 
     name = "SqlDbQuery"
     description = """
-    Input: SQL query.
+    Input: A SQL query between ```sql and ``` tags.
     Output: Result from the database or an error message if the query is incorrect.
     Use this tool to execute the SQL query on the database, and return the results.
+    Add newline after both ```sql and ``` tags.
     """
     args_schema: Type[BaseModel] = SQLInput
 
@@ -335,7 +353,8 @@ class GenerateSQL(BaseSQLDatabaseTool, BaseTool):
                 {"role": "user", "content": user_prompt},
             ],
         )
-        return response.choices[0].message.content
+        returned_sql = response.choices[0].message.content
+        return f"```sql\n{returned_sql}```"
 
     async def _arun(
         self,
@@ -358,26 +377,32 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     db_scan: List[TableDescription]
 
     @catch_exceptions()
-    def _run(
+    def _run(  # noqa: C901
         self,
         table_names: str,
         run_manager: CallbackManagerForToolRun | None = None,  # noqa: ARG002
     ) -> str:
         """Get the schema for tables in a comma-separated list."""
         table_names_list = table_names.split(", ")
-        table_names_list = [
-            replace_unprocessable_characters(table_name)
-            for table_name in table_names_list
-        ]
+        processed_table_names = []
+        for table in table_names_list:
+            formatted_table = replace_unprocessable_characters(table)
+            if "." in formatted_table:
+                processed_table_names.append(formatted_table.split(".")[1])
+            else:
+                processed_table_names.append(formatted_table)
         tables_schema = ""
         for table in self.db_scan:
-            if table.table_name in table_names_list:
+            if table.table_name in processed_table_names:
+                tables_schema += "```sql\n"
                 tables_schema += table.table_schema + "\n"
                 descriptions = []
                 if table.description is not None:
-                    descriptions.append(
-                        f"Table `{table.table_name}`: {table.description}\n"
-                    )
+                    if table.schema_name:
+                        table_name = f"{table.schema_name}.{table.table_name}"
+                    else:
+                        table_name = table.table_name
+                    descriptions.append(f"Table `{table_name}`: {table.description}\n")
                     for column in table.columns:
                         if column.description is not None:
                             descriptions.append(
@@ -385,6 +410,7 @@ class SchemaSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
                             )
                 if len(descriptions) > 0:
                     tables_schema += f"/*\n{''.join(descriptions)}*/\n"
+                tables_schema += "```\n"
         if tables_schema == "":
             tables_schema += "Tables not found in the database"
         return tables_schema
@@ -553,6 +579,9 @@ class DataheraldFinetuningAgent(SQLGenerator):
         )
         if not db_scan:
             raise ValueError("No scanned tables found for database")
+        db_scan = SQLGenerator.filter_tables_by_schema(
+            db_scan=db_scan, prompt=user_prompt
+        )
         few_shot_examples, instructions = context_store.retrieve_context_for_question(
             user_prompt, number_of_samples=5
         )
@@ -656,6 +685,9 @@ class DataheraldFinetuningAgent(SQLGenerator):
         )
         if not db_scan:
             raise ValueError("No scanned tables found for database")
+        db_scan = SQLGenerator.filter_tables_by_schema(
+            db_scan=db_scan, prompt=user_prompt
+        )
         _, instructions = context_store.retrieve_context_for_question(
             user_prompt, number_of_samples=1
         )
