@@ -1,0 +1,14 @@
+services:
+  next-app:
+    container_name: next-app
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    env_file:
+      - .env.local
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+    restart: always
+    ports:
+      - 3000:3000

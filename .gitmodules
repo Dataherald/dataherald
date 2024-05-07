@@ -1,9 +1,0 @@
-[submodule "apps/ai/server/dataherald"]
-	path = apps/ai/server/dataherald
-	url = https://github.com/Dataherald/dataherald
-[submodule "apps/bariloche/programmatic-seo"]
-	path = apps/bariloche/programmatic-seo
-	url = https://github.com/Dataherald/programmatic-seo
-[submodule "apps/bariloche/app-server"]
-	path = apps/bariloche/app-server
-	url = https://github.com/Dataherald/AppServer
