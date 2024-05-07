@@ -43,7 +43,7 @@ class OpenAIFineTuning(FinetuningModel):
         db_connection = db_connection_repository.find_by_id(
             fine_tuning_model.db_connection_id
         )
-        self.embedding = OpenAIEmbeddings(
+        self.embedding = OpenAIEmbeddings( #TODO AzureOpenAIEmbeddings when Azure
             openai_api_key=db_connection.decrypt_api_key(),
             model=EMBEDDING_MODEL,
         )
