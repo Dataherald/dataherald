@@ -21,7 +21,7 @@ from langchain.callbacks.manager import (
 from langchain.chains.llm import LLMChain
 from langchain.tools.base import BaseTool
 from langchain_community.callbacks import get_openai_callback
-from langchain_openai import OpenAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings, OpenAIEmbeddings
 from openai import OpenAI
 from overrides import override
 from pydantic import BaseModel, Field
@@ -587,7 +587,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         )
         finetunings_repository = FinetuningsRepository(storage)
         finetuning = finetunings_repository.find_by_id(self.finetuning_id)
-        openai_fine_tuning = OpenAIFineTuning(storage, finetuning)
+        openai_fine_tuning = OpenAIFineTuning(self.system, storage, finetuning)
         finetuning = openai_fine_tuning.retrieve_finetuning_job()
         if finetuning.status != FineTuningStatus.SUCCEEDED.value:
             raise FinetuningNotAvailableError(
@@ -595,6 +595,16 @@ class DataheraldFinetuningAgent(SQLGenerator):
                 f"Finetuning should have the status {FineTuningStatus.SUCCEEDED.value} to generate SQL queries."
             )
         self.database = SQLDatabase.get_sql_engine(database_connection)
+        if self.llm.openai_api_type == "azure":
+            embedding = AzureOpenAIEmbeddings(
+                openai_api_key=database_connection.decrypt_api_key(),
+                model=EMBEDDING_MODEL,
+            )
+        else:
+            embedding = OpenAIEmbeddings(
+                openai_api_key=database_connection.decrypt_api_key(),
+                model=EMBEDDING_MODEL,
+            )
         toolkit = SQLDatabaseToolkit(
             db=self.database,
             instructions=instructions,
@@ -605,10 +615,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
             use_finetuned_model_only=self.use_fintuned_model_only,
             model_name=finetuning.base_llm.model_name,
             openai_fine_tuning=openai_fine_tuning,
-            embedding=OpenAIEmbeddings( #TODO AzureOpenAIEmbeddings when Azure
-                openai_api_key=database_connection.decrypt_api_key(),
-                model=EMBEDDING_MODEL,
-            ),
+            embedding=embedding,
         )
         agent_executor = self.create_sql_agent(
             toolkit=toolkit,
@@ -693,7 +700,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
         )
         finetunings_repository = FinetuningsRepository(storage)
         finetuning = finetunings_repository.find_by_id(self.finetuning_id)
-        openai_fine_tuning = OpenAIFineTuning(storage, finetuning)
+        openai_fine_tuning = OpenAIFineTuning(self.system, storage, finetuning)
         finetuning = openai_fine_tuning.retrieve_finetuning_job()
         if finetuning.status != FineTuningStatus.SUCCEEDED.value:
             raise FinetuningNotAvailableError(
@@ -701,6 +708,16 @@ class DataheraldFinetuningAgent(SQLGenerator):
                 f"Finetuning should have the status {FineTuningStatus.SUCCEEDED.value} to generate SQL queries."
             )
         self.database = SQLDatabase.get_sql_engine(database_connection)
+        if self.llm.openai_api_type == "azure":
+            embedding = AzureOpenAIEmbeddings(
+                openai_api_key=database_connection.decrypt_api_key(),
+                model=EMBEDDING_MODEL,
+            )
+        else:
+            embedding = OpenAIEmbeddings(
+                openai_api_key=database_connection.decrypt_api_key(),
+                model=EMBEDDING_MODEL,
+            )
         toolkit = SQLDatabaseToolkit(
             db=self.database,
             instructions=instructions,
@@ -710,10 +727,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
             use_finetuned_model_only=self.use_fintuned_model_only,
             model_name=finetuning.base_llm.model_name,
             openai_fine_tuning=openai_fine_tuning,
-            embedding=OpenAIEmbeddings( #TODO AzureOpenAIEmbeddings when Azure
-                openai_api_key=database_connection.decrypt_api_key(),
-                model=EMBEDDING_MODEL,
-            ),
+            embedding=embedding,
         )
         agent_executor = self.create_sql_agent(
             toolkit=toolkit,

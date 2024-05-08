@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     encrypt_key: str = os.environ.get("ENCRYPT_KEY")
     s3_aws_access_key_id: str | None = os.environ.get("S3_AWS_ACCESS_KEY_ID")
     s3_aws_secret_access_key: str | None = os.environ.get("S3_AWS_SECRET_ACCESS_KEY")
-    #Needed for Azure OpenAI integration:
+    # Needed for Azure OpenAI integration:
     azure_api_key: str | None = os.environ.get("AZURE_API_KEY")
     embedding_model: str | None = os.environ.get("EMBEDDING_MODEL")
     azure_api_version: str | None = os.environ.get("AZURE_API_VERSION")

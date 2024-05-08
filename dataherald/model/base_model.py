@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from langchain.llms import AlephAlpha, Anthropic, Cohere, OpenAI
+from langchain.llms import AlephAlpha, Anthropic, AzureOpenAI, Cohere, OpenAI
 from overrides import override
 
 from dataherald.model import LLMModel
@@ -19,7 +19,7 @@ class BaseModel(LLMModel):
         self.azure_api_key = os.environ.get("AZURE_API_KEY")
 
     @override
-    def get_model(
+    def get_model(  # noqa: C901
         self,
         database_connection: DatabaseConnection,
         model_family="openai",
@@ -27,8 +27,8 @@ class BaseModel(LLMModel):
         api_base: str | None = None,  # noqa: ARG002
         **kwargs: Any
     ) -> Any:
-        if self.system.settings['azure_api_key'] != None:
-            model_family = 'azure'
+        if self.system.settings["azure_api_key"] is not None:
+            model_family = "azure"
         if database_connection.llm_api_key is not None:
             fernet_encrypt = FernetEncrypt()
             api_key = fernet_encrypt.decrypt(database_connection.llm_api_key)
@@ -39,7 +39,7 @@ class BaseModel(LLMModel):
             elif model_family == "google":
                 self.google_api_key = api_key
             elif model_family == "azure":
-                self.azure_api_key == api_key
+                self.azure_api_key = api_key
         if self.openai_api_key:
             self.model = OpenAI(model_name=model_name, **kwargs)
         elif self.aleph_alpha_api_key:

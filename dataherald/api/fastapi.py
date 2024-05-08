@@ -110,8 +110,8 @@ def async_scanning(scanner, database, table_descriptions, storage):
     )
 
 
-def async_fine_tuning(storage, model):
-    openai_fine_tuning = OpenAIFineTuning(storage, model)
+def async_fine_tuning(system, storage, model):
+    openai_fine_tuning = OpenAIFineTuning(system, storage, model)
     openai_fine_tuning.create_fintuning_dataset()
     openai_fine_tuning.create_fine_tuning_job()
 
@@ -626,7 +626,7 @@ class FastAPI(API):
                 e, fine_tuning_request.dict(), "finetuning_not_created"
             )
 
-        background_tasks.add_task(async_fine_tuning, self.storage, model)
+        background_tasks.add_task(async_fine_tuning, self.system, self.storage, model)
 
         return model
 
@@ -652,7 +652,7 @@ class FastAPI(API):
                 status_code=400, detail="Model has already been cancelled."
             )
 
-        openai_fine_tuning = OpenAIFineTuning(self.storage, model)
+        openai_fine_tuning = OpenAIFineTuning(self.system, self.storage, model)
 
         return openai_fine_tuning.cancel_finetuning_job()
 
@@ -665,7 +665,7 @@ class FastAPI(API):
         models = model_repository.find_by(query)
         result = []
         for model in models:
-            openai_fine_tuning = OpenAIFineTuning(self.storage, model)
+            openai_fine_tuning = OpenAIFineTuning(self.system, self.storage, model)
             result.append(
                 Finetuning(**openai_fine_tuning.retrieve_finetuning_job().dict())
             )
@@ -685,7 +685,7 @@ class FastAPI(API):
         model = model_repository.find_by_id(finetuning_job_id)
         if not model:
             raise HTTPException(status_code=404, detail="Model not found")
-        openai_fine_tuning = OpenAIFineTuning(self.storage, model)
+        openai_fine_tuning = OpenAIFineTuning(self.system, self.storage, model)
         return openai_fine_tuning.retrieve_finetuning_job()
 
     @override
