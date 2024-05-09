@@ -29,10 +29,22 @@ docker-compose build
 docker-compose up
 ```
 
+## Setting up Authentication with Auth0
+To connect to Auth0 you will need to fill in the following environment variables before running the app:
+```
+AUTH0_DOMAIN=
+AUTH0_ISSUER=
+AUTH0_API_AUDIENCE=
+AUTH0_DISABED=False
+```
+
+Please, read the front-end docs about Auth0 [here](../admin-console/README.md#setting-up-an-auth0-application) if you have troubles setting this up.
+
 ## Setting up Stripe 
 To get the stripe api key for local development, go to stripe's developer dashboard in test mode (https://dashboard.stripe.com/test/developers), then go to the API keys tab and either use the exising key named `test key` or create a new one with the appropriate permissions.
 
 To get the stripe webhook secret go to the Webhook tab instead and click `Add local listener`.
+
 
 >If you would like to disable stripe, make sure to change your organization's plan to `ENTERPRISE`.
 
