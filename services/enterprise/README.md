@@ -2,8 +2,9 @@
 
 This is a fastapi backend application that handles the enterprise business logic. It's build on top of the ai engine and uses it internally
 
-## Building and Running with Docker
+## Building and Running with Docker Locally
 We use Docker to create a reproducible environment for ai-server.
+> Please use the dockerfile instead of the docker-compose file if you are trying to deploy it on your cloud platform.
 
 1. Create your local `.env` file and copy the variables from `.env.example` and fill them up
 
@@ -31,9 +32,11 @@ docker-compose up
 ## Setting up Stripe 
 To get the stripe api key for local development, go to stripe's developer dashboard in test mode (https://dashboard.stripe.com/test/developers), then go to the API keys tab and either use the exising key named `test key` or create a new one with the appropriate permissions.
 
-To get the stripe webhook secret go to the Webhook tab instead and click `Add local listener`
+To get the stripe webhook secret go to the Webhook tab instead and click `Add local listener`.
 
-## Testing
+>If you would like to disable stripe, make sure to change your organization's plan to `ENTERPRISE`.
+
+## Testing (deprecated)
 
 ### API Tests
 To run the Postman API test locally, use the Postman CLI:
@@ -45,7 +48,7 @@ Can you also use the Postman UI to run the tests instead, the test suite is unde
 
 Besure to choose the appropriate enviornment from postman. For local environment, run the initialzation script first.
 
-### Unit Tests (deprecated)
+### Unit Tests
 To test the endpoints in the server, create your python enviornment with required packages installed and run the pytest:
 ```
 python3 -m pytest tests/
@@ -83,8 +86,8 @@ docker exec <container_id> python3 -m database.scripts.data_report organization_
 
 5. It should create a csv file if there is data
 
-## Run Enterprise (server) and Engine (dataherald) containers
-Follow these steps to set up and run the Enterprise (server) and Engine (dataherald) containers:
+## Run Enterprise and Engine containers
+Follow these steps to set up and run the Enterprise and Engine containers for local development:
 
 1. Create the docker network if it doesn't exist
 ```
