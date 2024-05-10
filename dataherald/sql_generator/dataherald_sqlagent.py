@@ -710,13 +710,13 @@ class DataheraldSQLAgent(SQLGenerator):
         )
 
     @override
-    def generate_response(
+    def generate_response( # noqa: PLR0912
         self,
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
         metadata: dict = None,
-    ) -> SQLGeneration:
+    ) -> SQLGeneration: # noqa: PLR0912
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
         response = SQLGeneration(
