@@ -595,7 +595,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
                 f"Finetuning should have the status {FineTuningStatus.SUCCEEDED.value} to generate SQL queries."
             )
         self.database = SQLDatabase.get_sql_engine(database_connection)
-        if self.llm.openai_api_type == "azure":
+        if self.system.settings["azure_api_key"] is not None:
             embedding = AzureOpenAIEmbeddings(
                 openai_api_key=database_connection.decrypt_api_key(),
                 model=EMBEDDING_MODEL,
@@ -708,7 +708,7 @@ class DataheraldFinetuningAgent(SQLGenerator):
                 f"Finetuning should have the status {FineTuningStatus.SUCCEEDED.value} to generate SQL queries."
             )
         self.database = SQLDatabase.get_sql_engine(database_connection)
-        if self.llm.openai_api_type == "azure":
+        if self.system.settings["azure_api_key"] is not None:
             embedding = AzureOpenAIEmbeddings(
                 openai_api_key=database_connection.decrypt_api_key(),
                 model=EMBEDDING_MODEL,
