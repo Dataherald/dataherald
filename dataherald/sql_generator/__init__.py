@@ -179,7 +179,7 @@ class SQLGenerator(Component, ABC):
         """Generates a response to a user question."""
         pass
 
-    def stream_agent_steps(  # noqa: C901 # noqa: PLR0912
+    def stream_agent_steps(  # noqa: PLR0912, C901
         self,
         question: str,
         agent_executor: AgentExecutor,
