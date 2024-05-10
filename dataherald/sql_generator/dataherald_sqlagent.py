@@ -754,7 +754,7 @@ class DataheraldSQLAgent(SQLGenerator):
         logger.info(f"Generating SQL response to question: {str(user_prompt.dict())}")
         self.database = SQLDatabase.get_sql_engine(database_connection)
         # Set Embeddings class depending on azure / not azure
-        if self.llm.openai_api_type == "azure":
+        if self.system.settings["azure_api_key"] is not None:
             toolkit = SQLDatabaseToolkit(
                 db=self.database,
                 context=context,
@@ -874,7 +874,7 @@ class DataheraldSQLAgent(SQLGenerator):
             number_of_samples = 0
         self.database = SQLDatabase.get_sql_engine(database_connection)
         # Set Embeddings class depending on azure / not azure
-        if self.llm.openai_api_type == "azure":
+        if self.system.settings["azure_api_key"] is not None:
             embedding = AzureOpenAIEmbeddings(
                 openai_api_key=database_connection.decrypt_api_key(),
                 model=EMBEDDING_MODEL,
