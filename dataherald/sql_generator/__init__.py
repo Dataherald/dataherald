@@ -187,7 +187,7 @@ class SQLGenerator(Component, ABC):
         sql_generation_repository: SQLGenerationRepository,
         queue: Queue,
         metadata: dict = None,
-    ): # noqa: PLR0912
+    ):  # noqa: PLR0912
         try:
             with get_openai_callback() as cb:
                 for chunk in agent_executor.stream(
