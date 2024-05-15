@@ -1,9 +1,9 @@
-# AI Backend Enterprise
+# Enterprise Server
 
-This is a fastapi backend application that handles the enterprise business logic. It's build on top of the ai engine and uses it internally
+The "Enterprise Server" (or ai-server) is a fastapi backend application that implements the business logic that is exposed to the users in the front-end clients like Admin Console and Slackbot. This includes authentication and authorization (both API keys and UI). The application is built on top of the dataherald engine and the two access the same MongoDB instance for storage. Before running this application you need to be running the Dataherald engine.
 
 ## Building and Running with Docker Locally
-We use Docker to create a reproducible environment for ai-server.
+We use Docker to create the environment ai-server.
 > Please use the dockerfile instead of the docker-compose file if you are trying to deploy it on your cloud platform.
 
 1. Create your local `.env` file and copy the variables from `.env.example` and fill them up
