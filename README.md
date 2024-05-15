@@ -29,7 +29,7 @@ Dataherald is a natural language-to-SQL engine built for enterprise-level questi
 - Enable Q+A from your production DBs inside your SaaS application
 - Create a ChatGPT plug-in from your proprietary data
 
-This repository contains four components under `/services` which can be used together to set up an end-to-end :
+This repository contains four components under `/services` which can be used together to set up an end-to-end Dataherald deployment:
 
 1. Engine: The core natural language-to-SQL engine. If you would like to use the dataherald API without users or authenticaton, running the engine will suffice.
 2. Enterprise: The application API layer which adds authentication, organizations and users, and other business logic to Dataherald. 
