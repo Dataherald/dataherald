@@ -61,6 +61,11 @@ TOP_K = SQLGenerator.get_upper_bound_limit()
 EMBEDDING_MODEL = "text-embedding-3-large"
 TOP_TABLES = 20
 
+def safe_int_conversion(value, default):
+    try:
+        return int(value)
+    except ValueError:
+        return default
 
 def catch_exceptions():  # noqa: C901
     def decorator(fn: Callable[[str], str]) -> Callable[[str], str]:  # noqa: C901
@@ -85,13 +90,6 @@ def catch_exceptions():  # noqa: C901
                 return f"OpenAI API returned an error: {e}"
             except GoogleAPIError as e:
                 return f"Google API returned an error: {e}"
-            
-            # THEO : THIS VALUE ERROR ARE ADDED MANUALY
-            except ValueError as e:
-                if str(e) != "invalid literal for int() with base 10: ''":
-                    return f"Error: {e}"
-            # END OF THEO
-
             except SQLAlchemyError as e:
                 return f"Error: {e}"
             except Exception as e:
@@ -178,7 +176,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
                 self.db.run_sql,
                 args=(query,),
                 kwargs={"top_k": top_k},
-                timeout_duration=int(os.getenv("SQL_EXECUTION_TIMEOUT", "60")),
+                timeout_duration= safe_int_conversion(os.getenv("SQL_EXECUTION_TIMEOUT"), 60)
             )[0]
         except TimeoutError:
             return "SQL query execution time exceeded, proceed without query execution"
@@ -663,7 +661,7 @@ class DataheraldSQLAgent(SQLGenerator):
         max_examples: int = 20,
         number_of_instructions: int = 1,
         max_iterations: int
-        | None = int(os.getenv("AGENT_MAX_ITERATIONS", "15")),  # noqa: B008
+        | None = safe_int_conversion(os.getenv("AGENT_MAX_ITERATIONS"), 15), # noqa: B008
         max_execution_time: float | None = None,
         early_stopping_method: str = "generate",
         verbose: bool = False,
@@ -792,7 +790,7 @@ class DataheraldSQLAgent(SQLGenerator):
             verbose=True,
             max_examples=number_of_samples,
             number_of_instructions=len(instructions) if instructions is not None else 0,
-            max_execution_time=int(os.environ.get("DH_ENGINE_TIMEOUT", 150)),
+            max_execution_time=safe_int_conversion(os.getenv("DH_ENGINE_TIMEOUT"), 150),
         )
         agent_executor.return_intermediate_steps = True
         agent_executor.handle_parsing_errors = ERROR_PARSING_MESSAGE
@@ -806,20 +804,6 @@ class DataheraldSQLAgent(SQLGenerator):
                 raise SQLInjectionError(e) from e
             except EngineTimeOutORItemLimitError as e:
                 raise EngineTimeOutORItemLimitError(e) from e
-            
-            # THEO : THIS VALUE ERROR ARE ADDED MANUALY
-            except ValueError as e:
-                if str(e) != "invalid literal for int() with base 10: ''":
-                    return SQLGeneration(
-                        prompt_id=user_prompt.id,
-                        tokens_used=cb.total_tokens,
-                        completed_at=datetime.datetime.now(),
-                        sql="",
-                        status="INVALID",
-                        error=str(e),
-                    )
-            # END OF THEO
-
             except Exception as e:
                 return SQLGeneration(
                     prompt_id=user_prompt.id,
@@ -920,7 +904,7 @@ class DataheraldSQLAgent(SQLGenerator):
             verbose=True,
             max_examples=number_of_samples,
             number_of_instructions=len(instructions) if instructions is not None else 0,
-            max_execution_time=int(os.environ.get("DH_ENGINE_TIMEOUT", 150)),
+            max_execution_time=safe_int_conversion(os.getenv("DH_ENGINE_TIMEOUT"), 150),
         )
         agent_executor.return_intermediate_steps = True
         agent_executor.handle_parsing_errors = ERROR_PARSING_MESSAGE

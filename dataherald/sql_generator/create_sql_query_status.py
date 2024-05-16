@@ -4,10 +4,16 @@ from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.types import SQLGeneration
 from dataherald.utils.timeout_utils import run_with_timeout
 
+def safe_int_conversion(value, default):
+    try:
+        return int(value)
+    except ValueError:
+        return default
 
 def format_error_message(
     sql_generation: SQLGeneration, error_message: str
 ) -> SQLGeneration:
+    
     # Remove the complete query
     if error_message.find("[") > 0 and error_message.find("]") > 0:
         error_message = (
@@ -31,10 +37,11 @@ def create_sql_query_status(
     else:
         try:
             query = db.parser_to_filter_commands(query)
+ 
             run_with_timeout(
                 db.run_sql,
                 args=(query,),
-                timeout_duration=int(os.getenv("SQL_EXECUTION_TIMEOUT", "60")),
+                timeout_duration=safe_int_conversion(os.getenv("SQL_EXECUTION_TIMEOUT"), 60),
             )
             sql_generation.status = "VALID"
             sql_generation.error = None
