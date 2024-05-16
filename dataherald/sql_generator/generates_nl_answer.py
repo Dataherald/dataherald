@@ -50,12 +50,22 @@ class GeneratesNlAnswer:
         )
         database = SQLDatabase.get_sql_engine(database_connection, True)
 
-        if sql_generation.status == "INVALID":
-            return NLGeneration(
-                sql_generation_id=sql_generation.id,
-                text="I don't know, the SQL query is invalid.",
-                created_at=datetime.now(),
-            )
+        # THEO : THIS CODE IS ADDED MANUALY
+        if sql_generation.error != "invalid literal for int() with base 10: ''" or sql_generation.sql == '':
+            if sql_generation.status == "INVALID":
+                return NLGeneration(
+                    sql_generation_id=sql_generation.id,
+                    text="I don't know, the SQL query is invalid.",
+                    created_at=datetime.now(),
+                )
+        # END OF THEO
+
+        # if sql_generation.status == "INVALID":
+        #     return NLGeneration(
+        #         sql_generation_id=sql_generation.id,
+        #         text="I don't know, the SQL query is invalid.",
+        #         created_at=datetime.now(),
+        #     )
 
         try:
             query = database.parser_to_filter_commands(sql_generation.sql)

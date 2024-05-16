@@ -85,6 +85,13 @@ def catch_exceptions():  # noqa: C901
                 return f"OpenAI API returned an error: {e}"
             except GoogleAPIError as e:
                 return f"Google API returned an error: {e}"
+            
+            # THEO : THIS VALUE ERROR ARE ADDED MANUALY
+            except ValueError as e:
+                if str(e) != "invalid literal for int() with base 10: ''":
+                    return f"Error: {e}"
+            # END OF THEO
+
             except SQLAlchemyError as e:
                 return f"Error: {e}"
             except Exception as e:
@@ -799,6 +806,20 @@ class DataheraldSQLAgent(SQLGenerator):
                 raise SQLInjectionError(e) from e
             except EngineTimeOutORItemLimitError as e:
                 raise EngineTimeOutORItemLimitError(e) from e
+            
+            # THEO : THIS VALUE ERROR ARE ADDED MANUALY
+            except ValueError as e:
+                if str(e) != "invalid literal for int() with base 10: ''":
+                    return SQLGeneration(
+                        prompt_id=user_prompt.id,
+                        tokens_used=cb.total_tokens,
+                        completed_at=datetime.datetime.now(),
+                        sql="",
+                        status="INVALID",
+                        error=str(e),
+                    )
+            # END OF THEO
+
             except Exception as e:
                 return SQLGeneration(
                     prompt_id=user_prompt.id,
