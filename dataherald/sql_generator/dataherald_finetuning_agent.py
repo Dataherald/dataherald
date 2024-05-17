@@ -41,7 +41,7 @@ from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
 from dataherald.sql_database.models.types import (
     DatabaseConnection,
 )
-from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator
+from dataherald.sql_generator import EngineTimeOutORItemLimitError, SQLGenerator, safe_int_conversion
 from dataherald.types import FineTuningStatus, Prompt, SQLGeneration
 from dataherald.utils.agent_prompts import (
     ERROR_PARSING_MESSAGE,
@@ -290,7 +290,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
                 self.db.run_sql,
                 args=(query,),
                 kwargs={"top_k": TOP_K},
-                timeout_duration=int(os.getenv("SQL_EXECUTION_TIMEOUT", "60")),
+                timeout_duration=safe_int_conversion(os.getenv("SQL_EXECUTION_TIMEOUT"), 60),
             )[0]
         except TimeoutError:
             return "SQL query execution time exceeded, proceed without query execution"

@@ -35,6 +35,12 @@ def replace_unprocessable_characters(text: str) -> str:
     text = text.strip()
     return text.replace(r"\_", "_")
 
+def safe_int_conversion(value: str, default: int = 0) -> int:
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
 
 class SQLGenerator(Component, ABC):
     metadata: Any

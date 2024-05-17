@@ -1,6 +1,7 @@
 import os
 
 from dataherald.sql_database.base import SQLDatabase, SQLInjectionError
+from dataherald.sql_generator import safe_int_conversion
 from dataherald.types import SQLGeneration
 from dataherald.utils.timeout_utils import run_with_timeout
 
@@ -34,7 +35,7 @@ def create_sql_query_status(
             run_with_timeout(
                 db.run_sql,
                 args=(query,),
-                timeout_duration=int(os.getenv("SQL_EXECUTION_TIMEOUT", "60")),
+                timeout_duration=safe_int_conversion(os.getenv("SQL_EXECUTION_TIMEOUT"), 60),
             )
             sql_generation.status = "VALID"
             sql_generation.error = None
