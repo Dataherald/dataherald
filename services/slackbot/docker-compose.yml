@@ -1,4 +1,3 @@
-version: '3'
 services:
   slackbot:
     build: .
@@ -9,8 +8,8 @@ services:
       - .:/app
       - /app/node_modules
     networks:
-      - backendnetwork
+      - dataherald_network
 networks:
-  backendnetwork:
+  dataherald_network:
     external: true
 

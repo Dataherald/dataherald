@@ -123,7 +123,7 @@ Fernet.generate_key()
 >We need to set it up externally to enable external clients running on docker to communicate with this app. 
 Run the following command:
 ```
-docker network create backendnetwork
+docker network create dataherald_network
 ```
 
 4. Build docker images, create containers and raise them. This will raise the app and mongo container

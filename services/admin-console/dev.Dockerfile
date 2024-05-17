@@ -1,5 +1,7 @@
 FROM node:18-alpine
 
+LABEL Author="Juan Sebastian Valacco"
+
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager

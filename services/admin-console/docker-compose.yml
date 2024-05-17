@@ -12,3 +12,8 @@ services:
     restart: always
     ports:
       - 3000:3000
+    networks:
+      - dataherald_network
+networks:
+  dataherald_network:
+    external: true

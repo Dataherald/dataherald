@@ -46,7 +46,7 @@ Starting Docker
 
 #. Create a Docker network for communication between services (the Dataherald engine and Mongo) using the following command 
 
-    ```docker network create backendnetwork```
+    ```docker network create dataherald_network```
 
 
 #. Build the docker images, create containers and raise them by running
