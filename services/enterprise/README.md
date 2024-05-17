@@ -114,9 +114,9 @@ cp .env.example .env
 3. Make sure you use the same `ENCRYPT_KEY` for `server` and `dataherald`.
 
 
-4. For `K2_CORE_URL` check that you use as host the service name that is specified in docker-composer file, for example:
+4. For `ENGINE_URL` check that you use as host the service name that is specified in docker-composer file, for example:
 ```
-K2_CORE_URL=http://app/api/v1
+ENGINE_URL=http://app/api/v1
 ```
 
 5. Run the containers and execute the initialization script to generate data. It should create a real db_connection, 
