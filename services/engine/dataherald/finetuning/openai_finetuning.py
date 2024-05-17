@@ -7,12 +7,13 @@ from typing import Any, List
 
 import numpy as np
 import tiktoken
-from langchain_openai import OpenAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings, OpenAIEmbeddings
 from openai import OpenAI
 from overrides import override
 from sql_metadata import Parser
 from tiktoken import Encoding
 
+from dataherald.config import System
 from dataherald.db_scanner.models.types import TableDescription, TableDescriptionStatus
 from dataherald.db_scanner.repository.base import TableDescriptionRepository
 from dataherald.finetuning import FinetuningModel
@@ -36,17 +37,24 @@ class OpenAIFineTuning(FinetuningModel):
     storage: Any
     client: OpenAI
 
-    def __init__(self, storage: Any, fine_tuning_model: Finetuning):
+    def __init__(self, system: System, storage: Any, fine_tuning_model: Finetuning):
         self.storage = storage
+        self.system = system
         self.fine_tuning_model = fine_tuning_model
         db_connection_repository = DatabaseConnectionRepository(storage)
         db_connection = db_connection_repository.find_by_id(
             fine_tuning_model.db_connection_id
         )
-        self.embedding = OpenAIEmbeddings( #TODO AzureOpenAIEmbeddings when Azure
-            openai_api_key=db_connection.decrypt_api_key(),
-            model=EMBEDDING_MODEL,
-        )
+        if self.system.settings["azure_api_key"] is not None:
+            self.embedding = AzureOpenAIEmbeddings(
+                azure_api_key=db_connection.decrypt_api_key(),
+                model=EMBEDDING_MODEL,
+            )
+        else:
+            self.embedding = OpenAIEmbeddings(
+                openai_api_key=db_connection.decrypt_api_key(),
+                model=EMBEDDING_MODEL,
+            )
         self.encoding = tiktoken.encoding_for_model(
             fine_tuning_model.base_llm.model_name
         )

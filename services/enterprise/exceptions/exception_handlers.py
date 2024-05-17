@@ -13,7 +13,6 @@ from exceptions.utils import is_http_error
 
 
 async def exception_handler(request: Request, exc: BaseError):  # noqa: ARG001
-
     trace_id = exc.trace_id
     error_code = exc.error_code
     status_code = exc.status_code

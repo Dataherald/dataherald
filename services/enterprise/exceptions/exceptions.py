@@ -39,7 +39,6 @@ class BaseError(ABC, Exception):
         description: str = None,
         detail: dict = None,
     ) -> None:
-
         if type(self) is BaseError:
             raise TypeError("BaseError class may not be instantiated directly")
 

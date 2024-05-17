@@ -179,7 +179,7 @@ class SQLGenerator(Component, ABC):
         """Generates a response to a user question."""
         pass
 
-    def stream_agent_steps(  # noqa: C901
+    def stream_agent_steps(  # noqa: PLR0912, C901
         self,
         question: str,
         agent_executor: AgentExecutor,
@@ -187,7 +187,7 @@ class SQLGenerator(Component, ABC):
         sql_generation_repository: SQLGenerationRepository,
         queue: Queue,
         metadata: dict = None,
-    ):
+    ):  # noqa: PLR0912
         try:
             with get_openai_callback() as cb:
                 for chunk in agent_executor.stream(
