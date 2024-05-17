@@ -84,7 +84,9 @@ class DBConnectionService:
         )
 
         if organization.llm_api_key:
-            db_connection_internal_request.llm_api_key = FernetEncrypt().decrypt(organization.llm_api_key)
+            db_connection_internal_request.llm_api_key = FernetEncrypt().decrypt(
+                organization.llm_api_key
+            )
 
         if db_connection_request.use_ssh:
             db_connection_internal_request.ssh_settings.private_key_password = (
@@ -140,8 +142,9 @@ class DBConnectionService:
         )
 
         if organization.llm_api_key:
-            db_connection_internal_request.llm_api_key = FernetEncrypt().decrypt(organization.llm_api_key)
-
+            db_connection_internal_request.llm_api_key = FernetEncrypt().decrypt(
+                organization.llm_api_key
+            )
 
         if db_connection_request.use_ssh:
             db_connection_internal_request.ssh_settings.private_key_password = (
@@ -163,7 +166,6 @@ class DBConnectionService:
     async def add_sample_db_connection(
         self, sample_request: SampleDBRequest, org_id: str
     ) -> DBConnectionResponse:
-
         sample_db_dict = await self.sample_db.add_sample_db(
             sample_request.sample_db_id, org_id
         )

@@ -95,7 +95,6 @@ async def ac_get_db_connection(
     id: ObjectIdString,
     user: User = Security(authenticate_user),
 ) -> DBConnectionResponse:
-
     return db_connection_service.get_db_connection(id, user.organization_id)
 
 

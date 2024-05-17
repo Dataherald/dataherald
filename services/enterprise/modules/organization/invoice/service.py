@@ -84,12 +84,12 @@ class InvoiceService:
         raise CannotUpdateSpendingLimitError(org_id)
 
     def get_pending_invoice(self, org_id: str) -> InvoiceResponse:
-
         organization = self.org_repo.get_organization(org_id)
-        current_period_start, current_period_end = (
-            self.billing.get_current_subscription_period_with_anchor(
-                organization.invoice_details.billing_cycle_anchor
-            )
+        (
+            current_period_start,
+            current_period_end,
+        ) = self.billing.get_current_subscription_period_with_anchor(
+            organization.invoice_details.billing_cycle_anchor
         )
         upcoming_invoice = self.billing.get_upcoming_invoice(
             organization.invoice_details.stripe_customer_id
@@ -304,10 +304,11 @@ class InvoiceService:
                 ):
                     raise SubscriptionCanceledError(org_id)
                 raise UnknownSubscriptionStatusError(org_id)
-            start_date, end_date = (
-                self.billing.get_current_subscription_period_with_anchor(
-                    organization.invoice_details.billing_cycle_anchor
-                )
+            (
+                start_date,
+                end_date,
+            ) = self.billing.get_current_subscription_period_with_anchor(
+                organization.invoice_details.billing_cycle_anchor
             )
             usages = self.repo.get_usages(org_id, start_date, end_date)
             usage = Usage(

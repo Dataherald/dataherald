@@ -63,9 +63,9 @@ class SQLGenerationService:
         initial_sql_generation.intermediate_steps = sql_generation.intermediate_steps
         return self.sql_generation_repository.update(initial_sql_generation)
 
-    def create( # noqa: PLR0912
+    def create(  # noqa: PLR0912
         self, prompt_id: str, sql_generation_request: SQLGenerationRequest
-    ) -> SQLGeneration: # noqa: PLR0912
+    ) -> SQLGeneration:  # noqa: PLR0912
         initial_sql_generation = SQLGeneration(
             prompt_id=prompt_id,
             created_at=datetime.now(),
