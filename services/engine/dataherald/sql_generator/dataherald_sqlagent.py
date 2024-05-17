@@ -22,7 +22,7 @@ from langchain.callbacks.manager import (
 from langchain.chains.llm import LLMChain
 from langchain.tools.base import BaseTool
 from langchain_community.callbacks import get_openai_callback
-from langchain_openai import OpenAIEmbeddings, AzureOpenAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings, OpenAIEmbeddings
 from overrides import override
 from pydantic import BaseModel, Field
 from sql_metadata import Parser
@@ -710,13 +710,13 @@ class DataheraldSQLAgent(SQLGenerator):
         )
 
     @override
-    def generate_response(
+    def generate_response(  # noqa: PLR0912
         self,
         user_prompt: Prompt,
         database_connection: DatabaseConnection,
         context: List[dict] = None,
         metadata: dict = None,
-    ) -> SQLGeneration:
+    ) -> SQLGeneration:  # noqa: PLR0912
         context_store = self.system.instance(ContextStore)
         storage = self.system.instance(DB)
         response = SQLGeneration(
@@ -753,8 +753,8 @@ class DataheraldSQLAgent(SQLGenerator):
             number_of_samples = 0
         logger.info(f"Generating SQL response to question: {str(user_prompt.dict())}")
         self.database = SQLDatabase.get_sql_engine(database_connection)
-        #Set Embeddings class depending on azure / not azure
-        if self.llm.openai_api_type == "azure":
+        # Set Embeddings class depending on azure / not azure
+        if self.system.settings["azure_api_key"] is not None:
             toolkit = SQLDatabaseToolkit(
                 db=self.database,
                 context=context,
@@ -873,21 +873,17 @@ class DataheraldSQLAgent(SQLGenerator):
             new_fewshot_examples = None
             number_of_samples = 0
         self.database = SQLDatabase.get_sql_engine(database_connection)
-        #Set Embeddings class depending on azure / not azure
-        if self.llm.openai_api_type == "azure":
-            toolkit = SQLDatabaseToolkit(
-                db=self.database,
-                context=context,
-                few_shot_examples=new_fewshot_examples,
-                instructions=instructions,
-                is_multiple_schema=True if user_prompt.schemas else False,
-                db_scan=db_scan,
-                embedding=AzureOpenAIEmbeddings( 
-                    openai_api_key=database_connection.decrypt_api_key(),
-                    model=EMBEDDING_MODEL,
-                ),
+        # Set Embeddings class depending on azure / not azure
+        if self.system.settings["azure_api_key"] is not None:
+            embedding = AzureOpenAIEmbeddings(
+                openai_api_key=database_connection.decrypt_api_key(),
+                model=EMBEDDING_MODEL,
             )
-        else:       
+        else:
+            embedding = OpenAIEmbeddings(
+                openai_api_key=database_connection.decrypt_api_key(),
+                model=EMBEDDING_MODEL,
+            )
             toolkit = SQLDatabaseToolkit(
                 queuer=queue,
                 db=self.database,
@@ -896,10 +892,7 @@ class DataheraldSQLAgent(SQLGenerator):
                 instructions=instructions,
                 is_multiple_schema=True if user_prompt.schemas else False,
                 db_scan=db_scan,
-                embedding=OpenAIEmbeddings(
-                    openai_api_key=database_connection.decrypt_api_key(),
-                    model=EMBEDDING_MODEL,
-                ),
+                embedding=embedding,
             )
         agent_executor = self.create_sql_agent(
             toolkit=toolkit,
