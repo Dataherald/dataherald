@@ -1,5 +1,6 @@
 services:
   api:
+    container_name: api
     build:
       context: .
       dockerfile: Dockerfile

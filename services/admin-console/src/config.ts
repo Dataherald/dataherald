@@ -1,4 +1,5 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL
+const isServer = typeof window === 'undefined';
+export const API_URL = isServer ? process.env.DOCKER_API_URL || process.env.NEXT_PUBLIC_API_URL : process.env.NEXT_PUBLIC_API_URL;
 export const AUTH = {
   hostname: process.env.AUTH0_BASE_URL,
   cliendId: process.env.AUTH0_CLIENT_ID,

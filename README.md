@@ -51,7 +51,7 @@ Each component in the `/services` directory has its own `docker-compose.yml` fil
 Run the script to start all services:
 
 ```bash
-sh run.sh
+sh docker-run.sh
 ```
 
 ## Contributing

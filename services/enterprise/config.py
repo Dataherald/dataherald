@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     load_dotenv()
 
     engine_url: str = os.environ.get("ENGINE_URL")
-    default_engine_timeout: int = os.environ.get("DEFAULT_K2_TIMEOUT")
+    default_engine_timeout: int = os.environ.get("DEFAULT_ENGINE_TIMEOUT")
     encrypt_key: str = os.environ.get("ENCRYPT_KEY")
     api_key_salt: str = os.environ.get("API_KEY_SALT")
 

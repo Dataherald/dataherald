@@ -140,7 +140,7 @@ It should look like this:
 ```
 CONTAINER ID   IMAGE            COMMAND                  CREATED         STATUS         PORTS                      NAMES
 72aa8df0d589   dataherald-app   "uvicorn dataherald.…"   7 seconds ago   Up 6 seconds   0.0.0.0:80->80/tcp         dataherald-app-1
-6595d145b0d7   mongo:latest     "docker-entrypoint.s…"   19 hours ago    Up 6 seconds   0.0.0.0:27017->27017/tcp   dataherald-mongodb-1
+6595d145b0d7   mongo:latest     "docker-entrypoint.s…"   19 hours ago    Up 6 seconds   0.0.0.0:27017->27017/tcp   mongodb
 ```
 
 6. In your browser visit [http://localhost/docs](http://localhost/docs)

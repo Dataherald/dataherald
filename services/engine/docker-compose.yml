@@ -1,5 +1,6 @@
 services:
   engine:
+    container_name: engine
     build:
       context: .
       dockerfile: Dockerfile
@@ -18,6 +19,7 @@ services:
       - dataherald_network
     env_file: .env
   mongodb:
+    container_name: mongodb
     image: mongo:latest
     restart: always
     ports:

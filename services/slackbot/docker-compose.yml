@@ -1,15 +1,15 @@
 services:
-  slackbot:
-    build: .
-    working_dir: /app
-    ports:
-      - "3005:3005"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    networks:
-      - dataherald_network
+    slackbot:
+        container_name: slackbot
+        build: .
+        working_dir: /app
+        ports:
+            - '3005:3005'
+        volumes:
+            - .:/app
+            - /app/node_modules
+        networks:
+            - dataherald_network
 networks:
-  dataherald_network:
-    external: true
-
+    dataherald_network:
+        external: true
