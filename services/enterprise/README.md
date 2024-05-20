@@ -12,7 +12,7 @@ We use Docker to create the environment ai-server.
 >We need to set it up externally to enable external clients running on docker to communicate with this app. 
 Run the following command:
 ```
-docker network create backendnetwork
+docker network create dataherald_network
 ```
 >If you are running ai-engine locally on docker, you can find container's IP by running this command:
 ```
@@ -103,7 +103,7 @@ Follow these steps to set up and run the Enterprise and Engine containers for lo
 
 1. Create the docker network if it doesn't exist
 ```
-docker network create backendnetwork
+docker network create dataherald_network
 ```
 
 2. Set the envvars in the .env file for `server` and `dataherald` projects
@@ -114,9 +114,9 @@ cp .env.example .env
 3. Make sure you use the same `ENCRYPT_KEY` for `server` and `dataherald`.
 
 
-4. For `K2_CORE_URL` check that you use as host the service name that is specified in docker-composer file, for example:
+4. For `ENGINE_URL` check that you use as host the service name that is specified in docker-composer file, for example:
 ```
-K2_CORE_URL=http://app/api/v1
+ENGINE_URL=http://app/api/v1
 ```
 
 5. Run the containers and execute the initialization script to generate data. It should create a real db_connection, 

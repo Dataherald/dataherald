@@ -1,6 +1,6 @@
-version: "3.9"
 services:
-  app:
+  api:
+    container_name: api
     build:
       context: .
       dockerfile: Dockerfile
@@ -13,7 +13,7 @@ services:
     volumes:
       - .:/app
     networks:
-      - backendnetwork
+      - dataherald_network
 networks:
-  backendnetwork:
+  dataherald_network:
     external: true

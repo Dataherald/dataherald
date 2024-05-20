@@ -1,6 +1,6 @@
 services:
   next-app:
-    container_name: next-app
+    container_name: console
     build:
       context: .
       dockerfile: dev.Dockerfile
@@ -9,6 +9,11 @@ services:
     volumes:
       - ./src:/app/src
       - ./public:/app/public
-    restart: always
     ports:
       - 3000:3000
+    restart: always
+    networks:
+      - dataherald_network
+networks:
+  dataherald_network:
+    external: true
