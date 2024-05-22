@@ -28,6 +28,11 @@ class UserService:
     def get_user(self, user_id: str, org_id: str) -> UserResponse:
         return self.get_user_in_org(user_id, org_id)
 
+    def get_user_by_sub(self, sub: str) -> User:
+        """Helper function to get user by Auth0sub."""
+        user = self.repo.get_user_by_sub(sub)
+        return user if user else None
+
     def get_user_by_email(self, email: str) -> User:
         """Helper function to get user by email."""
         user = self.repo.get_user_by_email(email)

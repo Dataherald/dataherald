@@ -13,6 +13,10 @@ class UserRepository:
         user = MongoDB.find_one(USER_COL, query)
         return User(id=str(user["_id"]), **user) if user else None
 
+    def get_user_by_sub(self, sub: str) -> User:
+        user = MongoDB.find_one(USER_COL, {"sub": sub})
+        return User(id=str(user["_id"]), **user) if user else None
+
     def get_user_by_email(self, email: str) -> User:
         user = MongoDB.find_one(USER_COL, {"email": email})
         return User(id=str(user["_id"]), **user) if user else None
