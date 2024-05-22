@@ -33,7 +33,7 @@ docker-compose up
 To connect to Auth0 you will need to fill in the following environment variables before running the app:
 ```
 AUTH0_DOMAIN=
-AUTH0_ISSUER=
+AUTH0_ISSUER_BASE_URL=
 AUTH0_API_AUDIENCE=
 AUTH0_DISABED=False
 ```

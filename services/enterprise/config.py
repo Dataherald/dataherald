@@ -64,7 +64,7 @@ class AuthSettings(BaseSettings):
     auth0_domain: str = os.environ.get("AUTH0_DOMAIN")
     auth0_algorithms: str = os.environ.get("AUTH0_ALGORITHMS", "RS256")
     auth0_audience: str = os.environ.get("AUTH0_API_AUDIENCE")
-    auth0_issuer: str = os.environ.get("AUTH0_ISSUER")
+    auth0_issuer: str = os.environ.get("AUTH0_ISSUER_BASE_URL")
 
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
