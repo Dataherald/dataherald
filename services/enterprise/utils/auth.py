@@ -80,10 +80,10 @@ class VerifyToken:
 
 class Authorize:
     def user(self, payload: dict) -> User:
-        email = payload[auth_settings.auth0_issuer + "email"]
-        user = user_service.get_user_by_email(email)
+        sub = payload['sub']
+        user = user_service.get_user_by_sub(sub)
         if not user:
-            raise UnauthorizedUserError(email=email)
+            raise UnauthorizedUserError(email=sub)
         return user
 
     def user_in_organization(self, user_id: str, org_id: str):
