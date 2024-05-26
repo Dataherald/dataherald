@@ -80,7 +80,7 @@ class VerifyToken:
 
 class Authorize:
     def user(self, payload: dict) -> User:
-        sub = payload['sub']
+        sub = payload["sub"]
         user = user_service.get_user_by_sub(sub)
         if not user:
             raise UnauthorizedUserError(email=sub)
