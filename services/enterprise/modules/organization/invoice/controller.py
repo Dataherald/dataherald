@@ -19,7 +19,7 @@ from modules.organization.invoice.webhook import InvoiceWebhook
 from utils.auth import Authorize, User, authenticate_user
 
 
-def check_stripe_disabled(request: Request):
+def is_stripe_disabled(request: Request):
     if invoice_settings.stripe_disabled:
         raise StripeDisabledError()
     return request
@@ -28,7 +28,7 @@ def check_stripe_disabled(request: Request):
 router = APIRouter(
     prefix="/organizations",
     responses={404: {"description": "Not found"}},
-    dependencies=[Depends(check_stripe_disabled)],
+    dependencies=[Depends(is_stripe_disabled)],
 )
 
 authorize = Authorize()

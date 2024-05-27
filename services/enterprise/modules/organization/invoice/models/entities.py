@@ -70,3 +70,14 @@ class UsageInvoice(BaseModel):
     sql_generation_cost: int = 0
     finetuning_gpt_35_cost: int = 0
     finetuning_gpt_4_cost: int = 0
+
+
+class MockStripeCustomer(BaseModel):
+    id: str | None = None
+    name: str | None = None
+
+
+class MockStripeSubscription(BaseModel):
+    id: str | None = None
+    status: str | None = None
+    billing_cycle_anchor: int | None = None
