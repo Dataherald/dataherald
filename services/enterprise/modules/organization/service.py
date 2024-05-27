@@ -4,6 +4,8 @@ from config import invoice_settings
 from modules.organization.invoice.models.entities import (
     Credit,
     InvoiceDetails,
+    MockStripeCustomer,
+    MockStripeSubscription,
     PaymentPlan,
     RecordStatus,
 )
@@ -62,8 +64,12 @@ class OrganizationService:
             )
         organization = Organization(**org_request.dict())
 
-        customer = self.billing.create_customer(organization.name)
-        subscription = self.billing.create_subscription(customer.id)
+        if invoice_settings.stripe_disabled:
+            customer = MockStripeCustomer()
+            subscription = MockStripeSubscription()
+        else:
+            customer = self.billing.create_customer(organization.name)
+            subscription = self.billing.create_subscription(customer.id)
         # default organization plan is CREDIT_ONLY
         organization.invoice_details = InvoiceDetails(
             plan=PaymentPlan.CREDIT_ONLY,
@@ -161,8 +167,12 @@ class OrganizationService:
             owner=slack_installation_request.user.id,
         )
 
-        customer = self.billing.create_customer(organization.name)
-        subscription = self.billing.create_subscription(customer.id)
+        if invoice_settings.stripe_disabled:
+            customer = MockStripeCustomer()
+            subscription = MockStripeSubscription()
+        else:
+            customer = self.billing.create_customer(organization.name)
+            subscription = self.billing.create_subscription(customer.id)
         organization.invoice_details = InvoiceDetails(
             plan=PaymentPlan.CREDIT_ONLY,
             stripe_customer_id=customer.id,
