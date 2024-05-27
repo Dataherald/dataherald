@@ -27,7 +27,7 @@ tip2) After executing the query, if the SQL query resulted in errors or not corr
 tip3) Always call the GetAdminInstructions tool before generating the SQL query, it will give you rules to follow when writing the SQL query.
 tip4) The Question/SQL pairs are labelled as correct pairs, so you can use them to answer the question and execute the query to make sure it is correct.
 tip5) If SQL results has None or NULL values, handle them by adding a WHERE clause to filter them out.
-tip6) The existance of the string values in the columns should always be checked using the DbColumnEntityChecker tool.
+tip6) The existence of the string values in the columns should always be checked using the DbColumnEntityChecker tool.
 tip7) You should always execute the SQL query by calling the SqlDbQuery tool to make sure the results are correct.
 """  # noqa: E501
 
@@ -43,7 +43,7 @@ Some tips to always keep in mind:
 tip1) After executing the query, if the SQL query resulted in errors or not correct results, rewrite the SQL query and try again.
 tip2) Always call the GetAdminInstructions tool before generating the SQL query, it will give you rules to follow when writing the SQL query.
 tip3) If SQL results has None or NULL values, handle them by adding a WHERE clause to filter them out.
-tip4) The existance of the string values in the columns should always be checked using the DbColumnEntityChecker tool.
+tip4) The existence of the string values in the columns should always be checked using the DbColumnEntityChecker tool.
 tip5) You should always execute the SQL query by calling the SqlDbQuery tool to make sure the results are correct.
 """  # noqa: E501
 
@@ -60,7 +60,7 @@ tip1) The maximum number of Question/SQL pairs you can request is {max_examples}
 tip2) After executing the query, if the SQL query resulted in errors or not correct results, rewrite the SQL query and try again.
 tip3) The Question/SQL pairs are labelled as correct pairs, so you can use them to answer the question and execute the query to make sure it is correct.
 tip4) If SQL results has None or NULL values, handle them by adding a WHERE clause to filter them out.
-tip5) The existance of the string values in the columns should always be checked using the DbColumnEntityChecker tool.
+tip5) The existence of the string values in the columns should always be checked using the DbColumnEntityChecker tool.
 tip6) You should always execute the SQL query by calling the SqlDbQuery tool to make sure the results are correct.
 """  # noqa: E501
 
@@ -74,7 +74,7 @@ PLAN_BASE = """1) Use the DbTablesWithRelevanceScores tool to find relevant tabl
 Some tips to always keep in mind:
 tip1) If the SQL query resulted in errors or not correct results, rewrite the SQL query and try again.
 tip2) If SQL results has None or NULL values, handle them by adding a WHERE clause to filter them out.
-tip3) The existance of the string values in the columns should always be checked using the DbColumnEntityChecker tool.
+tip3) The existence of the string values in the columns should always be checked using the DbColumnEntityChecker tool.
 tip4) You should always execute the SQL query by calling the SqlDbQuery tool to make sure the results are correct.
 """  # noqa: E501
 
