@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Security, status
+from fastapi import APIRouter, Depends, Security, status
 from starlette.requests import Request
 
+from config import invoice_settings
+from modules.organization.invoice.models.exceptions import StripeDisabledError
 from modules.organization.invoice.models.requests import (
     CreditRequest,
     PaymentMethodRequest,
@@ -16,9 +18,17 @@ from modules.organization.invoice.service import InvoiceService
 from modules.organization.invoice.webhook import InvoiceWebhook
 from utils.auth import Authorize, User, authenticate_user
 
+
+def check_stripe_disabled(request: Request):
+    if invoice_settings.stripe_disabled:
+        raise StripeDisabledError()
+    return request
+
+
 router = APIRouter(
     prefix="/organizations",
     responses={404: {"description": "Not found"}},
+    dependencies=[Depends(check_stripe_disabled)],
 )
 
 authorize = Authorize()

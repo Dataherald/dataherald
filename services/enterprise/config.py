@@ -102,6 +102,7 @@ class AnalyticSettings(BaseSettings):
 class InvoiceSettings(BaseSettings):
     load_dotenv()
 
+    stripe_disabled: bool = os.environ.get("STRIPE_DISABLED", False)
     stripe_api_key: str = os.environ.get("STRIPE_API_KEY", None)
     stripe_webhook_secret: str = os.environ.get("STRIPE_WEBHOOK_SECRET", None)
 
