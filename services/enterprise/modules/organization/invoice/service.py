@@ -244,6 +244,8 @@ class InvoiceService:
         quantity: int = 0,
         description: str = None,
     ):
+        if invoice_settings.stripe_disabled:
+            return
         organization = self.org_repo.get_organization(org_id)
         if organization.invoice_details.plan == PaymentPlan.ENTERPRISE:
             return
@@ -283,7 +285,8 @@ class InvoiceService:
         type: UsageType,
         quantity: int = 0,
     ):
-        # check if organization has payment method
+        if invoice_settings.stripe_disabled:
+            return
         organization = self.org_repo.get_organization(org_id)
         if not organization.invoice_details:
             raise MissingInvoiceDetailsError(org_id)

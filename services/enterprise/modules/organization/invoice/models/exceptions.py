@@ -9,6 +9,9 @@ from exceptions.exceptions import BaseError
 
 
 class InvoiceErrorCode(BaseErrorCode):
+    stripe_disabled = ErrorCodeData(
+        status_code=HTTP_400_BAD_REQUEST, message="Stripe is disabled"
+    )
     no_payment_method = ErrorCodeData(
         status_code=HTTP_402_PAYMENT_REQUIRED,
         message="No payment method on file",
@@ -57,6 +60,11 @@ class InvoiceError(BaseError):
     """
 
     ERROR_CODES: BaseErrorCode = InvoiceErrorCode
+
+
+class StripeDisabledError(InvoiceError):
+    def __init__(self) -> None:
+        super().__init__(error_code=InvoiceErrorCode.stripe_disabled.name)
 
 
 class NoPaymentMethodError(InvoiceError):

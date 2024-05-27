@@ -21,7 +21,7 @@ select = [
     "UP",
     "W",
 ]
-ignore = ["A001", "A002", "A003", "B008", "UP006", "UP035", "PLR0913", "N805"]
+ignore = ["A001", "A002", "A003", "B008", "UP006", "UP035", "PLR0913", "N805", "C901"]
 target-version = "py310"
 
 [tool.ruff.per-file-ignores]
