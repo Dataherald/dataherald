@@ -12,28 +12,44 @@ class S3:
     def __init__(self):
         self.settings = Settings()
 
+    def _get_client(self, access_key: str | None = None, secret_access_key: str | None = None, region: str | None = None): -> boto3.client:
+        _access_key = access_key or self.settings.s3_aws_access_key_id
+        _secret_access_key = secret_access_key or self.settings.s3_aws_secret_access_key
+        _region = region or self.settings.s3_region
+
+        if self.settings.s3_custom_endpoint:
+            return boto3.client(
+                "s3",
+                endpoint_url=self.settings.s3_custom_endpoint,
+                aws_session_token=None,
+                aws_access_key_id=_access_key,
+                aws_secret_access_key=_secret_access_key,
+                region_name=_region,
+            )
+
+        return boto3.client(
+            "s3",
+            aws_access_key_id=_access_key,
+            aws_secret_access_key=_secret_access_key,
+            region_name=_region,
+        )
+
     def upload(self, file_location, file_storage: FileStorage | None = None) -> str:
         file_name = file_location.split("/")[-1]
-        bucket_name = "k2-core"
+        bucket_name = self.settings.s3_bucket_name
 
         # Upload the file
         if file_storage:
             fernet_encrypt = FernetEncrypt()
             bucket_name = file_storage.bucket
-            s3_client = boto3.client(
-                "s3",
-                aws_access_key_id=fernet_encrypt.decrypt(file_storage.access_key_id),
-                aws_secret_access_key=fernet_encrypt.decrypt(
-                    file_storage.secret_access_key
-                ),
-                region_name=file_storage.region,
+            s3_client = self._get_client(
+                access_key=fernet_encrypt.decrypt(file_storage.access_key_id),
+                secret_access_key=fernet_encrypt.decrypt(file_storage.secret_access_key),
+                region=file_storage.region,
             )
         else:
-            s3_client = boto3.client(
-                "s3",
-                aws_access_key_id=self.settings.s3_aws_access_key_id,
-                aws_secret_access_key=self.settings.s3_aws_secret_access_key,
-            )
+            s3_client = self._get_client()
+
         s3_client.upload_file(
             file_location, bucket_name, os.path.basename(file_location)
         )
@@ -45,20 +61,14 @@ class S3:
         path = path.split("/")
         if file_storage:
             fernet_encrypt = FernetEncrypt()
-            s3_client = boto3.client(
-                "s3",
-                aws_access_key_id=fernet_encrypt.decrypt(file_storage.access_key_id),
-                aws_secret_access_key=fernet_encrypt.decrypt(
-                    file_storage.secret_access_key
-                ),
-                region_name=file_storage.region,
+            s3_client = self._get_client(
+                access_key=fernet_encrypt.decrypt(file_storage.access_key_id),
+                secret_access_key=fernet_encrypt.decrypt(file_storage.secret_access_key),
+                region=file_storage.region,
             )
         else:
-            s3_client = boto3.client(
-                "s3",
-                aws_access_key_id=self.settings.s3_aws_access_key_id,
-                aws_secret_access_key=self.settings.s3_aws_secret_access_key,
-            )
+            s3_client = self._get_client()
+
         file_location = f"tmp/{path[-1]}"
         s3_path = path[-1]
         if len(s3_path[3:]) > 1:

@@ -33,11 +33,22 @@ class S3:
     def _upload_file(self, file_location: str, file_name: str) -> str:
         bucket_name = aws_s3_settings.s3_bucket_name
         # Upload the file
-        s3_client = boto3.client(
-            "s3",
-            aws_access_key_id=aws_s3_settings.s3_aws_access_key_id,
-            aws_secret_access_key=aws_s3_settings.s3_aws_secret_access_key,
-        )
+        s3_client: boto3.client = None
+        if aws_s3_settings.s3_custom_endpoint:
+            s3_client = boto3.client(
+                "s3",
+                aws_access_key_id=aws_s3_settings.s3_aws_access_key_id,
+                aws_secret_access_key=aws_s3_settings.s3_aws_secret_access_key,
+                endpoint_url=aws_s3_settings.s3_custom_endpoint,
+                aws_session_token=None,
+            )
+        else:
+            s3_client = boto3.client(
+                "s3",
+                aws_access_key_id=aws_s3_settings.s3_aws_access_key_id,
+                aws_secret_access_key=aws_s3_settings.s3_aws_secret_access_key,
+            )
+
         s3_client.upload_file(
             file_location, bucket_name, os.path.basename(file_location)
         )

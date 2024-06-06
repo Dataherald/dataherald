@@ -34,6 +34,22 @@ services:
       MONGO_INITDB_DATABASE: "${MONGODB_DB_NAME}"
     networks:
       - dataherald_network
+# uncomment if you want to use the s3 alternative minio instead of AWS S3
+# you need to setup a bucket in the web interface (http://localhost:9001)
+#  minio:
+#    container_name: s3
+#    image: minio/minio
+#    networks:
+#      - dataherald_network
+#    ports:
+#      - "9000:9000"
+#      - "9001:9001"
+#    volumes:
+#      - ./s3data:/data
+#    environment:
+#      MINIO_ROOT_USER: "${MINIO_ROOT_USER:-dataherald}"
+#      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD:-dataherald"}
+#    command: server --console-address ":9001" /data
 networks:
   dataherald_network:
     external: true
