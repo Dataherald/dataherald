@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     db_uri: str | None = os.environ.get("MONGODB_URI")
     openai_api_key: str | None = os.environ.get("OPENAI_API_KEY")
     encrypt_key: str = os.environ.get("ENCRYPT_KEY")
+    s3_custom_endpoint: str | None = os.environ.get("S3_CUSTOM_ENDPOINT")
+    s3_bucket_name: str = os.environ.get("S3_BUCKET_NAME", "k2-core")
+    s3_region: str | None = os.environ.get("S3_REGION", "us-east-1")
     s3_aws_access_key_id: str | None = os.environ.get("S3_AWS_ACCESS_KEY_ID")
     s3_aws_secret_access_key: str | None = os.environ.get("S3_AWS_SECRET_ACCESS_KEY")
     # Needed for Azure OpenAI integration:
