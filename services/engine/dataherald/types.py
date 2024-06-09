@@ -186,7 +186,7 @@ class Prompt(BaseModel):
 
 
 class LLMConfig(BaseModel):
-    llm_name: str = os.getenv("LLM_NAME", "gpt-4-turbo-preview")
+    llm_name: str = os.getenv("LLM_NAME", "gpt-4o")
     api_base: str | None = None
 
 

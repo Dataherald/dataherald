@@ -17,6 +17,7 @@ class SQLGenerationRequest(BaseModel):
     llm_config: LLMConfig | None
     evaluate: bool = False
     sql: str | None
+    use_semantic_layer: bool = True
     metadata: dict | None
 
     @validator("sql")

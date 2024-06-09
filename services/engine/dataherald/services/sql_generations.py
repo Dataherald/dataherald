@@ -22,6 +22,7 @@ from dataherald.sql_generator.dataherald_finetuning_agent import (
     DataheraldFinetuningAgent,
 )
 from dataherald.sql_generator.dataherald_sqlagent import DataheraldSQLAgent
+from dataherald.sql_generator.semantic_model_agent import SemanticSQLAgent
 from dataherald.types import LLMConfig, SQLGeneration
 
 
@@ -104,7 +105,19 @@ class SQLGenerationService:
                 self.update_error(initial_sql_generation, str(e))
                 raise SQLGenerationError(str(e), initial_sql_generation.id) from e
         else:
-            if (
+            if sql_generation_request.use_semantic_layer:
+                sql_generator = SemanticSQLAgent(
+                    self.system,
+                    sql_generation_request.llm_config
+                    if sql_generation_request.llm_config
+                    else LLMConfig(),
+                )
+                sql_generator.generate_response(
+                        prompt,
+                        db_connection,
+                        metadata=langsmith_metadata
+                    )
+            elif (
                 sql_generation_request.finetuning_id is None
                 or sql_generation_request.finetuning_id == ""
             ):

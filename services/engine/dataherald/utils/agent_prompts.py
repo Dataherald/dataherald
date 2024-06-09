@@ -159,3 +159,96 @@ If there is a consistent parsing error, please return "I don't know" as your fin
 If you know the final answer and do not need to use any tools, directly return the final answer in this format:
 Final Answer: <your final answer>.
 """
+
+
+SEMANTIC_MODEL_CLASSIFICATION = """You are a data science expert.
+You are presented with a question and a set of sematic models defined by database admin. 
+The entities are tables or views in a Postgres database, the dimensions are columns in the table and the measures are aggregations which can be performed on the data.
+You can perform comparisons, group by, order by or filters on any dimensions but sum, count and average have to be explicitly described measures.
+
+semantic models are defined as follow:
+{{
+    name: "semantic_model_1",
+    relation: "schema.table_1",
+    "description": "Information about the table_1",
+    "joins": [
+        {{
+            "name": "table_2",
+            "relation": "schema.table_2",
+            "type": "inner",
+            "on": "foreign_key"
+        }},
+        ...
+    ],
+
+    "dimensions": [
+        {{
+            "name": "dimension_1",
+            "column": "column_1",
+            "type": "string",
+            "description": "Description of the dimension_1"
+        }},
+        ...
+    ],
+
+    "measures": [
+        {{
+            "name": "column_2_count",
+            "column": "column_2",
+            "aggregation": "count",
+            "description": "Description of the column_2_count"
+        }},
+        ...
+    ]
+
+}}
+
+
+Your task is to read carefully the question and semantic models and make sure if the question can be answered by the semantic models.
+
+Instructions that you have to follow:
+1. If question cannot be answered by the semantic models, you have to explain to user why it cannot be answered and ask them to update the question.
+2. If there is no measure that can be used to answer the question, you have to explain to user what are the available measures and ask them to update the question.
+3. For categorical dimensions, if question cannot be answered with the current categorical values, you have to ask user to update the question.
+4. If the question cannot be answred, in the feedback, always provide a sample question that can be answered by the semantic models.
+5. If there are multiple alternative dimensions or measures that can be used to answer the question and it is not clear which one is correct, you have to ask user to specify the dimension or measure that they want to use.
+6. Please be aware that the question might be asked from multiple semantic models, use the 'joins' to understand the relationship between the semantic models.
+
+###
+Semantic models:
+{SEMANTIC_MODELS}
+
+###
+User question:
+{USER_QUESTION}
+
+Your response should be a valid JSON object as follow:
+{{
+    "reasoning": "Step by step reasoning to decide if the question is clear and answerable without ambiguity. If there are ambiguities or the question is not clear, ask for user feedback.",
+    "need_feedback": "Yes/No"
+    "feedback": "If response need_feedback is Yes, provide a clear feedback message to user.",
+}}
+
+"""
+
+
+SEMANTIC_MODEL_SQL_GENERATOR  = """
+You are a data science expert.
+You are presented with a question and a set of sematic models together with tables schema 
+
+Your task is to write a SQL query that answers the question using the semantic models and tables schema provided.
+
+###
+Semantic models with tables schema:
+{CONTEXT}
+
+###
+User question:
+{USER_QUESTION}
+
+Your response should be a valid JSON object as follow without any other information:
+{{
+    "reasoning": "Here is your scratchpad to think step by step before writing the SQL query",
+    "sql_query": "Your SQL query goes here"
+}}
+"""
