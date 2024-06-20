@@ -110,6 +110,7 @@ class DatabaseConnectionService:
             "mysql",
             "clickhouse",
             "duckdb",
+            "db2"
         ]:
             raise SchemaNotSupportedError(
                 "Schema not supported for this db",

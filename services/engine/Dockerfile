@@ -10,6 +10,9 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 COPY . /app
 
+# Copy db2 license to correct location
+RUN test -d /app/license && cp -r /app/license/* /usr/local/lib/python3.11/site-packages/clidriver/license/
+
 # Set default CORE_PORT to 80 if not provided
 ARG CORE_PORT=80
 ENV CORE_PORT=${CORE_PORT}
