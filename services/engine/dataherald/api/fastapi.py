@@ -252,34 +252,9 @@ class FastAPI(API):
         database_connection_request: DatabaseConnectionRequest,
     ) -> DatabaseConnectionResponse:
         try:
-            db_connection_repository = DatabaseConnectionRepository(self.storage)
-            db_connection = db_connection_repository.find_by_id(db_connection_id)
-            if not db_connection:
-                raise DatabaseConnectionNotFoundError(
-                    f"Database connection {db_connection_id} not found"
-                )
-
-            db_connection = DatabaseConnection(
-                id=db_connection_id,
-                alias=database_connection_request.alias,
-                connection_uri=database_connection_request.connection_uri.strip(),
-                path_to_credentials_file=database_connection_request.path_to_credentials_file,
-                llm_api_key=database_connection_request.llm_api_key,
-                use_ssh=database_connection_request.use_ssh,
-                ssh_settings=database_connection_request.ssh_settings,
-                file_storage=database_connection_request.file_storage,
-                metadata=database_connection_request.metadata,
-            )
-
-            sql_database = SQLDatabase.get_sql_engine(db_connection, True)
-
-            # Get tables and views and create missing table-descriptions as NOT_SCANNED and update DEPRECATED
-            scanner_repository = TableDescriptionRepository(self.storage)
             scanner = self.system.instance(Scanner)
-
-            tables = sql_database.get_tables_and_views()
-            db_connection = db_connection_repository.update(db_connection)
-            scanner.refresh_tables(tables, str(db_connection.id), scanner_repository)
+            db_connection_service = DatabaseConnectionService(scanner, self.storage)
+            db_connection = db_connection_service.update(db_connection_id, database_connection_request)
         except Exception as e:
             # Encrypt sensible values
             fernet_encrypt = FernetEncrypt()
