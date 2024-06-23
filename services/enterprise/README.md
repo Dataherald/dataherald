@@ -35,7 +35,7 @@ To connect to Auth0 you will need to fill in the following environment variables
 AUTH0_DOMAIN=
 AUTH0_ISSUER_BASE_URL=
 AUTH0_API_AUDIENCE=
-AUTH0_DISABED=False
+AUTH0_DISABLED=False
 ```
 
 Please, read the front-end docs about Auth0 [here](../admin-console/README.md#setting-up-an-auth0-application) if you have troubles setting this up.
