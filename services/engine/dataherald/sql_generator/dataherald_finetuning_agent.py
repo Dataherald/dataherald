@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 
 
 TOP_K = SQLGenerator.get_upper_bound_limit()
-EMBEDDING_MODEL = "text-embedding-3-large"
+EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL","text-embedding-3-large")
 TOP_TABLES = 20
 
 

@@ -25,7 +25,7 @@ from dataherald.utils.agent_prompts import FINETUNING_SYSTEM_INFORMATION
 from dataherald.utils.models_context_window import OPENAI_FINETUNING_MODELS_WINDOW_SIZES
 
 FILE_PROCESSING_ATTEMPTS = 20
-EMBEDDING_MODEL = "text-embedding-3-large"
+EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL","text-embedding-3-large")
 CATEGORICAL_COLUMNS_THRESHOLD = 60
 
 logger = logging.getLogger(__name__)
