@@ -39,7 +39,7 @@ PyAthena==3.0.6
 tiktoken==0.6.0
 duckdb-engine==0.9.1
 duckdb==0.9.1
-PyMySQL==1.1.0
+PyMySQL==1.1.1
 clickhouse-sqlalchemy==0.2.5
 astrapy==0.7.6
 pymssql==2.2.11
