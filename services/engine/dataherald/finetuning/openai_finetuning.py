@@ -298,13 +298,15 @@ class OpenAIFineTuning(FinetuningModel):
             finetuning_request = self.client.fine_tuning.jobs.create(
                 training_file=model.finetuning_file_id,
                 model=model.base_llm.model_name,
-                hyperparameters=model.base_llm.model_parameters
-                if model.base_llm.model_parameters
-                else {
-                    "batch_size": 1,
-                    "learning_rate_multiplier": "auto",
-                    "n_epochs": 3,
-                },
+                hyperparameters=(
+                    model.base_llm.model_parameters
+                    if model.base_llm.model_parameters
+                    else {
+                        "batch_size": 1,
+                        "learning_rate_multiplier": "auto",
+                        "n_epochs": 3,
+                    }
+                ),
             )
             model.finetuning_job_id = finetuning_request.id
             if finetuning_request.status == "failed":

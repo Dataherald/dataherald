@@ -1,4 +1,5 @@
 """Set up the package."""
+
 import os
 from pathlib import Path
 

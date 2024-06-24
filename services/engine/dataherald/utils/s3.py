@@ -12,7 +12,12 @@ class S3:
     def __init__(self):
         self.settings = Settings()
 
-    def _get_client(self, access_key: str | None = None, secret_access_key: str | None = None, region: str | None = None) -> boto3.client:
+    def _get_client(
+        self,
+        access_key: str | None = None,
+        secret_access_key: str | None = None,
+        region: str | None = None,
+    ) -> boto3.client:
         _access_key = access_key or self.settings.s3_aws_access_key_id
         _secret_access_key = secret_access_key or self.settings.s3_aws_secret_access_key
         _region = region or self.settings.s3_region
@@ -44,7 +49,9 @@ class S3:
             bucket_name = file_storage.bucket
             s3_client = self._get_client(
                 access_key=fernet_encrypt.decrypt(file_storage.access_key_id),
-                secret_access_key=fernet_encrypt.decrypt(file_storage.secret_access_key),
+                secret_access_key=fernet_encrypt.decrypt(
+                    file_storage.secret_access_key
+                ),
                 region=file_storage.region,
             )
         else:
@@ -63,7 +70,9 @@ class S3:
             fernet_encrypt = FernetEncrypt()
             s3_client = self._get_client(
                 access_key=fernet_encrypt.decrypt(file_storage.access_key_id),
-                secret_access_key=fernet_encrypt.decrypt(file_storage.secret_access_key),
+                secret_access_key=fernet_encrypt.decrypt(
+                    file_storage.secret_access_key
+                ),
                 region=file_storage.region,
             )
         else:

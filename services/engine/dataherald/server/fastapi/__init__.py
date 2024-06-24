@@ -516,9 +516,9 @@ class FastAPI(dataherald.server.Server):
         stream = self._api.export_csv_file(sql_generation_id)
 
         response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
-        response.headers[
-            "Content-Disposition"
-        ] = f"attachment; filename=sql_generation_{sql_generation_id}.csv"
+        response.headers["Content-Disposition"] = (
+            f"attachment; filename=sql_generation_{sql_generation_id}.csv"
+        )
         return response
 
     def delete_golden_sql(self, golden_sql_id: str) -> dict:

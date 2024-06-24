@@ -1,4 +1,5 @@
 """Base class that all cache classes inherit from."""
+
 from abc import ABC, abstractmethod
 from typing import Any, Union
 

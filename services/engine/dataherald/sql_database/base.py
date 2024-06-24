@@ -1,4 +1,5 @@
 """SQL wrapper around SQLDatabase in langchain."""
+
 import logging
 import re
 from typing import List

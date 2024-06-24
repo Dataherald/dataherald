@@ -655,8 +655,9 @@ class DataheraldSQLAgent(SQLGenerator):
         input_variables: List[str] | None = None,
         max_examples: int = 20,
         number_of_instructions: int = 1,
-        max_iterations: int
-        | None = int(os.getenv("AGENT_MAX_ITERATIONS", "15")),  # noqa: B008
+        max_iterations: int | None = int(
+            os.getenv("AGENT_MAX_ITERATIONS", "15")
+        ),  # noqa: B008
         max_execution_time: float | None = None,
         early_stopping_method: str = "generate",
         verbose: bool = False,

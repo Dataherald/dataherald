@@ -613,9 +613,11 @@ class FastAPI(API):
                 Finetuning(
                     db_connection_id=fine_tuning_request.db_connection_id,
                     schemas=fine_tuning_request.schemas,
-                    alias=fine_tuning_request.alias
-                    if fine_tuning_request.alias
-                    else f"{db_connection.alias}_{datetime.datetime.now().strftime('%Y%m%d%H')}",
+                    alias=(
+                        fine_tuning_request.alias
+                        if fine_tuning_request.alias
+                        else f"{db_connection.alias}_{datetime.datetime.now().strftime('%Y%m%d%H')}"
+                    ),
                     base_llm=base_llm,
                     golden_sqls=[str(golden_sql.id) for golden_sql in golden_sqls],
                     metadata=fine_tuning_request.metadata,

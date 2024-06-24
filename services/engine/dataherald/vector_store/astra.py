@@ -94,9 +94,11 @@ class Astra(VectorStore):
                 {
                     "_id": str(golden_sqls[key].id),
                     "$vector": embeds[key],
-                    "tables_used": ", ".join(Parser(golden_sqls[key].sql))
-                    if isinstance(Parser(golden_sqls[key].sql), list)
-                    else "",
+                    "tables_used": (
+                        ", ".join(Parser(golden_sqls[key].sql))
+                        if isinstance(Parser(golden_sqls[key].sql), list)
+                        else ""
+                    ),
                     "db_connection_id": str(golden_sqls[key].db_connection_id),
                 }
             )
