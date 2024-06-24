@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 
 
 TOP_K = SQLGenerator.get_upper_bound_limit()
-EMBEDDING_MODEL = "text-embedding-3-large"
+EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL","text-embedding-3-large")
 TOP_TABLES = 20
 
 
@@ -147,7 +147,7 @@ class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
 
     name = "SqlDbQuery"
     description = """
-    Input: A well-formed multi-line SQL query between ```sql and ``` tags.
+    Input: -- A well-formed multi-line SQL query between ```sql and ``` tags.
     Output: Result from the database or an error message if the query is incorrect.
     If an error occurs, rewrite the query and retry.
     Use this tool to execute SQL queries.
