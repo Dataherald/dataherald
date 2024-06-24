@@ -294,8 +294,8 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
         df["similarities"] = df.table_embedding.apply(
             lambda x: self.cosine_similarity(x, question_embedding)
         )
-        df = df.sort_values(by="similarities", ascending=True)
-        df = df.tail(TOP_TABLES)
+        df = df.sort_values(by="similarities", ascending=False)
+        df = df.head(TOP_TABLES)
         most_similar_tables = self.similar_tables_based_on_few_shot_examples(df)
         table_relevance = ""
         for _, row in df.iterrows():
