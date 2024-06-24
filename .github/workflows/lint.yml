@@ -9,6 +9,5 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: chartboost/ruff-action@v1
-      - uses: rickstaa/action-black@v1
-        with:
-          black_args: ". --check"
+      - uses: psf/black@stable
+
