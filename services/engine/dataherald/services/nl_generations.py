@@ -30,9 +30,11 @@ class NLGenerationService:
         initial_nl_generation = NLGeneration(
             sql_generation_id=sql_generation_id,
             created_at=datetime.now(),
-            llm_config=nl_generation_request.llm_config
-            if nl_generation_request.llm_config
-            else LLMConfig(),
+            llm_config=(
+                nl_generation_request.llm_config
+                if nl_generation_request.llm_config
+                else LLMConfig()
+            ),
             metadata=nl_generation_request.metadata,
         )
         self.nl_generation_repository.insert(initial_nl_generation)
@@ -46,9 +48,11 @@ class NLGenerationService:
         nl_generator = GeneratesNlAnswer(
             self.system,
             self.storage,
-            nl_generation_request.llm_config
-            if nl_generation_request.llm_config
-            else LLMConfig(),
+            (
+                nl_generation_request.llm_config
+                if nl_generation_request.llm_config
+                else LLMConfig()
+            ),
         )
         try:
             nl_generation = nl_generator.execute(

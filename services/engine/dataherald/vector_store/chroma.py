@@ -47,9 +47,11 @@ class Chroma(VectorStore):
                 collection,
                 [
                     {
-                        "tables_used": ", ".join(Parser(golden_sql.sql))
-                        if isinstance(Parser(golden_sql.sql), list)
-                        else "",
+                        "tables_used": (
+                            ", ".join(Parser(golden_sql.sql))
+                            if isinstance(Parser(golden_sql.sql), list)
+                            else ""
+                        ),
                         "db_connection_id": str(golden_sql.db_connection_id),
                     }
                 ],

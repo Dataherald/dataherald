@@ -94,9 +94,9 @@ if __name__ == "__main__":
                     "_id": question["_id"],
                     "db_connection_id": str(question["db_connection_id"]),
                     "text": question["question"],
-                    "created_at": None
-                    if len(responses) == 0
-                    else responses[0]["created_at"],
+                    "created_at": (
+                        None if len(responses) == 0 else responses[0]["created_at"]
+                    ),
                     "metadata": None,
                 },
             )
@@ -112,17 +112,21 @@ if __name__ == "__main__":
                     {
                         "_id": response["_id"],
                         "prompt_id": str(response["question_id"]),
-                        "evaluate": False
-                        if response["confidence_score"] is None
-                        else True,
+                        "evaluate": (
+                            False if response["confidence_score"] is None else True
+                        ),
                         "sql": response["sql_query"],
-                        "status": "VALID"
-                        if response["sql_generation_status"] == "VALID"
-                        else "INVALID",
-                        "completed_at": response["created_at"]
-                        + timedelta(seconds=response["exec_time"])
-                        if response["exec_time"]
-                        else None,
+                        "status": (
+                            "VALID"
+                            if response["sql_generation_status"] == "VALID"
+                            else "INVALID"
+                        ),
+                        "completed_at": (
+                            response["created_at"]
+                            + timedelta(seconds=response["exec_time"])
+                            if response["exec_time"]
+                            else None
+                        ),
                         "tokens_used": response["total_tokens"],
                         "confidence_score": response["confidence_score"],
                         "error": response["error_message"],
@@ -140,10 +144,12 @@ if __name__ == "__main__":
                     {
                         "sql_generation_id": str(response["_id"]),
                         "text": response["response"],
-                        "created_at": response["created_at"]
-                        + timedelta(seconds=response["exec_time"])
-                        if response["exec_time"]
-                        else response["created_at"],
+                        "created_at": (
+                            response["created_at"]
+                            + timedelta(seconds=response["exec_time"])
+                            if response["exec_time"]
+                            else response["created_at"]
+                        ),
                         "metadata": None,
                     },
                 )

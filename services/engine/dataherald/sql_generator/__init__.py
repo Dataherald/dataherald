@@ -1,4 +1,5 @@
 """Base class that all sql generation classes inherit from."""
+
 import datetime
 import logging
 import os
