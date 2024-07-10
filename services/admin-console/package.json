@@ -45,7 +45,7 @@
     "eslint-config-next": "13.4.10",
     "lucide-react": "^0.305.0",
     "monaco-editor": "^0.40.0",
-    "next": "13.4.10",
+    "next": "14.1.1",
     "postcss": "8.4.26",
     "posthog-js": "^1.81.1",
     "prismjs": "^1.29.0",
