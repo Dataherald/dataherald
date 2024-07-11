@@ -91,6 +91,7 @@ API_BASE = "azure_openai_endpoint"
 AZURE_OPENAI_ENDPOINT = "azure_openai_endpoint" 
 AZURE_API_VERSION = "version of the API to use"
 LLM_MODEL = "name_of_the_deployment"
+EMBEDDING_MODEL = "name_of_deployed_embedding_model"
 ```
 In addition, an embedding model will be also used. There must be a deployment created with name "text-embedding-3-large".
 
