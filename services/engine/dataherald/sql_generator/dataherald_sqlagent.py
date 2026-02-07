@@ -324,7 +324,7 @@ class TablesSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
 
 
 class ColumnEntityChecker(BaseSQLDatabaseTool, BaseTool):
-    """Tool for checking the existance of an entity inside a column."""
+    """Tool for checking the existence of an entity inside a column."""
 
     name = "DbColumnEntityChecker"
     description = """
